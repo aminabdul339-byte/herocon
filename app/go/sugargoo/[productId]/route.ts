@@ -13,16 +13,20 @@ export async function GET(
   { params }: { params: Promise<{ productId: string }> },
 ) {
   const { productId } = await params;
-  const file = path.join(process.cwd(), "public", "herocon-products-import.json");
+  const directory = path.join(process.cwd(), "public");
 
   try {
-    const contents = await readFile(file, "utf8");
-    const products: unknown = JSON.parse(contents);
-    if (!Array.isArray(products)) {
+    const [primaryContents, v03Contents] = await Promise.all([
+      readFile(path.join(directory, "herocon-products-import.json"), "utf8"),
+      readFile(path.join(directory, "herocon-catalogue-v0.3.json"), "utf8"),
+    ]);
+    const primary: unknown = JSON.parse(primaryContents);
+    const v03: unknown = JSON.parse(v03Contents);
+    if (!Array.isArray(primary) || !Array.isArray(v03)) {
       return NextResponse.json({ error: "Catalogue unavailable" }, { status: 503 });
     }
 
-    const exists = (products as Product[]).some((product) =>
+    const exists = ([...primary, ...v03] as Product[]).some((product) =>
       product.doppelProductId === productId ||
       product.canonicalId === productId ||
       product.canonicalId === `doppel:${productId}`,

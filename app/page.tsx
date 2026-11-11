@@ -12,14 +12,36 @@ type Product = {
   sellerName?: string | null;
   sellerId?: string | null;
   imageUrl?: string;
+  source?: string;
 };
 
-const categories = ["All", "Shoes", "Clothing", "Tops", "Bottoms", "Outerwear", "Bags", "Accessories", "Jewelry"];
+const categories = ["All", "Shoes", "Clothing", "Tops", "Bottoms", "Outerwear", "Bags", "Accessories", "Jewelry", "Uncategorised"];
 
 function productRouteId(product: Product): string | undefined {
   if (product.doppelProductId) return product.doppelProductId;
   if (product.canonicalId) return product.canonicalId.replace(/^doppel:/, "");
   return undefined;
+}
+
+function normalizeProduct<T extends Product>(product: T): T {
+  const category = product.category?.split("/")[0]?.trim();
+  return {
+    ...product,
+    category: category || "Uncategorised",
+    title: !product.title || product.title === "Image 1"
+      ? (category ? `${category} product` : product.sellerName ? `Product from ${product.sellerName}` : "Untitled product")
+      : product.title,
+  };
+}
+
+function mergeProducts(primary: Product[], additional: Product[]): Product[] {
+  const merged = new Map<string, Product>();
+  for (const product of [...primary, ...additional]) {
+    const id = productRouteId(product);
+    const key = id || product.canonicalId || `${product.title}-${product.sellerName || ""}-${merged.size}`;
+    if (!merged.has(key)) merged.set(key, normalizeProduct(product));
+  }
+  return [...merged.values()];
 }
 
 export default function Home() {
@@ -42,11 +64,19 @@ export default function Home() {
   async function load() {
     try {
       setLoadError("");
-      const response = await fetch("/herocon-products-import.json");
-      if (!response.ok) throw new Error(`Catalogue request failed (${response.status})`);
-      const data: unknown = await response.json();
-      if (!Array.isArray(data)) throw new Error("Catalogue JSON is not an array");
-      setItems(data as Product[]);
+      const [primaryResponse, v03Response] = await Promise.all([
+        fetch("/herocon-products-import.json"),
+        fetch("/herocon-catalogue-v0.3.json"),
+      ]);
+      if (!primaryResponse.ok || !v03Response.ok) {
+        throw new Error(`Catalogue request failed (original: ${primaryResponse.status}, v0.3: ${v03Response.status})`);
+      }
+      const [primary, v03]: [unknown, unknown] = await Promise.all([
+        primaryResponse.json(),
+        v03Response.json(),
+      ]);
+      if (!Array.isArray(primary) || !Array.isArray(v03)) throw new Error("A catalogue JSON file is not an array");
+      setItems(mergeProducts(primary as Product[], v03 as Product[]));
       setLoaded(true);
     } catch (error) {
       setLoaded(false);
@@ -84,7 +114,7 @@ export default function Home() {
         {!loaded ? (
           <div className="empty">
             <div className="emptyicon">✳</div><h3>Your next find starts here.</h3>
-            <p>Loading the product catalogue from <code>public/herocon-products-import.json</code>.</p>
+            <p>Loading the product catalogue from <code>both catalogue files</code>.</p>
             <button onClick={() => void load()}>Try loading catalogue</button>
             {loadError && <p role="alert">{loadError}. Check that the catalogue file is available in this deployment.</p>}
           </div>

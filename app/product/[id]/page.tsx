@@ -13,6 +13,7 @@ type Product = {
   sellerName?: string | null;
   sellerId?: string | null;
   imageUrl?: string;
+  source?: string;
 };
 
 function productRouteId(product: Product): string | undefined {
@@ -22,11 +23,29 @@ function productRouteId(product: Product): string | undefined {
 }
 
 async function getProducts(): Promise<Product[]> {
-  const file = path.join(process.cwd(), "public", "herocon-products-import.json");
-  const contents = await fs.readFile(file, "utf8");
-  const parsed: unknown = JSON.parse(contents);
-  if (!Array.isArray(parsed)) throw new Error("The Herocon product catalogue is not a valid array.");
-  return parsed as Product[];
+  const directory = path.join(process.cwd(), "public");
+  const [primaryContents, v03Contents] = await Promise.all([
+    fs.readFile(path.join(directory, "herocon-products-import.json"), "utf8"),
+    fs.readFile(path.join(directory, "herocon-catalogue-v0.3.json"), "utf8"),
+  ]);
+  const primary: unknown = JSON.parse(primaryContents);
+  const v03: unknown = JSON.parse(v03Contents);
+  if (!Array.isArray(primary) || !Array.isArray(v03)) throw new Error("A Herocon product catalogue is not a valid array.");
+  const merged = new Map<string, Product>();
+  for (const raw of [...primary, ...v03] as Product[]) {
+    const id = productRouteId(raw);
+    const key = id || raw.canonicalId || `${raw.title}-${raw.sellerName || ""}-${merged.size}`;
+    if (merged.has(key)) continue;
+    const category = raw.category?.split("/")[0]?.trim();
+    merged.set(key, {
+      ...raw,
+      category: category || "Uncategorised",
+      title: !raw.title || raw.title === "Image 1"
+        ? (category ? `${category} product` : raw.sellerName ? `Product from ${raw.sellerName}` : "Untitled product")
+        : raw.title,
+    });
+  }
+  return [...merged.values()];
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
