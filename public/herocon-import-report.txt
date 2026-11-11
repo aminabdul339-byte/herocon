@@ -1,0 +1,28 @@
+HEROCON CATALOGUE IMPORT REPORT
+
+Input records: 12,087
+Unique products: 12,087
+Duplicates merged: 0
+Unique sellers: 6,061
+Generic Image titles: 524
+
+CATEGORY DISTRIBUTION
+Shoes: 2,194
+Bottoms: 1,585
+Accessories: 1,480
+Jewelry: 1,296
+Outerwear: 1,189
+Tops: 1,163
+Other: 1,008
+Bags: 858
+Underwear: 778
+Clothing: 528
+Shoes / Tops: 8
+
+MISSING KEY FIELDS
+title: 0
+price: 0
+imageUrl: 0
+sellerName: 10
+sellerId: 10
+category: 0
