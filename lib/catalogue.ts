@@ -1,6 +1,4 @@
-import {cache} from "react";import{promises as fs}from"fs";import path from"path";import type{Product,Variant}from"./types";
-const possible=["herocon-products-import.json","herocon-products-import.example.json"];
-export const getProducts=cache(async():Promise<Product[]>=>{for(const n of possible){try{const raw=await fs.readFile(path.join(process.cwd(),"public",n),"utf8");const data=JSON.parse(raw);if(Array.isArray(data))return data}catch{}}return[]});
+import type{Product,Variant}from"./types";
 export const productId=(p:Product)=>p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||"";
 export const productPrice=(p:Product)=>p.price||(p.priceGBP!=null?`£${p.priceGBP.toFixed(2)}`:"Price unavailable");
 const noise=/\b(cross[- ]border|hot[- ]selling|wholesale|factory supply|amazon|aliexpress|temu|wish|same style|new style|in stock)\b/gi;
