@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProducts, normalizedVariants, productId } from "../../../../lib/catalogue";
+import { getProducts, normalizedVariants, productId } from "../../../lib/catalogue";
 const ALLOWED = ["sugargoo.com", "www.sugargoo.com", "m.sugargoo.com"];
 export async function GET(request: Request, { params }: { params: Promise<{ productId: string }> }) {
   const { productId: id } = await params;
@@ -9,11 +9,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ prod
   const variant = normalizedVariants(p).find(v => v.id === variantId);
   const target = variant?.sugargooProductUrl || p.sugargooProductUrl;
   if (!target) return NextResponse.redirect(new URL(`/product/${encodeURIComponent(id)}?purchase=unavailable`, request.url));
-  try {
-    const url = new URL(target);
-    if (!ALLOWED.includes(url.hostname)) throw new Error("Unapproved host");
-    return NextResponse.redirect(url, 302);
-  } catch {
-    return NextResponse.redirect(new URL(`/product/${encodeURIComponent(id)}?purchase=invalid`, request.url));
-  }
+  try { const url = new URL(target); if (!ALLOWED.includes(url.hostname)) throw new Error("Unapproved host"); return NextResponse.redirect(url, 302); }
+  catch { return NextResponse.redirect(new URL(`/product/${encodeURIComponent(id)}?purchase=invalid`, request.url)); }
 }
