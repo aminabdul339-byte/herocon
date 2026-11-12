@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import VariantPurchase from "../../components/VariantPurchase";
 import ProductCard from "../../components/ProductCard";
-import { cleanTitle, getProducts, imagesFor, productId, productPrice } from "../../lib/catalogue";
+import { cleanTitle, imagesFor, productId, productPrice } from "../../lib/catalogue";
+import { getProducts } from "../../lib/catalogue-server";
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; const products = await getProducts(); const p = products.find(x => productId(x) === id || x.canonicalId === id || x.canonicalId === `doppel:${id}`); if (!p) notFound();
   const product = { ...p, originalTitle: p.originalTitle || p.title };
