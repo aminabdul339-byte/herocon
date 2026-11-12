@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getProducts, normalizedVariants, productId } from "../../../lib/catalogue";
+import { normalizedVariants, productId } from "../../../lib/catalogue";
+import { getProducts } from "../../../lib/catalogue-server";
 const ALLOWED = ["sugargoo.com", "www.sugargoo.com", "m.sugargoo.com"];
 export async function GET(request: Request, { params }: { params: Promise<{ productId: string }> }) {
   const { productId: id } = await params;
