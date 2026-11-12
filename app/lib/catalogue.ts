@@ -7,15 +7,26 @@ export type Product = {
 };
 export const productId = (p: Product) => p.doppelProductId || p.canonicalId?.replace(/^doppel:/, "");
 export const productPrice = (p: Product) => p.price || (p.priceGBP != null ? `£${p.priceGBP.toFixed(2)}` : "Price unavailable");
-const marketingNoise = /\b(cross[- ]border|hot[- ]selling|wholesale|factory supply|amazon|aliexpress|temu|wish|same style|new style|in stock)\b/gi;
+const marketingNoise = /\\b(cross[- ]border|hot[- ]selling|wholesale|factory supply|amazon|aliexpress|temu|wish|same style|new style|in stock|double 11 discount|discount|202[0-9] autumn|autumn new)\\b/gi;
 export function cleanTitle(p: Product) {
-  if (p.displayTitle?.trim()) return p.displayTitle.trim();
-  let title = (p.title || "").replace(marketingNoise, " ").replace(/[【\[].*?[】\]]/g, " ").replace(/\s+/g, " ").replace(/^[\s,:;\-]+|[\s,:;\-]+$/g, "").trim();
-  if (/^image \d+$/i.test(title) || title.length < 4) return p.category ? `${p.category} find` : "Herocon find";
-  const words = title.split(" "); return words.slice(0, 14).join(" ") + (words.length > 14 ? "…" : "");
+  const curated = p.displayTitle?.trim();
+  if (curated && curated.length >= 4) return curated;
+  let title = (p.title || "").replace(marketingNoise, " ").replace(/[【\\[].*?[】\\]]/g, " ").replace(/\\b(20\\d{2})\\b/g, " ").replace(/\\s+/g, " ").replace(/^[\\s,:;\\-]+|[\\s,:;\\-]+$/g, "").trim();
+  if (/^image \\d+$/i.test(title) || title.length < 4) return p.category ? `${p.category} find` : "Herocon find";
+  // Supplier feeds often repeat the same noun or append a long string of search keywords.
+  const words = title.split(" ");
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const word of words) {
+    const key = word.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(word);
+  }
+  return unique.slice(0, 10).join(" ") + (unique.length > 10 ? "…" : "");
 }
 export function imagesFor(p: Product) {
-  const urls = [p.imageUrl, ...(p.images || [])].filter((x): x is string => Boolean(x) && /^https?:\/\//.test(x as string));
+  const urls = [p.imageUrl, ...(p.images || [])].filter((x): x is string => Boolean(x) && /^https?:\\/\\//.test(x as string));
   const seen = new Set<string>(); return urls.filter(url => { const key = url.split("?")[0]; if (seen.has(key)) return false; seen.add(key); return true; });
 }
 export function normalizedVariants(p: Product): Variant[] {
