@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
+import { cleanTitle } from "./lib/catalogue";
 import { useEffect, useMemo, useState } from "react";
 
 type Product={canonicalId?:string;doppelProductId?:string;title:string;price?:string;priceGBP?:number;category?:string;sellerName?:string|null;sellerId?:string|null;imageUrl?:string;images?:string[]};
 const categories=["All","Shoes","Clothing","Tops","Bottoms","Outerwear","Bags","Accessories","Jewelry","Uncategorised"];
 const productId=(p:Product)=>p.doppelProductId||(p.canonicalId?.replace(/^doppel:/,""));
-function normalize(p:Product):Product{const category=p.category?.split("/")[0]?.trim()||"Uncategorised";return {...p,category,title:!p.title||p.title==="Image 1"?(category!=="Uncategorised"?category+" product":p.sellerName?"Product from "+p.sellerName:"Untitled product"):p.title};}
+function normalize(p:Product):Product{const category=p.category?.split("/")[0]?.trim()||"Uncategorised";const originalTitle=p.originalTitle||p.title;return {...p,category,originalTitle,title:cleanTitle({...p,category})};}
 function merge(a:Product[],b:Product[]){const map=new Map<string,Product>();for(const p of [...a,...b]){const id=productId(p);const key=id||p.canonicalId||p.title+"-"+p.sellerName+"-"+map.size;if(!map.has(key))map.set(key,normalize(p));}return [...map.values()];}
 export default function Home(){
  const[q,setQ]=useState("");const[cat,setCat]=useState("All");const[items,setItems]=useState<Product[]>([]);const[loading,setLoading]=useState(true);const[error,setError]=useState("");
