@@ -1,7 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { cache } from "react";
-
 export type Variant = { id?: string; label?: string; colour?: string; size?: string; style?: string; price?: number; image?: string; available?: boolean; sugargooProductUrl?: string; };
 export type Product = {
   canonicalId?: string; doppelProductId?: string; title: string; displayTitle?: string; originalTitle?: string;
@@ -18,12 +14,6 @@ export function cleanTitle(p: Product) {
   if (/^image \d+$/i.test(title) || title.length < 4) return p.category ? `${p.category} find` : "Herocon find";
   const words = title.split(" "); return words.slice(0, 14).join(" ") + (words.length > 14 ? "…" : "");
 }
-export const getProducts = cache(async (): Promise<Product[]> => {
-  const file = path.join(process.cwd(), "public", "herocon-products-import.json");
-  const parsed = JSON.parse(await fs.readFile(file, "utf8"));
-  if (!Array.isArray(parsed)) throw new Error("Herocon catalogue is not an array");
-  return parsed;
-});
 export function imagesFor(p: Product) {
   const urls = [p.imageUrl, ...(p.images || [])].filter((x): x is string => Boolean(x) && /^https?:\/\//.test(x as string));
   const seen = new Set<string>(); return urls.filter(url => { const key = url.split("?")[0]; if (seen.has(key)) return false; seen.add(key); return true; });
