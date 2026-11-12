@@ -1,6 +1,0 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import ProductCard from "../../components/ProductCard";
-import { productId } from "../../lib/catalogue";
-import { getProducts } from "../../lib/catalogue-server";
-export default async function SellerPage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; const all = await getProducts(); const products = all.filter(p => p.sellerId === id); if (!products.length) notFound(); const seller = products[0].sellerName || "Herocon seller"; const categories = [...new Set(products.map(p => p.category).filter(Boolean))]; return <main><nav className="premium-nav"><Link className="brand" href="/">HERO<span>CON</span></Link><div><Link href="/">Discover</Link></div></nav><header className="seller-hero"><p className="eyebrow">HEROCON SELLER</p><h1>{seller}</h1><p>{products.length.toLocaleString()} indexed products{categories.length ? ` · ${categories.slice(0, 4).join(" · ")}` : ""}</p></header><section className="editorial-section seller-products"><div className="lux-grid">{products.map(p => <ProductCard key={p.canonicalId || productId(p)} p={p}/>)}</div></section></main>; }
