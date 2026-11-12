@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import VariantPurchase from "../../../components/VariantPurchase";
-import ProductCard from "../../../components/ProductCard";
-import { cleanTitle, getProducts, imagesFor, productId, productPrice } from "../../../lib/catalogue";
+import VariantPurchase from "../../components/VariantPurchase";
+import ProductCard from "../../components/ProductCard";
+import { cleanTitle, getProducts, imagesFor, productId, productPrice } from "../../lib/catalogue";
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; const products = await getProducts(); const p = products.find(x => productId(x) === id || x.canonicalId === id); if (!p) notFound();
+  const { id } = await params; const products = await getProducts(); const p = products.find(x => productId(x) === id || x.canonicalId === id || x.canonicalId === `doppel:${id}`); if (!p) notFound();
   const product = { ...p, originalTitle: p.originalTitle || p.title };
   const more = products.filter(x => product.sellerId && x.sellerId === product.sellerId && productId(x) !== id).slice(0, 8);
   const excluded = new Set([id, ...more.map(x => productId(x))]);
