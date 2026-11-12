@@ -1,22 +1,27 @@
-# HEROCON
+# Herocon final integrated build
 
-Premium product discovery for sourcing from China.
+Approved preview system implemented as a complete Next.js/TypeScript application:
+- editorial homepage
+- search/catalogue page
+- product page with gallery and variants
+- seller pages
+- saved products
+- agent-neutral chooser and redirect routes
+- responsive/mobile layouts
 
-## Status
-- Next.js 15 + TypeScript app scaffolded.
-- Responsive homepage and catalogue search UI implemented.
-- Product catalogue import is **not yet connected**. The app expects the validated JSON export at `public/catalogue.json`.
-- This catalogue is a user-supplied Doppel snapshot (12,087 products), not the separate 104/106 Google Sheets directory. Do not describe it as live marketplace data.
-- Live provider search, QC images, authentication, payments and affiliate checkout are not enabled.
+## Catalogue
+The application first loads `public/herocon-products-import.json`. If absent, it falls back to the included demo file. Copy the existing production catalogue into `public/herocon-products-import.json`; do not delete or regenerate it.
 
-## Run locally
+## Run
 ```bash
 npm install
+npm run typecheck
+npm run build
 npm run dev
 ```
 
-## Catalogue
-Place the validated product array at `public/catalogue.json`. Each record can contain `canonicalId`, `title`, `price`, `priceGBP`, `category`, `sellerName`, `productUrl`, and `imageUrl`. Keep credentials out of Git.
+## Agent links
+Configure agent templates in `.env.local`. A template receives the URL-encoded original marketplace URL through `{url}`. If no exact link can be resolved, the redirect returns to the product page rather than misleading the customer.
 
-## Deploy
-Import this repository into Vercel with framework preset Next.js and root directory `.`.
+## Remaining data work
+The UI supports `images[]`, cleaned `displayTitle`, variants, source marketplace URL and per-agent links. Existing shallow records continue to work, but full details require enrichment.
