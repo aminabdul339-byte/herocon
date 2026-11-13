@@ -11,6 +11,15 @@ function validSource(value: unknown): string | undefined {
   try { const url = new URL(value); if (url.protocol === "https:" && hosts.has(url.hostname)) return value; } catch {}
 }
 function asString(value: unknown): string | undefined { return typeof value === "string" && value.trim() ? value.trim() : undefined; }
+function inferredCategory(title: string): string {
+  if (/necklace|earring|bracelet|pendant|jewel|ring\\b|choker|brooch/i.test(title)) return "Jewelry";
+  if (/sneaker|shoe|trainer|boot\\b|slipper|sandal|loafer/i.test(title)) return "Shoes";
+  if (/handbag|backpack|shoulder bag|tote bag|crossbody|purse|wallet|duffel/i.test(title)) return "Bags";
+  if (/hoodie|t-shirt|tee\\b|shirt|blouse|sweater|sweatshirt|top\\b|polo|jersey/i.test(title)) return "Tops";
+  if (/jeans|trouser|pants|shorts|skirt|leggings/i.test(title)) return "Bottoms";
+  if (/jacket|coat\\b|windbreaker|puffer/i.test(title)) return "Outerwear";
+  return "Other";
+}
 function normalise(raw: Raw): Product | null {
   const id = asString(raw.doppelProductId) || asString(raw.canonicalId)?.replace(/^doppel:/, "");
   if (!id) return null;
@@ -24,7 +33,7 @@ function normalise(raw: Raw): Product | null {
     imageUrl: image,
     images: Array.isArray(raw.images) ? raw.images.filter((x): x is string => typeof x === "string" && /^https?:\/\//.test(x)) : undefined,
     price: asString(raw.price),
-    category: asString(raw.category),
+    category: asString(raw.category) || inferredCategory(asString(raw.title) || asString(raw.originalTitle) || ""),
     sellerId: asString(raw.sellerId),
     sellerName: asString(raw.sellerName),
     originalMarketplaceUrl: source,
