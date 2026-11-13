@@ -1,20 +1,28 @@
 {
   "manifest_version": 3,
-  "name": "Herocon Marketplace Collector",
-  "version": "2.0.0",
-  "description": "Collect product metadata from marketplace pages you open normally.",
+  "name": "Herocon Doppel Collector",
+  "version": "2.1.0",
+  "description": "Collect product details from Doppel pages you browse and export JSON without imports.",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting",
     "downloads"
   ],
   "host_permissions": [
-    "https://item.taobao.com/*",
-    "https://detail.tmall.com/*",
-    "https://detail.1688.com/*",
-    "https://weidian.com/*",
-    "https://*.weidian.com/*"
+    "https://doppel.fit/*",
+    "https://*.doppel.fit/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://doppel.fit/*",
+        "https://*.doppel.fit/*"
+      ],
+      "js": [
+        "doppel-content.js"
+      ],
+      "run_at": "document_idle"
+    }
   ],
   "action": {
     "default_popup": "popup.html"
