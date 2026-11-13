@@ -36,7 +36,7 @@ class MarketplaceSpider(scrapy.Spider):
         self.input_file = input_file
         self.limit = max(0, int(limit))
 
-    def start_requests(self):
+    async def start(self):
         data = json.loads(Path(self.input_file).read_text(encoding="utf-8"))
         products = data if isinstance(data, list) else data.get("products", [])
         for product in products[:self.limit]:
