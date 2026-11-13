@@ -4,7 +4,7 @@ import path from "path";
 import type { Product } from "./types";
 
 type Raw = Record<string, unknown>;
-const candidates = ["herocon-products-import.json", "herocon-products-import.example.json"];
+const candidates = ["herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
 const hosts = new Set(["detail.1688.com", "item.taobao.com", "detail.tmall.com", "weidian.com", "www.weidian.com"]);
 function validSource(value: unknown): string | undefined {
   if (typeof value !== "string") return;
