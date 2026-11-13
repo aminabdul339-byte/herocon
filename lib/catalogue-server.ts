@@ -49,7 +49,7 @@ export const getProducts = cache(async (): Promise<Product[]> => {
         const previous = byId.get(id);
         byId.set(id, previous ? {...previous, ...product, originalMarketplaceUrl: product.originalMarketplaceUrl || previous.originalMarketplaceUrl, imageUrl: product.imageUrl || previous.imageUrl} : product);
       }
-      return [...byId.values()];
+      return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl));
     } catch {}
   }
   return [];
