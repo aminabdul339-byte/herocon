@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Herocon Marketplace Collector",
+  "version": "2.0.0",
+  "description": "Collect product metadata from marketplace pages you open normally.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://item.taobao.com/*",
+    "https://detail.tmall.com/*",
+    "https://detail.1688.com/*",
+    "https://weidian.com/*",
+    "https://*.weidian.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
