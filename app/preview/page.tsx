@@ -5,7 +5,7 @@ const allowed=new Set(["detail.1688.com","item.taobao.com","detail.tmall.com","w
 function source(p:Item){const u=p.originalMarketplaceUrl||p.marketplaceUrl||p.directLink||"";try{const x=new URL(u);return x.protocol==="https:"&&allowed.has(x.hostname)?u:""}catch{return ""}}
 function market(u:string){try{return new URL(u).hostname.replace("www.","")}catch{return "Unknown"}}
 export default function Preview(){
-const [items,setItems]=useState<Item[]>([]),[error,setError]=useState(""),[q,setQ]=useState(""),[filter,setFilter]=useState("all"),[selected,setSelected]=useState<Item|null>(null),[limit,setLimit]=useState(48),[loaded,setLoaded]=useState(false);
+const [items,setItems]=useState<Item[]>([]),[error,setError]=useState(""),[q,setQ]=useState(""),[filter,setFilter]=useState("linked"),[selected,setSelected]=useState<Item|null>(null),[limit,setLimit]=useState(48),[loaded,setLoaded]=useState(false);
 const linked=useMemo(()=>items.filter(p=>source(p)).length,[items]);
 const shown=useMemo(()=>items.filter(p=>(filter==="all"||(filter==="linked"?!!source(p):!source(p)))&&((p.title||"").toLowerCase().includes(q.toLowerCase())||p.doppelProductId.includes(q))),[items,q,filter]);
 async function upload(file?:File){if(!file)return;setError("");try{const raw=JSON.parse(await file.text());const list=Array.isArray(raw)?raw:raw.products;if(!Array.isArray(list))throw Error("Expected a JSON bundle with a products array.");const seen=new Set<string>();const parsed:Item[]=list.filter((p:Item)=>p&&typeof p.doppelProductId==="string"&&!seen.has(p.doppelProductId)&&seen.add(p.doppelProductId));if(!parsed.length)throw Error("No products found.");setItems(parsed);setLoaded(true);setSelected(null);setLimit(48)}catch(e){setError(e instanceof Error?e.message:String(e))}}
