@@ -1,0 +1,14 @@
+BOT_NAME = "herocon_scraper"
+SPIDER_MODULES = ["herocon_scraper.spiders"]
+NEWSPIDER_MODULE = "herocon_scraper.spiders"
+ROBOTSTXT_OBEY = True
+CONCURRENT_REQUESTS = 2
+CONCURRENT_REQUESTS_PER_DOMAIN = 1
+DOWNLOAD_DELAY = 3
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 3
+AUTOTHROTTLE_MAX_DELAY = 30
+DOWNLOAD_TIMEOUT = 15
+RETRY_TIMES = 1
+USER_AGENT = "HeroconCatalogueResearch/1.0 (+respectful metadata collection)"
+LOG_LEVEL = "INFO"
