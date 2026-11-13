@@ -1,6 +1,6 @@
 import type{Product,Variant}from"./types";
 export const productId=(p:Product)=>p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||"";
-export const productPrice=(p:Product)=>p.price||(p.priceGBP!=null?`£${p.priceGBP.toFixed(2)}`:"Price unavailable");
+export const productPrice=(p:Product)=>p.price||(p.priceGBP!=null?`£${p.priceGBP.toFixed(2)}`:"View marketplace price");
 const noise=/\b(cross[- ]border|hot[- ]selling|wholesale|factory supply|amazon|aliexpress|temu|wish|same style|new style|in stock|big brand|high quality|202[0-9] (?:new|autumn|winter|spring|summer))\b/gi;
 export function cleanTitle(p:Product){
   const raw=(p.displayTitle||p.title||"").trim();
