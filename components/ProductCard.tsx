@@ -1,5 +1,6 @@
 "use client";
 import {useState} from "react";
+import Link from "next/link";
 import {useSaved} from "./SavedProvider";
 import {cleanTitle,productId,productPrice} from "@/lib/catalogue";
 import type {Product} from "@/lib/types";
@@ -9,8 +10,8 @@ export default function ProductCard({product}:{product:Product;large?:boolean}){
  const title=cleanTitle(product);
  const agentLink=(key:string)=>{const raw=product.agentLinks?.[key]||(key==="sugargoo"?product.sugargooProductUrl:undefined);if(!raw)return null;try{const url=new URL(raw);return url.protocol==="https:"?url.href:null}catch{return null}};
  return <article className="hc-product-card">
-   <div className="hc-image-wrap">{product.imageUrl?<img src={product.imageUrl} alt={title} loading="lazy"/>:<div className="hc-image-missing">Image unavailable</div>}<button className="hc-favourite" onClick={()=>toggle(id)} aria-label={saved.has(id)?"Remove from saved":"Save product"} aria-pressed={saved.has(id)}>{saved.has(id)?"♥":"♡"}</button></div>
-   <div className="hc-card-info"><h3 title={product.title}>{title}</h3><strong className="hc-price">{productPrice(product)}</strong><div className="hc-seller">♧ {product.sellerName||"Marketplace seller"}</div>
+   <div className="hc-image-wrap"><Link className="hc-card-photo-link" href={`/product/${encodeURIComponent(id)}`} aria-label={`View ${title}`}>{product.imageUrl?<img src={product.imageUrl} alt={title} loading="lazy"/>:<div className="hc-image-missing">Image unavailable</div>}</Link><button className="hc-favourite" onClick={()=>toggle(id)} aria-label={saved.has(id)?"Remove from saved":"Save product"} aria-pressed={saved.has(id)}>{saved.has(id)?"♥":"♡"}</button></div>
+   <div className="hc-card-info"><h3 title={product.title}><Link className="hc-card-title-link" href={`/product/${encodeURIComponent(id)}`}>{title}</Link></h3><strong className="hc-price">{productPrice(product)}</strong><div className="hc-seller">♧ {product.sellerName||"Marketplace seller"}</div>
    <div className="hc-actions">
      {product.originalMarketplaceUrl?<a className="hc-buy" href={product.originalMarketplaceUrl} target="_blank" rel="noopener noreferrer" aria-label={`Buy ${title} at original marketplace`}>Buy ↗</a>:<span className="hc-buy hc-disabled">Unavailable</span>}
      <div className="hc-agent-container"><button className="hc-agent-trigger" onClick={()=>setOpen(v=>!v)} aria-expanded={open} aria-label={`Buy ${title} with an agent`}>Buy with Agent <span>⌄</span></button>
