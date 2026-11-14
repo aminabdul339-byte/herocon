@@ -60,3 +60,18 @@
 .hc-agent-direct-actions a,.hc-agent-direct-actions button{background:#666;color:white;border:1px solid #858585;border-radius:999px;padding:10px 13px;text-decoration:none;white-space:nowrap;cursor:pointer;font-size:12px}
 .hc-agent-note{font-size:12px;color:#c9c9c9;line-height:1.5;text-align:center;margin:12px 0 0}
 @media(max-width:560px){.hc-agent-dialog{padding:15px;border-radius:22px}.hc-agent-dialog-head h2{font-size:21px}.hc-agent-option,.hc-agent-direct{padding:12px;border-radius:18px}.hc-agent-option-top strong{font-size:16px}.hc-agent-option-top small{font-size:11px}.hc-agent-logo{width:40px;height:40px}.hc-agent-option-actions{padding-left:0}.hc-agent-direct{align-items:flex-start;flex-direction:column}.hc-agent-direct-actions{width:100%}.hc-agent-direct-actions>*{flex:1;text-align:center}}
+
+
+/* Premium HEROCON identity */
+.hc-nav{background:#101011;border-bottom:1px solid #34312e;min-height:76px}
+.hc-nav .hc-logo{display:inline-flex;align-items:center;gap:13px;text-decoration:none;white-space:nowrap;flex-shrink:0;color:#f5f0e6}
+.hc-premium-symbol{width:34px;height:34px;color:#d5bc8c;flex-shrink:0}
+.hc-nav .hc-premium-wordmark{font-family:Georgia,"Times New Roman",serif;font-size:26px;font-weight:500;letter-spacing:.115em;line-height:1}
+.hc-wordmark-period{color:#d5bc8c}
+.hc-nav .menu{gap:26px}
+.hc-nav .menu a{font-size:11px;letter-spacing:.065em;text-transform:uppercase;color:#e4dfd7;transition:color .2s}
+.hc-nav .menu a:hover{color:#d5bc8c}
+.hc-nav .nav-circle{border-color:#58534a;color:#eae3d6}
+.hc-nav .nav-circle:hover{border-color:#d5bc8c;color:#d5bc8c}
+@media(max-width:900px){.hc-nav .hc-premium-wordmark{font-size:21px}.hc-premium-symbol{width:28px;height:28px}.hc-nav .menu{gap:14px}}
+@media(max-width:560px){.hc-nav{min-height:65px}.hc-nav .hc-logo{gap:7px}.hc-nav .hc-premium-wordmark{font-size:17px;letter-spacing:.065em}.hc-premium-symbol{width:23px;height:23px}.hc-nav .menu a{font-size:9px}}
