@@ -85,3 +85,25 @@
 .hc-nav .menu a:hover,.hc-nav .nav-circle:hover{color:#c9c9ef;border-color:#9295b7}
 @media(max-width:900px){.hc-tech-symbol{width:28px;height:28px}.hc-nav .hc-tech-wordmark{font-size:21px}}
 @media(max-width:560px){.hc-tech-symbol{width:23px;height:23px}.hc-nav .hc-tech-wordmark{font-size:18px}}
+
+
+/* Compact agent selector: preserve scrolling and all original links */
+.hc-agent-backdrop{padding:14px}
+.hc-agent-dialog{width:min(480px,100%);max-height:min(82dvh,680px);border-radius:22px;padding:16px 18px 14px}
+.hc-agent-dialog-head{min-height:38px;margin-bottom:10px}
+.hc-agent-dialog-head h2{font-size:19px}
+.hc-agent-dialog-head button{font-size:28px}
+.hc-agent-list{gap:7px;padding:0 2px 8px}
+.hc-agent-option,.hc-agent-direct{border-radius:16px;padding:10px 12px}
+.hc-agent-option-top{gap:10px}
+.hc-agent-option-top strong{font-size:16px}
+.hc-agent-option-top small{font-size:11px;margin-top:2px}
+.hc-agent-logo{width:36px;height:36px;border-radius:9px;font-size:12px}
+.hc-agent-logo-direct{font-size:22px}
+.hc-agent-option-actions{padding-left:46px;margin-top:7px}
+.hc-agent-option-actions button,.hc-agent-option-actions a{padding:8px 10px;font-size:12px}
+.hc-agent-direct{margin-top:8px;gap:8px}
+.hc-agent-direct-actions{gap:5px}
+.hc-agent-direct-actions a,.hc-agent-direct-actions button{padding:7px 9px;font-size:11px}
+.hc-agent-note{font-size:10px;margin:8px 0 0}
+@media(max-width:560px){.hc-agent-dialog{padding:12px;max-height:85dvh}.hc-agent-dialog-head h2{font-size:18px}.hc-agent-option,.hc-agent-direct{padding:9px 10px}.hc-agent-option-actions{padding-left:0}.hc-agent-logo{width:34px;height:34px}}
