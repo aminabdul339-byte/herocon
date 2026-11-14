@@ -4,7 +4,7 @@ import path from "path";
 import type { Product } from "./types";
 
 type Raw = Record<string, unknown>;
-const candidates = ["herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
+const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
 const hosts = new Set(["detail.1688.com", "item.taobao.com", "detail.tmall.com", "weidian.com", "www.weidian.com"]);
 function validSource(value: unknown): string | undefined {
   if (typeof value !== "string") return;
@@ -32,7 +32,8 @@ function normalise(raw: Raw): Product | null {
     originalTitle: asString(raw.originalTitle),
     imageUrl: image,
     images: Array.isArray(raw.images) ? raw.images.filter((x): x is string => typeof x === "string" && /^https?:\/\//.test(x)) : undefined,
-    price: asString(raw.price),
+    price: asString(raw.price) || (typeof raw.priceGBP === "number" ? `£${raw.priceGBP.toFixed(2)}` : undefined),
+    priceGBP: typeof raw.priceGBP === "number" ? raw.priceGBP : undefined,
     category: asString(raw.category) || inferredCategory(asString(raw.title) || asString(raw.originalTitle) || ""),
     sellerId: asString(raw.sellerId),
     sellerName: asString(raw.sellerName),
