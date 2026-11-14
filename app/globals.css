@@ -75,3 +75,13 @@
 .hc-nav .nav-circle:hover{border-color:#d5bc8c;color:#d5bc8c}
 @media(max-width:900px){.hc-nav .hc-premium-wordmark{font-size:21px}.hc-premium-symbol{width:28px;height:28px}.hc-nav .menu{gap:14px}}
 @media(max-width:560px){.hc-nav{min-height:65px}.hc-nav .hc-logo{gap:7px}.hc-nav .hc-premium-wordmark{font-size:17px;letter-spacing:.065em}.hc-premium-symbol{width:23px;height:23px}.hc-nav .menu a{font-size:9px}}
+
+
+/* Selected concept 9: restrained technology identity */
+.hc-nav .hc-tech-logo{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;text-decoration:none;color:#f0f1f7}
+.hc-tech-symbol{display:block;width:35px;height:35px;flex-shrink:0}
+.hc-nav .hc-tech-wordmark{font-family:Arial,Helvetica,sans-serif;font-weight:800;font-style:normal;font-size:25px;line-height:1;letter-spacing:-.075em}
+.hc-nav .hc-tech-logo:hover{color:#fff}
+.hc-nav .menu a:hover,.hc-nav .nav-circle:hover{color:#c9c9ef;border-color:#9295b7}
+@media(max-width:900px){.hc-tech-symbol{width:28px;height:28px}.hc-nav .hc-tech-wordmark{font-size:21px}}
+@media(max-width:560px){.hc-tech-symbol{width:23px;height:23px}.hc-nav .hc-tech-wordmark{font-size:18px}}
