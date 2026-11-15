@@ -12,12 +12,13 @@ function validSource(value: unknown): string | undefined {
 }
 function asString(value: unknown): string | undefined { return typeof value === "string" && value.trim() ? value.trim() : undefined; }
 function inferredCategory(title: string): string {
-  if (/necklace|earring|bracelet|pendant|jewel|ring\\b|choker|brooch/i.test(title)) return "Jewelry";
-  if (/sneaker|shoe|trainer|boot\\b|slipper|sandal|loafer/i.test(title)) return "Shoes";
-  if (/handbag|backpack|shoulder bag|tote bag|crossbody|purse|wallet|duffel/i.test(title)) return "Bags";
-  if (/hoodie|t-shirt|tee\\b|shirt|blouse|sweater|sweatshirt|top\\b|polo|jersey/i.test(title)) return "Tops";
-  if (/jeans|trouser|pants|shorts|skirt|leggings/i.test(title)) return "Bottoms";
-  if (/jacket|coat\\b|windbreaker|puffer/i.test(title)) return "Outerwear";
+  // Match specific product types before broad words such as "shirt" or "top".
+  if (/\b(?:earrings?|necklaces?|bracelets?|pendants?|jewel(?:ry|lery)?|rings?|chokers?|brooches?|bangles?|anklets?|moissanite|zircon|gemstones?)\b/i.test(title)) return "Jewelry";
+  if (/\b(?:jackets?|coats?|windbreakers?|puffers?|parkas?|blazers?|trench(?:es)?|overcoats?|fleeces?)\b/i.test(title)) return "Outerwear";
+  if (/\b(?:sneakers?|shoes?|trainers?|boots?|slippers?|sandals?|loafers?|heels?|flats?|mules?|clogs?|footwear)\b/i.test(title)) return "Shoes";
+  if (/\b(?:handbags?|backpacks?|shoulder bags?|tote bags?|crossbody bags?|purses?|wallets?|duffels?|clutches?|messenger bags?|satchels?|bags?)\b/i.test(title)) return "Bags";
+  if (/\b(?:jeans|denim pants|trousers?|pants|shorts|skirts?|leggings?|joggers?|sweatpants?|cargo pants)\b/i.test(title)) return "Bottoms";
+  if (/\b(?:hoodies?|t-shirts?|tees?|shirts?|blouses?|sweaters?|sweatshirts?|tops?|polos?|jerseys?|cardigans?|vests?|tank tops?|crop tops?|knitwear|dresses?)\b/i.test(title)) return "Tops";
   return "Other";
 }
 function normalise(raw: Raw): Product | null {
