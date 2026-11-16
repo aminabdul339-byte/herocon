@@ -5,6 +5,7 @@ import type { Product } from "./types";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
+const additions = ["herocon-verified-marketplace-links.json"];
 const hosts = new Set(["detail.1688.com", "item.taobao.com", "detail.tmall.com", "weidian.com", "www.weidian.com"]);
 function validSource(value: unknown): string | undefined {
   if (typeof value !== "string") return;
@@ -46,22 +47,36 @@ function normalise(raw: Raw): Product | null {
   };
 }
 export const getProducts = cache(async (): Promise<Product[]> => {
-  for (const name of candidates) {
+  const byId = new Map<string, Product>();
+  async function addFile(name: string): Promise<boolean> {
     try {
       const raw = JSON.parse(await fs.readFile(path.join(process.cwd(), "public", name), "utf8"));
       const list: unknown = Array.isArray(raw) ? raw : raw?.products;
-      if (!Array.isArray(list)) continue;
-      const byId = new Map<string, Product>();
+      if (!Array.isArray(list)) return false;
       for (const entry of list) {
         if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
         const product = normalise(entry as Raw);
         if (!product) continue;
         const id = product.doppelProductId!;
         const previous = byId.get(id);
-        byId.set(id, previous ? {...previous, ...product, originalMarketplaceUrl: product.originalMarketplaceUrl || previous.originalMarketplaceUrl, imageUrl: product.imageUrl || previous.imageUrl} : product);
+        byId.set(id, previous ? {
+          ...previous, ...product,
+          originalMarketplaceUrl: product.originalMarketplaceUrl || previous.originalMarketplaceUrl,
+          imageUrl: product.imageUrl || previous.imageUrl,
+          images: product.images || previous.images,
+          variants: product.variants || previous.variants,
+          agentLinks: product.agentLinks || previous.agentLinks,
+          sellerName: product.sellerName || previous.sellerName,
+          sellerId: product.sellerId || previous.sellerId,
+        } : product);
       }
-      return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl));
-    } catch {}
+      return true;
+    } catch { return false; }
   }
-  return [];
+  // Load one canonical catalogue, then merge additional verified products by ID.
+  for (const name of candidates) {
+    if (await addFile(name)) break;
+  }
+  for (const name of additions) await addFile(name);
+  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl));
 });
