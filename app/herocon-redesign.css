@@ -331,3 +331,14 @@
 @media(max-width:520px){
  .sc-home-ideas-grid .sc-category-illustration .sc-category-photo{height:145px;min-height:145px}
 }
+
+/* User-selected genuine product photograph replacing the illustrated hero. */
+.sc-hero-photo-stage{position:relative;min-height:575px;overflow:hidden;background:#e5e2d7;isolation:isolate}
+.sc-hero-photo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center center}
+.sc-hero-photo-stage::after{content:"";position:absolute;inset:44% 0 0 0;background:linear-gradient(to bottom,transparent,rgba(24,31,23,.25));pointer-events:none}
+.sc-hero-photo-caption{position:absolute;z-index:1;bottom:28px;left:27px;padding:15px 19px;border-radius:9px;background:rgba(255,255,255,.94);box-shadow:0 8px 25px #1e352219;max-width:275px}
+.sc-hero-photo-caption span{display:block;font-size:9px;font-weight:850;letter-spacing:.12em;color:#729074;margin-bottom:7px}
+.sc-hero-photo-caption strong{display:block;font-size:15px;line-height:1.4;color:#2c4332}
+@media(max-width:1050px){.sc-hero-photo-stage{min-height:510px}}
+@media(max-width:800px){.sc-hero-photo-stage{min-height:340px;height:380px}}
+@media(max-width:520px){.sc-hero-photo-stage{min-height:305px;height:305px}.sc-hero-photo-caption{bottom:16px;left:17px;padding:11px 13px;max-width:235px}.sc-hero-photo-caption strong{font-size:13px}}
