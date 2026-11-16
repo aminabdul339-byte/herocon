@@ -319,3 +319,15 @@
 .sc-clothing-art{background:#e0eae7}
 @media(max-width:1120px){.sc-home-ideas-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.sc-home-ideas-grid{grid-template-columns:1fr}}
+
+/* Exact, user-supplied homepage category photos (optimised WebP copies).
+   Keep the pastel background as a neutral fallback if CDN imagery is unavailable. */
+.sc-home-ideas-grid .sc-category-illustration{position:relative;overflow:hidden}
+.sc-home-ideas-grid .sc-category-photo{
+ display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+ transition:transform .35s ease;
+}
+.sc-home-ideas-grid .sc-category-card:hover .sc-category-photo{transform:scale(1.045)}
+@media(max-width:520px){
+ .sc-home-ideas-grid .sc-category-illustration .sc-category-photo{height:145px;min-height:145px}
+}
