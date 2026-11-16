@@ -342,8 +342,8 @@
 @media(max-width:1050px){.sc-hero-photo-stage{min-height:510px}}
 @media(max-width:800px){.sc-hero-photo-stage{min-height:340px;height:380px}}
 @media(max-width:520px){.sc-hero-photo-stage{min-height:305px;height:305px}.sc-hero-photo-caption{bottom:16px;left:17px;padding:11px 13px;max-width:235px}.sc-hero-photo-caption strong{font-size:13px}}
-/* Fresh, licensed photography for Herocon's hero. */
-.sc-hero-photo{object-position:50% 58%}
+/* User-supplied hero photograph for Herocon. */
+.sc-hero-photo{object-position:50% 50%}
 .sc-hero-photo-credit{position:absolute;right:12px;bottom:10px;z-index:2;color:#fff!important;text-shadow:0 1px 6px #15251bcc;font-size:9px;text-decoration:underline!important;text-underline-offset:2px}
 .sc-hero-photo-credit:hover{color:#e9f4e8!important}
-@media(max-width:800px){.sc-hero-photo{object-position:50% 62%}}
+@media(max-width:800px){.sc-hero-photo{object-position:50% 50%}}
