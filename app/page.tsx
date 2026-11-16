@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
-import {HeroArtwork,HairArt,HomeArt,BrandArt} from "@/components/SourcingArt";
+import {HeroArtwork,HairArt,HomeArt,JewelleryArt,ClothingArt} from "@/components/SourcingArt";
 import {getProducts} from "@/lib/catalogue-server";
 export default async function Home(){
  const products=await getProducts();
@@ -15,10 +15,11 @@ export default async function Home(){
   </div></section>
   <section className="sc-search-section"><div className="sc-container"><form className="sc-searchbar" action="/search"><span className="sc-search-icon" aria-hidden="true">⌕</span><input name="q" aria-label="Search the product catalogue" placeholder="Search products, suppliers or a business idea…" required/><button type="submit">Search <span>↗</span></button></form><div className="sc-search-tags"><span>Popular searches</span><Link href="/search?q=hair">Hair accessories</Link><Link href="/search?category=Home%20%26%20Decor">Home décor</Link><Link href="/search?q=packaging">Packaging</Link><Link href="/search?q=bag">Fashion accessories</Link></div></div></section>
   <section className="sc-section sc-container"><div className="sc-heading-row"><div><p className="sc-kicker">START WITH AN IDEA</p><h2>What business do you want to build?</h2></div><Link className="sc-text-link" href="/start-a-business">Explore business ideas ↗</Link></div>
-   <div className="sc-category-grid">
-    <Link className="sc-category-card" href="/search?q=hair"><div className="sc-category-illustration sc-hair-art"><HairArt/></div><div className="sc-category-info"><h3>Hair &amp; accessories</h3><p>Build your own boutique collection</p><span>Discover products ↗</span></div></Link>
+   <div className="sc-category-grid sc-home-ideas-grid">
+    <Link className="sc-category-card" href="/search?category=Hair%20Accessories"><div className="sc-category-illustration sc-hair-art"><HairArt/></div><div className="sc-category-info"><h3>Hair &amp; accessories</h3><p>Build your own boutique collection</p><span>Discover products ↗</span></div></Link>
     <Link className="sc-category-card" href="/search?category=Home%20%26%20Decor"><div className="sc-category-illustration sc-home-art"><HomeArt/></div><div className="sc-category-info"><h3>Home &amp; lifestyle</h3><p>Discover décor and homeware finds</p><span>Discover products ↗</span></div></Link>
-    <Link className="sc-category-card" href="/search?q=packaging"><div className="sc-category-illustration sc-brand-art"><BrandArt/></div><div className="sc-category-info"><h3>Brand essentials</h3><p>Explore packaging and customisation</p><span>Discover products ↗</span></div></Link>
+    <Link className="sc-category-card" href="/search?category=Jewellery"><div className="sc-category-illustration sc-jewellery-art"><JewelleryArt/></div><div className="sc-category-info"><h3>Jewellery</h3><p>Explore rings, necklaces and accessories</p><span>Discover products ↗</span></div></Link>
+    <Link className="sc-category-card" href="/search?collection=clothing"><div className="sc-category-illustration sc-clothing-art"><ClothingArt/></div><div className="sc-category-info"><h3>Clothing</h3><p>Browse tops, dresses, outerwear and more</p><span>Discover products ↗</span></div></Link>
    </div>
   </section>
   <section className="sc-guidance-band"><div className="sc-container sc-guidance-grid"><div className="sc-guidance-copy"><p className="sc-kicker">MORE THAN JUST A PRODUCT LINK</p><h2>New to sourcing?<br/><em>You&apos;re in the right place.</em></h2><p>Find products on Chinese marketplaces, then use a purchasing agent such as Sugargoo to place your order and arrange warehouse handling and international shipping. Choose the service that suits your needs.</p><ul><li>Discover products with original marketplace links</li><li>Choose a purchasing agent for your order</li><li>Arrange fulfilment and shipping through the agent</li></ul><Link className="sc-button sc-button-dark" href="/agents">Explore buying agents ↗</Link></div>

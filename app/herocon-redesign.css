@@ -313,3 +313,9 @@
 /* Category picker keeps the full taxonomy usable on narrow screens. */
 .sc-category-mobile{display:none}
 @media(max-width:800px){.sc-catalogue-sidebar{display:block}.sc-catalogue-sidebar>a{display:none}.sc-category-mobile{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end;margin:10px 0 20px}.sc-category-mobile label{grid-column:1/-1;font-size:11px;font-weight:700;color:#637d68}.sc-category-mobile select{min-width:0;max-width:100%;border:1px solid #cddccc;background:#fff;border-radius:7px;padding:12px;color:#294836;font-size:13px}.sc-category-mobile button{border:0;border-radius:7px;background:#294836;color:#fff;padding:12px 14px;white-space:nowrap;font-size:11px;font-weight:800}}
+/* Homepage idea tiles: four across on desktop, two on tablets, one on mobile. */
+.sc-home-ideas-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.sc-jewellery-art{background:#eee8db}
+.sc-clothing-art{background:#e0eae7}
+@media(max-width:1120px){.sc-home-ideas-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.sc-home-ideas-grid{grid-template-columns:1fr}}
