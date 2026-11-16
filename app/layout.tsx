@@ -1,1 +1,13 @@
-import"./globals.css";import type{Metadata}from"next";import{SavedProvider}from"@/components/SavedProvider";export const metadata:Metadata={title:{default:"Herocon — Product discovery for people who sell",template:"%s | Herocon"},description:"Discover products and sellers from China through one beautifully simple sourcing experience."};export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><SavedProvider>{children}</SavedProvider></body></html>}
+import "./globals.css";
+import "./herocon-redesign.css";
+import type {Metadata} from "next";
+import {SavedProvider} from "@/components/SavedProvider";
+import Footer from "@/components/Footer";
+export const metadata:Metadata={
+  title:{default:"Herocon — Source smarter. Build your business.",template:"%s | Herocon"},
+  description:"Discover wholesale products from Chinese marketplaces, learn how sourcing works and plan your first import with Herocon.",
+  metadataBase:new URL("https://herocon-app-pi.vercel.app")
+};
+export default function RootLayout({children}:{children:React.ReactNode}){
+ return <html lang="en"><body><SavedProvider><div className="hc-site">{children}<Footer/></div></SavedProvider></body></html>;
+}

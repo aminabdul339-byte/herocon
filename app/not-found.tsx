@@ -1,0 +1,3 @@
+import Link from "next/link";
+import Header from "@/components/Header";
+export default function NotFound(){return <main className="sc-guide-page"><Header/><section className="sc-page-hero sc-container"><p className="sc-kicker">PAGE NOT FOUND</p><h1>That page isn't <em>here.</em></h1><p>The product or page may have moved or been removed from the catalogue.</p><div className="sc-button-row"><Link href="/search" className="sc-button sc-button-dark">Explore products ↗</Link><Link href="/" className="sc-button sc-button-outline">Back to homepage →</Link></div></section></main>}

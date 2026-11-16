@@ -1,0 +1,5 @@
+import Header from "@/components/Header";
+import LandedCostCalculator from "@/components/LandedCostCalculator";
+import type {Metadata} from "next";
+export const metadata:Metadata={title:"Landed cost calculator",description:"Estimate sourcing, freight, duty, VAT and other costs before buying products from China."};
+export default function LandedCostPage(){return <main className="sc-guide-page"><Header/><section className="sc-page-hero sc-container"><p className="sc-kicker">THE IMPORT COST PLANNER</p><h1>Know your costs<br/><em>before you order.</em></h1><p>A £2 listing price doesn&apos;t mean a £2 delivered cost. Enter your own figures to explore how shipping, import charges and supplier fees might change your budget.</p></section><section className="sc-section sc-container"><LandedCostCalculator/></section><section className="sc-resource-note sc-container">This is an educational estimate, not customs, legal, accounting or tax advice. Verify rates against official <a href="https://www.gov.uk/trade-tariff" target="_blank" rel="noopener noreferrer">UK Trade Tariff</a> guidance and your freight provider.</section></main>;}

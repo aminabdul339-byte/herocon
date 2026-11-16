@@ -1,2 +1,26 @@
+"use client";
 import Link from "next/link";
-export default function Header(){return <nav className="nav hc-nav"><Link className="logo hc-logo hc-tech-logo" href="/" aria-label="Herocon homepage"><svg className="hc-tech-symbol" viewBox="0 0 36 36" aria-hidden="true" fill="none"><path d="M4 28L16 8H23L11 28Z" fill="#CED0E4"/><path d="M15 28L27 8H34L22 28Z" fill="#9DA2CC"/></svg><span className="hc-tech-wordmark">HEROCON</span></Link><div className="menu"><Link href="/search">Shop All</Link><Link href="/category/tops">Clothing</Link><Link href="/category/shoes">Shoes</Link><Link href="/category/bags">Bags</Link><Link href="/category/outerwear">Outerwear</Link></div><div className="nav-actions"><Link className="nav-circle" href="/saved" aria-label="Saved products">♡</Link></div></nav>}
+import {useState} from "react";
+export default function Header(){
+  const [open,setOpen]=useState(false);
+  const links=[["Explore products","/search"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"]];
+  return <>
+    <div className="sc-announcement">YOUR GATEWAY TO SMARTER PRODUCT SOURCING FROM CHINA <span aria-hidden="true">✦</span> BUILT FOR INDEPENDENT BUSINESSES</div>
+    <header className="sc-header">
+      <div className="sc-nav-inner">
+        <Link href="/" className="sc-wordmark" aria-label="Herocon homepage">hero<span>con.</span></Link>
+        <nav className="sc-desktop-links" aria-label="Main navigation">
+          {links.map(([label,url])=><Link key={url} href={url}>{label}</Link>)}
+        </nav>
+        <div className="sc-nav-actions">
+          <Link className="sc-saved" href="/saved" aria-label="Saved products"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M20.8 4.6a5.6 5.6 0 0 0-7.9 0L12 5.5l-.9-.9a5.6 5.6 0 1 0-7.9 7.9L12 21l8.8-8.5a5.6 5.6 0 0 0 0-7.9z"/></svg><span>Saved</span></Link>
+          <Link className="sc-nav-cta" href="/sourcing">Get sourcing help <span aria-hidden="true">↗</span></Link>
+          <button type="button" className="sc-mobile-toggle" aria-label={open?"Close menu":"Open menu"} aria-expanded={open} aria-controls="sc-mobile-menu" onClick={()=>setOpen(!open)}>
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} onClick={()=>setOpen(false)}>{label}<span aria-hidden="true">↗</span></Link>)}<Link href="/sourcing" onClick={()=>setOpen(false)}>Get sourcing help <span>↗</span></Link><Link href="/saved" onClick={()=>setOpen(false)}>Saved products <span>♡</span></Link></nav>}
+    </header>
+  </>;
+}

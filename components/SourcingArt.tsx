@@ -1,0 +1,34 @@
+export function HeroArtwork(){
+ return <div className="sc-art-stage" aria-label="Illustration of homeware products for a business sourcing collection" role="img">
+   <svg className="sc-hero-svg" viewBox="0 0 560 570" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="284" cy="272" r="204" stroke="#C5CEBD"/><circle cx="284" cy="272" r="165" stroke="#CAD3C3"/><circle cx="284" cy="272" r="124" stroke="#D0D8C9"/>
+    <ellipse cx="291" cy="500" rx="196" ry="21" fill="#748374" opacity=".13"/>
+    <path d="M107 440H472V480C472 486 468 490 461 490H118C111 490 107 486 107 480V440Z" fill="#BDA48C"/>
+    <rect x="98" y="430" width="388" height="22" rx="6" fill="#D0B69C"/>
+    <rect x="119" y="491" width="15" height="35" rx="3" fill="#AB9380"/><rect x="450" y="491" width="15" height="35" rx="3" fill="#AB9380"/>
+    <path d="M147 262C169 270 181 301 176 336C174 367 185 402 197 432H113C126 396 137 359 134 332C132 303 139 275 147 262Z" fill="#E6D8C4"/>
+    <path d="M137 265H163" stroke="#D9C5AA" strokeWidth="5" strokeLinecap="round"/>
+    <path d="M149 267C141 210 130 164 108 135M151 273C164 197 165 156 173 117M151 268C188 214 214 188 225 156" stroke="#657D68" strokeWidth="7" strokeLinecap="round"/>
+    <ellipse cx="111" cy="146" rx="18" ry="38" transform="rotate(-24 111 146)" fill="#91A08A"/>
+    <ellipse cx="173" cy="138" rx="17" ry="39" transform="rotate(15 173 138)" fill="#7F947C"/>
+    <ellipse cx="222" cy="176" rx="17" ry="37" transform="rotate(46 222 176)" fill="#A8B49D"/>
+    <path d="M257 229C271 246 283 274 271 311C262 343 248 361 259 394C270 424 337 431 365 405C388 385 365 354 358 326C348 283 367 250 387 224C347 245 294 243 257 229Z" fill="#EEECE3"/>
+    <path d="M257 229C302 251 345 247 387 224" stroke="#D2D7CC" strokeWidth="6" strokeLinecap="round"/>
+    <path d="M310 255C304 296 308 324 333 342" stroke="#D8DCD1" strokeWidth="3" opacity=".7"/>
+    <path d="M395 333C379 355 385 395 387 430H454C458 397 460 355 441 333" fill="#758970"/>
+    <ellipse cx="418" cy="335" rx="24" ry="9" fill="#667C66"/>
+    <path d="M419 337V242" stroke="#647D60" strokeWidth="6" strokeLinecap="round"/>
+    <path d="M421 297C377 287 383 254 386 253C405 253 419 274 421 297Z" fill="#9BAB94"/>
+    <path d="M420 277C461 271 468 238 465 241C444 243 425 253 420 277Z" fill="#82987B"/>
+    <path d="M204 428C207 392 222 371 247 374C274 378 287 401 292 428" fill="#C9B19B"/>
+    <ellipse cx="248" cy="429" rx="44" ry="11" fill="#B89C84"/>
+    <path d="M216 410H281" stroke="#D3BEAA" strokeWidth="3"/>
+    <circle cx="346" cy="420" r="13" fill="#B7A592"/>
+   </svg>
+   <div className="sc-float sc-float-top"><span className="sc-float-over">PRODUCT DISCOVERY</span><strong>Find your next bestseller</strong><small>Explore original marketplace links</small></div>
+   <div className="sc-float sc-float-bottom"><span className="sc-float-over">SOURCING MADE CLEAR</span><strong>Home &amp; lifestyle</strong><small><span aria-hidden="true">✓</span> Marketplace source available</small></div>
+  </div>;
+}
+export function HairArt(){return <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="159" cy="205" rx="110" ry="12" fill="#C6AAA5" opacity=".36"/><path d="M121 91C77 33 30 67 54 119C79 167 120 131 151 106" fill="#B88783" stroke="#A97875" strokeWidth="4"/><path d="M180 91C223 33 269 66 245 119C222 166 183 131 152 106" fill="#C19892" stroke="#A97875" strokeWidth="4"/><rect x="135" y="80" width="40" height="49" rx="10" fill="#A87874"/><path d="M140 125C119 151 109 195 112 198L155 168L188 199L169 123" fill="#B98A84"/><g transform="translate(234 172) rotate(19)"><ellipse rx="45" ry="26" fill="#D1AFAB" stroke="#B58B88" strokeWidth="8" strokeDasharray="10 6"/><ellipse rx="22" ry="10" fill="#EADBD8"/></g></svg>}
+export function HomeArt(){return <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="162" cy="205" rx="98" ry="13" fill="#AAB6A5" opacity=".5"/><path d="M94 61C123 85 133 103 118 136C106 161 116 196 158 196C198 196 212 161 200 136C184 103 192 84 221 61C184 74 130 74 94 61Z" fill="#E7E8DE"/><path d="M94 61C130 74 184 74 221 61" fill="none" stroke="#CAD2C8" strokeWidth="7"/><path d="M224 116H273V192C273 199 224 199 224 192V116Z" fill="#84987F"/><ellipse cx="248" cy="116" rx="25" ry="7" fill="#768C76"/><path d="M249 116V48" stroke="#667D63" strokeWidth="5"/><path d="M248 82C222 75 215 49 218 50C238 52 249 64 248 82Z" fill="#A1B09B"/><path d="M249 65C271 37 292 42 294 42C283 63 265 70 249 65Z" fill="#718A74"/></svg>}
+export function BrandArt(){return <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="161" cy="208" rx="116" ry="12" fill="#CDB79C" opacity=".48"/><path d="M76 88H228L221 201H82Z" fill="#BCA385"/><path d="M118 87C115 28 189 28 186 87" fill="none" stroke="#A58A6D" strokeWidth="9" strokeLinecap="round"/><rect x="116" y="129" width="78" height="42" rx="4" fill="#F4EDE2"/><text x="155" y="151" textAnchor="middle" fontSize="11" fontFamily="sans-serif" fontWeight="700" letterSpacing="1" fill="#987D62">YOUR</text><text x="155" y="164" textAnchor="middle" fontSize="11" fontFamily="sans-serif" fontWeight="700" letterSpacing="1" fill="#987D62">BRAND</text><rect x="222" y="141" width="62" height="59" rx="4" fill="#FFF9F0" stroke="#D0BDA5"/><path d="M233 154H271M233 165H266M233 176H257" stroke="#D2BEA8" strokeWidth="3"/></svg>}
