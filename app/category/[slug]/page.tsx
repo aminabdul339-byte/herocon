@@ -1,1 +1,8 @@
-import{redirect}from"next/navigation";export default async function Category({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const map:Record<string,string>={jewelry:"Jewelry",tops:"Tops",shoes:"Shoes",bags:"Bags",bottoms:"Bottoms",outerwear:"Outerwear",accessories:"Accessories"};redirect(`/search?category=${encodeURIComponent(map[slug]||slug)}`)}
+import{redirect}from"next/navigation";
+import{resolveCategory}from"@/lib/product-taxonomy";
+export default async function Category({params}:{params:Promise<{slug:string}>}){
+ const {slug}=await params;
+ const title=decodeURIComponent(slug).replace(/[-_]+/g," ");
+ const category=resolveCategory(title);
+ redirect(category?"/search?category="+encodeURIComponent(category):"/search?q="+encodeURIComponent(title));
+}

@@ -2,6 +2,7 @@ import { cache } from "react";
 import { promises as fs } from "fs";
 import path from "path";
 import type { Product } from "./types";
+import {classifyProduct} from "./product-taxonomy";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
@@ -12,16 +13,6 @@ function validSource(value: unknown): string | undefined {
   try { const url = new URL(value); if (url.protocol === "https:" && hosts.has(url.hostname)) return value; } catch {}
 }
 function asString(value: unknown): string | undefined { return typeof value === "string" && value.trim() ? value.trim() : undefined; }
-function inferredCategory(title: string): string {
-  // Match specific product types before broad words such as "shirt" or "top".
-  if (/\b(?:earrings?|necklaces?|bracelets?|pendants?|jewel(?:ry|lery)?|rings?|chokers?|brooches?|bangles?|anklets?|moissanite|zircon|gemstones?)\b/i.test(title)) return "Jewelry";
-  if (/\b(?:jackets?|coats?|windbreakers?|puffers?|parkas?|blazers?|trench(?:es)?|overcoats?|fleeces?)\b/i.test(title)) return "Outerwear";
-  if (/\b(?:sneakers?|shoes?|trainers?|boots?|slippers?|sandals?|loafers?|heels?|flats?|mules?|clogs?|footwear)\b/i.test(title)) return "Shoes";
-  if (/\b(?:handbags?|backpacks?|shoulder bags?|tote bags?|crossbody bags?|purses?|wallets?|duffels?|clutches?|messenger bags?|satchels?|bags?)\b/i.test(title)) return "Bags";
-  if (/\b(?:jeans|denim pants|trousers?|pants|shorts|skirts?|leggings?|joggers?|sweatpants?|cargo pants)\b/i.test(title)) return "Bottoms";
-  if (/\b(?:hoodies?|t-shirts?|tees?|shirts?|blouses?|sweaters?|sweatshirts?|tops?|polos?|jerseys?|cardigans?|vests?|tank tops?|crop tops?|knitwear|dresses?)\b/i.test(title)) return "Tops";
-  return "Other";
-}
 function normalise(raw: Raw): Product | null {
   const id = asString(raw.doppelProductId) || asString(raw.canonicalId)?.replace(/^doppel:/, "");
   if (!id) return null;
@@ -36,7 +27,7 @@ function normalise(raw: Raw): Product | null {
     images: Array.isArray(raw.images) ? raw.images.filter((x): x is string => typeof x === "string" && /^https?:\/\//.test(x)) : undefined,
     price: asString(raw.price) || (typeof raw.priceGBP === "number" ? `£${raw.priceGBP.toFixed(2)}` : undefined),
     priceGBP: typeof raw.priceGBP === "number" ? raw.priceGBP : undefined,
-    category: asString(raw.category) || inferredCategory(asString(raw.title) || asString(raw.originalTitle) || ""),
+    category: asString(raw.category),
     sellerId: asString(raw.sellerId),
     sellerName: asString(raw.sellerName),
     originalMarketplaceUrl: source,
@@ -78,5 +69,5 @@ export const getProducts = cache(async (): Promise<Product[]> => {
     if (await addFile(name)) break;
   }
   for (const name of additions) await addFile(name);
-  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl));
+  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:classifyProduct(product.title,product.category)}));
 });

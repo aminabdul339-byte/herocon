@@ -310,3 +310,6 @@
 .hc-site .hc-card-info{padding:11px 3px 0}.hc-site .hc-card-info h3{font-size:12px;min-height:38px}.hc-site .hc-price{font-size:16px}
 .hc-site .hc-card-bottom span{font-size:9px}.hc-site .hc-card-bottom a{font-size:10px}
 }
+/* Category picker keeps the full taxonomy usable on narrow screens. */
+.sc-category-mobile{display:none}
+@media(max-width:800px){.sc-catalogue-sidebar{display:block}.sc-catalogue-sidebar>a{display:none}.sc-category-mobile{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end;margin:10px 0 20px}.sc-category-mobile label{grid-column:1/-1;font-size:11px;font-weight:700;color:#637d68}.sc-category-mobile select{min-width:0;max-width:100%;border:1px solid #cddccc;background:#fff;border-radius:7px;padding:12px;color:#294836;font-size:13px}.sc-category-mobile button{border:0;border-radius:7px;background:#294836;color:#fff;padding:12px 14px;white-space:nowrap;font-size:11px;font-weight:800}}
