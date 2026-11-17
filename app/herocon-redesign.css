@@ -347,3 +347,8 @@
 .sc-hero-photo-credit{position:absolute;right:12px;bottom:10px;z-index:2;color:#fff!important;text-shadow:0 1px 6px #15251bcc;font-size:9px;text-decoration:underline!important;text-underline-offset:2px}
 .sc-hero-photo-credit:hover{color:#e9f4e8!important}
 @media(max-width:800px){.sc-hero-photo{object-position:50% 50%}}
+/* BuckyDrop product data appears only after approved API access is enabled. */
+.sc-buckydrop-details{display:grid;gap:12px;padding:22px;background:#f6f8f4;border-radius:12px;margin-top:20px;max-width:850px}
+.sc-buckydrop-details p{margin:0;line-height:1.6}
+.sc-buckydrop-details select{border:1px solid #b4c8ba;background:white;padding:12px;max-width:430px;border-radius:8px}
+.sc-buckydrop-thumbnails{display:flex;flex-wrap:wrap;gap:8px}.sc-buckydrop-thumbnails img{width:100px;height:100px;object-fit:cover;border-radius:7px}
