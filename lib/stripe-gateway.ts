@@ -66,8 +66,8 @@ export async function createTestSession(siteOrigin:string):Promise<{id:string;ur
 }
 export type StripeWebhookEvent={id:string;type:string;livemode:boolean;data:{object:StripeCheckoutSession}};
 /** Stripe-Signature v1 verification over the EXACT raw UTF-8 request body, 5m replay window. */
-export function verifyStripeWebhook(raw:string,header:string|null):StripeWebhookEvent{
- const secret=process.env.STRIPE_WEBHOOK_SECRET||"";
+export function verifyStripeWebhook(raw:string,header:string|null,webhookSecret?:string):StripeWebhookEvent{
+ const secret=webhookSecret??process.env.STRIPE_WEBHOOK_SECRET??"";
  if(!secret.startsWith("whsec_")||!header)throw new StripeGatewayError(400,"SIGNATURE_MISSING","Invalid webhook signature.");
  const fields=header.split(",").map(v=>v.trim());
  const stamp=fields.find(x=>x.startsWith("t="))?.slice(2)||"";
