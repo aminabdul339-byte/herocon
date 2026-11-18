@@ -352,3 +352,18 @@
 .sc-buckydrop-details p{margin:0;line-height:1.6}
 .sc-buckydrop-details select{border:1px solid #b4c8ba;background:white;padding:12px;max-width:430px;border-radius:8px}
 .sc-buckydrop-thumbnails{display:flex;flex-wrap:wrap;gap:8px}.sc-buckydrop-thumbnails img{width:100px;height:100px;object-fit:cover;border-radius:7px}
+/* Seller data enrichment: uses original marketplace listing until authorised live API is configured. */
+.sc-source-state{display:inline-flex;align-items:center;gap:6px;margin:10px 0 3px;border-radius:7px;background:#edf3ea;color:#365942;padding:7px 10px;font-size:11px;line-height:1.4;font-weight:650}
+.sc-source-subprice{font-size:11px;color:#68786e;margin:4px 0 8px;line-height:1.5}
+.sc-supplier-variant-area{display:grid;gap:6px;margin:12px 0}
+.sc-supplier-stock{font-size:12px;color:#385641;margin:6px 0 12px}
+.sc-supplier-unavailable{color:#a34032!important;font-weight:650}
+.sc-supplier-plain-selector{display:grid;gap:8px;margin:12px 0}
+.sc-supplier-plain-selector label{font-size:11px;font-weight:800;letter-spacing:.05em;color:#47604d}
+.sc-supplier-plain-selector select{padding:12px;border:1px solid #bec9bd;background:#fff;border-radius:7px;max-width:100%}
+.sc-supplier-facts{border-top:1px solid #dfe7df;border-bottom:1px solid #dfe7df;display:grid;gap:7px;margin:16px 0;padding:16px 0;color:#506154}
+.sc-supplier-facts p{font-size:12px;line-height:1.5;margin:0}
+.sc-supplier-facts details{font-size:12px;line-height:1.5}
+.sc-supplier-facts details summary{cursor:pointer;font-weight:750;color:#334c3c}
+.sc-supplier-facts details p{margin-top:8px;overflow-wrap:anywhere}
+.sc-supplier-facts small{font-size:10px;line-height:1.55;color:#728174}

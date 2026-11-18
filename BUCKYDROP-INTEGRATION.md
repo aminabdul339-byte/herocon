@@ -8,8 +8,8 @@ Implemented from user-supplied BuckyDrop OpenAPI 1.2.6 specification (published 
 - Validate source URLs against recorded marketplace providers. Never accept arbitrary user URL input for product lookups.
 - Normalise descriptions, photo galleries, CNY list and offer prices, variant options, SKU codes, stock, MOQ, domestic freight and availability.
 - Store secrets only in server environment variables. Supplier HTML never renders as trusted HTML.
-- Feature-flagged optional detail panel on a Herocon product page.
-- GET /api/buckydrop/product/[id] returns a normalised product for an existing Herocon product ID, otherwise an appropriate error. 
+- Feature-flagged integrated seller gallery, SKU-level colour/size selectors, price, stock, supplier identity, domestic freight and product description **inside the primary product page** (with the existing catalogue page retained as a fallback).
+- GET /api/buckydrop/product/[id] returns a normalised product for an existing Herocon product ID, otherwise an appropriate error. Successful results are cached server-side for one hour to reduce unnecessary requests; product updates will not be immediate. 
 - No order creation, cancellation, shipping purchase or checkout is enabled.
 
 ## Server-side environment variables
@@ -24,7 +24,7 @@ Do not enable the integration on a public production site using BuckyDrop shared
 1. Verify signed sandbox calls in a controlled private environment with the fixed BuckyDrop sample product SAMPLE-TB-002, using the sample URL from the OpenAPI document.
 2. Obtain live credentials, API quota, endpoint permission and commercial redistribution/caching terms from BuckyDrop.
 3. Test five approved Herocon source links in the authorised live API. Some live products may lack variants or images.
-4. Add per-user throttling and shared server caching before public rollout.
+4. Review request quotas and introduce per-user throttling / abuse controls before wider rollout. Shared one-hour server caching is already in place.
 5. Activate the feature flag in Vercel after validation.
 6. Separately implement payments, mapping to live SKU codes, UK shipping quotations, order idempotency and verified webhooks before allowing direct sales.
 
@@ -32,3 +32,5 @@ Do not enable the integration on a public production site using BuckyDrop shared
 - TypeScript and Next.js production builds passed.
 - With feature flag OFF, the local API returns HTTP 503 and existing Herocon product page still returns HTTP 200 with no BuckyDrop panel.
 - Sandbox request from connected Mac failed at the network level; no successful live or sandbox BuckyDrop response has been observed.
+## Product-page interaction
+When enabled with live credentials, opening any eligible product page triggers a single asynchronous product-detail lookup via Herocon’s own server. The customer initially sees the existing recorded listing. Successful lookups fill in seller images, grouped options, SKU pricing in CNY, stock figures, domestic shipping, MOQ and description on that same page. If the lookup fails, the saved listing remains available. Selecting a colour or size does not create an order or reserve stock. The existing agent links still open separately; the chosen SKU is **not** automatically transmitted to agents, so the customer must reselect it on their website.

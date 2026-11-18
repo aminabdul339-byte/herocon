@@ -84,7 +84,9 @@ export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"l
   };
 }
 export class BuckydropError extends Error{
-  constructor(public code:string,public status:number,message:string){super(message);}
+  public code:string;
+  public status:number;
+  constructor(code:string,status:number,message:string){super(message);this.code=code;this.status=status;}
 }
 export async function queryBuckydropProduct(productLink:string):Promise<BuckydropProduct>{
   const environment=process.env.BUCKYDROP_ENV==="live"?"live":"sandbox";
@@ -123,5 +125,6 @@ export async function queryBuckydropProduct(productLink:string):Promise<Buckydro
     if(errorCode==="70011202")throw new BuckydropError("NOT_FOUND",404,"BuckyDrop did not find this product.");
     throw new BuckydropError("UPSTREAM_"+errorCode,502,"BuckyDrop could not retrieve the product at this time.");
   }
+  if(!data.data||typeof data.data!=="object"||Array.isArray(data.data))throw new BuckydropError("EMPTY_PRODUCT",404,"Product details were not returned.");
   return normalizeBuckydropProduct(data.data,environment);
 }
