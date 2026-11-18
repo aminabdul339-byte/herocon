@@ -151,6 +151,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </div>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller ↗</Link>}
     <div className="product-price">{priceLabel}</div>
+    {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
     {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
     {source&&<p className="sc-source-subprice">Saved partner product prices · {fx?"Approximate GBP equivalents":"Prices in CNY"} · Delivery calculated separately</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Partner details saved on {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Stock and prices may have changed and must be confirmed before payment.</p>}
