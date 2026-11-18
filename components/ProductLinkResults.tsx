@@ -62,7 +62,6 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  return <div className="hc-link-product-found">
    <div className="sc-container hc-link-found-header">
     <div><p className="sc-kicker">PRODUCT FOUND</p><h2>{source.title}</h2><p>Product details loaded from the original marketplace link.</p></div>
-    <a href={status.url} target="_blank" rel="noopener noreferrer">Original listing ↗</a>
    </div>
    <ProductExperience
     key={status.url}

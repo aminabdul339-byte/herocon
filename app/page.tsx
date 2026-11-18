@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
-import ProductLinkForm from "@/components/ProductLinkForm";
 import {getProducts} from "@/lib/catalogue-server";
 export default async function Home(){
  const products=await getProducts();
@@ -16,7 +15,7 @@ export default async function Home(){
     <div className="sc-hero-photo-caption"><span>DISCOVER · SOURCE · CREATE</span><strong>Find products for your next big idea.</strong></div>
    </div>
   </div></section>
-  <section className="sc-search-section"><div className="sc-container"><form className="sc-searchbar" action="/search"><span className="sc-search-icon" aria-hidden="true">⌕</span><input name="q" aria-label="Search the product catalogue" placeholder="Search products, suppliers or a business idea…" required/><button type="submit">Search <span>↗</span></button></form><div className="sc-search-tags"><span>Popular searches</span><Link href="/search?q=hair">Hair accessories</Link><Link href="/search?category=Home%20%26%20Decor">Home décor</Link><Link href="/search?q=packaging">Packaging</Link><Link href="/search?q=bag">Fashion accessories</Link></div><ProductLinkForm compact/></div></section>
+  <section className="sc-search-section"><div className="sc-container"><form className="sc-searchbar" action="/search"><span className="sc-search-icon" aria-hidden="true">⌕</span><input name="q" aria-label="Search the product catalogue" placeholder="Search products, suppliers or a business idea…" required/><button type="submit">Search <span>↗</span></button></form><div className="sc-search-tags"><span>Popular searches</span><Link href="/search?q=hair">Hair accessories</Link><Link href="/search?category=Home%20%26%20Decor">Home décor</Link><Link href="/search?q=packaging">Packaging</Link><Link href="/search?q=bag">Fashion accessories</Link></div></div></section>
   <section className="sc-section sc-container"><div className="sc-heading-row"><div><p className="sc-kicker">START WITH AN IDEA</p><h2>What business do you want to build?</h2></div><Link className="sc-text-link" href="/start-a-business">Explore business ideas ↗</Link></div>
    <div className="sc-category-grid sc-home-ideas-grid">
     <Link className="sc-category-card" href="/search?category=Hair%20Accessories"><div className="sc-category-illustration sc-hair-art"><img className="sc-category-photo" src="https://cdn.shopify.com/s/files/1/1127/4915/0598/files/herocon-hair-accessories-card.webp?v=1794862166" alt="Satin scrunchies, pearl hairpins and hair accessories" width={640} height={448} loading="lazy" decoding="async"/></div><div className="sc-category-info"><h3>Hair &amp; accessories</h3><p>Build your own boutique collection</p><span>Discover products ↗</span></div></Link>

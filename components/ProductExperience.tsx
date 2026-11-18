@@ -10,7 +10,7 @@ const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 type ForexRate={rate:number;date:string};
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate}){
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
  const colours=[...new Set([...(product.colours||[]),...originalVariants.map(v=>v.colour).filter((x):x is string=>!!x)])];
  const sizes=[...new Set([...(product.sizes||[]),...originalVariants.map(v=>v.size).filter((x):x is string=>!!x)])];
@@ -22,9 +22,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const[quantities,setQuantities]=useState<Record<string,number>>({});
  const[showAllSkus,setShowAllSkus]=useState(false);
  const[copiedSelection,setCopiedSelection]=useState(false);
- const[fx,setFx]=useState<ForexRate|null>(null);
+ const[fx,setFx]=useState<ForexRate|null>(initialFx||null);
  useEffect(()=>{
-  if(!buckydropEnabled)return;
+  if(!buckydropEnabled||initialFx)return;
   const controller=new AbortController();
   fetch("/api/fx/cny-gbp",{signal:controller.signal}).then(async response=>{
    if(!response.ok)throw new Error("Exchange rate unavailable");
@@ -34,7 +34,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     &&typeof data.date==="string")setFx({rate:data.rate,date:data.date});
   }).catch(()=>{if(!controller.signal.aborted)setFx(null)});
   return ()=>controller.abort();
- },[buckydropEnabled]);
+ },[buckydropEnabled,initialFx]);
  const dualPrice=(cny:number)=>formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  useEffect(()=>{
@@ -157,7 +157,6 @@ export default function ProductExperience({product,id,title,images,price,buckydr
 
     <div className="selected-box">
      <div className="sc-checkout-prelaunch"><strong>Direct checkout coming soon</strong><p>Herocon is connecting payments and order fulfilment. No payment will be taken from this page yet.</p></div>
-     {marketplace&&<a className="original-btn" href={marketplace} target="_blank" rel="noopener noreferrer">View original marketplace listing ↗</a>}
     </div>
    </aside>
   </section>
