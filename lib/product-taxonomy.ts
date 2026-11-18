@@ -7,7 +7,7 @@
  */
 export const PRIMARY_CATEGORIES=[
  "Tops","Bottoms","Dresses","Outerwear","Sets & Co-ords","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
- "Jewellery","Hair Accessories","Wigs & Hair Extensions","Fashion Accessories","Watches",
+ "Jewellery","Hair Accessories","Wigs & Hair Extensions","Nails & Nail Supplies","Fashion Accessories","Watches",
  "Furniture","Lighting","Home Textiles","Storage & Organisation","Home & Decor","Home & Kitchen",
  "Beauty & Personal Care","Electronics & Tech","Sports & Outdoors",
  "Baby & Kids","Toys & Games","Costumes","Packaging & Supplies","Pet Supplies","Other"
@@ -22,7 +22,7 @@ const word=(pattern:string):RegExp=>{let compiled=regexCache.get(pattern);if(!co
 /** Legacy source labels are only used when the title offers no reliable evidence. */
 function existingFallback(existing?:string):PrimaryCategory {
  const map:Record<string,PrimaryCategory>={
-  "Hair Accessories":"Hair Accessories","Wigs & Hair Extensions":"Wigs & Hair Extensions","Home & Decor":"Other",
+  "Hair Accessories":"Hair Accessories","Wigs & Hair Extensions":"Wigs & Hair Extensions","Nails & Nail Supplies":"Nails & Nail Supplies","Home & Decor":"Other",
   "Jewelry":"Jewellery","Jewellery":"Jewellery","Accessories":"Fashion Accessories",
   "Tops":"Tops","Bottoms":"Bottoms","Dresses":"Dresses","Shoes":"Shoes",
   "Bags":"Bags","Outerwear":"Outerwear","Other":"Other",
@@ -33,6 +33,8 @@ function existingFallback(existing?:string):PrimaryCategory {
 
 export function classifyProduct(title:string,existingCategory?:string):PrimaryCategory{
  const s=clean(title||"");
+ // Explicit nail-category imports are source-linked discovery records, not quality-approved merchandise.
+ if(existingCategory==="Nails & Nail Supplies")return "Nails & Nail Supplies";
  // Lace wigs and hair extensions are hair products, not generic accessories or clothing.
  if(matches(s,word("(?:wigs?|lace\\s+front(?:als?)?|lace\\s+closures?|hair\\s+extensions?|hair\\s+wefts?|toupees?)")) && !matches(s,word("(?:wig\\s+(?:stands?|holders?|racks?|storage))")))return "Wigs & Hair Extensions";
  if(existingCategory==="Hair Accessories")return "Hair Accessories";
@@ -132,7 +134,7 @@ export const CATEGORY_ALIASES:Record<string,PrimaryCategory>={
  "shoe":"Shoes","shoes":"Shoes","sneaker":"Shoes","sneakers":"Shoes","trainer":"Shoes","trainers":"Shoes","boots":"Shoes","footwear":"Shoes",
  "bag":"Bags","bags":"Bags","backpacks":"Bags","handbags":"Bags",
  "jewelry":"Jewellery","jewellery":"Jewellery","jewelery":"Jewellery","jewel":"Jewellery","rings":"Jewellery","ring":"Jewellery","necklaces":"Jewellery","earrings":"Jewellery","bracelets":"Jewellery",
- "wig":"Wigs & Hair Extensions","wigs":"Wigs & Hair Extensions","lace wigs":"Wigs & Hair Extensions","hair extensions":"Wigs & Hair Extensions","hair":"Hair Accessories","hair accessory":"Hair Accessories","hair accessories":"Hair Accessories","hair clips":"Hair Accessories","scrunchies":"Hair Accessories","headbands":"Hair Accessories",
+ "nails":"Nails & Nail Supplies","nail":"Nails & Nail Supplies","nail supplies":"Nails & Nail Supplies","nail art":"Nails & Nail Supplies","press on nails":"Nails & Nail Supplies","wig":"Wigs & Hair Extensions","wigs":"Wigs & Hair Extensions","lace wigs":"Wigs & Hair Extensions","hair extensions":"Wigs & Hair Extensions","hair":"Hair Accessories","hair accessory":"Hair Accessories","hair accessories":"Hair Accessories","hair clips":"Hair Accessories","scrunchies":"Hair Accessories","headbands":"Hair Accessories",
  "accessories":"Fashion Accessories","fashion accessories":"Fashion Accessories","watch":"Watches","watches":"Watches",
  "home":"Home & Decor","home decor":"Home & Decor","home décor":"Home & Decor","decor":"Home & Decor",
  "furniture":"Furniture","sofa":"Furniture","sofas":"Furniture","chair":"Furniture","chairs":"Furniture","table":"Furniture","tables":"Furniture","lighting":"Lighting","lamp":"Lighting","lamps":"Lighting","home textiles":"Home Textiles","bedding":"Home Textiles","rug":"Home Textiles","rugs":"Home Textiles","blanket":"Home Textiles","blankets":"Home Textiles","cushion":"Home Textiles","cushions":"Home Textiles",

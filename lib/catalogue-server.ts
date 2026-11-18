@@ -6,7 +6,7 @@ import {classifyProduct} from "./product-taxonomy";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
-const additions = ["herocon-verified-marketplace-links.json", "herocon-wigs-20261118.json"];
+const additions = ["herocon-verified-marketplace-links.json", "herocon-wigs-20261118.json", "herocon-nails-20261118.json"];
 const hosts = new Set(["detail.1688.com", "item.taobao.com", "detail.tmall.com", "weidian.com", "www.weidian.com"]);
 function validSource(value: unknown): string | undefined {
   if (typeof value !== "string") return;
