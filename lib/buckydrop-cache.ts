@@ -34,7 +34,7 @@ export async function getSavedBuckydropProduct(link:string):Promise<BuckydropPro
   if(missing(e))return null;
   throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details are temporarily unavailable.");
  }
- if(!result||result.statusCode===404)return null;
+ if(!result)return null;
  if(result.statusCode!==200||!result.stream)throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details could not be read.");
  try{
   const raw=await new Response(result.stream).text();
