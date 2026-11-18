@@ -79,9 +79,10 @@ export async function saveDiscoveredProduct(link:string,source:BuckydropProduct)
   const already=await head(path);
   if(already)return {status:"existing",productId};
  } catch(error){
-  // A genuine storage failure should not be interpreted as "not found".
-  // Most SDK implementations return null for a missing blob; surface auth errors.
-  throw error;
+  // Vercel Blob throws for a missing pathname (rather than returning null).
+  // That is the expected state when importing a brand-new product.
+  const message=error instanceof Error?error.message:"";
+  if(!/requested blob does not exist|blob not found/i.test(message))throw error;
  }
 
  let referenceRate:number|undefined;
