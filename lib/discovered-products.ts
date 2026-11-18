@@ -63,7 +63,6 @@ function storedRecord(input:unknown):Product|null {
   sellerName:safeName(obj.sellerName,130)||undefined,
   sourceMarketplace:new URL(link).hostname,
   collectedAt:typeof obj.collectedAt==="string"?obj.collectedAt:undefined,
-  listingStatus:"unreviewed",
   discoverySource:"customer-link-search"
  };
 }
