@@ -1,15 +1,52 @@
 "use client";
 import {useState} from "react";
 import Link from "next/link";
+import ShippingEstimator from "@/components/ShippingEstimator";
+
 const gbp=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
 const to=(x:string)=>Math.max(0,Number.isFinite(Number(x))?Number(x):0);
-function MoneyInput({id,label,value,set,step="0.01",min="0"}:{id:string,label:string,value:string,set:(s:string)=>void,step?:string,min?:string}){return <label className="sc-money-input" htmlFor={id}>{label}<input id={id} type="number" min={min} step={step} value={value} onChange={e=>set(e.target.value)} inputMode="decimal"/></label>}
+function MoneyInput({id,label,value,set,step="0.01",min="0"}:{id:string;label:string;value:string;set:(s:string)=>void;step?:string;min?:string}){
+ return <label className="sc-money-input" htmlFor={id}>{label}<input id={id} type="number" min={min} step={step} value={value} onChange={e=>set(e.target.value)} inputMode="decimal"/></label>;
+}
 export default function LandedCostCalculator(){
  const [qty,setQty]=useState("50"),[unit,setUnit]=useState("4"),[shipping,setShipping]=useState("65"),[other,setOther]=useState("20"),[duty,setDuty]=useState("5"),[vat,setVat]=useState("20"),[sell,setSell]=useState("15");
+ const [fromReference,setFromReference]=useState(false);
  const q=Math.max(1,Math.trunc(to(qty))),goods=q*to(unit),freight=to(shipping),fees=to(other);
  const customsValue=goods+freight,estimatedDuty=customsValue*to(duty)/100,estimatedVat=(customsValue+estimatedDuty)*to(vat)/100;
  const total=goods+freight+fees+estimatedDuty+estimatedVat,each=total/q;
  const revenue=q*to(sell),gross=revenue-total;
- return <div className="sc-calc-grid"><div className="sc-calc-inputs"><h2>Enter your estimates</h2><p>Use GBP figures and your own duty/VAT assumptions. Nothing here is a live shipping or tax quote.</p><div className="sc-form-pair"><MoneyInput id="calc-qty" label="Units to order" value={qty} set={setQty} step="1" min="1"/><MoneyInput id="calc-unit" label="Product price per unit (£)" value={unit} set={setUnit}/></div><div className="sc-form-pair"><MoneyInput id="calc-shipping" label="Shipping / freight total (£)" value={shipping} set={setShipping}/><MoneyInput id="calc-fees" label="Agent / inspection / other fees (£)" value={other} set={setOther}/></div><div className="sc-form-pair"><MoneyInput id="calc-duty" label="Illustrative duty rate (%)" value={duty} set={setDuty}/><MoneyInput id="calc-vat" label="Illustrative import VAT rate (%)" value={vat} set={setVat}/></div><MoneyInput id="calc-sell" label="Planned selling price per unit (£)" value={sell} set={setSell}/><div className="sc-calc-footnote">Duty rates depend on the commodity code, origin and circumstances. Import VAT depends on the transaction and may be recoverable for eligible VAT-registered businesses. This simplified model does not cover every charge.</div></div>
- <div className="sc-calc-results"><p className="sc-kicker">YOUR ILLUSTRATIVE ESTIMATE</p><div className="sc-calc-total"><span>Estimated landed cost</span><strong>{gbp.format(total)}</strong></div><div className="sc-calc-per"><span>Cost per unit</span><strong>{gbp.format(each)}</strong></div><div className="sc-quote-row"><span>Goods ({q} units)</span><strong>{gbp.format(goods)}</strong></div><div className="sc-quote-row"><span>Freight</span><strong>{gbp.format(freight)}</strong></div><div className="sc-quote-row"><span>Other fees</span><strong>{gbp.format(fees)}</strong></div><div className="sc-quote-row"><span>Estimated duty</span><strong>{gbp.format(estimatedDuty)}</strong></div><div className="sc-quote-row"><span>Estimated import VAT</span><strong>{gbp.format(estimatedVat)}</strong></div><div className="sc-calc-margin"><span>Illustrative difference between sales and these costs</span><strong className={gross<0?"sc-negative":""}>{gbp.format(gross)}</strong><small>Not net profit. Excludes selling-platform fees, payment fees, returns, advertising, overheads and other costs.</small></div><Link href="/cart" className="sc-button sc-button-dark">View your cart ↗</Link></div></div>;
+ const useShippingEstimate=(amountGBP:number)=>{
+  setShipping(amountGBP.toFixed(2));
+  setFromReference(true);
+  window.requestAnimationFrame(()=>document.getElementById("hc-full-cost")?.scrollIntoView({behavior:"smooth",block:"start"}));
+ };
+ return <div className="hc-cost-estimator-page">
+  <ShippingEstimator onUseEstimate={useShippingEstimate}/>
+  <section id="hc-full-cost" className="hc-full-cost-section">
+   <div className="hc-full-cost-heading"><p className="sc-kicker">FULL LANDED COST CALCULATOR</p><h2>Estimate your <em>total costs.</em></h2><p>Combine the goods, shipping, fees and illustrative import charges to understand the potential cost per item.</p></div>
+   <div className="sc-calc-grid">
+    <div className="sc-calc-inputs">
+     <h2>Enter your estimates</h2><p>All amounts are in GBP. You can enter your own delivery price or use one of the shipping comparisons above.</p>
+     {fromReference&&<p className="hc-cost-shipping-used" role="status">Shipping updated from a sample-based comparison. Replace it with an actual quote before committing to a purchase.</p>}
+     <div className="sc-form-pair"><MoneyInput id="calc-qty" label="Units to order" value={qty} set={setQty} step="1" min="1"/><MoneyInput id="calc-unit" label="Product price per unit (£)" value={unit} set={setUnit}/></div>
+     <div className="sc-form-pair"><MoneyInput id="calc-shipping" label="Shipping / freight total (£)" value={shipping} set={value=>{setShipping(value);setFromReference(false);}}/><MoneyInput id="calc-fees" label="Agent / inspection / other fees (£)" value={other} set={setOther}/></div>
+     <div className="sc-form-pair"><MoneyInput id="calc-duty" label="Illustrative duty rate (%)" value={duty} set={setDuty}/><MoneyInput id="calc-vat" label="Illustrative import VAT rate (%)" value={vat} set={setVat}/></div>
+     <MoneyInput id="calc-sell" label="Planned selling price per unit (£)" value={sell} set={setSell}/>
+     <div className="sc-calc-footnote">Duty rates depend on the commodity code, origin and circumstances. Import VAT depends on the transaction and may be recoverable for eligible VAT-registered businesses. This simplified model does not cover every charge. Reference shipping estimates are not guaranteed or bookable.</div>
+    </div>
+    <div className="sc-calc-results">
+     <p className="sc-kicker">YOUR ILLUSTRATIVE ESTIMATE</p>
+     <div className="sc-calc-total"><span>Estimated landed cost</span><strong>{gbp.format(total)}</strong></div>
+     <div className="sc-calc-per"><span>Cost per unit</span><strong>{gbp.format(each)}</strong></div>
+     <div className="sc-quote-row"><span>Goods ({q} units)</span><strong>{gbp.format(goods)}</strong></div>
+     <div className="sc-quote-row"><span>Freight</span><strong>{gbp.format(freight)}</strong></div>
+     <div className="sc-quote-row"><span>Other fees</span><strong>{gbp.format(fees)}</strong></div>
+     <div className="sc-quote-row"><span>Estimated duty</span><strong>{gbp.format(estimatedDuty)}</strong></div>
+     <div className="sc-quote-row"><span>Estimated import VAT</span><strong>{gbp.format(estimatedVat)}</strong></div>
+     <div className="sc-calc-margin"><span>Illustrative difference between sales and these costs</span><strong className={gross<0?"sc-negative":""}>{gbp.format(gross)}</strong><small>Not net profit. Excludes selling-platform fees, payment fees, returns, advertising, overheads and other costs.</small></div>
+     <Link href="/cart" className="sc-button sc-button-dark">View your cart ↗</Link>
+    </div>
+   </div>
+  </section>
+ </div>;
 }
