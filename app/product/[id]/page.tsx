@@ -7,6 +7,7 @@ import ProductExperience from "@/components/ProductExperience";
 import {cleanTitle,imagesFor,productId,productPrice,related} from "@/lib/catalogue";
 import {getProducts} from "@/lib/catalogue-server";
 import {getCachedBuckydropProduct} from "@/lib/buckydrop-cache";
+import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import type {Product} from "@/lib/types";
 
@@ -43,7 +44,7 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
 type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string};
 async function EnrichedCatalogueProduct(props:CatalogueProps){
  if(!LIVE_LOOKUP||!props.product.originalMarketplaceUrl){
-  return <ProductExperience {...props} buckydropEnabled={false}/>;
+  return <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>;
  }
  // Resolve seller and FX details before rendering the product. This avoids
  // first showing stale catalogue photos and price, then replacing the page
@@ -55,8 +56,15 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  const seller=sellerResult.status==="fulfilled"?sellerResult.value:undefined;
  const fx=fxResult.status==="fulfilled"?fxResult.value:undefined;
  if(!seller){
-  // Only show the saved listing when the upstream provider is unavailable.
-  return <ProductExperience {...props} buckydropEnabled={false}/>;
+  // Do not silently substitute old catalogue prices and variants when the
+  // live provider refuses a request. Show a clear error and allow a manual retry.
+  const failure=sellerResult.status==="rejected"?sellerResult.reason:undefined;
+  console.warn("[herocon] Supplier detail request failed",{
+   productId:props.id,
+   code:failure instanceof BuckydropError?failure.code:"UNKNOWN",
+   status:failure instanceof BuckydropError?failure.status:502
+  });
+  return <ProductExperience {...props} buckydropEnabled sourceLookupFailed initialFx={fx}/>;
  }
  return <ProductExperience
    key={props.id}

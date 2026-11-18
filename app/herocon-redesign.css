@@ -680,3 +680,13 @@
  .hc-cart-controls .hc-cart-quantity input{width:39px}
  .hc-cart-controls .hc-cart-quantity-step{width:27px}
 }
+
+
+/* Explicit supplier verification state: never pass stale catalogue prices as live. */
+.hc-source-unverified{margin:14px 0 12px;padding:15px 17px;border:1px solid #ead9bd;border-radius:10px;background:#fffaf1;color:#634e32;font-size:13px;line-height:1.55}
+.hc-source-unverified strong{display:block;font-size:14px;color:#654822}
+.hc-source-unverified p{margin:6px 0 0}
+.hc-source-unverified button{margin-top:12px;border:1px solid #bd985d;border-radius:7px;background:#fff;color:#584625;cursor:pointer;padding:9px 13px;font-weight:750}
+.hc-source-unverified button:hover{background:#faefda}
+.hc-source-unverified button:focus-visible{outline:3px solid #bd985d;outline-offset:2px}
+.hc-buy-actions button:disabled{opacity:.48;cursor:not-allowed}
