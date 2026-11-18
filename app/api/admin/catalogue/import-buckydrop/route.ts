@@ -11,16 +11,18 @@ export const dynamic="force-dynamic";
 export const maxDuration=60;
 
 /**
- * Operator-only and deliberately BOUNDED catalogue seeder.
+ * Operator-only catalogue seeder. The merchant has explicitly authorised a
+ * whole-catalogue import at the provider's published/requested rates.
  *
- * This is a REQUEST-COUNT limit, not a CNY amount cap. BuckyDrop invoices
- * billable API requests the following day, and the actual per-call rate must
- * be checked in the developer console.
+ * The daily ceiling is larger than the current catalogue. It is a safety
+ * backstop against a faulty runner, NOT a monetary limit.
  *
- * New calls are always reserved in persistent Blob storage BEFORE supplier
- * invocation. No cron, background tasks or unlimited crawl is enabled.
+ * Respect BuckyDrop permission, billing and rate-limit responses: never
+ * bypass supplier restrictions, retry-rate-limited operations aggressively,
+ * or make concurrent bulk calls. Individual calls are reserved in durable
+ * storage before they are sent. No background cron is enabled.
  */
-const LIMIT=25;
+const LIMIT=5000;
 const PER_REQUEST=3;
 const DELAY_MS=2200;
 const ATTEMPTS="catalogue/buckydrop-import-attempts/v1/";
@@ -85,7 +87,7 @@ export async function GET(request:Request){
   const s=await state();
   return reply({catalogueProducts:s.catalogueProducts,permanentlySaved:s.snapshots,attemptsToday:s.attemptsToday,
    remainingDailyRequests:s.remainingDaily,categories:s.categories.map(([name,v])=>({name,missing:v.list.length})),
-   maxDailyNewLookups:LIMIT,notice:"Request count only: BuckyDrop charges are billed later. Per-request fee is not known."});
+   maxDailyNewLookups:LIMIT,notice:"Merchant-authorised whole-catalogue import. No monetary cap: BuckyDrop bills per request later. Follow supplier rate limits."});
  }catch{return reply({error:"Unable to inspect private import state"},503);}
 }
 
@@ -141,5 +143,5 @@ export async function POST(request:Request){
   failed:results.filter(x=>x.result==="failed").length,
   results,stopReason,
   remainingDailyRequests:Math.max(0,s.remainingDaily-results.length),
-  note:"Only previously unsaved products are sent to BuckyDrop. This request-count limit cannot guarantee a maximum fee in CNY."});
+  note:"Whole-catalogue import is merchant-authorised. Only unsaved products are sent. Provider rate limits and insufficient funds always stop the batch."});
 }
