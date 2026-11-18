@@ -12,9 +12,20 @@ export class LiveStripeError extends Error{
  */
 export function isLiveStripeConfigured(){
  const key=process.env.STRIPE_LIVE_SECRET_KEY||"";
- return process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true"
-  &&key.startsWith("sk_live_")&&key.length>30&&!key.includes(".")
-  &&(process.env.HEROCON_STRIPE_LIVE_ADMIN_KEY||"").length>=32;
+ const admin=process.env.HEROCON_STRIPE_LIVE_ADMIN_KEY||"";
+ const enabled=process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true";
+ const prefixValid=key.startsWith("sk_live_");
+ const keyLengthValid=key.length>30;
+ const keyHasPlaceholder=key.includes(".");
+ const adminLengthValid=admin.length>=32;
+ // Restricted server-side diagnostics: never log or return credentials.
+ if(!enabled||!prefixValid||!keyLengthValid||keyHasPlaceholder||!adminLengthValid){
+  console.warn("[herocon-stripe-readiness]",JSON.stringify({
+   enabled,hasStripeKey:key.length>0,prefixValid,keyLengthValid,keyHasPlaceholder,
+   hasAdminKey:admin.length>0,adminLengthValid
+  }));
+ }
+ return enabled&&prefixValid&&keyLengthValid&&!keyHasPlaceholder&&adminLengthValid;
 }
 export function authenticateLiveAdmin(supplied:string|null){
  const secret=process.env.HEROCON_STRIPE_LIVE_ADMIN_KEY||"";
