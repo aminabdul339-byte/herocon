@@ -2,6 +2,7 @@ import "./globals.css";
 import "./herocon-redesign.css";
 import type {Metadata} from "next";
 import {SavedProvider} from "@/components/SavedProvider";
+import {CartProvider} from "@/components/CartProvider";
 import Footer from "@/components/Footer";
 export const metadata:Metadata={
   title:{default:"Herocon — Source smarter. Build your business.",template:"%s | Herocon"},
@@ -9,5 +10,5 @@ export const metadata:Metadata={
   metadataBase:new URL("https://herocon-app-pi.vercel.app")
 };
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="en"><body><SavedProvider><div className="hc-site">{children}<Footer/></div></SavedProvider></body></html>;
+ return <html lang="en"><body><SavedProvider><CartProvider><div className="hc-site">{children}<Footer/></div></CartProvider></SavedProvider></body></html>;
 }

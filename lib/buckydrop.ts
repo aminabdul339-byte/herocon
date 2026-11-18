@@ -15,6 +15,7 @@ export type BuckydropProduct = {
   available:boolean|null;
   images:string[];
   descriptionText:string;
+  detailImages:string[];
   sellerName:string|null;
   variants:{skuCode:string;title:string;options:{name:string;value:string}[];price:number|null;stock:number|null;image:string|null}[];
 };
@@ -47,7 +48,22 @@ function textOnly(v:unknown):string {
 }
 function safeImage(v:unknown):string|null{
   const x=str(v);if(!x)return null;
-  try{const u=new URL(x);return u.protocol==="https:"&&!u.username&&!u.password?u.href:null;}catch{return null;}
+  try{const u=new URL(x.startsWith("//")?"https:"+x:x);return u.protocol==="https:"&&!u.username&&!u.password?u.href:null;}catch{return null;}
+}
+function extractDescriptionImages(v:unknown):string[]{
+  const html=str(v)||"";
+  const results:string[]=[];
+  // Read image links from the seller description without rendering untrusted HTML.
+  for(const tag of html.match(/<img\b[^>]*>/gi)||[]){
+    const attributes=[...tag.matchAll(/\b(?:data-original|data-lazy-src|data-src|src)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>]+))/gi)];
+    for(const match of attributes){
+      const value=(match[1]||match[2]||match[3]||"").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"');
+      const url=safeImage(value);
+      if(url&&!results.includes(url)){results.push(url);break;}
+    }
+    if(results.length>=36)break;
+  }
+  return results;
 }
 export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"live"):BuckydropProduct{
   const d=obj(value);
@@ -79,6 +95,7 @@ export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"l
     available:d.soldOutTag===1?true:d.soldOutTag==null?null:false,
     images,
     descriptionText:textOnly(d.productDetailHtml),
+    detailImages:extractDescriptionImages(d.productDetailHtml),
     sellerName:str(obj(d.shop).shopName),
     variants
   };

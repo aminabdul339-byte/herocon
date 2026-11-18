@@ -1,6 +1,5 @@
 "use client";
 import {useEffect,useState} from "react";
-import Link from "next/link";
 import ProductExperience from "@/components/ProductExperience";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 import type {Product} from "@/lib/types";
@@ -60,23 +59,18 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  return <div className="hc-link-product-found">
    <div className="sc-container hc-link-found-header">
     <div><p className="sc-kicker">PRODUCT FOUND</p><h2>{source.title}</h2>
-     {status.save.productId&&status.save.status!=="unavailable"
-       ?<p className="hc-discovered-saved">{status.save.status==="added"?"Added to Herocon catalogue":"Already in Herocon catalogue"} · <Link href={"/product/"+encodeURIComponent(status.save.productId)}>View saved product ↗</Link></p>
-       :<p>Product found. Automatic catalogue saving is temporarily unavailable.</p>}
     </div>
    </div>
    <ProductExperience
     key={status.url}
     product={product}
-    id="linked-product"
+    id={status.save.productId||"linked-product"}
     title={source.title}
     images={source.images}
     price="Supplier price"
     buckydropEnabled
     initialSource={source}
    />
-   <div className="sc-container hc-link-import-note">
-    {status.save.productId?"This listing has been saved in Herocon's catalogue. Product information comes from the marketplace seller, and direct checkout is not yet enabled.":"This product is only displayed for your current search. It is not quality approved or available for direct checkout."}
-   </div>
+
   </div>;
 }
