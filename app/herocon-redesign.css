@@ -542,3 +542,13 @@
 .hc-cart-empty p{font-size:13px;color:#738677;margin-bottom:23px}
 @media(max-width:850px){.hc-product-detail-grid,.hc-cart-layout{grid-template-columns:1fr;gap:24px}.hc-cart-summary{position:static}.hc-product-detail-panel{width:calc(100% - 30px)}}
 @media(max-width:650px){.hc-cart-nav-link{font-size:0}.hc-cart-nav-link span{font-size:11px}.hc-seller-row{align-items:flex-start}.hc-buy-actions{gap:8px}.hc-buy-actions button{font-size:13px}.hc-product-specs{padding:18px}.hc-cart-line{grid-template-columns:75px 1fr;gap:11px}.hc-cart-price{grid-column:2}.hc-cart-copy{min-width:0}.hc-cart-controls{flex-wrap:wrap}.hc-product-detail-panel{padding-top:26px}.hc-detail-photos img{width:100%}.hc-cart-hero{padding-top:40px!important}}
+
+
+/* Cart: show CNY alongside approximate converted GBP prices */
+.hc-cart-price{display:flex;flex-direction:column;align-items:flex-end;gap:4px;line-height:1.35;text-align:right}
+.hc-cart-price small,.hc-cart-dual-total small{display:block;color:#647e69;font-size:12px;font-weight:700;white-space:nowrap}
+.hc-cart-dual-total{text-align:right;line-height:1.55}
+.hc-cart-gbp-total{border-top:1px solid #cbdac8;padding-top:13px;margin-top:15px!important;align-items:center;font-weight:800}
+.hc-cart-totals .hc-cart-gbp-total strong{font-size:19px;color:#224e31}
+.hc-cart-fx-note{font-size:11px;line-height:1.55;color:#758679;margin:4px 0 18px}
+@media(max-width:650px){.hc-cart-price{align-items:flex-start;text-align:left}}
