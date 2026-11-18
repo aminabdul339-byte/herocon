@@ -3,6 +3,8 @@ import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
 import {prioritizeSavedPartnerProducts} from "@/lib/catalogue-priority";
+// Read the six-hour cached partner index at request time, not permanently at build time.
+export const dynamic="force-dynamic";
 export default async function Home(){
  const products=await prioritizeSavedPartnerProducts(await getProducts());
  const home=products.filter(p=>p.category==="Home & Decor"&&p.imageUrl).slice(0,2);
