@@ -10,14 +10,14 @@ const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 type ForexRate={rate:number;date:string};
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct}){
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
  const colours=[...new Set([...(product.colours||[]),...originalVariants.map(v=>v.colour).filter((x):x is string=>!!x)])];
  const sizes=[...new Set([...(product.sizes||[]),...originalVariants.map(v=>v.size).filter((x):x is string=>!!x)])];
  const styles=[...new Set([...(product.styles||[]),...originalVariants.map(v=>v.style).filter((x):x is string=>!!x)])];
  const[colour,setColour]=useState(colours[0]),[size,setSize]=useState(sizes[0]),[style,setStyle]=useState(styles[0]);
  const[image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
- const[lookup,setLookup]=useState<Lookup>({status:"loading"});
+ const[lookup,setLookup]=useState<Lookup>(initialSource?{status:"ready",data:initialSource}:{status:"loading"});
  const[activeSku,setActiveSku]=useState("");
  const[quantities,setQuantities]=useState<Record<string,number>>({});
  const[showAllSkus,setShowAllSkus]=useState(false);
@@ -38,7 +38,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const dualPrice=(cny:number)=>formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  useEffect(()=>{
-  if(!buckydropEnabled)return;
+  if(!buckydropEnabled||initialSource)return;
   const controller=new AbortController();
   setLookup({status:"loading"});
   fetch("/api/buckydrop/product/"+encodeURIComponent(id),{signal:controller.signal,cache:"no-store"})
@@ -50,7 +50,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    .then(data=>{if(!controller.signal.aborted){setLookup({status:"ready",data});setImage(0);setBadImages([]);setActiveSku("");setQuantities({});setShowAllSkus(false);setCopiedSelection(false);}})
    .catch(()=>{if(!controller.signal.aborted)setLookup({status:"error"});});
   return ()=>controller.abort();
- },[id,buckydropEnabled]);
+ },[id,buckydropEnabled,initialSource]);
 
  const source=buckydropEnabled&&lookup.status==="ready"?lookup.data:null;
  const defaultSku=source?.variants.find(v=>v.stock===null||v.stock>0)||source?.variants[0];
@@ -95,7 +95,6 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   (priceCNY!=null?dualPrice(priceCNY):"Supplier price unavailable")):
   originalMatching?.price!=null?"£"+originalMatching.price.toFixed(2):price;
  const marketplace=product.originalMarketplaceUrl;
- const briefQuery=encodeURIComponent(marketplace||title);
  const outOfStock=Boolean(source&&(source.available===false||sourceVariant?.stock===0));
 
  return <>
@@ -159,11 +158,10 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <div className="selected-box">
      <div className="sc-checkout-prelaunch"><strong>Direct checkout coming soon</strong><p>Herocon is connecting payments and order fulfilment. No payment will be taken from this page yet.</p></div>
      {marketplace&&<a className="original-btn" href={marketplace} target="_blank" rel="noopener noreferrer">View original marketplace listing ↗</a>}
-     <Link className="sc-product-brief-link" href={"/sourcing?product="+briefQuery}>Plan a purchase with a sourcing brief ↗</Link>
     </div>
    </aside>
   </section>
-  <div className="mobile-buy"><span><b>{priceLabel}</b><small>{source?"CNY and approximate GBP · delivery extra":"Listing price · delivery extra"}</small></span><Link className="sc-mobile-plan" href={"/sourcing?product="+briefQuery}>Plan purchase</Link></div>
+  <div className="mobile-buy"><span><b>{priceLabel}</b><small>{source?"CNY and approximate GBP · delivery extra":"Listing price · delivery extra"}</small></span><span className="sc-mobile-coming-soon">Checkout coming soon</span></div>
  </>;
 }
 function Selector({label,value,items,set}:{label:string;value?:string;items:string[];set:(v:string)=>void}){
