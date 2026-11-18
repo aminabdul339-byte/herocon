@@ -76,7 +76,7 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
     initialSource={source}
    />
    <div className="sc-container hc-link-import-note">
-    {status.save.productId?"This listing has been saved in Herocon's catalogue as unreviewed. A saved listing is not a quality or compliance approval, and direct checkout is not yet enabled.":"This product is only displayed for your current search. It is not quality approved or available for direct checkout."}
+    {status.save.productId?"This listing has been saved in Herocon's catalogue. Product information comes from the marketplace seller, and direct checkout is not yet enabled.":"This product is only displayed for your current search. It is not quality approved or available for direct checkout."}
    </div>
   </div>;
 }
