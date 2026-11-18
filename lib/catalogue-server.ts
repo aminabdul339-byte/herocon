@@ -3,6 +3,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Product } from "./types";
 import {classifyProduct} from "./product-taxonomy";
+import {getDiscoveredProducts} from "./discovered-products";
+import {normalizeMarketplaceLink} from "./marketplace-links";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
@@ -37,7 +39,7 @@ function normalise(raw: Raw): Product | null {
     agentLinks: raw.agentLinks && typeof raw.agentLinks === "object" && !Array.isArray(raw.agentLinks) ? raw.agentLinks as Record<string,string> : undefined,
   };
 }
-export const getProducts = cache(async (): Promise<Product[]> => {
+export const getBaseProducts = cache(async (): Promise<Product[]> => {
   const byId = new Map<string, Product>();
   async function addFile(name: string): Promise<boolean> {
     try {
@@ -70,4 +72,23 @@ export const getProducts = cache(async (): Promise<Product[]> => {
   }
   for (const name of additions) await addFile(name);
   return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:classifyProduct(product.title,product.category)}));
+});
+
+// The original catalogue remains in committed JSON files. Products found through
+// the public link search are durably stored in the private Vercel Blob store and
+// appear in product search, category browsing, saved items, and product pages.
+export const getProducts = cache(async ():Promise<Product[]>=>{
+ const staticProducts=await getBaseProducts();
+ const discovered=await getDiscoveredProducts();
+ if(!discovered.length)return staticProducts;
+ const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
+ const ids=new Set(staticProducts.map(p=>p.doppelProductId));
+ const additions=discovered.filter(p=>{
+  const key=normalizeMarketplaceLink(p.originalMarketplaceUrl);
+  if(!key||links.has(key)||ids.has(p.doppelProductId))return false;
+  links.add(key);
+  ids.add(p.doppelProductId);
+  return true;
+ });
+ return [...additions,...staticProducts];
 });

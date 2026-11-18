@@ -19,6 +19,6 @@ export default function ProductLinkForm({defaultValue="",compact=false}:{default
      <button type="submit">Find product <span aria-hidden="true">↗</span></button>
     </div>
    </form>
-   <p>Search a product even if it isn't in the Herocon catalogue. Full original marketplace links only.</p>
+   <p>Search a product even if it isn't in the Herocon catalogue. Full original marketplace links only. Successful searches may be saved to Herocon's public catalogue.</p>
  </div>;
 }

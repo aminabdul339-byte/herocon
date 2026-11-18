@@ -2,6 +2,9 @@ import {NextResponse} from "next/server";
 import {unstable_cache} from "next/cache";
 import {BuckydropError,queryBuckydropProduct} from "@/lib/buckydrop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {saveDiscoveredProduct,type DiscoverySaveResult} from "@/lib/discovered-products";
+import {getBaseProducts} from "@/lib/catalogue-server";
+import {productId} from "@/lib/catalogue";
 
 export const dynamic="force-dynamic";
 
@@ -55,7 +58,17 @@ export async function POST(request:Request){
  if(rateLimited(ip))return jsonError("Too many searches. Please try again shortly.",429);
  try {
   const product=await lookup(productLink);
-  return NextResponse.json({product,productLink},{
+  // Avoid duplicating a listing already in the original committed catalogue.
+  let catalogueSave:DiscoverySaveResult={status:"unavailable",productId:null};
+  try{
+   const originalCatalogue=await getBaseProducts();
+   const existing=originalCatalogue.find(item=>normalizeMarketplaceLink(item.originalMarketplaceUrl)===productLink);
+   if(existing)catalogueSave={status:"existing",productId:productId(existing)};
+   else catalogueSave=await saveDiscoveredProduct(productLink,product);
+  }catch(error){
+   console.error("[lookup] Unable to save discovered product:",error instanceof Error?error.message:"unknown");
+  }
+  return NextResponse.json({product,productLink,catalogueSave},{
    headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}
   });
  }catch(error){

@@ -470,3 +470,6 @@
 .hc-skeleton-side>p{margin:0 0 7px}
 @media(prefers-reduced-motion:reduce){.hc-skeleton-spinner,.hc-skeleton-block{animation:none}}
 @media(max-width:700px){.hc-product-loading .hc-skeleton-gallery{min-height:300px}}
+/* Discovery catalogue save status */
+.hc-discovered-saved{font-weight:650;color:#315d3f!important}
+.hc-discovered-saved a{text-decoration:underline;text-underline-offset:3px;color:#254c30}

@@ -46,3 +46,13 @@ Successful product details are cached server-side for one hour. On multi-instanc
 Original Herocon catalogue product pages now resolve BuckyDrop seller details and an indicative CNY→GBP reference rate in a streaming **server component**, not with a separate browser lookup after the old saved listing first appears. The product section displays an intentional loading skeleton while the seller API responds, then the enriched seller page directly. The existing `/api/buckydrop/product/[id]` and SSR page share `getCachedBuckydropProduct` (one-hour server cache). Supplier data is not permanently verified; cache entries may be one hour old. On a BuckyDrop error, the saved catalogue listing appears as the fallback after the skeleton. The GBP reference rate is cached by Next.js for six hours. BuckyDrop product images still use `referrerPolicy="no-referrer"` to prevent Alibaba-CDN hotlink issues.
 
 Public navigation keeps the dedicated `/find-product` page, but the paste-a-link form is no longer embedded on the homepage or catalogue search page. Product details and paste-a-link results no longer link out to the original marketplace seller; original URLs are retained server-side for sourcing and optional copying of selected variants.
+
+## Persistent customer-discovered catalogue
+
+A successful POST /api/buckydrop/lookup now checks whether the original marketplace URL is already in the committed catalogue; if not, it saves a compact product summary in the project-linked private Vercel Blob store. Each product uses a deterministic hash-based path (catalogue/discovered/v1/link-ID.json). Duplicate searches reuse the same record. Listings are marked listingStatus=unreviewed, not approved.
+
+The getProducts() loader merges committed JSON records with durable discovered records, so additions appear in Explore Products, their categories and ordinary /product/ID routes. The list cache revalidates every five minutes and is invalidated after a successful save. Each record occupies one Blob object, which provides safe concurrent deduplication. For larger-scale usage replace the per-object list/read model with an indexed relational or key-value database.
+
+BLOB_READ_WRITE_TOKEN is set automatically by the connected private Vercel Blob store and stays server-side. The link-search form discloses that successful searches may be saved to the public catalogue. Monitor provider API costs and Blob operation quotas; the existing per-instance request limit is not a global spam control.
+
+If storage is unavailable, lookup remains functional but the API reports catalogueSave.status=unavailable and the page must not claim the item was saved.
