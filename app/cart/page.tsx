@@ -4,12 +4,32 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
 
+type AvailabilityLine={title:string;skuCode:string;quantity:number;status:"confirmed"|"unavailable"|"unverified";reason:string;supplierUnitCny:number|null;supplierStock:number|null};
+type AvailabilityReport={verifiedAt:string;allConfirmed:boolean;checkoutReady:false;lines:AvailabilityLine[];checkoutBlockers:string[]};
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
  const {items,count,hydrated,updateQuantity,removeItem,clearCart}=useCart();
  const [checkout,setCheckout]=useState(false);
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
+ const [verification,setVerification]=useState<AvailabilityReport|null>(null);
+ const [verifying,setVerifying]=useState(false);
+ const [verificationError,setVerificationError]=useState("");
+ useEffect(()=>{setVerification(null);setVerificationError("");},[items]);
+ async function verifySupplierCart(){
+  if(verifying)return;
+  setVerifying(true);setVerification(null);setVerificationError("");
+  try{
+   const response=await fetch("/api/checkout/readiness",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({lines:items.map(item=>({marketplaceUrl:item.marketplaceUrl,skuCode:item.skuCode||"",quantity:item.quantity,title:item.title}))}),cache:"no-store"
+   });
+   const result:unknown=await response.json();
+   if(!response.ok)throw Error(result&&typeof result==="object"&&"error" in result&&typeof result.error==="string"?result.error:"Supplier check is unavailable.");
+   setVerification(result as AvailabilityReport);
+  }catch(err){setVerificationError(err instanceof Error?err.message:"Supplier check is unavailable.");}
+  finally{setVerifying(false);}
+ }
  useEffect(()=>{setCheckout(new URLSearchParams(window.location.search).get("checkout")==="1");},[]);
  useEffect(()=>{
   const controller=new AbortController();
@@ -59,7 +79,25 @@ export default function CartPage(){
      <p><span>Shipping and taxes</span><strong>Not calculated</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
-    <div className="hc-cart-checkout-note"><strong>Checkout is coming soon</strong><p>Your cart is saved in this browser. You can compare delivery estimates now; payment and supplier order submission remain disabled until secure checkout is verified.</p></div>
+    <div className="hc-cart-checkout-note"><strong>Live supplier check</strong><p>Check the seller's current stock, selected variants and supplier prices before placing an order. This is not a final GBP checkout quote.</p>
+     <button type="button" className="sc-button sc-button-dark hc-cart-shop" onClick={verifySupplierCart} disabled={verifying||items.length>5||items.some(item=>!item.skuCode)}>
+      {verifying?"Checking seller options…":"Verify supplier stock & prices ↗"}
+     </button>
+     {items.length>5&&<p>Verify up to five selected options at a time. Please remove some items before checking.</p>}
+     {items.some(item=>!item.skuCode)&&<p>Some items have no verified seller SKU. Return to the product page and select an available supplier option.</p>}
+     {verificationError&&<p role="alert">{verificationError}</p>}
+     {verification&&<div role="status">
+      <p><strong>{verification.allConfirmed?"Supplier options verified":"Some supplier options need attention"}</strong></p>
+      <p>Checked {new Date(verification.verifiedAt).toLocaleString("en-GB")}. Supplier prices are in CNY only.</p>
+      {verification.lines.map((line,i)=><p key={line.skuCode+"-"+i}>
+       <strong>{line.status==="confirmed"?"✓":line.status==="unavailable"?"×":"!"} {line.title}</strong>
+       {" · "}{line.quantity} item(s) · {line.reason}
+       {line.supplierUnitCny!=null?" · Seller ¥"+line.supplierUnitCny.toFixed(2)+" per item":""}
+      </p>)}
+      <p><strong>Live checkout not yet available.</strong> Final GBP delivery, duties, taxes and fulfilment still need confirmation.</p>
+     </div>}
+     <p>Payment and supplier purchasing remain disabled until the complete checkout total and delivery process can be verified.</p>
+    </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
   </section>
