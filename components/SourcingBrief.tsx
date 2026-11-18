@@ -32,14 +32,14 @@ export default function SourcingBrief({initialProduct=""}:{initialProduct?:strin
   "PRODUCT SPECIFICATIONS / QUALITY REQUIREMENTS",
   values.requirements.trim()||"Please confirm specification, materials and sample availability",
   "",
-  "QUESTIONS FOR THE SUPPLIER OR BUYING AGENT",
+  "QUESTIONS TO CONFIRM BEFORE ORDERING",
   "1. What is the minimum order quantity and unit price at this quantity?",
   "2. Can I obtain a sample and what is the total sample cost?",
   "3. What are lead times, domestic shipping and export packing details?",
-  "4. What are estimated freight, customs and purchasing-agent fees?",
+  "4. What are estimated freight, customs and sourcing or service fees?",
   "5. What evidence of product specifications, safety and quality is available?",
   "",
-  "Note: This brief is for you to share with a supplier or agent. Herocon has not sent it or obtained a quotation."
+  "Note: This is a planning brief only. Herocon has not received it, placed an order or obtained a quotation."
  ].join("\n"),[values]);
  async function copy(){try{await navigator.clipboard.writeText(brief);setCopied(true);}catch{setReady(true);}}
  function download(){const blob=new Blob([brief],{type:"text/plain;charset=utf-8"});const href=URL.createObjectURL(blob);const a=document.createElement("a");a.href=href;a.download="herocon-sourcing-brief.txt";a.click();URL.revokeObjectURL(href);}
@@ -54,6 +54,6 @@ export default function SourcingBrief({initialProduct=""}:{initialProduct?:strin
  <aside className="sc-brief-preview"><span className="sc-kicker">YOUR SOURCING REQUEST</span><h3>Turn your idea into a clear supplier enquiry.</h3><p>Complete the form to create a downloadable brief with your product, quantity and questions to ask before ordering.</p>
  {ready&&<><pre className="sc-generated-brief">{brief}</pre><div className="sc-brief-actions"><button type="button" className="sc-button sc-button-dark" onClick={copy}>{copied?"Copied ✓":"Copy brief"}</button><button type="button" className="sc-button sc-button-outline" onClick={download}>Download .txt ↗</button></div></>}
  {!ready&&<div className="sc-brief-preview-steps"><div><span>01</span> Your product link</div><div><span>02</span> Order requirements</div><div><span>03</span> Questions for the supplier</div><div><span>04</span> A brief you can share</div></div>}
- <div className="sc-brief-disclosure"><strong>How this works</strong><p>The brief is generated in your browser. It is <b>not sent to Herocon or a supplier</b>. You can copy or download it and share it with your chosen seller or buying agent. There is no supplier verification or quote guarantee.</p><Link href="/landed-cost">Estimate the costs first ↗</Link></div>
+ <div className="sc-brief-disclosure"><strong>How this works</strong><p>The brief is generated in your browser. It is <b>not sent to Herocon or a supplier</b>. You can copy or download it and keep it for your own records or share it when requesting a quote. There is no supplier verification or quote guarantee.</p><Link href="/landed-cost">Estimate the costs first ↗</Link></div>
  </aside></div>;
 }

@@ -1,13 +1,14 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
-import AgentModal from "./AgentModal";
 import {variantsFor} from "@/lib/catalogue";
 import type {Product} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 
 type Lookup={status:"loading"}|{status:"ready";data:BuckydropProduct}|{status:"error"};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
+const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
+type ForexRate={rate:number;date:string};
 
 export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean}){
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
@@ -15,12 +16,26 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const sizes=[...new Set([...(product.sizes||[]),...originalVariants.map(v=>v.size).filter((x):x is string=>!!x)])];
  const styles=[...new Set([...(product.styles||[]),...originalVariants.map(v=>v.style).filter((x):x is string=>!!x)])];
  const[colour,setColour]=useState(colours[0]),[size,setSize]=useState(sizes[0]),[style,setStyle]=useState(styles[0]);
- const[image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]),[modal,setModal]=useState(false);
+ const[image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
  const[lookup,setLookup]=useState<Lookup>({status:"loading"});
  const[activeSku,setActiveSku]=useState("");
  const[quantities,setQuantities]=useState<Record<string,number>>({});
  const[showAllSkus,setShowAllSkus]=useState(false);
  const[copiedSelection,setCopiedSelection]=useState(false);
+ const[fx,setFx]=useState<ForexRate|null>(null);
+ useEffect(()=>{
+  if(!buckydropEnabled)return;
+  const controller=new AbortController();
+  fetch("/api/fx/cny-gbp",{signal:controller.signal}).then(async response=>{
+   if(!response.ok)throw new Error("Exchange rate unavailable");
+   return response.json();
+  }).then(data=>{
+   if(!controller.signal.aborted&&typeof data.rate==="number"&&data.rate>0&&data.rate<0.5
+    &&typeof data.date==="string")setFx({rate:data.rate,date:data.date});
+  }).catch(()=>{if(!controller.signal.aborted)setFx(null)});
+  return ()=>controller.abort();
+ },[buckydropEnabled]);
+ const dualPrice=(cny:number)=>formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  useEffect(()=>{
   if(!buckydropEnabled)return;
@@ -60,7 +75,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  };
  const copyOrder=async()=>{
   if(!source||!marketplace||!selectedRows.length)return;
-  const lines=[title,marketplace,"Supplier variants (reselect with your agent):",...selectedRows.map(v=>"- "+v.title+" | SKU "+v.skuCode+" | qty "+quantities[v.skuCode]+(v.price==null?"":" | unit "+formatCNY(v.price))),'Subtotal before shipping/taxes: '+(hasUnknownPrice?"Quote required":formatCNY(subtotal))];
+  const lines=[title,marketplace,"Selected supplier variants and quantities:",...selectedRows.map(v=>"- "+v.title+" | SKU "+v.skuCode+" | qty "+quantities[v.skuCode]+(v.price==null?"":" | unit "+formatCNY(v.price))),'Product subtotal before shipping and fees: '+(hasUnknownPrice?"Quote required":dualPrice(subtotal))];
   const note=lines.join("\n");
   try{await navigator.clipboard.writeText(note);setCopiedSelection(true);}catch{window.prompt("Copy sourcing selections:",note);}
  };
@@ -70,11 +85,15 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const gallery=[...new Set([source?sourceVariant?.image:originalMatching?.image,...sellerImages,...images].filter((x):x is string=>!!x))].filter(x=>!badImages.includes(x));
  const chosenIndex=Math.min(image,Math.max(0,gallery.length-1));
  const priceCNY=sourceVariant?.price??source?.offerPrice;
- const priceLabel=source?(source.variants.length>0&&!sourceVariant?"Option unavailable":priceCNY!=null?formatCNY(priceCNY):"Supplier price unavailable"):originalMatching?.price!=null?"£"+originalMatching.price.toFixed(2):price;
- const selection=source
-  ?selectedRows.length?selectedRows.map(v=>v.title+" × "+quantities[v.skuCode]).join(" · "):sourceVariant?.title||"Choose variant and quantity with your agent"
-  :[colour,size,style,originalMatching?.label].filter(Boolean).join(" · ")||"Standard option";
- const canSource=Boolean(product.originalMarketplaceUrl||product.sugargooProductUrl||Object.values(product.agentLinks||{}).some(Boolean)||originalVariants.some(v=>Object.values(v.agentLinks||{}).some(Boolean)));
+ const variantPrices=(source?.variants||[]).map(v=>v.price).filter((x):x is number=>x!=null&&Number.isFinite(x));
+ const minPrice=variantPrices.length?Math.min(...variantPrices):null;
+ const maxPrice=variantPrices.length?Math.max(...variantPrices):null;
+ const priceRange=minPrice!=null&&maxPrice!=null?(minPrice===maxPrice?dualPrice(minPrice):
+  formatCNY(minPrice)+" – "+formatCNY(maxPrice)+(fx?" ≈ "+formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"")):null;
+ const priceLabel=source?(source.variants.length>0&&!sourceVariant?"Option unavailable":
+  activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
+  (priceCNY!=null?dualPrice(priceCNY):"Supplier price unavailable")):
+  originalMatching?.price!=null?"£"+originalMatching.price.toFixed(2):price;
  const marketplace=product.originalMarketplaceUrl;
  const briefQuery=encodeURIComponent(marketplace||title);
  const outOfStock=Boolean(source&&(source.available===false||sourceVariant?.stock===0));
@@ -93,13 +112,12 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <h1>{title}</h1>
     <p className="supplier-title">{source?.sellerName?"Marketplace seller: "+source.sellerName:product.originalTitle||product.title}</p>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>{product.sellerName} ↗</Link>}
-    {buckydropEnabled&&<p className="sc-source-state" role="status">{lookup.status==="loading"?"Checking seller photos, sizes and prices…":lookup.status==="error"?"Live seller details unavailable. Showing saved listing information.":"Seller details retrieved via BuckyDrop • Unverified"}</p>}
+    {buckydropEnabled&&lookup.status!=="ready"&&<p className="sc-source-state" role="status">{lookup.status==="loading"?"Loading seller options…":"Live seller details are unavailable. Showing the saved listing."}</p>}
     <div className="product-price">{priceLabel}</div>
-    {source&&<p className="sc-source-subprice">Supplier reference price in CNY • Previously saved catalogue reference: {price}</p>}
-    <p className="sc-product-disclosure">{source?"Supplier listing information, not a final Herocon price. Availability and product quality are unverified. International delivery, taxes and fees are not included.":"Listed marketplace price only. Variants, stock, MOQ, delivery charges, duty and VAT must be confirmed before ordering. A recorded original link does not mean the supplier has been vetted."}</p>
+    {source&&<p className="sc-source-subprice">Supplier unit price · {fx?"GBP is an approximate conversion using the "+fx.date+" reference rate":"Prices are in CNY; GBP conversion is temporarily unavailable"} · Shipping calculated separately</p>}
 
     {source&&source.variants.length>0? <div className="sc-supplier-variant-area">
-      <div className="sc-sku-heading"><strong>Seller options</strong><span>{source.variants.length} variants · Select quantities to prepare a sourcing order</span></div>
+      <div className="sc-sku-heading"><strong>Choose options</strong><span>{source.variants.length} seller variants · Select quantities</span></div>
       <div className="sc-sku-list">
        {visibleSkus.map(v=>{
         const quantity=quantities[v.skuCode]||0;
@@ -110,7 +128,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
           {image?<img src={image} alt={v.title} loading="lazy" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/>:<span className="sc-sku-image-fallback">No photo</span>}
           <span className="sc-sku-name">{v.options.map(p=>p.value).join(" / ")||v.title}</span>
          </button>
-         <div className="sc-sku-numbers"><strong>{v.price!=null?formatCNY(v.price):"Quote needed"}</strong><span>{v.stock==null?"Stock unknown":v.stock===0?"Out of stock":v.stock+" in stock"}</span></div>
+         <div className="sc-sku-numbers"><strong>{v.price!=null?dualPrice(v.price):"Quote needed"}</strong><span>{v.stock==null?"Stock unknown":v.stock===0?"Out of stock":v.stock+" in stock"}</span></div>
          <div className="sc-sku-qty" aria-label={"Quantity of "+v.title}>
           <button type="button" onClick={()=>updateQuantity(v.skuCode,-1)} disabled={quantity===0} aria-label={"Remove one "+v.title}>−</button>
           <output aria-label={"Quantity "+quantity}>{quantity}</output>
@@ -122,32 +140,30 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       {source.variants.length>8&&<button type="button" className="sc-sku-show-more" onClick={()=>setShowAllSkus(v=>!v)}>{showAllSkus?"Show fewer options":"Show all "+source.variants.length+" options"} <span aria-hidden="true">{showAllSkus?"↑":"↓"}</span></button>}
       <div className="sc-sku-summary">
        <div><strong>{totalUnits} selected</strong><span>{totalUnits<minOrder?"Minimum order: "+minOrder+" units":"Minimum order of "+minOrder+" met"}</span></div>
-       <div><strong>{hasUnknownPrice?"Quote required":formatCNY(subtotal)}</strong><span>Products only · CNY</span></div>
+       <div><strong>{hasUnknownPrice?"Quote required":dualPrice(subtotal)}</strong><span>Product subtotal · CNY / approx. GBP</span></div>
       </div>
-      {selectedRows.length>0&&<button type="button" className="sc-sku-copy" onClick={copyOrder}>{copiedSelection?"Selection copied ✓":"Copy variants & quantities for your agent"}</button>}
-      <p className="sc-sku-disclaimer">This is a sourcing list, not a basket or confirmed order. You must select quantities again with your purchasing agent. Prices, stock and delivery need reconfirmation.</p>
+      {selectedRows.length>0&&<button type="button" className="sc-sku-copy" onClick={copyOrder}>{copiedSelection?"Selection copied ✓":"Copy selected variants & quantities"}</button>}
+      <p className="sc-sku-disclaimer">Your selection is saved only on this page. Direct checkout and delivery quotes are being prepared.</p>
     </div> : source?null:<>
       <Selector label="COLOUR" value={colour} items={colours} set={setColour}/><Selector label="SIZE" value={size} items={sizes} set={setSize}/><Selector label="STYLE" value={style} items={styles} set={setStyle}/>
     </>}
 
     {source&&<div className="sc-supplier-facts">
       {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
-      {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {formatCNY(source.chinaDomesticFreight)} CNY (supplier reference)</p>}
-      <p><strong>International shipping:</strong> Not calculated; confirm with the agent.</p>
+      {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {dualPrice(source.chinaDomesticFreight)}</p>}
+      <p><strong>International delivery:</strong> Quote not yet available.</p>
       {outOfStock&&<p className="sc-supplier-unavailable">Supplier listing indicates this item or option is not currently available.</p>}
       {source.descriptionText&&<details><summary>Seller's product description</summary><p>{source.descriptionText.slice(0,2800)}</p></details>}
-      <small>Source: {source.marketplace||"Marketplace"} • Seller information may change. Check exact materials, shipping and quality before buying.</small>
     </div>}
 
     <div className="selected-box">
-     {canSource?<button type="button" className="source-btn hc-agent-picker-btn" onClick={()=>setModal(true)}>BUY WITH AN AGENT <span>↗</span></button>:<p className="supplier-title">No original marketplace link is recorded for this product.</p>}
+     <div className="sc-checkout-prelaunch"><strong>Direct checkout coming soon</strong><p>Herocon is connecting payments and order fulfilment. No payment will be taken from this page yet.</p></div>
      {marketplace&&<a className="original-btn" href={marketplace} target="_blank" rel="noopener noreferrer">View original marketplace listing ↗</a>}
-     <Link className="sc-product-brief-link" href={"/sourcing?product="+briefQuery}>Prepare a sourcing brief for this product ↗</Link>
+     <Link className="sc-product-brief-link" href={"/sourcing?product="+briefQuery}>Plan a purchase with a sourcing brief ↗</Link>
     </div>
    </aside>
   </section>
-  {canSource&&<AgentModal open={modal} onClose={()=>setModal(false)} productId={id} variantId={source?undefined:originalMatching?.id} selection={selection} marketplaceUrl={marketplace} agentLinks={product.agentLinks}/>}
-  <div className="mobile-buy"><span><b>{priceLabel}</b><small>{source?"Supplier price CNY • shipping extra":"Marketplace price • shipping extra"}</small></span>{canSource&&<button type="button" onClick={()=>setModal(true)}>USE AN AGENT</button>}</div>
+  <div className="mobile-buy"><span><b>{priceLabel}</b><small>{source?"CNY and approximate GBP · delivery extra":"Listing price · delivery extra"}</small></span><Link className="sc-mobile-plan" href={"/sourcing?product="+briefQuery}>Plan purchase</Link></div>
  </>;
 }
 function Selector({label,value,items,set}:{label:string;value?:string;items:string[];set:(v:string)=>void}){
