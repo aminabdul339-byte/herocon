@@ -1,18 +1,12 @@
 import {NextResponse} from "next/server";
-import {unstable_cache} from "next/cache";
-import {BuckydropError,queryBuckydropProduct} from "@/lib/buckydrop";
+import {BuckydropError} from "@/lib/buckydrop";
+import {getOrSaveBuckydropProduct} from "@/lib/buckydrop-cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {saveDiscoveredProduct,type DiscoverySaveResult} from "@/lib/discovered-products";
 import {getBaseProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
 
 export const dynamic="force-dynamic";
-
-const lookup=unstable_cache(
- async (url:string)=>queryBuckydropProduct(url),
- ["herocon-external-link-lookup-v1"],
- {revalidate:3600}
-);
 
 // Best-effort per-instance throttling. Upgrade to a shared rate-limit store
 // before public high-volume use, since individual Vercel instances do not share memory.
@@ -57,7 +51,7 @@ export async function POST(request:Request){
  const ip=request.headers.get("x-real-ip")||request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
  if(rateLimited(ip))return jsonError("Too many searches. Please try again shortly.",429);
  try {
-  const product=await lookup(productLink);
+  const {product,cacheStatus}=await getOrSaveBuckydropProduct(productLink);
   // Avoid duplicating a listing already in the original committed catalogue.
   let catalogueSave:DiscoverySaveResult={status:"unavailable",productId:null};
   try{
@@ -68,7 +62,7 @@ export async function POST(request:Request){
   }catch(error){
    console.error("[lookup] Unable to save discovered product:",error instanceof Error?error.message:"unknown");
   }
-  return NextResponse.json({product,productLink,catalogueSave},{
+  return NextResponse.json({product,productLink,catalogueSave,cacheStatus},{
    headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}
   });
  }catch(error){

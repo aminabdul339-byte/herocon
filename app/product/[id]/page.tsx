@@ -6,7 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductExperience from "@/components/ProductExperience";
 import {cleanTitle,imagesFor,productId,productPrice,related} from "@/lib/catalogue";
 import {getProducts} from "@/lib/catalogue-server";
-import {getCachedBuckydropProduct} from "@/lib/buckydrop-cache";
+import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import type {Product} from "@/lib/types";
@@ -46,33 +46,25 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  if(!LIVE_LOOKUP||!props.product.originalMarketplaceUrl){
   return <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>;
  }
- // Resolve seller and FX details before rendering the product. This avoids
- // first showing stale catalogue photos and price, then replacing the page
- // when BuckyDrop responds on the client.
- const [sellerResult,fxResult]=await Promise.allSettled([
-  getCachedBuckydropProduct(props.product.originalMarketplaceUrl),
-  getReferenceCnyGbpRate()
- ]);
- const seller=sellerResult.status==="fulfilled"?sellerResult.value:undefined;
- const fx=fxResult.status==="fulfilled"?fxResult.value:undefined;
- if(!seller){
-  // Do not silently substitute old catalogue prices and variants when the
-  // live provider refuses a request. Show a clear error and allow a manual retry.
-  const failure=sellerResult.status==="rejected"?sellerResult.reason:undefined;
-  console.warn("[herocon] Supplier detail request failed",{
+ // Product pages read our permanent snapshot ONLY. They never trigger a new
+ // billable supplier lookup from automatic rendering or link prefetch.
+ let seller:Awaited<ReturnType<typeof getSavedBuckydropProduct>>=null;
+ try{seller=await getSavedBuckydropProduct(props.product.originalMarketplaceUrl);}
+ catch(err){
+  console.warn("[herocon] Saved supplier details unavailable",{
    productId:props.id,
-   code:failure instanceof BuckydropError?failure.code:"UNKNOWN",
-   status:failure instanceof BuckydropError?failure.status:502
+   code:err instanceof BuckydropError?err.code:"UNKNOWN"
   });
-  return <ProductExperience {...props} buckydropEnabled sourceLookupFailed initialFx={fx}/>;
  }
+ const fx=seller?await getReferenceCnyGbpRate().catch(()=>undefined):undefined;
  return <ProductExperience
-   key={props.id}
-   {...props}
-   buckydropEnabled
-   initialSource={seller}
-   initialFx={fx}
-  />;
+  key={props.id}
+  {...props}
+  buckydropEnabled
+  sourceLookupFailed={!seller}
+  initialSource={seller||undefined}
+  initialFx={fx}
+ />;
 }
 
 function ProductLoadingSkeleton(){

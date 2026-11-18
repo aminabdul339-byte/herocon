@@ -23,6 +23,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [colour,setColour]=useState(colours[0]),[size,setSize]=useState(sizes[0]),[style,setStyle]=useState(styles[0]);
  const [image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
  const [lookup,setLookup]=useState<Lookup>(initialSource?{status:"ready",data:initialSource}:sourceLookupFailed?{status:"error"}:{status:"loading"});
+ const [requestedSupplier,setRequestedSupplier]=useState(false);
  const [activeSku,setActiveSku]=useState("");
  const [quantities,setQuantities]=useState<Record<string,number>>({});
  const [showAllSkus,setShowAllSkus]=useState(false);
@@ -55,10 +56,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
 
  async function retrySupplierDetails(){
   if(!buckydropEnabled||lookup.status==="loading")return;
+  setRequestedSupplier(true);
   setLookup({status:"loading"});
   setCartMessage("");
   try{
-   const response=await fetch("/api/buckydrop/product/"+encodeURIComponent(id),{cache:"no-store"});
+   const response=await fetch("/api/buckydrop/product/"+encodeURIComponent(id),{method:"POST",cache:"no-store"});
    const data:unknown=await response.json();
    if(!response.ok||!data||typeof data!=="object"||!("product" in data))throw Error("Seller data unavailable");
    const productData=(data as {product:BuckydropProduct}).product;
@@ -99,7 +101,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   if(!skuOptions.has(option.name))skuOptions.set(option.name,new Set());
   skuOptions.get(option.name)?.add(option.value);
  }
- const detailAttributes=[...skuOptions].slice(0,12).map(([name,values])=>({name,value:[...values].slice(0,18).join(", ")}));
+ const savedProps=source?.productProps||[];
+ const savedNames=new Set(savedProps.map(p=>p.name.toLowerCase()));
+ const detailAttributes=[...savedProps,...[...skuOptions]
+  .filter(([name])=>!savedNames.has(name.toLowerCase()))
+  .map(([name,values])=>({name,value:[...values].slice(0,18).join(", ")}))].slice(0,32);
  const description=source?.descriptionText||"";
  const updateQuantity=(skuCode:string,delta:number)=>{
   const variant=source?.variants.find(v=>v.skuCode===skuCode);
@@ -170,12 +176,17 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </div>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller ↗</Link>}
     {!source&&<div className="hc-source-unverified" role="status">
-     <strong>{buckydropEnabled&&lookup.status==="loading"?"Checking BuckyDrop…":"Live seller information unavailable"}</strong>
-     <p>{buckydropEnabled&&lookup.status==="loading"?"Confirming the seller's latest price, colours, sizes and stock.":"BuckyDrop could not confirm this listing. The old catalogue price and options are not reliable, so purchases are temporarily unavailable."}</p>
-     {buckydropEnabled&&lookup.status==="error"&&<button type="button" onClick={retrySupplierDetails}>Retry supplier details ↻</button>}
+     <strong>{buckydropEnabled&&lookup.status==="loading"?"Checking BuckyDrop…":requestedSupplier?"Supplier lookup unavailable":"Supplier details not saved yet"}</strong>
+     <p>{buckydropEnabled&&lookup.status==="loading"
+       ?"Getting the seller's photos, prices, colours, sizes and stock. A new BuckyDrop request may be billable."
+       :requestedSupplier
+       ?"BuckyDrop did not return usable details, or they could not be saved. The old catalogue information is not a verified purchase price."
+       :"Load the supplier information once to save it permanently on Herocon. After a successful save, visitors can view the stored details without another BuckyDrop product-detail request."}</p>
+     {buckydropEnabled&&lookup.status==="error"&&<button type="button" onClick={retrySupplierDetails}>{requestedSupplier?"Retry supplier lookup ↻":"Load & save supplier details ↗"}</button>}
     </div>}
     <div className="product-price">{priceLabel}</div>
     {source&&<p className="sc-source-subprice">Supplier unit price · {fx?"Approximate GBP conversion":"Prices in CNY"} · Shipping calculated separately</p>}
+    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Saved supplier snapshot: {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices, stock and availability can change; a new check is required before payment.</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">BuckyDrop did not provide purchasable SKU options for this product. Options must be verified before ordering.</p>}
 
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">

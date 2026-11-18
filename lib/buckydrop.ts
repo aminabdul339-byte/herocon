@@ -8,6 +8,9 @@ export type BuckydropProduct = {
   originalUrl:string|null;
   marketplace:string|null;
   currency:"CNY";
+  /** Permanent saved supplier snapshot timestamp, if available. */
+  snapshotSavedAt?:string;
+  productProps?:{name:string;value:string}[];
   listPrice:number|null;
   offerPrice:number|null;
   chinaDomesticFreight:number|null;
@@ -79,7 +82,13 @@ export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"l
       image:safeImage(s.imgUrl)
     };
   }).filter(v=>v.skuCode);
-  const images=[...new Set([safeImage(d.picUrl),...arr(d.productImageList).map(safeImage),...variants.map(v=>v.image)].filter((x):x is string=>!!x))].slice(0,40);
+  const images=[...new Set([safeImage(d.picUrl),...arr(d.productImageList).map(v=>safeImage(v)||safeImage(obj(v).imgUrl)||safeImage(obj(v).url)),...variants.map(v=>v.image)].filter((x):x is string=>!!x))].slice(0,40);
+  const productProps=arr(d.productProps).slice(0,80).map(v=>{
+    const p=obj(v);
+    const name=str(p.propName)||str(p.name)||str(p.key)||"";
+    const value=str(p.valueName)||str(p.propValue)||str(p.value)||"";
+    return {name:name.slice(0,100),value:value.slice(0,250)};
+  }).filter(v=>v.name&&v.value);
   return {
     source:"buckydrop",
     environment,
@@ -88,6 +97,7 @@ export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"l
     originalUrl:str(d.productLink),
     marketplace:str(d.platform),
     currency:"CNY",
+    productProps,
     listPrice:num(obj(d.price).price),
     offerPrice:num(obj(d.proPrice).price),
     chinaDomesticFreight:num(obj(d.freight).price),
@@ -139,6 +149,7 @@ export async function queryBuckydropProduct(productLink:string):Promise<Buckydro
       throw new BuckydropError("RATE_LIMIT",429,"BuckyDrop temporarily limited product requests; try again later.");
     }
     if(errorCode==="70000014")throw new BuckydropError("ACCESS_DENIED",503,"BuckyDrop has not authorised this product operation.");
+    if(errorCode==="70000028")throw new BuckydropError("ACCOUNT_FUNDS",503,"BuckyDrop has suspended billable API requests because of insufficient balance. Check the developer console Billing Info page.");
     if(errorCode==="70011202")throw new BuckydropError("NOT_FOUND",404,"BuckyDrop did not find this product.");
     throw new BuckydropError("UPSTREAM_"+errorCode,502,"BuckyDrop could not retrieve the product at this time.");
   }
