@@ -121,7 +121,7 @@ export async function queryBuckydropProduct(productLink:string):Promise<Buckydro
   if(!isApprovedSource(productLink,environment))throw new BuckydropError("INVALID_SOURCE",400,"The source URL is unsupported in this environment.");
   const appCode=process.env.BUCKYDROP_APP_CODE;
   const appSecret=process.env.BUCKYDROP_APP_SECRET;
-  if(!appCode||!appSecret)throw new BuckydropError("NOT_CONFIGURED",503,"BuckyDrop account credentials have not been configured.");
+  if(!appCode||!appSecret)throw new BuckydropError("NOT_CONFIGURED",503,"our sourcing partner account credentials have not been configured.");
   const body=JSON.stringify({productLink});
   const timestamp=String(Date.now());
   const sign=createHash("md5").update(appCode+body+timestamp+appSecret).digest("hex");
@@ -138,20 +138,20 @@ export async function queryBuckydropProduct(productLink:string):Promise<Buckydro
       signal:AbortSignal.timeout(15000),
       cache:"no-store"
     });
-  }catch{throw new BuckydropError("UPSTREAM_UNAVAILABLE",502,"BuckyDrop product lookup is temporarily unavailable.");}
-  if(!response.ok)throw new BuckydropError("UPSTREAM_HTTP_ERROR",502,"BuckyDrop did not return a successful HTTP response.");
+  }catch{throw new BuckydropError("UPSTREAM_UNAVAILABLE",502,"our sourcing partner product lookup is temporarily unavailable.");}
+  if(!response.ok)throw new BuckydropError("UPSTREAM_HTTP_ERROR",502,"our sourcing partner did not return a successful HTTP response.");
   let result:unknown;
-  try{result=await response.json();}catch{throw new BuckydropError("INVALID_RESPONSE",502,"BuckyDrop returned invalid JSON.");}
+  try{result=await response.json();}catch{throw new BuckydropError("INVALID_RESPONSE",502,"our sourcing partner returned invalid JSON.");}
   const data=obj(result);
   if(data.success!==true||data.code!==0){
     const errorCode=String(data.code??"UNKNOWN");
     if(errorCode==="70000015"||errorCode==="70000022"||errorCode==="70011103"){
-      throw new BuckydropError("RATE_LIMIT",429,"BuckyDrop temporarily limited product requests; try again later.");
+      throw new BuckydropError("RATE_LIMIT",429,"our sourcing partner temporarily limited product requests; try again later.");
     }
-    if(errorCode==="70000014")throw new BuckydropError("ACCESS_DENIED",503,"BuckyDrop has not authorised this product operation.");
-    if(errorCode==="70000028")throw new BuckydropError("ACCOUNT_FUNDS",503,"BuckyDrop has suspended billable API requests because of insufficient balance. Check the developer console Billing Info page.");
-    if(errorCode==="70011202")throw new BuckydropError("NOT_FOUND",404,"BuckyDrop did not find this product.");
-    throw new BuckydropError("UPSTREAM_"+errorCode,502,"BuckyDrop could not retrieve the product at this time.");
+    if(errorCode==="70000014")throw new BuckydropError("ACCESS_DENIED",503,"our sourcing partner has not authorised this product operation.");
+    if(errorCode==="70000028")throw new BuckydropError("ACCOUNT_FUNDS",503,"our sourcing partner has suspended billable API requests because of insufficient balance. Check the developer console Billing Info page.");
+    if(errorCode==="70011202")throw new BuckydropError("NOT_FOUND",404,"our sourcing partner did not find this product.");
+    throw new BuckydropError("UPSTREAM_"+errorCode,502,"our sourcing partner could not retrieve the product at this time.");
   }
   if(!data.data||typeof data.data!=="object"||Array.isArray(data.data))throw new BuckydropError("EMPTY_PRODUCT",404,"Product details were not returned.");
   return normalizeBuckydropProduct(data.data,environment);

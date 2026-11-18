@@ -19,7 +19,7 @@ export default function BuckydropDetails({productId}:{productId:string}){
    .catch(error=>{if(!controller.signal.aborted)setState({loading:false,message:error.message});});
   return ()=>controller.abort();
  },[productId]);
- return <section className="sc-section sc-container" aria-label="BuckyDrop product information">
+ return <section className="sc-section sc-container" aria-label="Partner product information">
   <p className="sc-kicker">SOURCING DETAILS</p>
   <h2>Marketplace product information</h2>
   {state.loading?<p>Checking options with our sourcing partner…</p>:
@@ -32,7 +32,7 @@ export default function BuckydropDetails({productId}:{productId:string}){
     {state.product.images.length>0&&<div className="sc-buckydrop-thumbnails">{state.product.images.slice(0,8).map(src=><img src={src} alt="Supplier product view" loading="lazy" key={src}/>)}</div>}
     {state.product.variants.length>0&&<><label htmlFor="bd-variant-choice">Available supplier variants</label><select id="bd-variant-choice" value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Choose colour or size</option>{state.product.variants.map(v=><option key={v.skuCode} value={v.skuCode}>{v.title}{v.price!=null?" — ¥"+v.price.toFixed(2):""}{v.stock!=null?" — "+v.stock+" in stock":""}</option>)}</select></>}
     {state.product.descriptionText&&<p>{state.product.descriptionText.slice(0,1200)}</p>}
-    <p className="sc-product-disclosure">BuckyDrop supplier prices are shown in CNY and are not final Herocon checkout prices. Stock, shipping, duties, charges and quality must be confirmed.</p>
+    <p className="sc-product-disclosure">Partner supplier prices are shown in CNY and are not final Herocon checkout prices. Stock, shipping, duties, charges and quality must be confirmed.</p>
    </div>}
  </section>;
 }

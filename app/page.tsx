@@ -2,8 +2,9 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
+import {prioritizeSavedPartnerProducts} from "@/lib/catalogue-priority";
 export default async function Home(){
- const products=await getProducts();
+ const products=await prioritizeSavedPartnerProducts(await getProducts());
  const home=products.filter(p=>p.category==="Home & Decor"&&p.imageUrl).slice(0,2);
  const accessories=products.filter(p=>/hair|scrunchie|claw clip|headband|bow/i.test(p.title)&&p.imageUrl).slice(0,2);
  const featured=[...home,...accessories,...products.filter(p=>p.imageUrl)].filter((p,i,a)=>a.findIndex(x=>x.doppelProductId===p.doppelProductId)===i).slice(0,4);

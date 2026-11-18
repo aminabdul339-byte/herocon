@@ -47,7 +47,7 @@ export default function ShippingEstimator(){
   <div className="hc-shipping-heading">
    <div><p className="sc-kicker">SHIPPING FEE ESTIMATION</p><h2 id="hc-shipping-title">Compare <em>shipping options.</em></h2>
     <p>Check available delivery routes and indicative shipping prices with our fulfilment partner in China. Enter your parcel details to request a quotation.</p></div>
-   <span className="hc-shipping-reference-label">BuckyDrop live API</span>
+   <span className="hc-shipping-reference-label">Partner delivery estimates</span>
   </div>
   <div className="hc-shipping-inputs">
    <div className="hc-shipping-field hc-shipping-country"><label htmlFor="hc-shipping-country">Deliver to</label>
@@ -72,7 +72,7 @@ export default function ShippingEstimator(){
   {error&&<div className="hc-shipping-error" role="alert">{error}</div>}
   {quote&&<>
    <div className="hc-shipping-comparison-top"><div><h3>Shipping options</h3><p>{quote.returned} provider routes returned · Quoted {new Date(quote.quotedAt).toLocaleString("en-GB")}</p></div><span>Costs are estimates, not booked shipments</span></div>
-   {quote.currencyWarning&&<p className="hc-shipping-currency-alert" role="status">Shipping quote amounts are shown without a currency symbol until BuckyDrop&apos;s billing currency is confirmed. They are not payable checkout prices.</p>}
+   {quote.currencyWarning&&<p className="hc-shipping-currency-alert" role="status">Shipping quote amounts are shown without a currency symbol until our partner&apos;s billing currency is confirmed. They are not payable checkout prices.</p>}
    {quote.rates.length===0?<div className="hc-shipping-empty">The provider returned no shipping options for this parcel. Check the parcel details or try another destination.</div>:
     <div className="hc-shipping-route-list">{quote.rates.map((route,i)=><article className="hc-shipping-route" key={route.serviceCode+"-"+i}>
      <div className="hc-route-main">
@@ -89,6 +89,6 @@ export default function ShippingEstimator(){
      </details>
     </article>)}</div>}
   </>}
-  <p className="hc-shipping-footnote">This is a live BuckyDrop rate enquiry, not a confirmed booking. Weight, dimensions, eligibility and the final amount may change after packing and verification. No shipping purchase or payment takes place through this estimator.</p>
+  <p className="hc-shipping-footnote">This is a partner delivery estimate, not a confirmed booking. Weight, dimensions, eligibility and the final amount may change after packing and verification. No shipping purchase or payment takes place through this estimator.</p>
  </section>;
 }

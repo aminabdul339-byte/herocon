@@ -9,8 +9,8 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
  * Existing snapshots are never automatically refreshed on product-page visits.
  * Supplier prices/stock are historical display data, NEVER checkout authority.
  *
- * Reads and writes consume Vercel storage operations (but no BuckyDrop call on a hit).
- * A new billable BuckyDrop lookup is only invoked from explicit user actions.
+ * Reads and writes consume Vercel storage operations (but no our sourcing partner call on a hit).
+ * A new billable our sourcing partner lookup is only invoked from explicit user actions.
  */
 const PREFIX="catalogue/buckydrop-snapshots/v1/";
 const ACCESS="private" as const;
@@ -52,8 +52,8 @@ export async function getSavedBuckydropProduct(link:string):Promise<BuckydropPro
 }
 
 /**
- * Called only after a visitor explicitly requests BuckyDrop details, or submits
- * a new original marketplace link. A persisted hit never calls BuckyDrop.
+ * Called only after a visitor explicitly requests our sourcing partner details, or submits
+ * a new original marketplace link. A persisted hit never calls our sourcing partner.
  * No automatic bulk crawl or background refresh is performed.
  */
 export async function getOrSaveBuckydropProduct(link:string):Promise<{product:BuckydropProduct;cacheStatus:"hit"|"stored"}>{

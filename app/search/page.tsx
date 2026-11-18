@@ -2,6 +2,7 @@ import Link from "next/link";
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import {getProducts} from "@/lib/catalogue-server";
+import {prioritizeSavedPartnerProducts} from "@/lib/catalogue-priority";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
 import type {Metadata} from "next";
@@ -20,6 +21,9 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  if(sort==="price-asc")products=[...products].sort((a,b)=>price(a)-price(b));
  if(sort==="price-desc")products=[...products].sort((a,b)=>price(b)-price(a));
  if(sort==="newest")products=[...products].sort((a,b)=>(b.collectedAt||"").localeCompare(a.collectedAt||""));
+ // Expand fully imported products first within every search and category,
+ // keeping the requested sort inside the two groups.
+ products=await prioritizeSavedPartnerProducts(products);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
  const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),pages=Math.max(1,Math.ceil(products.length/PAGE_SIZE)),page=Math.min(requestedPage,pages);

@@ -13,7 +13,7 @@ const faqs=[
  ["Can I buy directly through Herocon today?","Not yet. You can browse products, choose seller options and add items to your cart. Checkout is coming soon."],
  ["What do the CNY and GBP prices mean?","CNY is the seller’s listed product price. GBP is an approximate reference conversion—not the final amount payable. Delivery, sourcing services, VAT and any applicable duties are calculated separately."],
  ["Is there a minimum order quantity?","Some listings have a supplier minimum order. The product page displays it when the marketplace provides it, but availability and conditions may change."],
- ["Who helps fulfil orders?","Herocon integrates with BuckyDrop for supplier data and shipping quotations. The planned paid-order handoff will allow our China fulfilment partner to coordinate with sellers, shipping and delivery tracking. BuckyDrop order acceptance is not proof of payment or completed fulfilment."],
+ ["Who helps fulfil orders?","Herocon works with a China-based sourcing and fulfilment partner for supplier data and shipping quotations. Our planned paid-order handoff will help coordinate sellers, shipping and delivery tracking. An order acknowledgement does not confirm payment or completed fulfilment."],
  ["Can I resell products I find on Herocon?","Only where lawful and suitable. Check the product’s safety, materials, authenticity, brand rights and UK import requirements before committing to stock."]
 ];
 export default function HowItWorks(){return <main className="sc-guide-page"><Header/>

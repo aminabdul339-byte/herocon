@@ -8,7 +8,6 @@ import {useCart,type CartItem} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 
-type Lookup={status:"loading"}|{status:"ready";data:BuckydropProduct}|{status:"error"};
 type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
@@ -22,8 +21,6 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const styles=[...new Set([...(product.styles||[]),...originalVariants.map(v=>v.style).filter((x):x is string=>!!x)])];
  const [colour,setColour]=useState(colours[0]),[size,setSize]=useState(sizes[0]),[style,setStyle]=useState(styles[0]);
  const [image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
- const [lookup,setLookup]=useState<Lookup>(initialSource?{status:"ready",data:initialSource}:sourceLookupFailed?{status:"error"}:{status:"loading"});
- const [requestedSupplier,setRequestedSupplier]=useState(false);
  const [activeSku,setActiveSku]=useState("");
  const [quantities,setQuantities]=useState<Record<string,number>>({});
  const [showAllSkus,setShowAllSkus]=useState(false);
@@ -33,7 +30,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [fx,setFx]=useState<ForexRate|null>(initialFx||null);
 
  useEffect(()=>{
-  if(!buckydropEnabled||initialFx)return;
+  if(!initialSource||initialFx)return;
   const controller=new AbortController();
   fetch("/api/fx/cny-gbp",{signal:controller.signal})
    .then(async response=>{if(!response.ok)throw Error("Exchange rate unavailable");return response.json();})
@@ -43,33 +40,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  },[buckydropEnabled,initialFx]);
  const dualPrice=(cny:number)=>formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
- useEffect(()=>{
-  if(!buckydropEnabled||initialSource||sourceLookupFailed)return;
-  const controller=new AbortController();
-  setLookup({status:"loading"});
-  fetch("/api/buckydrop/product/"+encodeURIComponent(id),{signal:controller.signal,cache:"no-store"})
-   .then(async response=>{const data=await response.json();if(!response.ok||!data.product)throw Error("Seller data unavailable");return data.product as BuckydropProduct;})
-   .then(data=>{if(!controller.signal.aborted){setLookup({status:"ready",data});setImage(0);setBadImages([]);setActiveSku("");setQuantities({});setShowAllSkus(false);}})
-   .catch(()=>{if(!controller.signal.aborted)setLookup({status:"error"});});
-  return ()=>controller.abort();
- },[id,buckydropEnabled,initialSource,sourceLookupFailed]);
-
- async function retrySupplierDetails(){
-  if(!buckydropEnabled||lookup.status==="loading")return;
-  setRequestedSupplier(true);
-  setLookup({status:"loading"});
-  setCartMessage("");
-  try{
-   const response=await fetch("/api/buckydrop/product/"+encodeURIComponent(id),{method:"POST",cache:"no-store"});
-   const data:unknown=await response.json();
-   if(!response.ok||!data||typeof data!=="object"||!("product" in data))throw Error("Seller data unavailable");
-   const productData=(data as {product:BuckydropProduct}).product;
-   if(productData.source!=="buckydrop")throw Error("Invalid seller data");
-   setLookup({status:"ready",data:productData});
-   setImage(0);setBadImages([]);setActiveSku("");setQuantities({});setShowAllSkus(false);
-  }catch{setLookup({status:"error"});}
- }
- const source=buckydropEnabled&&lookup.status==="ready"?lookup.data:null;
+ // Partner details are merged server-side from permanent storage. Never call a
+ // billable partner endpoint merely because a customer opened the product page.
+ const source=initialSource||null;
  const marketplace=normalizeMarketplaceLink(product.originalMarketplaceUrl)||normalizeMarketplaceLink(source?.originalUrl);
  const sellerName=source?.sellerName||product.sellerName;
  const defaultSku=source?.variants.find(v=>v.stock===null||v.stock>0)||source?.variants[0];
@@ -90,10 +63,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const maxPrice=variantPrices.length?Math.max(...variantPrices):null;
  const priceRange=minPrice!=null&&maxPrice!=null?(minPrice===maxPrice?dualPrice(minPrice):
   formatCNY(minPrice)+" – "+formatCNY(maxPrice)+(fx?" ≈ "+formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"")):null;
+ const cataloguePrice=price&&price!=="View marketplace price"?price:"Price to be confirmed";
  const priceLabel=source?(source.variants.length>0&&!sourceVariant?"Option unavailable":
   activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
-  (priceCNY!=null?dualPrice(priceCNY):"Supplier price unavailable")):
-  buckydropEnabled&&lookup.status==="loading"?"Checking current supplier price…":"Current supplier price unavailable";
+  (priceCNY!=null?dualPrice(priceCNY):cataloguePrice)):
+  cataloguePrice;
  const outOfStock=Boolean(source&&(source.available===false||(source.variants.length>0&&!source.variants.some(v=>v.stock===null||v.stock>0))));
  const detailImages=(source?.detailImages||[]).filter((url,i,all)=>all.indexOf(url)===i).slice(0,36);
  const skuOptions=new Map<string,Set<string>>();
@@ -121,7 +95,8 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  };
 
  function handleCart(buyNow:boolean){
-  if(!source||source.variants.length===0){setCartMessage("Current supplier price, stock and SKU options must be verified before adding this product.");return;}
+  // Catalogue-only items can still be saved to a draft cart. Live checkout
+  // remains disabled; final selected SKU, price and stock require a fresh check.
   if(!marketplace){setCartMessage("This product does not have a direct marketplace link.");return;}
   if(outOfStock){setCartMessage("The seller currently lists this product as unavailable.");return;}
   const productPath=id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace):"/product/"+encodeURIComponent(id);
@@ -175,20 +150,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link ↗</a>}
     </div>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller ↗</Link>}
-    {!source&&<div className="hc-source-unverified" role="status">
-     <strong>{buckydropEnabled&&lookup.status==="loading"?"Checking BuckyDrop…":requestedSupplier?"Supplier lookup unavailable":"Supplier details not saved yet"}</strong>
-     <p>{buckydropEnabled&&lookup.status==="loading"
-       ?"Getting the seller's photos, prices, colours, sizes and stock. A new BuckyDrop request may be billable."
-       :requestedSupplier
-       ?"BuckyDrop did not return usable details, or they could not be saved. The old catalogue information is not a verified purchase price."
-       :"Load the supplier information once to save it permanently on Herocon. After a successful save, visitors can view the stored details without another BuckyDrop product-detail request."}</p>
-     {buckydropEnabled&&lookup.status==="error"&&<button type="button" onClick={retrySupplierDetails}>{requestedSupplier?"Retry supplier lookup ↻":"Load & save supplier details ↗"}</button>}
-    </div>}
     <div className="product-price">{priceLabel}</div>
-    {source&&<p className="sc-source-subprice">Supplier unit price · {fx?"Approximate GBP conversion":"Prices in CNY"} · Shipping calculated separately</p>}
-    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Saved supplier snapshot: {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices, stock and availability can change; a new check is required before payment.</p>}
-    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">BuckyDrop did not provide purchasable SKU options for this product. Options must be verified before ordering.</p>}
-
+    {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
+    {source&&<p className="sc-source-subprice">Saved partner product prices · {fx?"Approximate GBP equivalents":"Prices in CNY"} · Delivery calculated separately</p>}
+    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Partner details saved on {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Stock and prices may have changed and must be confirmed before payment.</p>}
+    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Our partner has not provided detailed seller options for this listing. You can still save the original product to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
       <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length} seller variants · Select quantities</span></div>
       <div className="sc-sku-list">
@@ -219,8 +185,8 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       <div className="hc-simple-quantity"><span>Quantity</span><div className="sc-sku-qty"><button type="button" onClick={()=>setSingleQuantity(Math.max(1,singleQuantity-1))} disabled={singleQuantity<=1}>−</button><output>{singleQuantity}</output><button type="button" onClick={()=>setSingleQuantity(Math.min(999,singleQuantity+1))}>+</button></div></div>
     </>}
     <div className="hc-buy-actions">
-     <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock||!source||source.variants.length===0}>Add to cart</button>
-     <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock||!source||source.variants.length===0}>Buy now</button>
+     <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
+     <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Buy now</button>
     </div>
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart →</Link>}</p>}
     <p className="hc-checkout-note">Checkout and payment are not yet available. Buy now opens your order review.</p>

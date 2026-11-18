@@ -107,7 +107,7 @@ export default function CatalogueImportPage(){
  return <main style={{maxWidth:900,margin:"48px auto",padding:"0 22px",fontFamily:"system-ui, sans-serif",color:"#1a3023"}}>
   <p style={{fontSize:13,color:"#667e6d"}}><Link href="/">Herocon</Link> / Private operations</p>
   <h1 style={{fontFamily:"Georgia,serif",fontSize:"clamp(30px,5vw,48px)",margin:"12px 0"}}>Import all supplier products</h1>
-  <p style={{color:"#506955",lineHeight:1.6}}>Only the merchant can start this operation. Once BuckyDrop returns a product successfully, Herocon stores that response permanently. Previously saved products are skipped. New BuckyDrop lookups may be billable, with charges deducted the following day.</p>
+  <p style={{color:"#506955",lineHeight:1.6}}>Only the merchant can start this operation. Once our sourcing partner returns a product successfully, Herocon stores that response permanently. Previously saved products are skipped. New partner lookups may be billable, with charges deducted the following day.</p>
   <section style={{padding:20,border:"1px solid #d6e3d8",borderRadius:12,marginTop:22}}>
    <label htmlFor="admin-key" style={{fontWeight:700,display:"block",marginBottom:8}}>Private catalogue import key</label>
    <input id="admin-key" type="password" autoComplete="off" spellCheck={false} value={key} onChange={e=>setKey(e.target.value)}
@@ -136,6 +136,6 @@ export default function CatalogueImportPage(){
    </div>
   </section>}
   {history.length>0&&<section style={{marginTop:24}}><h2 style={{fontSize:19}}>Recent import results</h2><ul>{history.map((item,index)=><li key={index} style={{padding:"4px 0",fontSize:13}}>{item}</li>)}</ul></section>}
-  <p style={{fontSize:12,color:"#667e6d",margin:"28px 0 55px",lineHeight:1.6}}>Keep this tab open while importing. Closing or reloading it stops the client-side loop. BuckyDrop's own rate limits, authorisations and account-balance restrictions are honoured. Its API charges, Vercel storage charges and any associated network costs are separate.</p>
+  <p style={{fontSize:12,color:"#667e6d",margin:"28px 0 55px",lineHeight:1.6}}>Keep this tab open while importing. Closing or reloading it stops the client-side loop. Our partner's own rate limits, authorisations and account-balance restrictions are honoured. Partner API charges, Vercel storage charges and any associated network costs are separate.</p>
  </main>;
 }

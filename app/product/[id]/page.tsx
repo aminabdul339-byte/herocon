@@ -80,7 +80,7 @@ function ProductLoadingSkeleton(){
    <div className="hc-skeleton-block hc-skeleton-title"/>
    <div className="hc-skeleton-block hc-skeleton-title-short"/>
    <div className="hc-skeleton-block hc-skeleton-price"/>
-   <p role="status">Fetching the latest seller photos, colours, sizes and prices…</p>
+   <p role="status">Preparing saved partner photos, colours, sizes and catalogue prices…</p>
    {Array.from({length:3},(_,i)=><div className="hc-skeleton-block hc-skeleton-variant" key={i}/>)}
   </aside>
  </section>;
