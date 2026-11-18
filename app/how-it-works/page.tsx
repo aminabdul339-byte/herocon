@@ -6,14 +6,14 @@ const steps=[
  {n:"01",title:"Find your product",body:"Explore our catalogue and review original 1688, Taobao and Weidian listings, photographs and supplier options."},
  {n:"02",title:"Choose seller variants",body:"See seller-reported colours, sizes and stock where available. Prices are shown in Chinese yuan and converted into approximate GBP using a reference exchange rate."},
  {n:"03",title:"Add products to your cart",body:"Choose the colours, sizes and quantities you want, then keep your selected products in your Herocon cart."},
- {n:"04",title:"Checkout (coming soon)",body:"Review your cart and product selections. Online payments are not available on Herocon yet."},
- {n:"05",title:"Fulfilled with our partner in China",body:"Our partner in China helps fulfil orders, coordinating with suppliers and supporting the journey from purchase to international delivery. Herocon checkout is still being developed, so orders cannot yet be placed on the site."}
+ {n:"04",title:"Secure payment and order confirmation (coming soon)",body:"After checkout and verified payment are introduced, Herocon will confirm the selected seller SKUs and submit the paid order to our China fulfilment partner."},
+ {n:"05",title:"Fulfilment and tracking",body:"The China fulfilment partner coordinates purchasing and delivery. Customers will be able to view their order and parcel statuses using a private Herocon tracking code once ordering is launched."}
 ];
 const faqs=[
  ["Can I buy directly through Herocon today?","Not yet. You can browse products, choose seller options and add items to your cart. Checkout is coming soon."],
  ["What do the CNY and GBP prices mean?","CNY is the seller’s listed product price. GBP is an approximate reference conversion—not the final amount payable. Delivery, sourcing services, VAT and any applicable duties are calculated separately."],
  ["Is there a minimum order quantity?","Some listings have a supplier minimum order. The product page displays it when the marketplace provides it, but availability and conditions may change."],
- ["Who helps fulfil orders?","Herocon works with a partner in China to support fulfilment and coordinate with sellers. Once Herocon ordering is available, delivery options and costs will be presented before payment."],
+ ["Who helps fulfil orders?","Herocon integrates with BuckyDrop for supplier data and shipping quotations. The planned paid-order handoff will allow our China fulfilment partner to coordinate with sellers, shipping and delivery tracking. BuckyDrop order acceptance is not proof of payment or completed fulfilment."],
  ["Can I resell products I find on Herocon?","Only where lawful and suitable. Check the product’s safety, materials, authenticity, brand rights and UK import requirements before committing to stock."]
 ];
 export default function HowItWorks(){return <main className="sc-guide-page"><Header/>

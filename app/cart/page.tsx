@@ -59,8 +59,8 @@ export default function CartPage(){
      <p><span>Shipping and taxes</span><strong>Not calculated</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
-    <div className="hc-cart-checkout-note"><strong>Checkout is coming soon</strong><p>Your cart is saved in this browser. Online payment and delivery quoting are not yet available on Herocon.</p></div>
-    <Link className="sc-button sc-button-dark hc-cart-shop" href="/search">Continue shopping ↗</Link>
+    <div className="hc-cart-checkout-note"><strong>Checkout is coming soon</strong><p>Your cart is saved in this browser. You can compare delivery estimates now; payment and supplier order submission remain disabled until secure checkout is verified.</p></div>
+    <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
   </section>
  </main>;

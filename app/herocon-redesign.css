@@ -620,3 +620,33 @@
  .hc-route-details{padding:0 14px 10px}
  .hc-shipping-heading h2{font-size:32px}
 }
+
+
+/* Live shipping quote and private order tracking */
+.hc-shipping-postcode{grid-column:span 2}
+.hc-shipping-submit{grid-column:1/-1;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.hc-shipping-submit>.sc-button{appearance:none;border:0;cursor:pointer;padding:15px 23px;font-weight:800;font-size:13px;min-width:215px}
+.hc-shipping-submit>.sc-button:disabled{opacity:.5;cursor:not-allowed}
+.hc-shipping-submit .hc-shipping-example{margin:0;padding:10px}
+.hc-shipping-error{background:#fff4f1;color:#9a3e2d;border:1px solid #efd1c9;border-radius:8px;padding:13px 16px;font-size:12px;line-height:1.6;margin-top:17px}
+.hc-shipping-currency-alert{background:#f5f7ef;border:1px solid #dfe8d7;border-radius:8px;padding:14px 16px;color:#607764;font-size:12px;line-height:1.6;margin:0 0 17px}
+.hc-order-check-wrap{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:28px;align-items:start}
+.hc-order-check-panel,.hc-order-status-panel{padding:28px;border:1px solid #e0e8dc;border-radius:13px;background:#fff}
+.hc-order-check-panel h2,.hc-order-status-panel h2{font:400 28px Georgia,serif;color:#294732;margin:0 0 11px}
+.hc-order-check-panel>p,.hc-order-status-panel>p{font-size:12px;line-height:1.7;color:#657a6a}
+.hc-order-form{display:grid;gap:10px;margin-top:25px}
+.hc-order-form label{font-weight:800;font-size:12px;color:#335941;margin-top:5px}
+.hc-order-form input{border:1px solid #d2dfd0;background:#fcfdfa;border-radius:8px;padding:13px 14px;font:inherit;color:#2a4832;min-width:0}
+.hc-order-form button{appearance:none;border:0;margin-top:11px;cursor:pointer;justify-self:stretch}
+.hc-order-form button:disabled{opacity:.55;cursor:not-allowed}
+.hc-order-status-panel{background:#f3f7f1}
+.hc-order-status-panel h3{font-size:17px;margin:24px 0 12px;color:#2c5239}
+.hc-order-status-panel h4{font-size:14px;color:#31553d;margin:0 0 10px}
+.hc-order-parcel{background:white;border:1px solid #e0e8dd;border-radius:10px;padding:17px;margin:10px 0}
+.hc-order-parcel p,.hc-order-events p{font-size:12px;line-height:1.65;color:#56705c;margin:5px 0}
+.hc-order-events{border-top:1px solid #e2e9df;margin-top:12px;padding-top:10px}
+.hc-order-events p{padding-left:12px;border-left:2px solid #bad1b7}
+.hc-order-footer{padding:0 0 65px}
+@media(max-width:850px){.hc-order-check-wrap{grid-template-columns:1fr}}
+@media(max-width:760px){.hc-shipping-postcode{grid-column:span 2}}
+@media(max-width:480px){.hc-shipping-submit>.sc-button{width:100%}.hc-shipping-submit{gap:8px}.hc-order-check-panel,.hc-order-status-panel{padding:18px}}
