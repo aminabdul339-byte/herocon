@@ -40,7 +40,7 @@ const usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
 const roundWeight=(kg:number,increment:number)=>Math.ceil((kg-0.00000001)/increment)*increment;
 const fmtWeight=(kg:number)=>Number(kg.toFixed(2)).toLocaleString("en-GB",{maximumFractionDigits:2})+" kg";
 
-export default function ShippingEstimator({onUseEstimate}:{onUseEstimate:(amountGBP:number)=>void}){
+export default function ShippingEstimator(){
  const [country,setCountry]=useState("GB");
  const [parcelKind,setParcelKind]=useState<ParcelKind>("clothing");
  const [weight,setWeight]=useState("1400");
@@ -49,8 +49,6 @@ export default function ShippingEstimator({onUseEstimate}:{onUseEstimate:(amount
  const [height,setHeight]=useState("30");
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxError,setFxError]=useState(false);
- const [chosen,setChosen]=useState<string|null>(null);
- const [notice,setNotice]=useState("");
 
  useEffect(()=>{
   const controller=new AbortController();
@@ -90,13 +88,6 @@ export default function ShippingEstimator({onUseEstimate}:{onUseEstimate:(amount
   }).filter(result=>result.billedKg<=30).sort((a,b)=>a.usd-b.usd);
  },[valid,country,parcelKind,actualKg,volumeCm3,l,wd,h]);
 
- const useForCosts=(entry:Estimate)=>{
-  if(!fx)return;
-  const amount=Math.round(entry.usd*fx.rate*100)/100;
-  onUseEstimate(amount);
-  setChosen(entry.route.id);
-  setNotice("Added "+gbp.format(amount)+" as the shipping estimate in the full landed-cost calculation below.");
- };
 
  return <section className="hc-shipping-estimator" aria-labelledby="hc-shipping-title">
   <div className="hc-shipping-heading">
@@ -105,43 +96,39 @@ export default function ShippingEstimator({onUseEstimate}:{onUseEstimate:(amount
    <div className="hc-shipping-reference-label">Reference estimates · Not live carrier rates</div>
   </div>
   <div className="hc-shipping-inputs">
-   <div className="hc-shipping-field hc-shipping-country"><label htmlFor="hc-shipping-country">Deliver to</label><select id="hc-shipping-country" value={country} onChange={e=>{setCountry(e.target.value);setChosen(null);setNotice("");}}>
+   <div className="hc-shipping-field hc-shipping-country"><label htmlFor="hc-shipping-country">Deliver to</label><select id="hc-shipping-country" value={country} onChange={e=>{setCountry(e.target.value);}}>
      <option value="GB">United Kingdom</option><option value="US">United States</option><option value="DE">Germany</option><option value="FR">France</option><option value="AU">Australia</option><option value="CA">Canada</option><option value="OTHER">Other destination</option>
     </select></div>
-   <div className="hc-shipping-field hc-shipping-kind"><label htmlFor="hc-shipping-kind">Parcel contents</label><select id="hc-shipping-kind" value={parcelKind} onChange={e=>{setParcelKind(e.target.value as ParcelKind);setChosen(null);setNotice("");}}>
+   <div className="hc-shipping-field hc-shipping-kind"><label htmlFor="hc-shipping-kind">Parcel contents</label><select id="hc-shipping-kind" value={parcelKind} onChange={e=>{setParcelKind(e.target.value as ParcelKind);}}>
      <option value="clothing">Clothing (without boxes)</option><option value="general">General merchandise</option><option value="cosmetics">Cosmetics or electronics</option><option value="battery">Battery-related goods</option>
     </select></div>
-   <div className="hc-shipping-field"><label htmlFor="hc-shipping-weight">Actual weight (g)</label><input id="hc-shipping-weight" inputMode="decimal" type="number" min="1" max="60000" step="any" value={weight} onChange={e=>{setWeight(e.target.value);setChosen(null);setNotice("");}}/></div>
-   <div className="hc-shipping-field"><label htmlFor="hc-shipping-length">Length (cm)</label><input id="hc-shipping-length" inputMode="decimal" type="number" min="1" max="200" step="any" value={length} onChange={e=>{setLength(e.target.value);setChosen(null);setNotice("");}}/></div>
-   <div className="hc-shipping-field"><label htmlFor="hc-shipping-width">Width (cm)</label><input id="hc-shipping-width" inputMode="decimal" type="number" min="1" max="200" step="any" value={width} onChange={e=>{setWidth(e.target.value);setChosen(null);setNotice("");}}/></div>
-   <div className="hc-shipping-field"><label htmlFor="hc-shipping-height">Height (cm)</label><input id="hc-shipping-height" inputMode="decimal" type="number" min="1" max="200" step="any" value={height} onChange={e=>{setHeight(e.target.value);setChosen(null);setNotice("");}}/></div>
-   <button className="hc-shipping-example" type="button" onClick={()=>{setCountry("GB");setParcelKind("clothing");setWeight("1400");setLength("30");setWidth("30");setHeight("30");setChosen(null);setNotice("");}}>Reset to example values ↺</button>
+   <div className="hc-shipping-field"><label htmlFor="hc-shipping-weight">Actual weight (g)</label><input id="hc-shipping-weight" inputMode="decimal" type="number" min="1" max="60000" step="any" value={weight} onChange={e=>{setWeight(e.target.value);}}/></div>
+   <div className="hc-shipping-field"><label htmlFor="hc-shipping-length">Length (cm)</label><input id="hc-shipping-length" inputMode="decimal" type="number" min="1" max="200" step="any" value={length} onChange={e=>{setLength(e.target.value);}}/></div>
+   <div className="hc-shipping-field"><label htmlFor="hc-shipping-width">Width (cm)</label><input id="hc-shipping-width" inputMode="decimal" type="number" min="1" max="200" step="any" value={width} onChange={e=>{setWidth(e.target.value);}}/></div>
+   <div className="hc-shipping-field"><label htmlFor="hc-shipping-height">Height (cm)</label><input id="hc-shipping-height" inputMode="decimal" type="number" min="1" max="200" step="any" value={height} onChange={e=>{setHeight(e.target.value);}}/></div>
+   <button className="hc-shipping-example" type="button" onClick={()=>{setCountry("GB");setParcelKind("clothing");setWeight("1400");setLength("30");setWidth("30");setHeight("30");}}>Reset to example values ↺</button>
   </div>
-  <div className="hc-shipping-disclosure">
-   <strong>How these estimates work</strong>
-   <p>These are <b>illustrations based on the shipping examples you provided</b>, with sample USD prices adjusted proportionally to the calculated billable weight. They are <b>not live Sugargoo, Royal Mail, courier or Herocon quotations</b>; actual prices and eligibility can be very different. Tax, insurance, packaging and additional fees are not included. No shipping service can be booked here.</p>
-  </div>
+  
   {!valid?<div className="hc-shipping-empty" role="status">Enter a valid parcel weight (up to 60,000 g) and dimensions (up to 200 cm per side) to see the comparison.</div>:
-   country!=="GB"?<div className="hc-shipping-empty" role="status"><strong>Shipping examples are available for the UK only.</strong><p>The supplied reference shows UK routes. We won't invent international carrier prices for this destination. Live quotes will require a shipping-provider integration.</p></div>:
+   country!=="GB"?<div className="hc-shipping-empty" role="status"><strong>Shipping examples are available for the UK only.</strong><p>Shipping comparisons for this destination are not available yet.</p></div>:
    estimates.length===0?<div className="hc-shipping-empty" role="status"><strong>No matching reference routes.</strong><p>These example services may not accept the selected parcel type, weight or dimensions. Change your parcel details to compare the examples, or request a real quote from a carrier.</p></div>:
    <>
     <div className="hc-shipping-comparison-top"><div><h3>Available reference comparisons</h3><p>{estimates.length} illustrative routes · Actual parcel weight: {fmtWeight(actualKg)} · Cheapest shown first</p></div><span>{fx?"GBP conversion: "+fx.date:fxError?"GBP conversion temporarily unavailable":"Converting USD prices to GBP…"}</span></div>
     <div className="hc-shipping-route-list">
      {estimates.map((entry,index)=>{const {route,billedKg,volumeKg,usd:priceUSD}=entry;const priceGBP=fx?priceUSD*fx.rate:null;
-      return <article key={route.id} className={"hc-shipping-route"+(chosen===route.id?" hc-shipping-route-selected":"")}>
+      return <article key={route.id} className="hc-shipping-route">
        <div className="hc-route-main"><div className="hc-route-identity"><span className="hc-route-overline">{index===0?"LOWEST REFERENCE ESTIMATE":"SHIPPING REFERENCE"}</span><h4>{route.title}</h4><p>{route.description}</p></div>
         <div className="hc-route-measure"><small>Chargeable weight</small><strong>{fmtWeight(billedKg)}</strong><small>Delivery estimate</small><strong>{route.days}</strong></div>
-        <div className="hc-route-price"><strong>{priceGBP!=null?"≈ "+gbp.format(priceGBP):"≈ "+usd.format(priceUSD)}</strong><small>{priceGBP!=null?"≈ "+usd.format(priceUSD)+" (modelled)":fxError?"USD reference estimate":"Loading GBP estimate…"}</small><button type="button" onClick={()=>useForCosts(entry)} disabled={!fx}>{chosen===route.id?"Added to cost estimate ✓":"Use this estimate ↗"}</button></div>
+        <div className="hc-route-price"><strong>{priceGBP!=null?"≈ "+gbp.format(priceGBP):"≈ "+usd.format(priceUSD)}</strong><small>{priceGBP!=null?"≈ "+usd.format(priceUSD)+" (modelled)":fxError?"USD reference estimate":"Loading GBP estimate…"}</small></div>
        </div>
        <details className="hc-route-details"><summary>See billing method & restrictions</summary><p><strong>Billing:</strong> {route.billing==="actual"?"Actual weight":route.billing==="ems"?"Actual weight for lengths under 60 cm, otherwise higher of actual and volumetric":"Higher of actual and volumetric weight"}{route.divisor?" (L × W × H ÷ "+route.divisor.toLocaleString("en-GB")+")":""}.</p>
         {route.divisor!=null&&<p><strong>Calculated volumetric weight:</strong> {volumeKg.toFixed(2)} kg</p>}
         <p><strong>Reference restrictions:</strong> {route.conditions}</p>
-        <p><strong>Pricing basis:</strong> {usd.format(route.sampleUSD)} at {fmtWeight(route.sampleKg)} in the supplied sample; modelled proportionally for this parcel. This is not a carrier quote.</p>
+        <p><strong>Pricing basis:</strong> {usd.format(route.sampleUSD)} at {fmtWeight(route.sampleKg)} in the reference example, adjusted for the parcel weight. Confirm the final price with the shipping provider.</p>
        </details>
       </article>;
      })}
     </div>
-    {notice&&<p className="hc-shipping-added" role="status">{notice}</p>}
    </>
   }
   <p className="hc-shipping-footnote">Delivery times are reference ranges only, not guaranteed. A volumetric calculation may increase the billed weight above the actual scale weight. Confirm packed dimensions, current carrier eligibility and the final payable price before ordering.</p>
