@@ -175,11 +175,28 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   requiresMerchantAction:true,customerNotified:audit.customerEmailSent};
 }
 export async function listCheckoutReconciliation(){
- const result=await list({prefix:BASE+"results/",limit:50});
- const paths=result.blobs.map(b=>b.pathname).sort().reverse().slice(0,40);
- const rows=await Promise.all(paths.map(async path=>{
-  const value=await read(path.slice(BASE.length));
-  return value as Audit|null;
- }));
- return rows.filter((x):x is Audit=>!!x&&x.version===1);
+ const [results,claims]=await Promise.all([
+  list({prefix:BASE+"results/",limit:1000}),
+  list({prefix:BASE+"claims/",limit:1000})
+ ]);
+ const resultBySession=new Map<string,Audit>();
+ for(const blob of [...results.blobs].sort((a,b)=>
+  new Date(b.uploadedAt).getTime()-new Date(a.uploadedAt).getTime()).slice(0,100)){
+  const value=await read(blob.pathname.slice(BASE.length)) as Audit|null;
+  if(value&&value.version===1&&value.sessionId?.startsWith("cs_live_"))
+   resultBySession.set(value.sessionId,value);
+ }
+ for(const blob of [...claims.blobs].sort((a,b)=>
+  new Date(b.uploadedAt).getTime()-new Date(a.uploadedAt).getTime()).slice(0,100)){
+  const claim=await read(blob.pathname.slice(BASE.length)) as {quoteId?:string;sessionId?:string;at?:string}|null;
+  if(!claim?.sessionId?.startsWith("cs_live_")||resultBySession.has(claim.sessionId))continue;
+  resultBySession.set(claim.sessionId,{
+   version:1,quoteId:claim.quoteId||"unknown",sessionId:claim.sessionId,
+   email:"",totalPence:0,state:"paid_review_required",
+   reason:"Payment processing was reserved but no completed result was recorded. Investigate Stripe and BuckyDrop; do not resubmit automatically.",
+   recordedAt:claim.at||new Date().toISOString(),partnerOrderNo:null,shopOrderNo:null,
+   accessCode:null,customerEmailSent:false,merchantEmailSent:false
+  });
+ }
+ return [...resultBySession.values()].sort((a,b)=>b.recordedAt.localeCompare(a.recordedAt)).slice(0,60);
 }
