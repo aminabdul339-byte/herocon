@@ -66,7 +66,7 @@ function MembershipGate(){
      </>:active?<>
       <p><strong>{isTest?"Test membership active":"Membership active"}</strong>{through?" · Paid through "+through:""}{membership.cancelAtPeriodEnd?" · Cancels at period end.":""}</p>
       {isTest?<p>Stripe test mode. No real payment has been made, and product purchases remain locked.</p>:
-       <Link className="hc-account-primary-link" href={next}>Continue to checkout →</Link>}
+       <><p>Product ordering and international shipping payments are not currently available through Herocon.</p><Link className="hc-account-primary-link" href="/search">Browse the catalogue →</Link></>}
       <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation ↗</button>
      </>:<>
       <p>£9.99 charged today and every month until cancelled. This supports Herocon while the sourcing checkout is being developed. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
