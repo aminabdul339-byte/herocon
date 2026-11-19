@@ -53,21 +53,21 @@ export default function CartPage(){
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
  const requestQuoteHref="mailto:aminabdul339@outlook.com?subject="+
-  encodeURIComponent("Herocon request for final GBP checkout quote")+"&body="+
+  encodeURIComponent("Herocon product quote and estimated later freight")+"&body="+
   encodeURIComponent([
-   "Hello Herocon, I would like a final all-in GBP price for these selected items:",
+   "Hello Herocon, I would like a GBP product payment quote and a separately disclosed estimate of the international shipping cost due later after BuckyDrop warehouse receipt:",
    ...selectedItems.slice(0,5).map((item,i)=>
     [String(i+1)+". "+item.title,"Variant: "+(item.variant||"Not selected"),
      "Supplier SKU: "+(item.skuCode||"Not available"),
      "Quantity: "+item.quantity,"Marketplace link: "+item.marketplaceUrl].join("\n")),
-   "Please reply with the final shipping, taxes and any additional charges, plus a private Herocon checkout link when payments become available.",
+   "Please confirm the product-stage GBP amount, estimated later shipping cost and how the freight charge will be calculated, taxes/duties, applicable returns and cancellation policy, and a private Herocon quote link when the two-stage checkout is ready.",
    "My destination country and postcode:"
   ].join("\n\n"));
  return <main className="hc-cart-page"><Header/>
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">{checkout?"ORDER REVIEW":"YOUR SHOPPING CART"}</p>
    <h1>{checkout?"Review your ":"Your "}<em>{checkout?"selection.":"cart."}</em></h1>
-   <p>Tick the products you want to buy, choose the quantity of each, and review your selected total.</p>
+   <p>Tick the products you want, choose quantities and review the indicative product subtotal. International shipping will be quoted and paid separately after your goods arrive at the warehouse.</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
@@ -94,7 +94,7 @@ export default function CartPage(){
      {gbp>0&&<p><span>Products priced in GBP</span><strong>{money("GBP",gbp)}</strong></p>}
      {selectedLines>0&&estimatedGbp!==null&&<p className="hc-cart-gbp-total"><span>{pricesMissing?"Priced items, approx. GBP":"Estimated product subtotal (GBP)"}</span><strong>{(cny>0?"≈ ":"")+money("GBP",estimatedGbp)}</strong></p>}
      {pricesMissing&&<p><span>Some prices</span><strong>On request</strong></p>}
-     <p><span>Shipping and taxes</span><strong>Not calculated</strong></p>
+     <p><span>International delivery (paid later)</span><strong>Warehouse quote pending</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
     <div className="hc-cart-checkout-note"><strong>Live supplier check</strong><p>Only the products you tick above will be checked. This is not a final GBP checkout quote.</p>
@@ -113,14 +113,14 @@ export default function CartPage(){
        {" · "}{line.quantity} item(s) · {line.reason}
        {line.supplierUnitCny!=null?" · Seller ¥"+line.supplierUnitCny.toFixed(2)+" per item":""}
       </p>)}
-      <p><strong>Live checkout not yet available.</strong> Final GBP delivery, duties, taxes and fulfilment still need confirmation.</p>
+      <p><strong>Live checkout not yet available.</strong> A product-stage payment and separate warehouse-stage international shipping payment are being prepared. Final delivery charges and merchant fulfilment still require verification.</p>
      </div>}
-     <p>Payment and supplier purchasing remain disabled until the complete checkout total and delivery process can be verified.</p>
+     <p>Product payment and supplier purchasing remain disabled. Herocon must verify the two separate payment stages, warehouse QC and international dispatch before taking customer funds.</p>
     </div>
     <div className="hc-cart-checkout-note">
      <strong>Request your final GBP checkout quote</strong>
-     <p>Herocon currently verifies supplier stock and product costs, but delivery and taxes need a merchant-approved final amount. You can request an all-in quote for up to five selected options. We will provide a private checkout link when payment processing is ready.</p>
-     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request a final quote by email ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
+     <p>Herocon currently verifies supplier stock and product costs. Request a product-stage GBP quote for up to five selected options. International delivery is a separate payment later, once the warehouse has confirmed the actual packed parcel, and a realistic shipping estimate will be disclosed before any first-stage purchase.</p>
+     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request product quote & estimated later shipping ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
