@@ -20,6 +20,7 @@ export async function POST(request:Request){
  if(typeof id!=="string"||!quoteIdOk(id))return reply({error:"Invalid quote"},400);
  const quote=await getApprovedQuote(id);
  if(!quote||!quoteIsCurrent(quote))return reply({error:"Quote not found or expired"},404);
+ if(quote.paymentStage!=="products"||quote.shippingPence!==0)return reply({error:"Two-stage quote required."},409);
  const fields=new URLSearchParams();
  fields.set("mode","payment");
  fields.set("customer_email",quote.customerEmail);
@@ -30,6 +31,7 @@ export async function POST(request:Request){
  fields.set("payment_method_types[0]","card");
  fields.set("expires_at",String(Math.floor(Date.parse(quote.expiresAt)/1000)));
  fields.set("metadata[purpose]","herocon_checkout_quote_test");
+ fields.set("metadata[paymentStage]","products");
  fields.set("metadata[quoteId]",quote.id);
  fields.set("metadata[fulfilment]","disabled");
  for(const [i,line] of quote.lines.entries()){
