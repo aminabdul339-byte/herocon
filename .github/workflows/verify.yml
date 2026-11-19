@@ -1,0 +1,27 @@
+name: Verify Herocon
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: TypeScript source verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: TypeScript checks
+        run: npm run typecheck
