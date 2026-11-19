@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import type {Metadata} from "next";
 export const metadata:Metadata={
  title:"How Herocon sourcing works",
- description:"Find products on Chinese marketplaces, order through our sourcing partner and pay for international delivery."
+ description:"Find products and request a free quote. Learn how warehouse sourcing and international shipping will work when checkout launches."
 };
 type IconName="search"|"swatches"|"cart"|"shield"|"truck"|"globe"|"package"|"arrow";
 function GuideIcon({name,size=35}:{name:IconName;size?:number}){
@@ -22,16 +22,16 @@ function GuideIcon({name,size=35}:{name:IconName;size?:number}){
 const steps:{number:string;title:string;description:string;icon:IconName;hint:string}[]=[
  {number:"01",title:"Find your product",description:"Browse the catalogue or paste a link from 1688, Taobao, Weidian or another supported marketplace.",icon:"search",hint:"BROWSE"},
  {number:"02",title:"Add to cart",description:"Choose your options and create a free account to keep your cart.",icon:"cart",hint:"SELECT"},
- {number:"03",title:"Pay for your items",description:"A £9.99/month membership provides sourcing access when you are ready to order.",icon:"shield",hint:"ORDER"},
- {number:"04",title:"Your items are purchased",description:"Our sourcing partner buys the products and stores them at its warehouse in China.",icon:"package",hint:"WAREHOUSE"},
- {number:"05",title:"Pay shipping & receive",description:"International shipping is paid separately once the parcel is ready. Your order is then delivered.",icon:"truck",hint:"DELIVERY"}
+ {number:"03",title:"Request a quote",description:"Submit a free product enquiry from your account. Herocon reviews seller details and confirms pricing separately; product checkout is not live yet.",icon:"shield",hint:"QUOTE"},
+ {number:"04",title:"Warehouse sourcing (planned)",description:"Once full ordering launches, our sourcing partner will purchase approved items and store them in its warehouse in China.",icon:"package",hint:"PLANNED"},
+ {number:"05",title:"Shipping (planned)",description:"When the delivery flow launches, international shipping will be quoted and paid separately before parcels are dispatched.",icon:"truck",hint:"PLANNED"}
 ];
 const faqs=[
  ["Where can I source products?","Browse 1688, Taobao, Weidian and other supported Chinese marketplaces, or paste a product link."],
  ["Is an account free?","Yes. Create an account and add products to your cart without paying for membership."],
- ["When do I need membership?","Herocon membership is £9.99/month and is required when purchasing products. Subscription checkout is not currently available."],
- ["When do I pay for delivery?","International shipping is quoted and paid separately after your items arrive at the warehouse. Estimated shipping information should be provided before the initial purchase."],
- ["What does the sourcing partner do?","Our partner purchases your items, holds them at the warehouse in China and arranges international shipping after payment."],
+ ["When do I need membership?","The optional £9.99/month early-access membership can be bought today through Stripe. You do not need it to browse or request a quote. Product purchasing is not yet available."],
+ ["When do I pay for delivery?","When product ordering launches, international shipping will be separately quoted and payable after warehouse receipt; there is no live shipping payment today."],
+ ["What does the sourcing partner do?","BuckyDrop provides purchasing, warehousing and international delivery services. Herocon has not yet activated the customer payment, warehouse-release or dispatch flow."],
  ["Are listed prices final?","No. Listed prices are references. Shipping, applicable taxes and other charges are separate."]
 ];
 export default function HowItWorks(){
@@ -39,7 +39,7 @@ export default function HowItWorks(){
   <Header/>
   <section className="hc-guide-hero">
    <div className="sc-container hc-guide-hero-inner">
-    <div><p className="sc-kicker">HOW IT WORKS</p><h1>From China<br/><em>to your door.</em></h1><p>Find products. Order through our sourcing partner. Pay shipping when your items reach the warehouse.</p>
+    <div><p className="sc-kicker">HOW IT WORKS</p><h1>From China<br/><em>to your door.</em></h1><p>Browse products and request a free quote today. See how sourcing, warehousing and international delivery are planned to work when checkout launches.</p>
      <div className="hc-guide-hero-actions"><Link href="/search" className="hc-guide-primary-link">Browse products <span aria-hidden="true">↗</span></Link><Link href="/find-product" className="hc-guide-outline-link">Paste a product link <span aria-hidden="true">↗</span></Link></div>
     </div>
     <div className="hc-guide-hero-art" aria-label="Product sourcing and delivery">
@@ -62,12 +62,12 @@ export default function HowItWorks(){
      <h3>{step.title}</h3><p>{step.description}</p>
     </div>
    </li>)}</ol>
-   <p className="sc-resource-note">Online product and shipping checkout is currently unavailable.</p>
+   <p className="sc-resource-note"><strong>Current service:</strong> catalogue, link search, free account, cart and quote requests. <strong>Coming later:</strong> product payment, supplier procurement, warehouse storage, and separate international shipping payment.</p>
   </section>
   <section className="hc-guide-partner">
    <div className="sc-container hc-guide-partner-inner">
     <div className="hc-guide-partner-icon"><GuideIcon name="package" size={64}/></div>
-    <div><p className="sc-kicker">SOURCING PARTNER</p><h2>Purchased. Stored. Shipped.</h2><p>Our sourcing partner handles buying, warehouse storage and international delivery.</p></div>
+    <div><p className="sc-kicker">SOURCING PARTNER</p><h2>Supplier to doorstep.</h2><p>Our planned checkout connects to BuckyDrop purchasing, warehouse storage and delivery once those services are tested and available.</p></div>
     <Link href="/membership">View membership <span aria-hidden="true">↗</span></Link>
    </div>
   </section>
