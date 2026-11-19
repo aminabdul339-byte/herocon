@@ -66,13 +66,19 @@ export async function POST(request:Request){
  if(!customer)return error("Recipient details are incomplete.",400);
  const original=Array.isArray(input.lines)?input.lines:[];
  if(original.length<1||original.length>20)return error("Each paid order must contain 1–20 product lines.",400);
- const lines: {link:string;sku:string;quantity:number;salePriceGBP:number}[]=[];
+ const lines: {link:string;sku:string;quantity:number;salePriceGBP:number;maxSupplierPriceCNY:number}[]=[];
  for(const row of original){
   const item=object(row),link=normalizeMarketplaceLink(item.marketplaceUrl);
   const sku=text(item.skuCode,40);
   const sale=item.verifiedSalePriceGBP;
-  if(!link||!sku||sku.length>40||!inRange(item.quantity,999)||typeof sale!=="number"||!Number.isFinite(sale)||sale<=0||Math.abs(sale*100-Math.round(sale*100))>0.000001)return error("Each line must have a valid marketplace link, SKU, quantity and verified GBP selling price.",400);
-  lines.push({link,sku,quantity:item.quantity as number,salePriceGBP:sale});
+  const maxSupplierPriceCNY=item.maxSupplierPriceCNY;
+  if(!link||!sku||sku.length>40||!inRange(item.quantity,999)||
+    typeof sale!=="number"||!Number.isFinite(sale)||sale<=0||
+    Math.abs(sale*100-Math.round(sale*100))>0.000001||
+    typeof maxSupplierPriceCNY!=="number"||!Number.isFinite(maxSupplierPriceCNY)||
+    maxSupplierPriceCNY<=0||maxSupplierPriceCNY>100000)
+   return error("Each line must include a verified GBP price and a merchant-approved maximum supplier cost in CNY.",400);
+  lines.push({link,sku,quantity:item.quantity as number,salePriceGBP:sale,maxSupplierPriceCNY});
  }
  if(new Set(lines.map(l=>l.link+"::"+l.sku)).size!==lines.length)return error("Duplicate variant lines must be combined in the cart.",400);
  const partnerOrderNo=partnerRefFromPayment(paymentRef);
@@ -87,6 +93,7 @@ export async function POST(request:Request){
    if(seller.environment!=="live"||!seller.spuCode||seller.available!==true)throw Error("Seller product is no longer confirmed as available.");
    const sku=seller.variants.find(v=>v.skuCode===line.sku);
    if(!sku||sku.price==null||sku.price<=0||sku.stock==null||sku.stock<line.quantity)throw Error("SKU or stock is not available. Refresh the product before checkout.");
+   if(sku.price>line.maxSupplierPriceCNY+0.00001)throw Error("Supplier price increased beyond the approved maximum. Merchant review or refund is needed.");
    if(seller.moq!=null&&line.quantity<seller.moq)throw Error("Quantity does not meet the seller minimum order.");
    const platform=platformFor(line.link);
    if(!platform)throw Error("Marketplace is not supported for live orders.");
