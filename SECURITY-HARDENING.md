@@ -11,14 +11,14 @@ Website: https://herocon.store
 - **Bounded third-party inputs:** Marketplace URLs are canonicalized and allowlisted for exact trusted hosts and product ID formats; arbitrary URLs are not fetched.
 - **Private credentials:** Partner APIs, fulfilment controls and Stripe keys remain in server-side environment variables. Never use NEXT_PUBLIC_ prefixes for secrets. Review Vercel project env access and rotate exposed keys.
 - **Merchant import:** Protected by a long operator key; the public product-detail POST route does not trigger paid third-party lookups. Imports use the separate authenticated /api/admin/catalogue/import-buckydrop endpoint, with saved-snapshot deduplication.
-- **Payments / order submission:** Stripe paid checkout and automated BuckyDrop ordering are still disabled. Live webhook endpoints verify provider-signed events; neither webhook is allowed to order products.
-- **No public support form storing PII:** The contact page opens a mailto link to aminabdul339@outlook.com; support messages are sent using the customer's existing email application, not a Herocon email backend.
+- **Payments / order submission:** Live recurring membership checkout is enabled with authenticated Stripe-hosted billing and a signed membership webhook. Separate product checkout, second-stage international shipping payment and automated BuckyDrop ordering remain disabled. The membership webhook cannot trigger supplier orders.
+- **Customer quote requests:** Authenticated customers can save up to three free, private UK quote enquiries in a rolling day, with their own account-scoped reading, merchant-key-protected review status, and no payment or supplier submission. The general contact page still uses mailto. Quote notifications are prepared for Resend but RESEND_API_KEY is not yet configured.
 - **Vercel firewall:** An active deny rule filters common /.git, /.env, wp-admin, wp-login.php and phpmyadmin scanners. Platform DDoS mitigation remains active.
 - **Dependency maintenance:** Dependabot is configured for npm and GitHub Actions weekly review.
 
 ## 19 November 2026 checkout security update
 
-Checkout quote approvals, TEST Stripe quotes, LIVE Stripe quote sessions, verified paid-order handoff, merchant email and read-only reconciliation have now been implemented with default-off financial flags. The public payment route refuses attempts until the merchant confirms rotated live keys, live webhook signature, email delivery, manual BuckyDrop supplier-payment mode, final shipping currency/cost and legal compliance. **No checkout or order-submission launch flags have been enabled.** Review \`LIVE-CHECKOUT-LAUNCH-RUNBOOK.md\` and complete an end-to-end controlled test before any production charge.
+Checkout quote approvals, TEST Stripe quotes, LIVE Stripe quote sessions, verified paid-order handoff, merchant email and read-only reconciliation have now been implemented with default-off financial flags. The public **product** payment route refuses attempts until the merchant confirms rotated live keys, live product webhook signature, email delivery, manual BuckyDrop supplier-payment mode, final shipping currency/cost and legal compliance. **No product checkout or order-submission launch flags have been enabled.** Live recurring membership billing is separately enabled and is not proof of operational product fulfilment. Review \`LIVE-CHECKOUT-LAUNCH-RUNBOOK.md\` and complete an end-to-end controlled test before any production charge.
 
 
 
