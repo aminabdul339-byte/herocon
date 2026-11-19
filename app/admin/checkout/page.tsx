@@ -1,0 +1,92 @@
+"use client";
+import Link from "next/link";
+import {useState} from "react";
+
+type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
+const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
+type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;expiresAt:string;paymentEnabled:boolean;notice:string};
+const field:React.CSSProperties={padding:"11px 12px",border:"1px solid #bacfbd",borderRadius:7,width:"100%",background:"#fff"};
+const button:React.CSSProperties={padding:"12px 18px",background:"#254832",border:"none",color:"#fff",borderRadius:7,cursor:"pointer",fontWeight:700};
+export default function MerchantCheckout(){
+ const [key,setKey]=useState(""),[email,setEmail]=useState("");
+ const [lines,setLines]=useState<Line[]>([blank()]);
+ const [shipping,setShipping]=useState(""),[tax,setTax]=useState("");
+ const [approved,setApproved]=useState(false);
+ const [busy,setBusy]=useState(false);
+ const [result,setResult]=useState<QuoteCreated|null>(null);
+ const [notice,setNotice]=useState("");
+ const [readiness,setReadiness]=useState<{enabled:boolean;missing:string[]}|null>(null);
+ const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
+ async function check(){
+  setBusy(true);setNotice("");
+  try{
+   const res=await fetch("/api/admin/checkout/quotes",{headers:{"x-herocon-checkout-admin":key.trim()},cache:"no-store"});
+   const data=await res.json();
+   if(!res.ok)throw Error(data.error||"Unable to check launch readiness.");
+   setReadiness(data.readiness);
+  }catch(e){setNotice(e instanceof Error?e.message:"Unable to check readiness.");}
+  finally{setBusy(false);}
+ }
+ async function create(e:React.FormEvent){
+  e.preventDefault();setBusy(true);setResult(null);setNotice("");
+  try{
+   const response=await fetch("/api/admin/checkout/quotes",{
+    method:"POST",headers:{"x-herocon-checkout-admin":key.trim(),"Content-Type":"application/json"},
+    body:JSON.stringify({
+     customerEmail:email.trim(),deliveryCountry:"GB",manualPricingApproved:approved,
+     shippingGBP:Number(shipping),taxGBP:Number(tax),
+     lines:lines.map(line=>({...line,quantity:Number(line.quantity),unitPriceGBP:Number(line.unitPriceGBP)}))
+    })
+   });
+   const data=await response.json();
+   if(!response.ok)throw Error(data.error||"Could not approve this quote.");
+   setResult(data as QuoteCreated);
+   setNotice("Private buyer quote saved. This is not a customer charge, order or supplier purchase.");
+  }catch(err){setNotice(err instanceof Error?err.message:"Quote could not be created.");}
+  finally{setBusy(false);}
+ }
+ return <main style={{padding:"45px 22px 100px",maxWidth:980,margin:"auto",fontFamily:"Arial,sans-serif",lineHeight:1.6}}>
+  <p style={{fontSize:12}}><Link href="/">Herocon</Link> / Merchant operations</p>
+  <h1 style={{font:"400 46px/1.1 Georgia,serif",color:"#254632"}}>Approve a customer checkout quote</h1>
+  <p>Merchant-only pilot tool. Check the supplier price and stock, then approve the final GBP selling price, shipping and tax amount. The customer can only pay after production security and fulfilment gates are enabled. Supplier checks may be billable.</p>
+  <section style={{background:"#f3f6f1",padding:22,borderRadius:10,marginTop:26}}>
+   <label style={{display:"block",fontWeight:700}}>Independent private checkout admin key</label>
+   <input type="password" value={key} onChange={e=>setKey(e.target.value)} autoComplete="off" placeholder="Merchant key — never share" style={field}/>
+   <p style={{fontSize:12,color:"#6a7a6c"}}>The key stays in this tab's memory; it is not saved to browser storage. It must be configured separately in Vercel before using this page.</p>
+   <button type="button" style={button} onClick={check} disabled={busy||key.length<32}>{busy?"Checking…":"Check launch requirements"}</button>
+   {readiness&&<section style={{marginTop:15}}>
+    <strong>{readiness.enabled?"All configured launch gates are present (still complete a controlled purchase test)":"Live payment is still disabled. Missing requirements:"}</strong>
+    {!readiness.enabled&&<ul>{readiness.missing.map(x=><li key={x}>{x}</li>)}</ul>}
+   </section>}
+  </section>
+  <form onSubmit={create} style={{display:"grid",gap:20,marginTop:30}}>
+   <div><label htmlFor="merchant-buyer">Buyer's email</label><input id="merchant-buyer" type="email" style={field} required value={email} onChange={e=>setEmail(e.target.value)} placeholder="buyer@example.com"/></div>
+   <section><h2>Product variants</h2>
+    {lines.map((line,i)=><div key={i} style={{display:"grid",gap:10,padding:18,border:"1px solid #dce8dd",borderRadius:10,marginBottom:14}}>
+     <label>Original marketplace product URL<input type="url" style={field} required value={line.marketplaceUrl} onChange={e=>update(i,"marketplaceUrl",e.target.value)} placeholder="https://detail.1688.com/offer/....html"/></label>
+     <label>BuckyDrop seller SKU<input style={field} required value={line.skuCode} onChange={e=>update(i,"skuCode",e.target.value)} placeholder="Exact SKU from BuckyDrop"/></label>
+     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <label>Quantity<input style={field} type="number" min={1} max={99} value={line.quantity} onChange={e=>update(i,"quantity",e.target.value)} required/></label>
+      <label>Final retail price per unit (£)<input style={field} type="number" min=".01" step=".01" max="1000" value={line.unitPriceGBP} onChange={e=>update(i,"unitPriceGBP",e.target.value)} required/></label>
+     </div>
+     {lines.length>1&&<button type="button" style={{alignSelf:"end"}} onClick={()=>setLines(old=>old.filter((_,n)=>i!==n))}>Remove this line</button>}
+    </div>)}
+    <button type="button" disabled={lines.length>=5} onClick={()=>setLines(old=>[...old,blank()])}>+ Add another variant (maximum 5)</button>
+   </section>
+   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+    <label>Confirmed total shipping (£)<input style={field} type="number" min="0" max="1000" step=".01" required value={shipping} onChange={e=>setShipping(e.target.value)}/></label>
+    <label>Applicable taxes / duties charged (£)<input style={field} type="number" min="0" max="1000" step=".01" required value={tax} onChange={e=>setTax(e.target.value)}/></label>
+   </div>
+   <p style={{fontSize:13,color:"#80633b"}}>Only enter £0 for shipping/tax if a legitimate, reviewed policy really makes those charges zero. Current BuckyDrop CNY shipping amounts are provisional; do not quote guessed freight as a payable price. Include your margin and all customer-facing fees in these final amounts.</p>
+   <label style={{display:"flex",gap:10,alignItems:"start"}}><input style={{marginTop:6}} type="checkbox" checked={approved} onChange={e=>setApproved(e.target.checked)} required/><span>I checked supplier cost, stock, delivery charges, taxes, pricing and my ability to fund fulfilment, and approve this exact GBP quote.</span></label>
+   <button style={button} disabled={busy||key.length<32||!approved} type="submit">{busy?"Verifying seller and saving…":"Create approved private checkout quote"}</button>
+  </form>
+  {notice&&<p role="status" style={{padding:14,background:"#edf4e9",borderRadius:6}}>{notice}</p>}
+  {result&&<section style={{padding:20,border:"1px solid #d3e1d0",borderRadius:10}}>
+   <h2>Quote created: £{result.totalGBP}</h2><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
+   <p><Link href={result.checkoutUrl}>{result.checkoutUrl}</Link></p>
+   <button type="button" onClick={()=>navigator.clipboard.writeText(result.checkoutUrl)}>Copy private buyer link</button>
+   <p><strong>{result.paymentEnabled?"Payment route is configured. Verify carefully before sharing.":"Payment remains disabled until the launch requirements pass."}</strong></p>
+  </section>}
+ </main>;
+}
