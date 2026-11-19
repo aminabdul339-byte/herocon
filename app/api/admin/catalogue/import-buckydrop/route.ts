@@ -33,10 +33,16 @@ const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$
 const pause=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
 
 function authorized(request:Request){
- const secret=process.env.HEROCON_CATALOGUE_IMPORT_KEY||"";
  const provided=request.headers.get("x-herocon-catalogue-admin")||"";
- return secret.length>=48 && provided.length===secret.length &&
-  timingSafeEqual(Buffer.from(secret),Buffer.from(provided));
+ // Separate service credential permits operator-only secure server-side
+ // import audits without resetting the merchant's existing browser key.
+ const allowed=[
+  process.env.HEROCON_CATALOGUE_IMPORT_KEY||"",
+  process.env.HEROCON_CATALOGUE_SERVICE_KEY||""
+ ];
+ return allowed.some(secret=>secret.length>=48 &&
+  provided.length===secret.length &&
+  timingSafeEqual(Buffer.from(secret),Buffer.from(provided)));
 }
 async function allPaths(prefix:string):Promise<string[]>{
  const paths:string[]=[];let cursor:string|undefined;
