@@ -27,14 +27,15 @@ export function enabledMembershipMode():MembershipMode|null{
   process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")&&
   process.env.HEROCON_MEMBERSHIP_TEST_PRICE_ID?.startsWith("price_")&&
   process.env.HEROCON_MEMBERSHIP_TEST_WEBHOOK_SECRET?.startsWith("whsec_");
- if(test)return "test";
+
  const live=process.env.HEROCON_MEMBERSHIP_LIVE_ENABLED==="true"&&
   process.env.HEROCON_STRIPE_KEY_ROTATED==="true"&&
   process.env.STRIPE_LIVE_SECRET_KEY?.startsWith("sk_live_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_PRICE_ID?.startsWith("price_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_WEBHOOK_SECRET?.startsWith("whsec_")&&
   process.env.HEROCON_MEMBERSHIP_POLICIES_APPROVED==="true";
- return live?"live":null;
+ if(live)return "live";
+ return test?"test":null;
 }
 export function billingConfigured(mode:MembershipMode){
  try{
