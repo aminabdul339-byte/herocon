@@ -11,7 +11,6 @@ type Status={
  warehouse?:{
   stage:"awaiting_provider_update"|"supplier_procurement"|"arriving_at_warehouse"|"warehouse_arrival_reported"|"international_dispatched";
   arrivalReported:boolean;arrivalVerifiedForShipping:boolean;
-  qcInspection:"not_connected";qcPhotos:string[];
   finalShippingQuote:"not_available";shippingPaymentEnabled:boolean;note:string;
  };
 };

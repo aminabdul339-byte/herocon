@@ -88,14 +88,12 @@ export async function POST(request:Request){
  const warehouse={
   stage:fulfilmentStage,
   arrivalReported:warehouseReceived,
-  arrivalVerifiedForShipping:false, // QC and final weights not verified by this integration
-  qcInspection:"not_connected" as const,
-  qcPhotos:[] as string[],
+  arrivalVerifiedForShipping:false,
   finalShippingQuote:"not_available" as const,
   shippingPaymentEnabled:false,
   note:warehouseReceived
-   ?"Supplier records indicate warehouse receipt. QC photos, final packed weight and international delivery fees have not been confirmed to Herocon."
-   :"Warehouse receipt and QC photos have not been independently confirmed. Shipping cannot be charged yet."
+   ?"Warehouse arrival reported. International shipping will be quoted separately."
+   :"Warehouse arrival is not yet confirmed. International shipping cannot be charged yet."
  };
  return NextResponse.json({...base,warehouse,salesStatus:code===null?null:salesLabels[code]||"Status "+code,
   purchaseOrders,parcels,message:record.state==="outcome_unknown"?"The order is undergoing verification; any supplier status shown is based on the original reference.":null},{
