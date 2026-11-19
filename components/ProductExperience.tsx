@@ -4,7 +4,7 @@ import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {variantsFor} from "@/lib/catalogue";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {useCart,type CartItem} from "@/components/CartProvider";
+import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 
@@ -14,7 +14,7 @@ const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
 export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean}){
  const router=useRouter();
- const {addItems}=useCart();
+ const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
  const colours=[...new Set([...(product.colours||[]),...originalVariants.map(v=>v.colour).filter((x):x is string=>!!x)])];
  const sizes=[...new Set([...(product.sizes||[]),...originalVariants.map(v=>v.size).filter((x):x is string=>!!x)])];
@@ -94,7 +94,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   });
  };
 
- function handleCart(buyNow:boolean){
+ async function handleCart(buyNow:boolean){
   // Catalogue-only items can still be saved to a draft cart. Live checkout
   // remains disabled; final selected SKU, price and stock require a fresh check.
   if(!marketplace){setCartMessage("This product does not have a direct marketplace link.");return;}
@@ -127,9 +127,26 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    }];
   }
   if(!rows.length){setCartMessage("Please choose an available seller option.");return;}
+  // Adding to the cart requires a FREE verified account; no membership or
+  // payment is asked for until the buyer actually requests checkout.
+  const verified=account.status==="checking"?await refreshAccount():account;
+  if(verified.status!=="authenticated"){
+   try{
+    sessionStorage.setItem(PENDING_CART_KEY,JSON.stringify({
+     version:1,rows,buyNow,requestedAt:Date.now()
+    }));
+   }catch{
+    setCartMessage("Your browser did not allow us to save your selection before sign-up. Please enable session storage and try again.");
+    return;
+   }
+   const destination=buyNow?"/membership/activate?next="+encodeURIComponent("/cart?checkout=1"):"/cart";
+   router.push("/account?next="+encodeURIComponent(destination));
+   setCartMessage("Create a free account or sign in to keep this selection. No membership charge is required to add products.");
+   return;
+  }
   addItems(rows);
   setCartMessage(rows.length===1?"Added to your cart.":"Selected options added to your cart.");
-  if(buyNow)router.push("/cart?checkout=1");
+  if(buyNow)router.push("/membership/activate?next="+encodeURIComponent("/cart?checkout=1"));
  }
 
  return <>
@@ -190,12 +207,12 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Buy now</button>
     </div>
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart →</Link>}</p>}
-    <p className="hc-checkout-note">Checkout and payment are not yet available. Buy now opens your order review.</p>
+    <p className="hc-checkout-note">A free account is required to add products. No subscription is charged for your cart. Membership (£9.99/month, planned) is only required when you try to purchase. Live purchasing is not active yet.</p>
     {source&&<div className="sc-supplier-facts">
       {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
       {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {dualPrice(source.chinaDomesticFreight)}</p>}
       {source.available===false&&<p className="sc-supplier-unavailable">This seller listing is currently unavailable.</p>}
-      <p><strong>International delivery:</strong> Calculated before payment when checkout becomes available.</p>
+      <p><strong>International delivery:</strong> Disclosed as an estimate before product payment; final freight will be paid separately after warehouse arrival and QC, when checkout becomes available.</p>
     </div>}
     <a className="hc-product-details-anchor" href="#product-details">View product details ↓</a>
    </aside>
