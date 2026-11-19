@@ -20,6 +20,7 @@ function MembershipGate(){
  const [loading,setLoading]=useState(true),[working,setWorking]=useState(false);
  const [membership,setMembership]=useState<State>({});
  const [error,setError]=useState("");
+ const [consents,setConsents]=useState(false);
  useEffect(()=>{
   if(account.status!=="authenticated"){setLoading(false);return;}
   let alive=true;
@@ -32,11 +33,12 @@ function MembershipGate(){
  },[account.status,account.id]);
  async function launch(kind:"checkout"|"portal"){
   if(working)return;
+  if(kind==="checkout"&&!consents){setError("Please confirm the monthly billing terms before continuing.");return;}
   setWorking(true);setError("");
   try{
    const response=await fetch("/api/membership/"+kind,{
     method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},
-    body:"{}",cache:"no-store"
+    body:JSON.stringify(kind==="checkout"?{recurringBillingAcknowledged:consents}:{}),cache:"no-store"
    });
    const result=await response.json() as {url?:string;error?:string};
    if(!response.ok)throw Error(result.error||"Stripe Billing is unavailable.");
@@ -71,7 +73,11 @@ function MembershipGate(){
       {membership.billingReady&&membership.canSubscribe?
        <>
         {isTest&&<p style={{color:"#a36632"}}>Stripe test mode — no real money will be charged.</p>}
-        <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working}
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,lineHeight:1.6,margin:"20px 0"}}>
+         <input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)} style={{marginTop:5}}/>
+         <span>I agree to a recurring £9.99 monthly subscription until cancelled. Products and international delivery cost extra. I can cancel through my billing portal, and I have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span>
+        </label>
+        <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working||!consents}
          onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":"Subscribe for £9.99/month →"}</button>
        </>:
        <p>Membership payments are currently unavailable.</p>}
