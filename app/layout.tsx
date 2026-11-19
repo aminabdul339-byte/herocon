@@ -3,6 +3,7 @@ import "./herocon-redesign.css";
 import "./premium-home.css";
 import "./contact-guide.css";
 import "./legal.css";
+import "./shop-journey.css";
 import type {Metadata} from "next";
 import {SavedProvider} from "@/components/SavedProvider";
 import {CartProvider} from "@/components/CartProvider";

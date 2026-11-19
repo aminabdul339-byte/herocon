@@ -66,6 +66,27 @@ export default async function Home(){
    </div>
   </section>
 
+
+  <section className="hc-journey-home" aria-labelledby="hc-journey-title">
+   <div className="hc-premium-container">
+    <div className="hc-journey-intro">
+     <div><p className="hc-premium-kicker">THE FUTURE OF HEROCON / TWO-STAGE CHECKOUT</p>
+      <h2 id="hc-journey-title">From your cart <em>to your doorstep.</em></h2></div>
+     <div><p>We're preparing a shopping experience that gives you visibility from supplier purchase to warehouse checks and international delivery.</p>
+      <Link href="/how-it-works">See how ordering will work <span aria-hidden="true">↗</span></Link></div>
+    </div>
+    <div className="hc-journey-grid">
+     <article><span className="hc-journey-number">01 / PRODUCT PAYMENT</span><h3>Find it. Buy it.</h3><p>Browse original marketplace finds and choose your variants. When checkout launches, you'll pay the approved product price first, with an estimated shipping charge disclosed beforehand.</p></article>
+     <article><span className="hc-journey-number">02 / WAREHOUSE & QC</span><h3>See it arrive.</h3><p>Follow sourcing and warehouse progress. We're working towards displaying inspection photos when our fulfilment partner makes them available.</p></article>
+     <article><span className="hc-journey-number">03 / SHIPPING PAYMENT</span><h3>Ship when ready.</h3><p>After warehouse checks, review the final international shipping quote and pay separately before your parcel is dispatched.</p></article>
+    </div>
+    <div className="hc-journey-foot">
+     <p><strong>Checkout is not accepting payments yet.</strong> Delivery and shipping payments remain in development. Product prices shown in the catalogue are indicative.</p>
+     <Link href="/membership">Explore the planned Herocon membership <span aria-hidden="true">↗</span></Link>
+    </div>
+   </div>
+  </section>
+
   <section className="hc-premium-collections" aria-labelledby="hc-premium-collections-title">
    <div className="hc-premium-container">
     <div className="hc-premium-section-heading">
