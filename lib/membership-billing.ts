@@ -160,7 +160,8 @@ export async function createMembershipCheckout(user:Customer,mode:MembershipMode
  return checkout.url;
 }
 export async function createMembershipPortal(user:Customer,mode:MembershipMode):Promise<string>{
- if(!billingConfigured(mode))throw new MembershipBillingError(503,"The membership billing portal is not configured.");
+ // Keep cancellation and billing history available even if checkout is disabled.
+ if(!process.env.BLOB_READ_WRITE_TOKEN)throw new MembershipBillingError(503,"The billing portal is unavailable.");
  const customer=await memberStripeCustomer(user,mode);
  if(!customer)throw new MembershipBillingError(404,"No membership billing account is linked.");
  const form=new URLSearchParams();
@@ -182,4 +183,16 @@ export async function currentAccountMembership(){
  const mode=enabledMembershipMode();
  if(!mode)return {user,mode:null,status:null};
  return {user,mode,status:await getMembershipStatus(user,mode)};
+}
+
+/** Subscription management stays accessible when new signups are paused. */
+export async function managementMode(user:Customer):Promise<MembershipMode|null>{
+ const modes:MembershipMode[]=["live","test"];
+ for(const mode of modes){
+  const key=mode==="live"?process.env.STRIPE_LIVE_SECRET_KEY:process.env.STRIPE_SECRET_KEY;
+  const price=mode==="live"?process.env.HEROCON_MEMBERSHIP_LIVE_PRICE_ID:process.env.HEROCON_MEMBERSHIP_TEST_PRICE_ID;
+  if(!key?.startsWith(mode==="live"?"sk_live_":"sk_test_")||!price?.startsWith("price_"))continue;
+  if(await customerMapping(user.id,mode))return mode;
+ }
+ return enabledMembershipMode();
 }
