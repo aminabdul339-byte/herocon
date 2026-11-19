@@ -9,29 +9,6 @@ permissions:
   contents: read
 
 jobs:
-  restore-lockfile:
-    name: Regenerate reproducible lockfile once
-    if: contains(github.event.head_commit.message, '[generate-lock]')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Generate verified lockfile without running package scripts
-        run: |
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-          node -e "const j=require('./package-lock.json'); if(j.lockfileVersion!==3 || !j.packages?.['']) process.exit(1)"
-      - name: Commit lockfile for reproducible CI
-        run: |
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          git add package-lock.json
-          git diff --cached --quiet || git commit -m "Restore validated npm dependency lockfile"
-          git push origin HEAD:main
   typecheck:
     name: TypeScript source verification
     runs-on: ubuntu-latest
@@ -43,14 +20,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Upload generated dependency lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-package-lock
-          path: package-lock.json
-          if-no-files-found: error
-          retention-days: 1
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
       - name: TypeScript checks
         run: npm run typecheck
