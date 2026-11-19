@@ -16,7 +16,11 @@ Website: https://herocon.store
 - **Vercel firewall:** An active deny rule filters common /.git, /.env, wp-admin, wp-login.php and phpmyadmin scanners. Platform DDoS mitigation remains active.
 - **Dependency maintenance:** Dependabot is configured for npm and GitHub Actions weekly review.
 
-## Important limitations and next tasks
+## 19 November 2026 checkout security update
+
+Checkout quote approvals, TEST Stripe quotes, LIVE Stripe quote sessions, verified paid-order handoff, merchant email and read-only reconciliation have now been implemented with default-off financial flags. The public payment route refuses attempts until the merchant confirms rotated live keys, live webhook signature, email delivery, manual BuckyDrop supplier-payment mode, final shipping currency/cost and legal compliance. **No checkout or order-submission launch flags have been enabled.** Review \`LIVE-CHECKOUT-LAUNCH-RUNBOOK.md\` and complete an end-to-end controlled test before any production charge.
+
+
 
 1. **No software is guaranteed impossible to hack.** Commission penetration testing and continuous monitoring before paid orders or sensitive customer records are launched.
 2. **Supplier API abuse controls:** A Vercel WAF per-IP rate-limit rule was attempted, but rejected with 402 (the per-IP rate-limit key is not included in the current security entitlement). Existing per-instance throttles are best-effort, *not* a reliable distributed budget. Enable a plan-supported shared WAF limiter or a durable central rate limiter before heavy public use.
