@@ -69,7 +69,7 @@ function MembershipGate(){
        <><p>Product ordering and international shipping payments are not currently available through Herocon.</p><Link className="hc-account-primary-link" href="/search">Browse the catalogue →</Link></>}
       <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation ↗</button>
      </>:<>
-      <p>£9.99 charged today and every month until cancelled. This supports Herocon while the sourcing checkout is being developed. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
+      <p className="hc-member-purchase-fine-print">£9.99 charged today and every month until cancelled. This supports Herocon while the sourcing checkout is being developed. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
       {membership.ownerLiveTest&&<p role="note" style={{color:"#874d25",fontWeight:600}}>
        Owner-only LIVE billing test: your card will be charged £9.99 now and renew monthly until you cancel.
        Herocon's product ordering and international shipping checkout are not yet available.
@@ -78,10 +78,11 @@ function MembershipGate(){
       {membership.billingReady&&membership.canSubscribe?
        <>
         {isTest&&<p style={{color:"#a36632"}}>Stripe test mode — no real money will be charged.</p>}
-        <label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,lineHeight:1.6,margin:"20px 0"}}>
-         <input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)} style={{marginTop:5}}/>
+        <label className="hc-member-consent">
+         <input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)}/>
          <span>I understand that £9.99 will be charged now and every month until I cancel. Product ordering and shipping through Herocon are not yet available; this is an optional early-access membership while those features are being developed. Product and shipping costs are separate once available. I can cancel through Stripe and have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span>
         </label>
+        <p className="hc-member-cancellation-note">Cancel anytime. Regular cancellation takes effect at the end of your paid billing period: access continues until then, with no further monthly payment. Cancellation does not automatically refund unused time; your statutory cancellation and refund rights remain unaffected.</p>
         <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working||!consents}
          onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":"Subscribe for £9.99/month →"}</button>
        </>:
