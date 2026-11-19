@@ -7,6 +7,7 @@ import "server-only";
 export function checkoutLaunchReadiness(){
  const checks=[
   ["Live checkout explicitly enabled",process.env.HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED==="true"],
+  ["Two-stage product and international shipping billing independently tested",process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
   ["Fresh rotated Stripe live key attested",process.env.HEROCON_STRIPE_KEY_ROTATED==="true"],
   ["Stripe live secret installed",(process.env.STRIPE_LIVE_SECRET_KEY||"").startsWith("sk_live_")],
   ["Read-only Stripe account verification enabled",process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true"],
