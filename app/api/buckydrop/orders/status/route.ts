@@ -78,7 +78,9 @@ export async function POST(request:Request){
   po.statusCode!==null&&[7,10,11,12].includes(po.statusCode));
  const warehouseInbound=purchaseOrders.some(po=>po.statusCode===9);
  const internationalDispatched=parcels.some(parcel=>
-  !!parcel.trackingNumber||["Out of warehouse","Completed"].includes(parcel.parcelStatus||""));
+  ["Out of warehouse","Completed"].includes(parcel.parcelStatus||"")||
+  ["In transit","Out for delivery","Delivered"].includes(parcel.trackingStatus||""));
+ // A pre-generated tracking number does not establish that a parcel was dispatched.
  const fulfilmentStage=internationalDispatched?"international_dispatched":
   warehouseReceived?"warehouse_arrival_reported":
   warehouseInbound?"arriving_at_warehouse":
