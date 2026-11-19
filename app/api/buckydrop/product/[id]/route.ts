@@ -41,22 +41,12 @@ export async function GET(_request:Request,{params}:{params:Promise<{id:string}>
  }
 }
 
-// A new, potentially billable lookup requires an explicit same-origin POST.
-// The product page does not issue this automatically or via link prefetch.
-export async function POST(request:Request,{params}:{params:Promise<{id:string}>}){
- if(!configured())return jsonError("Supplier product lookups are unavailable.",503);
- const origin=request.headers.get("origin");
- try{if(!origin||new URL(origin).origin!==new URL(request.url).origin)return jsonError("Open Herocon to load supplier details.",403);}
- catch{return jsonError("Invalid request origin.",403);}
- if(throttle(request))return jsonError("Too many supplier requests. Please try again in a minute.",429);
- const {id}=await params;
- const link=await sourceLink(id);
- if(!link)return jsonError("Product link not found.",404);
- try{
-  const {product,cacheStatus}=await getOrSaveBuckydropProduct(link);
-  return NextResponse.json({product,cacheStatus},{headers:{"Cache-Control":"private, no-store","X-Herocon-Product-Snapshot":cacheStatus}});
- }catch(e){
-  if(e instanceof BuckydropError)return jsonError(e.message,e.status,e.code);
-  return jsonError("Supplier details could not be loaded.",502);
- }
+// The former public POST allowed anonymous visitors to trigger paid upstream
+// lookups. Only the authenticated catalogue importer may create new snapshots.
+// Customer pages use GET to read already-saved snapshots without supplier fees.
+export async function POST(){
+ return NextResponse.json(
+  {error:"Supplier imports are available only to the merchant."},
+  {status:405,headers:{"Allow":"GET","Cache-Control":"no-store"}}
+ );
 }

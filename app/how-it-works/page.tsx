@@ -1,13 +1,30 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import type {Metadata} from "next";
-export const metadata:Metadata={title:"How Herocon sourcing works",description:"Explore products, select seller options, and learn how our partner in China supports order fulfilment."};
-const steps=[
- {n:"01",title:"Find your product",body:"Explore our catalogue and review original 1688, Taobao and Weidian listings, photographs and supplier options."},
- {n:"02",title:"Choose seller variants",body:"See seller-reported colours, sizes and stock where available. Prices are shown in Chinese yuan and converted into approximate GBP using a reference exchange rate."},
- {n:"03",title:"Add products to your cart",body:"Choose the colours, sizes and quantities you want, then keep your selected products in your Herocon cart."},
- {n:"04",title:"Secure payment and order confirmation (coming soon)",body:"After checkout and verified payment are introduced, Herocon will confirm the selected seller SKUs and submit the paid order to our China fulfilment partner."},
- {n:"05",title:"Fulfilment and tracking",body:"The China fulfilment partner coordinates purchasing and delivery. Customers will be able to view their order and parcel statuses using a private Herocon tracking code once ordering is launched."}
+export const metadata:Metadata={
+ title:"How Herocon sourcing works",
+ description:"An illustrated guide to finding products, selecting variants and understanding how sourcing and fulfilment will work on Herocon."
+};
+type IconName="search"|"swatches"|"cart"|"shield"|"truck"|"globe"|"package"|"arrow";
+function GuideIcon({name,size=35}:{name:IconName;size?:number}){
+ const paths:Record<IconName,React.ReactNode>={
+  search:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/><path d="M8 10.5h5M10.5 8v5"/></>,
+  swatches:<><rect x="3.5" y="3.5" width="12.5" height="17" rx="2" transform="rotate(-9 9.75 12)"/><path d="m12.5 20.5 4.7-2.4a2.5 2.5 0 0 0 1.3-2.2V7"/><circle cx="9" cy="16" r="1"/></>,
+  cart:<><circle cx="9" cy="20" r="1.4"/><circle cx="19" cy="20" r="1.4"/><path d="M2 3.5h2.4l2.4 12.4h12l2.2-9H5.2"/></>,
+  shield:<><path d="m12 2 8 4v6.1c0 5.3-3.5 8.8-8 10-4.5-1.2-8-4.7-8-10V6z"/><path d="m8.5 12 2.4 2.5 4.8-5.2"/></>,
+  truck:<><path d="M2 5h12v12H2zM14 9h4l4 4v4h-8z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></>,
+  globe:<><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/></>,
+  package:<><path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10M7.5 4.5l9 5"/></>,
+  arrow:<><path d="M4 12h16m-7-7 7 7-7 7"/></>
+ };
+ return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
+}
+const steps:{number:string;title:string;description:string;icon:IconName;status:"available"|"coming";hint:string}[]=[
+ {number:"01",title:"Discover a product",description:"Browse our collection or paste an original 1688, Taobao or Weidian product link to explore what a supplier offers.",icon:"search",status:"available",hint:"BROWSE & DISCOVER"},
+ {number:"02",title:"Explore the options",description:"Review available images, colours, sizes and supplier-reported prices. Compare selections before deciding what works for you.",icon:"swatches",status:"available",hint:"COMPARE & CHOOSE"},
+ {number:"03",title:"Save your selections",description:"Choose quantities, keep interesting products in your saved collection, and build a cart you can return to later.",icon:"cart",status:"available",hint:"BUILD YOUR CART"},
+ {number:"04",title:"Checkout with confidence",description:"Secure payment will be introduced once live product prices, shipping, taxes and checkout verification are fully ready.",icon:"shield",status:"coming",hint:"PAYMENT COMING SOON"},
+ {number:"05",title:"From seller to delivery",description:"After ordering launches, our China-based sourcing partner will coordinate seller purchasing and international delivery. You'll be able to follow order updates through Herocon.",icon:"truck",status:"coming",hint:"FULFILMENT COMING SOON"}
 ];
 const faqs=[
  ["Can I buy directly through Herocon today?","Not yet. You can browse products, choose seller options and add items to your cart. Checkout is coming soon."],
@@ -16,9 +33,47 @@ const faqs=[
  ["Who helps fulfil orders?","Herocon works with a China-based sourcing and fulfilment partner for supplier data and shipping quotations. Our planned paid-order handoff will help coordinate sellers, shipping and delivery tracking. An order acknowledgement does not confirm payment or completed fulfilment."],
  ["Can I resell products I find on Herocon?","Only where lawful and suitable. Check the product’s safety, materials, authenticity, brand rights and UK import requirements before committing to stock."]
 ];
-export default function HowItWorks(){return <main className="sc-guide-page"><Header/>
- <section className="sc-page-hero sc-container"><p className="sc-kicker">HOW HEROCON WORKS</p><h1>Find your next product.<br/><em>Know the next step.</em></h1><p>Search seller products, compare CNY prices and approximate GBP equivalents, and build your sourcing plan. Our partner in China supports order fulfilment. Online ordering on Herocon is coming soon.</p><div className="sc-button-row"><Link className="sc-button sc-button-dark" href="/search">Explore products ↗</Link><Link className="sc-button sc-button-outline" href="/cart">View your cart →</Link></div></section>
- <section className="sc-section sc-container"><p className="sc-kicker">FROM DISCOVERY TO DELIVERY</p><h2>Five stages, one platform.</h2><div className="sc-process-list">{steps.map(step=><article className="sc-process-step" key={step.n}><span>{step.n}</span><h3>{step.title}</h3><p>{step.body}</p></article>)}</div></section>
- <section className="sc-section sc-container"><p className="sc-kicker">OUR PARTNER IN CHINA</p><h2>Support from the seller to delivery.</h2><p>Herocon works with a partner based in China who helps with order fulfilment and coordination with marketplace sellers. The partner supports the journey from finding a supplier to arranging international shipping. Once Herocon checkout is available, customers will see delivery options and costs before paying.</p></section>
- <section className="sc-section sc-container"><p className="sc-kicker">COMMON QUESTIONS</p><h2>What to know before buying.</h2><div className="sc-faq">{faqs.map(([q,a])=><details key={q}><summary>{q}<span aria-hidden="true">+</span></summary><p>{a}</p></details>)}</div><p className="sc-resource-note">Consult official <a href="https://www.gov.uk/import-goods-into-uk" target="_blank" rel="noopener noreferrer">UK import</a> and <a href="https://www.gov.uk/product-safety-for-manufacturers" target="_blank" rel="noopener noreferrer">product-safety</a> guidance before reselling goods.</p></section>
- </main>;}
+export default function HowItWorks(){
+ return <main className="hc-guide-premium">
+  <Header/>
+  <section className="hc-guide-hero">
+   <div className="sc-container hc-guide-hero-inner">
+    <div><p className="sc-kicker">THE HEROCON WAY</p><h1>From the first idea <em>to the right find.</em></h1><p>Discover products, explore your options and build a sourcing plan—one clear step at a time.</p>
+     <div className="hc-guide-hero-actions"><Link href="/search" className="hc-guide-primary-link">Explore products <span aria-hidden="true">↗</span></Link><Link href="/find-product" className="hc-guide-outline-link">Have a product link? <span aria-hidden="true">↗</span></Link></div>
+    </div>
+    <div className="hc-guide-hero-art" aria-label="Three connected stages: explore, select and create">
+     <div className="hc-guide-big-icon"><GuideIcon name="globe" size={78}/></div>
+     <div className="hc-guide-orbit hc-guide-orbit-one"><GuideIcon name="search" size={34}/></div>
+     <div className="hc-guide-orbit hc-guide-orbit-two"><GuideIcon name="package" size={39}/></div>
+     <div className="hc-guide-orbit hc-guide-orbit-three"><GuideIcon name="cart" size={33}/></div>
+     <span className="hc-guide-art-caption">A SIMPLER WAY TO SOURCE</span>
+    </div>
+   </div>
+  </section>
+  <section className="hc-guide-process sc-container" aria-labelledby="hc-guide-steps-title">
+   <div className="hc-guide-section-heading"><div><p className="sc-kicker">HOW IT WORKS · IN FIVE STEPS</p><h2 id="hc-guide-steps-title">Every step, <em>made simple.</em></h2></div><p>Follow the journey from discovery to delivery. Steps marked “Coming soon” aren't available for customer payments yet.</p></div>
+   <ol className="hc-guide-timeline">{steps.map((step,index)=><li key={step.number} className="hc-guide-timeline-item">
+    <div className="hc-guide-step-visual">
+     <div className="hc-guide-step-icon"><GuideIcon name={step.icon}/></div>
+     {index<steps.length-1&&<div className="hc-guide-step-connector" aria-hidden="true"><span/><GuideIcon name="arrow" size={22}/></div>}
+    </div>
+    <div className="hc-guide-step-copy"><div className="hc-guide-step-topline"><span>STEP {step.number} / {step.hint}</span><span className={step.status==="available"?"hc-guide-status-now":"hc-guide-status-soon"}>{step.status==="available"?"Available now":"Coming soon"}</span></div>
+     <h3>{step.title}</h3><p>{step.description}</p>
+    </div>
+   </li>)}</ol>
+  </section>
+  <section className="hc-guide-partner">
+   <div className="sc-container hc-guide-partner-inner">
+    <div className="hc-guide-partner-icon"><GuideIcon name="package" size={64}/></div>
+    <div><p className="sc-kicker">SOURCING MADE CLEARER</p><h2>We help connect the dots.</h2><p>Our China-based sourcing partner supports product data, shipping estimates and the planned fulfilment journey. Herocon is preparing direct checkout; it is not yet accepting customer payments or placing supplier orders automatically.</p></div>
+    <Link href="/start-a-business">Learn about sourcing <span aria-hidden="true">↗</span></Link>
+   </div>
+  </section>
+  <section className="hc-guide-faq sc-container" aria-labelledby="hc-guide-faq-title">
+   <div className="hc-guide-section-heading"><div><p className="sc-kicker">QUESTIONS, ANSWERED</p><h2 id="hc-guide-faq-title">Good to <em>know.</em></h2></div><p>Clear answers before you start your sourcing journey.</p></div>
+   <div className="sc-faq">{faqs.map(([q,a])=><details key={q}><summary>{q}<span aria-hidden="true">+</span></summary><p>{a}</p></details>)}</div>
+   <p className="sc-resource-note">Before reselling, consult official <a href="https://www.gov.uk/import-goods-into-uk" target="_blank" rel="noopener noreferrer">UK import</a> and <a href="https://www.gov.uk/product-safety-for-manufacturers" target="_blank" rel="noopener noreferrer">product-safety</a> guidance.</p>
+   <div className="hc-guide-support-line">Still have a question? <Link href="/contact">Contact our support team <span aria-hidden="true">↗</span></Link></div>
+  </section>
+ </main>;
+}

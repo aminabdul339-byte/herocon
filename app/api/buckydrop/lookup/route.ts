@@ -41,7 +41,11 @@ export async function POST(request:Request){
  const declaredSize=Number(request.headers.get("content-length")||0);
  if(declaredSize>1500)return jsonError("The supplied link is too long.",413);
  let body:unknown;
- try{body=await request.json();}catch{return jsonError("Invalid request body.",400);}
+ try{
+  const raw=await request.text();
+  if(raw.length>1500)return jsonError("The supplied link is too long.",413);
+  body=JSON.parse(raw);
+ }catch{return jsonError("Invalid request body.",400);}
  if(!body||typeof body!=="object"||Array.isArray(body))return jsonError("Invalid request body.",400);
  const input=(body as Record<string,unknown>).url;
  const productLink=normalizeMarketplaceLink(input);
