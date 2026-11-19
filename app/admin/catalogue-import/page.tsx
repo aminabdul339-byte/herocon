@@ -72,6 +72,24 @@ export default function CatalogueImportPage(){
     failedTotal+=d.failed||0;
     if(!alive.current)break;
     setRuns(batch);setSavedThisRun(savedTotal);setFailedThisRun(failedTotal);
+    // Keep the displayed progress live while the import loop runs. Only
+    // reconcile with storage periodically to avoid a Blob LIST on each batch.
+    setState(previous=>previous?{
+     ...previous,
+     permanentlySaved:previous.permanentlySaved+(d.saved||0),
+     attemptsToday:previous.attemptsToday+(d.attempted||0),
+     remainingDailyRequests:d.remainingDailyRequests,
+     categories:previous.categories.map(category=>({
+      ...category,
+      missing:Math.max(0,category.missing-(d.results||[]).filter(r=>r.category===category.name).length)
+     }))
+    }:previous);
+    if(batch%25===0){
+     try{
+      const statusResponse=await fetch(PATH,{headers:auth(),cache:"no-store"});
+      if(statusResponse.ok&&alive.current)setState(await statusResponse.json() as ImportState);
+     }catch{}
+    }
     const details=(d.results||[]).map(r=>r.category+": "+(r.result==="saved"?"saved "+(r.variantCount??0)+" variants":r.result==="already_saved"?"already saved":"failed ("+(r.code||"unknown")+")"));
     setHistory(previous=>[...details,...previous].slice(0,25));
     if(d.stopReason){
