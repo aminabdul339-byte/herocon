@@ -29,4 +29,13 @@
 .hc-member-purchase-card>strong small{font:400 16px Arial,sans-serif}
 .hc-member-purchase-card>p{font-size:14px;line-height:1.8;color:#617562}
 .hc-member-purchase-caution{font-size:12px!important}
+/* Legible, understated billing information: recurring terms remain visible before payment. */
+.hc-member-purchase-card>p.hc-member-purchase-fine-print{font-size:12.5px;line-height:1.7;color:#657564;margin:14px 0 6px}
+.hc-member-purchase-card>p.hc-member-purchase-fine-print strong{color:#45594b;font-weight:650}
+.hc-member-consent{display:flex;align-items:flex-start;gap:11px;margin:20px 0 10px;font-size:12.5px;line-height:1.7;color:#5a6e5d;cursor:pointer}
+.hc-member-consent input[type="checkbox"]{flex:0 0 auto;width:17px;height:17px;margin:3px 0 0;accent-color:#264a32;cursor:pointer}
+.hc-member-consent a{color:#2a4a35;text-decoration:underline;text-underline-offset:2px;font-weight:650}
+.hc-member-consent input:focus-visible,.hc-member-consent a:focus-visible{outline:2px solid #315c3d;outline-offset:3px}
+.hc-member-purchase-card>p.hc-member-cancellation-note{font-size:12.5px;line-height:1.7;color:#637663;margin:10px 0 16px}
+
 @media(max-width:780px){.hc-account-shell{grid-template-columns:1fr;gap:30px;padding:50px 18px 75px}.hc-account-card{padding:24px;box-shadow:5px 5px 0 #e3ebde}.hc-member-purchase-shell{padding:55px 18px 75px}.hc-member-purchase-card{padding:24px}.hc-account-perks strong{min-width:115px}}
