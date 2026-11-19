@@ -74,6 +74,8 @@ function verifySession(s:StripeSession,q:ApprovedQuote,expectedId:string){
   s.mode==="payment"&&s.currency==="gbp"&&s.payment_status==="paid"&&
   s.amount_total===q.totalPence&&s.metadata?.quoteId===q.id&&
   s.metadata?.purpose==="herocon_live_checkout"&&
+  s.metadata?.paymentStage==="products"&&q.paymentStage==="products"&&
+  q.shippingPence===0&&!!q.estimatedLaterShippingPence&&
   s.metadata?.fulfilment==="merchant_manual_supplier_payment"&&
   q.saleCurrency==="gbp"&&q.fulfilment==="bucky_manual_supplier_payment"&&
   q.customerEmail.toLowerCase()===(safe(s.customer_details?.email)||safe(s.customer_email)).toLowerCase();
@@ -151,7 +153,9 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   "Stripe session: "+sessionId,
   "Quote: "+quote.id,
   "Buyer: "+quote.customerEmail,
-  "Paid: £"+(quote.totalPence/100).toFixed(2),
+  "Product-stage amount paid: £"+(quote.totalPence/100).toFixed(2),
+  "International shipping NOT paid. Indicative freight estimate: £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
+  "After warehouse arrival, verify QC and packed weights and quote shipping to the buyer before any dispatch.",
   "State: "+audit.state,
   "BuckyDrop ref: "+(audit.partnerOrderNo||"Not accepted"),
   "Action: "+audit.reason,
@@ -161,7 +165,9 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  audit.merchantEmailSent=merchantAddress?await sendEmail(merchantAddress,"Herocon paid order requires action — "+quote.id,merchantText):false;
  const buyerText=[
   "Thank you for your Herocon order.",
-  "We've verified your payment of £"+(quote.totalPence/100).toFixed(2)+".",
+  "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
+  "International shipping has NOT been paid. Estimated later freight: about £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2)+", subject to actual packed weight, destination, eligible carrier and fees.",
+  "After warehouse arrival and inspection, Herocon will issue a separate international shipping quote and payment request. No additional payment is automatic.",
   audit.partnerOrderNo?"Your order reference: "+audit.partnerOrderNo:"Your order is awaiting merchant review before supplier processing.",
   audit.accessCode?"Your private tracking access code: "+audit.accessCode:"",
   audit.accessCode?"Track it at https://herocon.store/orders":"",
