@@ -52,6 +52,17 @@ export default function CartPage(){
  const pricesMissing=selectedItems.some(item=>item.unitPrice==null);
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
+ const requestQuoteHref="mailto:aminabdul339@outlook.com?subject="+
+  encodeURIComponent("Herocon request for final GBP checkout quote")+"&body="+
+  encodeURIComponent([
+   "Hello Herocon, I would like a final all-in GBP price for these selected items:",
+   ...selectedItems.slice(0,5).map((item,i)=>
+    [String(i+1)+". "+item.title,"Variant: "+(item.variant||"Not selected"),
+     "Supplier SKU: "+(item.skuCode||"Not available"),
+     "Quantity: "+item.quantity,"Marketplace link: "+item.marketplaceUrl].join("\n")),
+   "Please reply with the final shipping, taxes and any additional charges, plus a private Herocon checkout link when payments become available.",
+   "My destination country and postcode:"
+  ].join("\n\n"));
  return <main className="hc-cart-page"><Header/>
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">{checkout?"ORDER REVIEW":"YOUR SHOPPING CART"}</p>
@@ -105,6 +116,11 @@ export default function CartPage(){
       <p><strong>Live checkout not yet available.</strong> Final GBP delivery, duties, taxes and fulfilment still need confirmation.</p>
      </div>}
      <p>Payment and supplier purchasing remain disabled until the complete checkout total and delivery process can be verified.</p>
+    </div>
+    <div className="hc-cart-checkout-note">
+     <strong>Request your final GBP checkout quote</strong>
+     <p>Herocon currently verifies supplier stock and product costs, but delivery and taxes need a merchant-approved final amount. You can request an all-in quote for up to five selected options. We will provide a private checkout link when payment processing is ready.</p>
+     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request a final quote by email ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
