@@ -128,8 +128,8 @@ export function selectDiscoveryEditProducts(products:Product[]):Product[]{
  const named=(p:Product)=>(p.title||"").toLowerCase();
  const groups=[
   {category:"Wigs & Hair Extensions",specific:(p:Product)=>
-   /\b(?:wigs?|lace[\s-]?front(?:al)?s?)\b/i.test(named(p))&&
-   !/\b(?:wig[\s-]?(?:caps?|stands?|holders?|racks?)|accessories|adhesives?|glues?|extensions?[\s-]?rings?)\b/i.test(named(p))},
+   /\b(?:lace[\s-]?front(?:al)?\s+wigs?|deep[\s-]?wave\s+wigs?|human\s+hair\s+wigs?|wigs?\s+(?:lace|human|long|curly|straight)|wigs?)\b/i.test(named(p))&&
+   !/\b(?:anime|cosplay|temu|goth?o|bocchi|hit?ori|doku|headbands?|hair\s*(?:ties?|pins?|bands?|clips?|ropes?|accessories?|rings?)|accessories?|adhesives?|glues?|wig[\s-]?(?:caps?|stands?|holders?|racks?)|extensions?[\s-]?rings?)\b/i.test(named(p))},
   {category:"Home & Decor",specific:(p:Product)=>
    /\b(?:vases?|sculptures?|figurines?|ornaments?|candlesticks?|candle[\s-]?holders?|wall[\s-]?art|art[\s-]?prints?|picture[\s-]?frames?|photo[\s-]?frames?|mirrors?|planters?|flower[\s-]?pots?|decorative[\s-]?(?:trays?|objects?))\b/i.test(named(p))&&
    !/\b(?:phone[\s-]?cases?|sunglasses?|car[\s-]?(?:dashboard|accessories)|toy[\s-]?cars?|shoe[\s-]?racks?)\b/i.test(named(p))},
@@ -145,6 +145,7 @@ export function selectDiscoveryEditProducts(products:Product[]):Product[]{
  for(const group of groups){
   const choices=products.map((product,index)=>({product,index}))
    .filter(({product})=>product.category===group.category&&realImage(product)&&
+    (group.category!=="Wigs & Hair Extensions"||group.specific(product))&&
     typeof product.originalMarketplaceUrl==="string"&&
     !chosen.has(product.doppelProductId||product.canonicalId||""));
   // Prefer a photographed, verified-source product with rich supplier
