@@ -1,70 +1,58 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import type {Metadata} from "next";
+
 export const metadata:Metadata={
- title:"Herocon Membership — planned £9.99/month",
- description:"Preview the future Herocon account and membership experience. Membership is not available for purchase yet."
+ title:"Herocon Membership — £9.99/month",
+ description:"Full sourcing access for £9.99 a month. Browse products and source from 1688, Taobao, Weidian and other supported Chinese marketplaces."
 };
+
 const benefits=[
- {mark:"01",title:"A place for all your finds",copy:"Keep saved products, favourite variants, past purchases and future shopping lists together."},
- {mark:"02",title:"Your private warehouse",copy:"Follow goods from the original supplier to BuckyDrop's warehouse. QC photo access will depend on confirmed provider support."},
- {mark:"03",title:"Shipping on your terms",copy:"Review a separate final delivery quote after warehouse checks, then explicitly authorise and pay for international shipping."},
- {mark:"04",title:"One clear account",copy:"View purchases, payments, parcel tracking, membership status and support in one place when account services launch."}
+ "Browse products from Chinese marketplaces",
+ "Paste links from 1688, Taobao, Weidian and more",
+ "Purchase through our sourcing partner",
+ "Warehouse storage and international delivery"
 ];
+const steps=[
+ {no:"01",title:"Find your product",copy:"Browse the catalogue or paste a supplier link."},
+ {no:"02",title:"Pay for your items",copy:"Choose your options and place your order."},
+ {no:"03",title:"We source it",copy:"Our partner buys your items and stores them at its warehouse in China."},
+ {no:"04",title:"Pay shipping",copy:"Pay the confirmed international shipping cost and receive your parcel."}
+];
+
 export default function MembershipPage(){
- return <main className="hc-member-page">
+ return <main className="hc-member-page hc-membership-clean">
   <Header/>
-  <section className="hc-member-hero">
-   <div className="hc-premium-container hc-member-hero-grid">
-    <div>
-     <p className="hc-premium-kicker">A NEW HEROCON EXPERIENCE / IN DEVELOPMENT</p>
-     <h1>Find more.<br/><em>Make it yours.</em></h1>
-     <p className="hc-member-lead">Your own account, your own warehouse journey and a simpler way to bring incredible finds home. We're building Herocon Membership around the whole buying experience — not just product discovery.</p>
-     <div className="hc-member-links"><Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore products <span aria-hidden="true">↗</span></Link><Link className="hc-member-text-link" href="/how-it-works">How buying will work ↗</Link></div>
-     <p className="hc-member-availability"><span aria-hidden="true">●</span> Create a free account to add products to your cart once account registration is connected. No membership payment is due until you decide to buy products. Subscriptions are not yet active.</p>
-     <Link className="hc-member-text-link" href="/account">Create free account / Sign in ↗</Link>
+  <section className="hc-membership-hero">
+   <div className="hc-premium-container hc-membership-layout">
+    <div className="hc-membership-copy">
+     <p className="hc-premium-kicker">HEROCON MEMBERSHIP</p>
+     <h1>Sourcing from China.<br/><em>Made simple.</em></h1>
+     <p className="hc-membership-lead">Full sourcing access across 1688, Taobao, Weidian and other supported Chinese marketplaces.</p>
+     <p className="hc-membership-intro">Discover products, paste supplier links and order through our sourcing partner. Your items are purchased and held at the warehouse in China until you pay for international shipping.</p>
+     <div className="hc-membership-ctas">
+      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore products <span aria-hidden="true">↗</span></Link>
+      <Link className="hc-membership-secondary" href="/account">Create a free account ↗</Link>
+     </div>
     </div>
-    <aside className="hc-member-price-card" aria-label="Herocon planned membership price">
-     <span className="hc-member-price-eyebrow">HEROCON / FUTURE MEMBERSHIP</span>
-     <span className="hc-member-price-name">The member experience.</span>
-     <div className="hc-member-price"><strong>£9.99</strong><span>/ month</span></div>
-     <p>Only required when you try to purchase products, not when you create a free account or add items to your cart. Membership will be a separate recurring subscription once available.</p>
-     <div className="hc-member-preview-state">COMING SOON · NOT PAYABLE</div>
-     <ul>
-      <li>Browse products for free</li>
-      <li>Free customer account and cart (no membership charge)</li>
-      <li>Warehouse, QC and order history</li>
-      <li>Separate international shipping payments</li>
-     </ul>
-     <p className="hc-member-fine">Product prices and international shipping are separate from the future membership. Secure account registration is being connected; no recurring billing is active.</p>
+    <aside className="hc-membership-price" aria-label="Herocon membership pricing">
+     <p>THE MEMBERSHIP</p>
+     <div className="hc-membership-amount"><strong>£9.99</strong><span>/ month</span></div>
+     <div className="hc-membership-price-rule"/>
+     <h2>Full sourcing access.</h2>
+     <ul>{benefits.map(item=><li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
+     <Link className="hc-membership-price-link" href="/account">Create your free account <span aria-hidden="true">↗</span></Link>
+     <small>Membership is required when purchasing, not for creating an account or adding to cart. Subscription payments are not yet available.</small>
     </aside>
    </div>
   </section>
-  <section className="hc-member-benefits">
+  <section className="hc-membership-process">
    <div className="hc-premium-container">
-    <p className="hc-premium-kicker">MADE FOR CURIOUS SHOPPERS</p>
-    <h2>Your future account.<br/><em>Everything in one place.</em></h2>
-    <div className="hc-member-benefit-grid">{benefits.map(b=><article key={b.mark}>
-     <span>{b.mark} / THE HEROCON WAY</span><h3>{b.title}</h3><p>{b.copy}</p>
-    </article>)}</div>
-   </div>
-  </section>
-  <section className="hc-member-steps">
-   <div className="hc-premium-container hc-member-steps-inner">
-    <div><p className="hc-premium-kicker">HOW MEMBERSHIP WILL WORK</p><h2>Join. Find. <em>Bring it home.</em></h2></div>
-    <div className="hc-member-step-list">
-     <p><strong>01 — Add to cart → free account.</strong> Shoppers are directed to create a free account or sign in when they add a product. Their selected items are kept for the return to their cart. No membership payment is required.</p>
-     <p><strong>02 — Try to buy → membership check.</strong> Only when a shopper attempts a new purchase do we check the £9.99/month subscription. If not active, the membership payment stage will appear once billing is ready.</p>
-     <p><strong>03 — Pay for products, then pay for shipping.</strong> You'll see the estimated freight charge before buying; after warehouse receipt and QC, you'll review the actual shipping quote before paying it separately.</p>
-     <p><strong>04 — Keep access to your own orders.</strong> If a membership later ends, existing order tracking, QC, shipping payments, support and refunds must remain accessible.</p>
-    </div>
-   </div>
-  </section>
-  <section className="hc-member-bottom">
-   <div className="hc-premium-container">
-    <h2>For now, <em>the collection is open.</em></h2>
-    <p>You can explore, save products and build your cart while we finish secure accounts, payments and fulfilment.</p>
-    <Link className="hc-premium-button hc-premium-button-dark" href="/search">Discover products <span aria-hidden="true">↗</span></Link>
+    <div className="hc-membership-process-heading"><p className="hc-premium-kicker">HOW IT WORKS</p><h2>From supplier <em>to doorstep.</em></h2></div>
+    <div className="hc-membership-steps">{steps.map(step=><div className="hc-membership-step" key={step.no}>
+     <span>{step.no}</span><h3>{step.title}</h3><p>{step.copy}</p>
+    </div>)}</div>
+    <p className="hc-membership-shipping-note">Product prices, international shipping and applicable taxes or duties are separate from the membership fee. Shipping is quoted separately before dispatch.</p>
    </div>
   </section>
  </main>;
