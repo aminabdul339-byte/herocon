@@ -33,7 +33,7 @@ export async function POST(request:Request){
  if(mode!=="recover"&&(password.length<12||password.length>128))return reply({error:"Use a password of at least 12 characters."},400);
  try{
   if(mode==="recover"){
-   await authApi("/recover",{email,redirect_to:"https://herocon.store/account/new-password"});
+   await authApi("/recover?redirect_to="+encodeURIComponent("https://herocon.store/account/new-password"),{email});
    return reply({ok:true,message:"If an account exists, password-reset instructions will be sent to that email address."});
   }
   if(mode==="signup"){
