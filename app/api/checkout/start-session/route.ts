@@ -76,7 +76,7 @@ export async function POST(request:Request){
    session.currency!=="gbp"||session.amount_total!==quote.totalPence||
    typeof session.url!=="string"||!session.url.startsWith("https://checkout.stripe.com/"))
    return response({error:"Stripe returned an unexpected checkout session. No redirect was issued."},502);
-  return response({url:session.url},{});
+  return response({url:session.url});
  }catch(e){
   if(e instanceof QuoteError)return response({error:e.message},e.status);
   return response({error:"The verified checkout session could not be prepared safely."},503);
