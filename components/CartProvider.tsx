@@ -1,5 +1,5 @@
 "use client";
-import {createContext,useContext,useEffect,useMemo,useState} from "react";
+import {createContext,useContext,useEffect,useState} from "react";
 
 export type CartItem={
  key:string;
@@ -16,7 +16,12 @@ export type CartItem={
  /** Whether this line is part of the next order. Kept with the cart in localStorage. */
  selected?:boolean;
 };
+export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string};
+export const PENDING_CART_KEY="herocon-pending-add-v1";
+export const cartStorageKey=(userId:string)=>"herocon-user-cart-v2:"+userId;
 type CartContextValue={
+ account:AccountStatus;
+ refreshAccount:()=>Promise<AccountStatus>;
  items:CartItem[];
  count:number;
  hydrated:boolean;
@@ -27,7 +32,7 @@ type CartContextValue={
  removeItem:(key:string)=>void;
  clearCart:()=>void;
 };
-const STORAGE_KEY="herocon-cart-v1";
+const STORAGE_KEY_PREFIX="herocon-user-cart-v2:";
 const MAX_LINES=100;
 const MAX_QUANTITY=999;
 const CartContext=createContext<CartContextValue|null>(null);
@@ -48,18 +53,42 @@ function validItem(v:unknown):v is CartItem{
 export function CartProvider({children}:{children:React.ReactNode}){
  const [items,setItems]=useState<CartItem[]>([]);
  const [hydrated,setHydrated]=useState(false);
- useEffect(()=>{
+ const [storageUserId,setStorageUserId]=useState<string|null>(null);
+ const [account,setAccount]=useState<AccountStatus>({status:"checking"});
+ async function refreshAccount():Promise<AccountStatus>{
   try{
-   const stored:unknown=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-   if(Array.isArray(stored))setItems(stored.filter(validItem).slice(0,MAX_LINES).map(item=>({...item,quantity:clamp(item.quantity),selected:item.selected!==false})));
-  }catch{}
-  setHydrated(true);
- },[]);
+   const res=await fetch("/api/account/session",{cache:"no-store",credentials:"same-origin"});
+   const data=await res.json();
+   let next:AccountStatus;
+   if(data.authenticated===true&&typeof data.user?.id==="string"&&typeof data.user?.email==="string")
+    next={status:"authenticated",id:data.user.id,email:data.user.email};
+   else next={status:res.status===503?"unavailable":"guest"};
+   setAccount(next);return next;
+  }catch{
+   const unavailable:AccountStatus={status:"unavailable"};
+   setAccount(unavailable);
+   return unavailable;
+  }
+ }
+ useEffect(()=>{void refreshAccount();},[]);
  useEffect(()=>{
-  if(!hydrated)return;
-  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(items));}catch{}
- },[items,hydrated]);
+  setHydrated(false);
+  if(account.status!=="authenticated"||!account.id){
+   setStorageUserId(null);setItems([]);setHydrated(true);return;
+  }
+  let found:CartItem[]=[];
+  try{
+   const value:unknown=JSON.parse(localStorage.getItem(STORAGE_KEY_PREFIX+account.id)||"[]");
+   if(Array.isArray(value))found=value.filter(validItem).slice(0,MAX_LINES).map(x=>({...x,quantity:clamp(x.quantity),selected:x.selected!==false}));
+  }catch{}
+  setItems(found);setStorageUserId(account.id);setHydrated(true);
+ },[account.status,account.id]);
+ useEffect(()=>{
+  if(!hydrated||!storageUserId||account.status!=="authenticated"||account.id!==storageUserId)return;
+  try{localStorage.setItem(STORAGE_KEY_PREFIX+storageUserId,JSON.stringify(items));}catch{}
+ },[items,hydrated,storageUserId,account.status,account.id]);
  function addItems(nextItems:CartItem[]){
+  if(account.status!=="authenticated"||!hydrated)return;
   setItems(previous=>{
    const map=new Map(previous.map(item=>[item.key,item]));
    for(const item of nextItems.filter(validItem)){
@@ -82,7 +111,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
  function removeItem(key:string){setItems(previous=>previous.filter(item=>item.key!==key));}
  function clearCart(){setItems([]);}
  const count=items.reduce((sum,item)=>sum+item.quantity,0);
- const value=useMemo(()=>({items,count,hydrated,addItems,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}),[items,count,hydrated]);
+ const value={items,count,hydrated,account,refreshAccount,addItems,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart};
  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 export function useCart(){
