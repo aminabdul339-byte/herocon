@@ -3,6 +3,7 @@ import Link from "next/link";
 import {useState} from "react";
 
 type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
+type CustomerRequest={id:string;userId:string;customerEmail:string;createdAt:string;postcode:string;notes:string;lines:{title:string;marketplaceUrl:string;skuCode:string|null;variant:string|null;quantity:number}[]};
 const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
 type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;estimatedLaterShippingGBP:string;paymentStage:"products";expiresAt:string;paymentEnabled:boolean;notice:string};
 type FinancialEvent={eventId:string;type:string;objectId:string;receivedAt:string;requiresMerchantReview:boolean};
@@ -25,6 +26,7 @@ export default function MerchantCheckout(){
  const [financialEvents,setFinancialEvents]=useState<FinancialEvent[]>([]);
  const [exceptions,setExceptions]=useState<PaymentException[]>([]);
  const [testUrl,setTestUrl]=useState("");
+ const [quoteRequests,setQuoteRequests]=useState<CustomerRequest[]|null>(null);
  const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
  async function check(){
   setBusy(true);setNotice("");
@@ -35,6 +37,27 @@ export default function MerchantCheckout(){
    setReadiness(data.readiness);
   }catch(e){setNotice(e instanceof Error?e.message:"Unable to check readiness.");}
   finally{setBusy(false);}
+ }
+ async function loadQuoteRequests(){
+  setBusy(true);setNotice("");
+  try{
+   const r=await fetch("/api/admin/checkout/requests",{
+    headers:{"x-herocon-checkout-admin":key.trim()},cache:"no-store"
+   });
+   const data=await r.json();
+   if(!r.ok)throw Error(data.error||"Unable to load customer requests.");
+   setQuoteRequests(Array.isArray(data.requests)?data.requests:[]);
+   setNotice("Read-only customer quote queue loaded. No customer payment or supplier order has been created.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Could not load quote requests.");}
+  finally{setBusy(false);}
+ }
+ function useRequest(req:CustomerRequest){
+  setEmail(req.customerEmail);
+  setLines(req.lines.map(line=>({
+   marketplaceUrl:line.marketplaceUrl,skuCode:line.skuCode||"",quantity:String(line.quantity),unitPriceGBP:""
+  })));
+  setApproved(false);setShipping("");setTax("");
+  setNotice("Imported request "+req.id+" into the merchant approval form. Recheck supplier stock and set independent GBP prices. No charge has been created.");
  }
  async function startSandboxTest(){
   if(!result)return;
@@ -95,12 +118,24 @@ export default function MerchantCheckout(){
    <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
     <button type="button" style={button} onClick={check} disabled={busy||key.length<32}>{busy?"Checking…":"Check launch requirements"}</button>
     <button type="button" style={{...button,background:"#48684f"}} onClick={checkPaidOrders} disabled={busy||key.length<32}>Review paid-order ledger</button>
+    <button type="button" style={{...button,background:"#43657b"}} onClick={loadQuoteRequests} disabled={busy||key.length<32}>Load customer quote requests</button>
    </div>
    {readiness&&<section style={{marginTop:15}}>
     <strong>{readiness.enabled?"All configured launch gates are present (still complete a controlled purchase test)":"Live payment is still disabled. Missing requirements:"}</strong>
     {!readiness.enabled&&<ul>{readiness.missing.map(x=><li key={x}>{x}</li>)}</ul>}
    </section>}
   </section>
+  {quoteRequests&&<section style={{border:"1px solid #dce4d8",borderRadius:10,padding:18,marginTop:22}}>
+   <h2>Customer quote requests ({quoteRequests.length})</h2>
+   <p>Saved buyer enquiries only. Requests are not approved payments, orders or supplier purchases. Contact the buyer separately after merchant verification.</p>
+   {quoteRequests.length===0?<p>No requests received yet.</p>:
+    quoteRequests.map(req=><article key={req.id} style={{padding:"17px 0",borderTop:"1px solid #dce4d8"}}>
+     <p><strong>{req.customerEmail}</strong> · {new Date(req.createdAt).toLocaleString("en-GB")} · {req.postcode}</p>
+     <p style={{fontSize:12}}>Reference {req.id} · {req.notes||"No additional notes"}</p>
+     <ul>{req.lines.map((line,i)=><li key={i}>{line.quantity} × {line.title} {line.variant?"("+line.variant+")":""} · SKU: {line.skuCode||"Not selected"} · <a href={line.marketplaceUrl} target="_blank" rel="noopener noreferrer">Supplier listing</a></li>)}</ul>
+     <button type="button" style={{...button,background:"#617665"}} onClick={()=>useRequest(req)}>Load into manual GBP approval form</button>
+    </article>)}
+  </section>}
   {reconciliation&&<section style={{border:"1px solid #dce4d8",borderRadius:10,padding:18,marginTop:22}}>
     <h2>Private paid-order reconciliation ({reconciliation.length})</h2>
     {financialEvents.length>0&&<div style={{padding:14,background:"#fff3e6",borderRadius:7,marginBottom:16}}>
