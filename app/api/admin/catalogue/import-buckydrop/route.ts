@@ -28,6 +28,11 @@ const DELAY_MS=2200;
 const NEW_BATCH="makeup-brushes-20261119";
 type ImportScope="all"|"new-makeup";
 const ATTEMPTS="catalogue/buckydrop-import-attempts/v1/";
+const RETRIES="catalogue/buckydrop-import-retries/v1/";
+const BLOCKS="catalogue/buckydrop-import-blocks/v1/";
+const FAILURES="catalogue/buckydrop-import-failures/v1/";
+const RESTRICTED=new Set(["ACCOUNT_FUNDS","RATE_LIMIT","ACCESS_DENIED",
+ "SNAPSHOT_SAVE_FAILED","SNAPSHOT_STORAGE_UNAVAILABLE","SNAPSHOT_READ_FAILED","SNAPSHOT_INVALID"]);
 const SAVED="catalogue/buckydrop-snapshots/v1/";
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
 const sha=(s:string)=>createHash("sha256").update(s).digest("hex");
@@ -52,17 +57,25 @@ async function allPaths(prefix:string):Promise<string[]>{
 }
 function day(){return new Date().toISOString().slice(0,10);}
 async function state(scope:ImportScope="all"){
- const [products,existing,attempted]=await Promise.all([
-  getProducts(),allPaths(SAVED),allPaths(ATTEMPTS+day()+"/")
+ const [products,existing,attempted,retried,blocks,failures]=await Promise.all([
+  getProducts(),allPaths(SAVED),allPaths(ATTEMPTS+day()+"/"),
+  allPaths(RETRIES+day()+"/"),allPaths(BLOCKS+day()+"/"),
+  allPaths(FAILURES+day()+"/")
  ]);
  const savedHashes=new Set(existing.map(p=>p.slice(SAVED.length).replace(/\.json$/,"")));
  const attemptedHashes=new Set(attempted.map(p=>p.slice(p.lastIndexOf("/")+1).replace(/\.json$/,"")));
+ const retriedHashes=new Set(retried.map(p=>p.slice(p.lastIndexOf("/")+1).replace(/\.json$/,"")));
+ const failureCounts=new Map<string,number>();
+ for(const path of failures){
+  const code=path.slice((FAILURES+day()+"/").length).split("/")[0];
+  failureCounts.set(code,(failureCounts.get(code)||0)+1);
+ }
  const categoryCounts=new Map<string,number>();
  for(const p of attempted){
   const category=p.slice((ATTEMPTS+day()+"/").length).split("/")[0];
   categoryCounts.set(category,(categoryCounts.get(category)||0)+1);
  }
- const categories=new Map<string,{slug:string;list:{url:string;id:string;title:string}[]}>();
+ const categories=new Map<string,{slug:string;list:{url:string;id:string;title:string}[];retry:{url:string;id:string;title:string}[];missing:number}>();
  const deduped=new Set<string>();
  let scopedTotal=0,scopedSaved=0;
  for(const p of products){
@@ -73,16 +86,22 @@ async function state(scope:ImportScope="all"){
   scopedTotal++;
   if(savedHashes.has(sha(url)))scopedSaved++;
   const category=p.category||"Other";
-  const entry=categories.get(category)||{slug:slug(category),list:[]};
-  if(!savedHashes.has(sha(url))&&!attemptedHashes.has(sha(url))){
-   entry.list.push({url,id:p.doppelProductId||p.canonicalId||"",title:p.title});
+  const entry=categories.get(category)||{slug:slug(category),list:[],retry:[],missing:0};
+  if(!savedHashes.has(sha(url))){
+   entry.missing++;
+   const candidate={url,id:p.doppelProductId||p.canonicalId||"",title:p.title};
+   if(!attemptedHashes.has(sha(url)))entry.list.push(candidate);
+   else if(!retriedHashes.has(sha(url)))entry.retry.push(candidate);
   }
   categories.set(category,entry);
  }
- const options=[...categories.entries()].filter(([,x])=>x.list.length>0)
+ const options=[...categories.entries()].filter(([,x])=>x.missing>0)
   .sort((a,b)=>(categoryCounts.get(a[1].slug)||0)-(categoryCounts.get(b[1].slug)||0)||
         b[1].list.length-a[1].list.length||a[0].localeCompare(b[0]));
- return {catalogueProducts:scopedTotal,snapshots:scopedSaved,attemptsToday:attempted.length,remainingDaily:Math.max(0,LIMIT-attempted.length),
+ return {catalogueProducts:scopedTotal,snapshots:scopedSaved,attemptsToday:attempted.length,retriedToday:retried.length,
+  remainingDaily:Math.max(0,LIMIT-attempted.length-retried.length),
+  blockedReason:blocks.length?blocks[0].slice((BLOCKS+day()+"/").length).replace(/\.json$/,""):null,
+  failureCodes:[...failureCounts].map(([code,count])=>({code,count})).sort((a,b)=>b.count-a.count).slice(0,12),
   categories:options,categoriesTotal:categories.size};
 }
 
@@ -93,8 +112,14 @@ export async function GET(request:Request){
   const scope:ImportScope=new URL(request.url).searchParams.get("scope")==="new-makeup"?"new-makeup":"all";
   const s=await state(scope);
   return reply({catalogueProducts:s.catalogueProducts,permanentlySaved:s.snapshots,attemptsToday:s.attemptsToday,
-   remainingDailyRequests:s.remainingDaily,categories:s.categories.map(([name,v])=>({name,missing:v.list.length})),
-   maxDailyNewLookups:LIMIT,notice:"Merchant-authorised whole-catalogue import. No monetary cap: BuckyDrop bills per request later. Follow supplier rate limits."});
+   retriedToday:s.retriedToday,remainingDailyRequests:s.remainingDaily,
+   firstAttemptEligible:s.categories.reduce((n,[,v])=>n+v.list.length,0),
+   retryableToday:s.categories.reduce((n,[,v])=>n+v.retry.length,0),
+   blockedReason:s.blockedReason,
+   nextUtcReset:new Date(Date.parse(day()+"T00:00:00.000Z")+86400000).toISOString(),
+   failureCodes:s.failureCodes,
+   categories:s.categories.map(([name,v])=>({name,missing:v.missing,firstAttemptEligible:v.list.length,retryableToday:v.retry.length})),
+   maxDailyNewLookups:LIMIT,notice:"Merchant-authorised import. A single manual retry may be billable. No automatic retries."});
  }catch{return reply({error:"Unable to inspect private import state"},503);}
 }
 
@@ -104,28 +129,31 @@ export async function POST(request:Request){
   process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true")return reply({error:"Live private storage or supplier lookup is not ready"},503);
  let requested=PER_REQUEST;
  let scope:ImportScope="all";
- try{const raw=await request.text();if(raw.length>300)return reply({error:"Request too large"},413);
+ let retryMissing=false;
+ try{const raw=await request.text();if(raw.length>350)return reply({error:"Request too large"},413);
   if(raw.trim()){const body=JSON.parse(raw);if(body&&typeof body.max==="number"&&Number.isInteger(body.max))requested=Math.min(PER_REQUEST,Math.max(1,body.max));
-   if(body&&body.scope==="new-makeup")scope="new-makeup";}
+   if(body&&body.scope==="new-makeup")scope="new-makeup";
+   retryMissing=Boolean(body&&body.retryMissing===true);}
  }catch{return reply({error:"Invalid request body"},400);}
  let s:Awaited<ReturnType<typeof state>>;
  try{s=await state(scope);}
  catch{return reply({error:"Unable to inspect saved catalogue or usage budget"},503);}
  const results:{category:string;id:string;result:"saved"|"already_saved"|"failed";code?:string;variantCount?:number}[]=[];
  let stopReason:string|null=null;
- const limit=Math.min(requested,s.remainingDaily);
+ const limit=s.blockedReason?0:Math.min(requested,s.remainingDaily);
+ if(s.blockedReason)stopReason="Supplier or storage restriction ("+s.blockedReason+") recorded today. No further requests will be sent today.";
  for(let i=0;i<limit;i++){
-  const best=s.categories.find(([,v])=>v.list.length>0);
+  const best=s.categories.find(([,v])=>(retryMissing?v.retry:v.list).length>0);
   if(!best)break;
   const [category,entry]=best;
-  const candidate=entry.list.shift()!;
+  const candidate=(retryMissing?entry.retry:entry.list).shift()!;
   // Give other categories priority on the next call.
   s.categories.push(s.categories.shift()!);
   const key=sha(candidate.url);
-  const pathname=ATTEMPTS+day()+"/"+entry.slug+"/"+key+".json";
+  const pathname=(retryMissing?RETRIES:ATTEMPTS)+day()+"/"+entry.slug+"/"+key+".json";
   try{
    await put(pathname,JSON.stringify({
-    version:1,category,productId:candidate.id,requestedAt:new Date().toISOString()
+    version:1,category,productId:candidate.id,requestedAt:new Date().toISOString(),retryMissing
    }),{access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"});
   }catch{
    results.push({category,id:candidate.id,result:"failed",code:"ATTEMPT_RESERVATION_FAILED"});
@@ -138,19 +166,24 @@ export async function POST(request:Request){
   }catch(error){
    const code=error instanceof BuckydropError?error.code:"UNKNOWN";
    results.push({category,id:candidate.id,result:"failed",code});
-   if(["ACCOUNT_FUNDS","RATE_LIMIT","ACCESS_DENIED","SNAPSHOT_SAVE_FAILED",
-      "SNAPSHOT_STORAGE_UNAVAILABLE","SNAPSHOT_READ_FAILED","SNAPSHOT_INVALID"].includes(code)){
-    stopReason="Stopped on "+code+"; no further supplier calls in this request.";
+   try{await put(FAILURES+day()+"/"+slug(code)+"/"+key+".json",
+    JSON.stringify({code,failedAt:new Date().toISOString()}),
+    {access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"});}catch{}
+   if(RESTRICTED.has(code)){
+    try{await put(BLOCKS+day()+"/"+slug(code)+".json",
+     JSON.stringify({code,blockedAt:new Date().toISOString()}),
+     {access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"});}catch{}
+    stopReason="Stopped on "+code+"; no further supplier calls today until the restriction has been investigated.";
     break;
    }
   }
   if(i+1<limit)await pause(DELAY_MS);
  }
- return reply({requested,attempted:results.length,
+ return reply({requested,retryMissing,attempted:results.length,
   saved:results.filter(x=>x.result==="saved").length,
   alreadySaved:results.filter(x=>x.result==="already_saved").length,
   failed:results.filter(x=>x.result==="failed").length,
   results,stopReason,
   remainingDailyRequests:Math.max(0,s.remainingDaily-results.length),
-  note:"Whole-catalogue import is merchant-authorised. Only unsaved products are sent. Provider rate limits and insufficient funds always stop the batch."});
+  note:"Merchant authorised. Only unsaved products are sent. A manual retry is allowed once per product per UTC day. Supplier restrictions stop further requests."});
 }
