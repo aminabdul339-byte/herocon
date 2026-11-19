@@ -10,6 +10,17 @@ export default function Footer(){
     <div className="hc-footer-support"><strong>Need help?</strong><Link href="/contact">Contact us</Link><a href={`mailto:${SUPPORT}?subject=Herocon%20support%20enquiry`}>Email our support team <span aria-hidden="true">↗</span></a></div>
    </div>
   </div>
+  <div className="hc-footer-legal">
+   <nav className="hc-footer-legal-links" aria-label="Legal information and content reporting">
+    <Link href="/privacy-policy">Privacy Policy</Link>
+    <Link href="/terms-and-conditions">Terms and Conditions</Link>
+    <Link href="/cookie-settings">Cookie Settings</Link>
+    <Link href="/ip">IP Reporting</Link>
+    <Link href="/dsa">DSA Reporting</Link>
+    <Link href="/imprint">Imprint</Link>
+   </nav>
+   <p className="hc-footer-disclosure">Herocon displays product information obtained from submitted marketplace links and imported third-party catalogues. Listing data and images may be provided by suppliers, marketplaces and sourcing partners; we do not independently authenticate products, brand rights or supplier claims. Herocon currently provides discovery tools and does not accept payments or fulfil orders. External seller and agent links lead to independently operated services. Trademarks and logos remain the property of their respective owners; their appearance does not imply brand endorsement or affiliation. Report intellectual-property concerns through <Link href="/ip">IP Reporting</Link> and suspected illegal content under applicable EU law through <Link href="/dsa">DSA Reporting</Link>.</p>
+  </div>
   <div className="sc-footer-bottom">
    <span>© {new Date().getFullYear()} Herocon. Product discovery and sourcing education. <Link className="hc-footer-bottom-contact" href="/contact">Contact us for support</Link></span>
    <span>Marketplace prices exclude shipping, duties, VAT and service fees. Herocon does not guarantee third-party supplier quality.</span>
