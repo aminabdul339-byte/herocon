@@ -4,14 +4,14 @@ import type {Metadata} from "next";
 
 export const metadata:Metadata={
  title:"Herocon Membership — £9.99/month",
- description:"Full sourcing access for £9.99 a month. Browse products and source from 1688, Taobao, Weidian and other supported Chinese marketplaces."
+ description:"£9.99 monthly early-access membership for Herocon. Product orders and shipping checkout are not yet available."
 };
 
 const benefits=[
  "Browse products from Chinese marketplaces",
  "Paste links from 1688, Taobao, Weidian and more",
- "Purchase through our sourcing partner",
- "Warehouse storage and international delivery"
+ "Support ongoing development of product sourcing tools",
+ "Manage or cancel your subscription through Stripe"
 ];
 const steps=[
  {no:"01",title:"Find your product",copy:"Browse the catalogue or paste a supplier link."},
@@ -28,8 +28,8 @@ export default function MembershipPage(){
     <div className="hc-membership-copy">
      <p className="hc-premium-kicker">HEROCON MEMBERSHIP</p>
      <h1>Sourcing from China.<br/><em>Made simple.</em></h1>
-     <p className="hc-membership-lead">Full sourcing access across 1688, Taobao, Weidian and other supported Chinese marketplaces.</p>
-     <p className="hc-membership-intro">Discover products, paste supplier links and order through our sourcing partner. Your items are purchased and held at the warehouse in China until you pay for international shipping.</p>
+     <p className="hc-membership-lead">Discover products across 1688, Taobao, Weidian and other Chinese marketplaces.</p>
+     <p className="hc-membership-intro">Our optional monthly early-access membership supports Herocon during its rollout. Browse the catalogue and explore supplier links now; product ordering, warehouse fulfilment and international shipping checkout are not yet available.</p>
      <div className="hc-membership-ctas">
       <Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore products <span aria-hidden="true">↗</span></Link>
       <Link className="hc-membership-secondary" href="/account">Create a free account ↗</Link>
@@ -39,10 +39,10 @@ export default function MembershipPage(){
      <p>THE MEMBERSHIP</p>
      <div className="hc-membership-amount"><strong>£9.99</strong><span>/ month</span></div>
      <div className="hc-membership-price-rule"/>
-     <h2>Full sourcing access.</h2>
+     <h2>Herocon early-access membership.</h2>
      <ul>{benefits.map(item=><li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
-     <Link className="hc-membership-price-link" href="/membership/activate">Get full sourcing access <span aria-hidden="true">↗</span></Link>
-     <small>Create an account and add to cart for free. Membership is billed monthly and can be cancelled. Products and shipping are separate.</small>
+     <Link className="hc-membership-price-link" href="/membership/activate">Join for £9.99/month <span aria-hidden="true">↗</span></Link>
+     <small>Membership is optional while order checkout is unavailable. £9.99 is charged now and renews monthly until cancelled. The catalogue, account and cart are free; no product orders can currently be placed. Products and shipping are separate charges once launched.</small>
     </aside>
    </div>
   </section>
@@ -52,7 +52,7 @@ export default function MembershipPage(){
     <div className="hc-membership-steps">{steps.map(step=><div className="hc-membership-step" key={step.no}>
      <span>{step.no}</span><h3>{step.title}</h3><p>{step.copy}</p>
     </div>)}</div>
-    <p className="hc-membership-shipping-note">Product prices, international shipping and applicable taxes or duties are separate from the membership fee. Shipping is quoted separately before dispatch.</p>
+    <p className="hc-membership-shipping-note">The sourcing and shipping steps above describe the planned ordering service. Purchasing and delivery payments are not yet live. Product prices, international shipping and applicable taxes or duties will be separate from the membership fee.</p>
    </div>
   </section>
  </main>;
