@@ -6,7 +6,7 @@ import type {Product} from "@/lib/types";
 import type {ProductLinkLookupResult} from "@/lib/marketplace-links";
 
 type CatalogSave={status:"added"|"existing"|"unavailable";productId:string|null};
-type Status={phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}|{phase:"ready";product:BuckydropProduct;url:string;save:CatalogSave};
+type Status={phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}|{phase:"ready";product:BuckydropProduct;url:string;save:CatalogSave;cacheStatus:"hit"|"stored"|null};
 
 export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  const [status,setStatus]=useState<Status>({phase:initialUrl?"loading":"idle"});
@@ -21,11 +21,11 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
    signal:controller.signal,
    cache:"no-store"
   }).then(async response=>{
-   const result:ProductLinkLookupResult&{error?:string;catalogueSave?:CatalogSave}=await response.json();
+   const result:ProductLinkLookupResult&{error?:string;catalogueSave?:CatalogSave;cacheStatus?:"hit"|"stored"}=await response.json();
    if(!response.ok||!result.product)throw new Error(result.error||"We couldn't retrieve this product.");
    return result;
   }).then(result=>{
-   if(!controller.signal.aborted)setStatus({phase:"ready",product:result.product,url:result.productLink,save:result.catalogueSave||{status:"unavailable",productId:null}});
+   if(!controller.signal.aborted)setStatus({phase:"ready",product:result.product,url:result.productLink,save:result.catalogueSave||{status:"unavailable",productId:null},cacheStatus:result.cacheStatus||null});
   }).catch(error=>{
    if(!controller.signal.aborted)setStatus({phase:"error",message:error instanceof Error?error.message:"The product could not be retrieved."});
   });
@@ -59,6 +59,11 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  return <div className="hc-link-product-found">
    <div className="sc-container hc-link-found-header">
     <div><p className="sc-kicker">PRODUCT FOUND</p><h2>{source.title}</h2>
+     <p className="hc-link-connection-status" role="status">
+      {status.cacheStatus==="stored"?"New BuckyDrop API response received and saved. Live product lookup worked for this item.":
+       status.cacheStatus==="hit"?"Previously saved supplier details. This result does not retest the live BuckyDrop connection.":
+       "Product data received. Live connection status was not reported."}
+     </p>
     </div>
    </div>
    <ProductExperience
