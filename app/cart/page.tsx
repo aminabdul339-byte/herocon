@@ -63,13 +63,7 @@ export default function CartPage(){
      {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
      <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
-    {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
-    <div className="hc-cart-checkout-note">
-     <strong>Buying from the original supplier</strong>
-     <p>Use the direct product link beside each item to visit its original marketplace listing. Availability and prices should be confirmed with the seller or your chosen buying agent before paying.</p>
-     <p>Herocon does not yet accept product or international shipping payments. Listed prices are indicative and exclude shipping, duties and any taxes.</p>
-    </div>
-    <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
+    <Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
   </section>
  </main>;
