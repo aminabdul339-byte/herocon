@@ -26,13 +26,15 @@ export function enabledMembershipMode():MembershipMode|null{
  const test=process.env.HEROCON_MEMBERSHIP_TEST_ENABLED==="true"&&
   process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")&&
   process.env.HEROCON_MEMBERSHIP_TEST_PRICE_ID?.startsWith("price_")&&
-  process.env.HEROCON_MEMBERSHIP_TEST_WEBHOOK_SECRET?.startsWith("whsec_");
+  process.env.HEROCON_MEMBERSHIP_TEST_WEBHOOK_SECRET?.startsWith("whsec_")&&
+  process.env.HEROCON_MEMBERSHIP_TEST_PORTAL_CONFIGURATION_ID?.startsWith("bpc_");
 
  const live=process.env.HEROCON_MEMBERSHIP_LIVE_ENABLED==="true"&&
   process.env.HEROCON_STRIPE_KEY_ROTATED==="true"&&
   process.env.STRIPE_LIVE_SECRET_KEY?.startsWith("sk_live_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_PRICE_ID?.startsWith("price_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_WEBHOOK_SECRET?.startsWith("whsec_")&&
+  process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID?.startsWith("bpc_")&&
   process.env.HEROCON_MEMBERSHIP_POLICIES_APPROVED==="true";
  if(live)return "live";
  return test?"test":null;
@@ -168,6 +170,8 @@ export async function createMembershipPortal(user:Customer,mode:MembershipMode):
  const form=new URLSearchParams();
  form.set("customer",customer);
  form.set("return_url","https://herocon.store/membership/activate");
+ const portalConfig=mode==="test"?process.env.HEROCON_MEMBERSHIP_TEST_PORTAL_CONFIGURATION_ID:process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID;
+ if(portalConfig?.startsWith("bpc_"))form.set("configuration",portalConfig);
  const portal=await stripe<{url?:string}>(mode,"billing_portal/sessions",form);
  if(!portal.url?.startsWith("https://billing.stripe.com/"))
   throw new MembershipBillingError(502,"Stripe's billing portal is not available.");
