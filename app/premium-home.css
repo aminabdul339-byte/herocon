@@ -234,3 +234,6 @@
  .hc-site .hc-premium-hero h1{font-size:43px}
  .hc-site .hc-premium-category-info h3{font-size:24px!important}
 }
+
+.hc-inline-arrow{display:inline-block;width:17px;height:17px;flex:none;vertical-align:middle}
+.hc-premium-tile-arrow .hc-inline-arrow{width:17px;height:17px}
