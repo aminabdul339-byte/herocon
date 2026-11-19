@@ -49,6 +49,23 @@ Set in the Vercel **Production** environment ONLY, after completing the correspo
 
 Shared private Blob token and existing BuckyDrop live credentials are already installed. Confirm permissions, balances, and operational costs before enabling supplier writes.
 
+## Merchant key setup and sandbox checkout test
+
+The connected Mac is currently offline to ChatGPT, so Herocon cannot safely create and hand back a fresh merchant-owned key on that device.
+
+On the merchant's Mac, generate an independent key without displaying it in chat:
+\`\`\`sh
+mkdir -p ~/.config/herocon && chmod 700 ~/.config/herocon
+umask 077
+openssl rand -hex 48 > ~/.config/herocon/checkout-admin-key
+pbcopy < ~/.config/herocon/checkout-admin-key
+\`\`\`
+Paste the clipboard into **Vercel > Herocon project > Settings > Environment Variables > Production** as \`HEROCON_CHECKOUT_ADMIN_KEY\` (Sensitive type). Redeploy. To access \`/admin/checkout\`, copy the key again from the local file.
+
+For independent Stripe TEST payments, set \`STRIPE_SECRET_KEY=sk_test_...\`, \`STRIPE_WEBHOOK_SECRET=whsec_...\` and \`HEROCON_STRIPE_TEST_CHECKOUT_ENABLED=true\` as server-only Vercel variables. Register \`https://herocon.store/api/stripe/webhook\` in Stripe **TEST mode** for checkout session paid events. Use the admin dashboard to create an approved quote (live BuckyDrop stock check may still be billable), then click "Generate Stripe TEST payment" and pay with Stripe's published test card numbers. The signed test webhook stores the paid GBP quote receipt but **cannot create any BuckyDrop supplier order**.
+
+For LIVE mode, register a **separate** Stripe LIVE webhook destination \`https://herocon.store/api/stripe/live-webhook\` and install its live \`whsec_...\`. Never use TEST secrets for LIVE mode. All live and supplier enable flags remain off until tests and merchant confirmations pass.
+
 ## Order flow during controlled live pilot
 
 1. Buyer selects SKU(s) in cart and requests a final quote.
