@@ -3,13 +3,12 @@ import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
-import QuoteRequestForm from "@/components/QuoteRequestForm";
 
 type AvailabilityLine={title:string;skuCode:string;quantity:number;status:"confirmed"|"unavailable"|"unverified";reason:string;supplierUnitCny:number|null;supplierStock:number|null};
 type AvailabilityReport={verifiedAt:string;allConfirmed:boolean;checkoutReady:false;lines:AvailabilityLine[];checkoutBlockers:string[]};
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
- const {items,count,hydrated,account,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
+ const {items,count,hydrated,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
  const [checkout,setCheckout]=useState(false);
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
@@ -72,7 +71,7 @@ export default function CartPage(){
        <a href={item.marketplaceUrl} target="_blank" rel="noopener noreferrer">Direct product link ↗</a>
        <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button></div>
       </div>
-      <strong className="hc-cart-price">{item.unitPrice==null?"Price on request":<>
+      <strong className="hc-cart-price">{item.unitPrice==null?"Price unavailable":<>
        <span>{money(item.currency,item.unitPrice*item.quantity)}</span>
        {item.currency==="CNY"&&<small>{fx?"≈ "+convertedGbp(item.unitPrice*item.quantity):fxUnavailable?"GBP estimate unavailable":"Calculating GBP…"}</small>}
       </>}</strong>
@@ -83,7 +82,7 @@ export default function CartPage(){
      {cny>0&&<p><span>Products priced in CNY</span><strong className="hc-cart-dual-total">{money("CNY",cny)}<small>{fx?"≈ "+convertedGbp(cny):fxUnavailable?"GBP estimate unavailable":"Calculating GBP…"}</small></strong></p>}
      {gbp>0&&<p><span>Products priced in GBP</span><strong>{money("GBP",gbp)}</strong></p>}
      {selectedLines>0&&estimatedGbp!==null&&<p className="hc-cart-gbp-total"><span>{pricesMissing?"Priced items, approx. GBP":"Estimated product subtotal (GBP)"}</span><strong>{(cny>0?"≈ ":"")+money("GBP",estimatedGbp)}</strong></p>}
-     {pricesMissing&&<p><span>Some prices</span><strong>On request</strong></p>}
+     {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
      <p><span>International delivery (paid later)</span><strong>Warehouse quote pending</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
@@ -109,15 +108,10 @@ export default function CartPage(){
     </div>
     <div className="hc-cart-checkout-note" style={{background:"#eaf1e6",border:"1px solid #d3dfcf"}}>
      <strong>Herocon Membership · £9.99/month</strong>
-     <p>Membership subscription billing is available at £9.99/month, but product ordering and international shipping checkout are still unavailable. You can request a product quote for free without subscribing.</p>
+     <p>Membership subscription billing is available at £9.99/month, but product ordering and international shipping checkout are still unavailable. Browse and save products for free without subscribing.</p>
      {selectedLines>0?
       <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>View £9.99/month membership ↗</Link>:
       <p>Tick the products you want to buy to continue.</p>}
-    </div>
-    <div className="hc-cart-checkout-note">
-     <strong>Request a product quote</strong>
-     <p>Send a saved, free enquiry for merchant review. No payment or order is created. A GBP product quote and any later shipping cost must be confirmed separately.</p>
-     <QuoteRequestForm items={selectedItems} account={account}/>
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
