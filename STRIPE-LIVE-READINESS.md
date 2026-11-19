@@ -35,7 +35,21 @@ Live Stripe webhook destination, if later configured: \`https://herocon-app-pi.v
 
 After setting Vercel secrets, redeploy the project to make environment updates available. Never store credentials in GitHub, browser code, URL parameters or chat. Never copy the exposed or incomplete value into Vercel.
 
-## Remaining work before taking real money
+## Implementation update: merchant-priced checkout pilot (19 November 2026)
+
+The previously missing customer payment logic is now **implemented behind disabled-by-default launch flags**, not enabled for public use.
+
+- A merchant approves 1–5 confirmed BuckyDrop variants and **exact all-in GBP selling amounts** through \`/admin/checkout\`. The current cart offers a quote request; this is a **manually priced pilot**, not instant self-service checkout.
+- Immutable private quote and single-use Stripe Session idempotency lock out browser cart price changes.
+- Public buyer quote page \`/checkout/<id>\` uses Stripe-hosted Checkout only after **all** launch requirements are configured, including fresh key attestation, BuckyDrop manual-payment agreement, confirmed freight and tax, verified email and legal terms.
+- The signed live webhook independently retrieves Stripe's paid session, checks exact GBP total and quote identity, then uses an atomic claim to prevent duplicate BuckyDrop submission. Supplier price caps and stock are verified again. Payment and customer tracking evidence is kept private.
+- Merchant-only reconciliation and customer/merchant email handling are implemented, but unconfigured until verified mail-provider credentials and domain exist.
+- \`/api/admin/checkout/test-session\` now supports full-amount approved quote checkout in Stripe TEST mode, with the separate \`/api/stripe/webhook\` test receiver verifying the quote's GBP amount **without ordering any goods**.
+- See \`LIVE-CHECKOUT-LAUNCH-RUNBOOK.md\` for the exact gate requirements, testing and supplier funding flow.
+
+**Critical:** None of this implies that Herocon is already taking payments or that BuckyDrop has accepted/paid a supplier order.
+
+
 
 1. Verify the BuckyDrop freight quote's currency and currency conversion, plus weight/size eligibility.
 2. Determine and disclose **all-in GBP payable product cost**, margin, service fees, shipping, duty/VAT and returns policy. Use a server-authoritative immutable order-intent and supplier stock/price validation.
