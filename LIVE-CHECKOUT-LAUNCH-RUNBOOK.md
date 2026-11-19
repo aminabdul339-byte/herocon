@@ -64,6 +64,8 @@ Paste the clipboard into **Vercel > Herocon project > Settings > Environment Var
 
 For independent Stripe TEST payments, set \`STRIPE_SECRET_KEY=sk_test_...\`, \`STRIPE_WEBHOOK_SECRET=whsec_...\` and \`HEROCON_STRIPE_TEST_CHECKOUT_ENABLED=true\` as server-only Vercel variables. Register \`https://herocon.store/api/stripe/webhook\` in Stripe **TEST mode** for checkout session paid events. Use the admin dashboard to create an approved quote (live BuckyDrop stock check may still be billable), then click "Generate Stripe TEST payment" and pay with Stripe's published test card numbers. The signed test webhook stores the paid GBP quote receipt but **cannot create any BuckyDrop supplier order**.
 
+For LIVE mode, register a **separate** Stripe LIVE webhook destination and subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `charge.refunded`, `charge.dispute.created`, and `charge.dispute.closed`. Payment-complete events can trigger a supplier handoff only after session re-verification; refund/dispute events are read-only merchant reconciliation alerts and **never** auto-refund or re-submit an order.
+
 For LIVE mode, register a **separate** Stripe LIVE webhook destination \`https://herocon.store/api/stripe/live-webhook\` and install its live \`whsec_...\`. Never use TEST secrets for LIVE mode. All live and supplier enable flags remain off until tests and merchant confirmations pass.
 
 ## Order flow during controlled live pilot
