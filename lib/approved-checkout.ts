@@ -13,6 +13,7 @@ export type ApprovedQuote={
  version:1;id:string;createdAt:string;expiresAt:string;customerEmail:string;
  deliveryCountry:"GB";lines:ApprovedLine[];productSubtotalPence:number;
  shippingPence:number;taxPence:number;totalPence:number;saleCurrency:"gbp";
+ paymentStage?:"products";estimatedLaterShippingPence?:number;
  fulfilment:"bucky_manual_supplier_payment";
 };
 export class QuoteError extends Error{constructor(public status:number,message:string){super(message);}}
@@ -36,7 +37,11 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
  if(d.deliveryCountry!=="GB")throw new QuoteError(400,"Only UK deliveries are available in this pilot.");
  if(d.manualPricingApproved!==true)throw new QuoteError(400,"Confirm the shipping, retail and tax amounts have been reviewed.");
  if(!Array.isArray(d.lines)||d.lines.length<1||d.lines.length>5)throw new QuoteError(400,"Enter 1–5 product options.");
- const shippingPence=asPence(d.shippingGBP,100000),taxPence=asPence(d.taxGBP,100000);
+ // The first charge is only for products and any applicable stage-one tax.
+ // Warehouse-measured international shipping is quoted and paid separately.
+ const estimatedLaterShippingPence=asPence(d.shippingGBP,100000);
+ if(estimatedLaterShippingPence<=0)throw new QuoteError(400,"Provide a realistic indicative international shipping amount to disclose before product payment.");
+ const shippingPence=0,taxPence=asPence(d.taxGBP,100000);
  const seen=new Set<string>(),lines:ApprovedLine[]=[];
  const sources=new Map<string,Awaited<ReturnType<typeof queryBuckydropProduct>>>();
  for(const raw of d.lines){
@@ -67,7 +72,8 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
  const quote:ApprovedQuote={version:1,id,createdAt:new Date().toISOString(),
   expiresAt:new Date(Date.now()+23*60*60*1000).toISOString(),customerEmail:email,
   deliveryCountry:"GB",lines,productSubtotalPence,shippingPence,taxPence,totalPence,
-  saleCurrency:"gbp",fulfilment:"bucky_manual_supplier_payment"};
+  saleCurrency:"gbp",paymentStage:"products",estimatedLaterShippingPence,
+  fulfilment:"bucky_manual_supplier_payment"};
  try{
   await put(PREFIX+id+".json",JSON.stringify(quote),{
    access:"private",addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"
@@ -88,6 +94,10 @@ export async function getApprovedQuote(id:string):Promise<ApprovedQuote|null>{
    !Number.isInteger(q.totalPence)||q.totalPence<50||
    !Array.isArray(q.lines)||q.lines.length<1||q.lines.length>5||
    q.totalPence!==q.productSubtotalPence+q.shippingPence+q.taxPence)return null;
+  // Legacy one-payment quotes are not valid for the two-stage checkout.
+  if(q.paymentStage!=="products"||q.shippingPence!==0||
+   !Number.isInteger(q.estimatedLaterShippingPence)||
+   (q.estimatedLaterShippingPence||0)<=0)return null;
   return q;
  }catch{return null;}
 }
