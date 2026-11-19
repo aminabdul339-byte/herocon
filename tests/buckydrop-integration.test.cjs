@@ -23,7 +23,7 @@ test('signed order detail has canonical path, exact body bytes and correct MD5 s
   assert.equal(opts.headers.lang,'en');assert.equal(opts.headers['Content-Type'],'application/json');
   assert.equal(opts.body,JSON.stringify({partnerOrderNo:'HC-TEST'}));
   const expected=crypto.createHash('md5').update('fake-code'+opts.body+u.searchParams.get('timestamp')+'fake-secret').digest('hex');
-  assert.equal(u.searchParams.get('sign'),expected);assert.ok(!url.includes('fake-secret'));
+  assert.equal(u.searchParams.get('sign'),expected);assert.ok(!String(url).includes('fake-secret'));
   return success({shopOrderNo:'SO-1'});
  }});
  const result=await callBucky('order-detail',{partnerOrderNo:'HC-TEST'});
