@@ -95,11 +95,11 @@ function AccountContent(){
    <div className="hc-account-intro">
     <p className="hc-premium-kicker">YOUR HEROCON / FREE ACCOUNT</p>
     <h1>Your account.<br/><em>Your cart.</em></h1>
-    <p>Create an account to add products to your cart. <strong>Registration is free.</strong></p>
+    <p>Create an account to add products to your cart and request a supplier quote. <strong>Registration is free.</strong> Paid membership is optional while product ordering is being developed.</p>
     <div className="hc-account-perks">
      <p><strong>01 / SIGN UP</strong> Create your free account.</p>
      <p><strong>02 / YOUR CART</strong> Keep your selected products together.</p>
-     <p><strong>03 / MEMBERSHIP</strong> £9.99/month when you buy products.</p>
+     <p><strong>03 / MEMBERSHIP</strong> Optional £9.99/month early access. Product orders are not yet available.</p>
     </div>
     {pending&&<p className="hc-account-pending">Your selected product will be added after sign-in.</p>}
    </div>
@@ -109,7 +109,7 @@ function AccountContent(){
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
      <Link className="hc-account-primary-link" href="/cart">View your cart →</Link>
-     <Link href="/membership">Membership details →</Link>
+     <Link href="/membership/activate">Manage membership and billing →</Link><p><Link href="/account/quotes">Your quote requests →</Link></p>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
     </>:account.status==="unavailable"?<>
      <p className="hc-premium-kicker">ACCOUNT SETUP</p>
