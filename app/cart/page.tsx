@@ -62,7 +62,7 @@ export default function CartPage(){
      {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
      <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
-    <Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
+    <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}
   </section>
  </main>;
