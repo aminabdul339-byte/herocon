@@ -5,6 +5,8 @@ import {useState} from "react";
 type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
 const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
 type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;expiresAt:string;paymentEnabled:boolean;notice:string};
+type FinancialEvent={eventId:string;type:string;objectId:string;receivedAt:string;requiresMerchantReview:boolean};
+type PaymentException={sessionId:string;quoteId?:string;expectedQuoteId?:string;code:string;at:string};
 type Reconciliation={quoteId:string;sessionId:string;email:string;totalPence:number;
  state:string;reason:string;recordedAt:string;partnerOrderNo:string|null;
  shopOrderNo:string|null;accessCode:string|null;customerEmailSent:boolean;merchantEmailSent:boolean;};
@@ -20,6 +22,8 @@ export default function MerchantCheckout(){
  const [notice,setNotice]=useState("");
  const [readiness,setReadiness]=useState<{enabled:boolean;missing:string[]}|null>(null);
  const [reconciliation,setReconciliation]=useState<Reconciliation[]|null>(null);
+ const [financialEvents,setFinancialEvents]=useState<FinancialEvent[]>([]);
+ const [exceptions,setExceptions]=useState<PaymentException[]>([]);
  const [testUrl,setTestUrl]=useState("");
  const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
  async function check(){
@@ -56,6 +60,8 @@ export default function MerchantCheckout(){
    const data=await r.json();
    if(!r.ok)throw Error(data.error||"Unable to load paid-order reconciliation.");
    setReconciliation(data.results as Reconciliation[]);
+   setFinancialEvents(Array.isArray(data.financialEvents)?data.financialEvents:[]);
+   setExceptions(Array.isArray(data.exceptions)?data.exceptions:[]);
    setNotice("Read-only merchant reconciliation loaded. This does not resubmit any supplier order.");
   }catch(e){setNotice(e instanceof Error?e.message:"Unable to read reconciliation records.");}
   finally{setBusy(false);}
@@ -97,6 +103,14 @@ export default function MerchantCheckout(){
   </section>
   {reconciliation&&<section style={{border:"1px solid #dce4d8",borderRadius:10,padding:18,marginTop:22}}>
     <h2>Private paid-order reconciliation ({reconciliation.length})</h2>
+    {financialEvents.length>0&&<div style={{padding:14,background:"#fff3e6",borderRadius:7,marginBottom:16}}>
+     <strong>Stripe refund/dispute and payment events ({financialEvents.length})</strong>
+     {financialEvents.map(e=><p key={e.eventId} style={{fontSize:12}}>{e.type} · {e.objectId} · {new Date(e.receivedAt).toLocaleString("en-GB")} {e.requiresMerchantReview?"— review Stripe dashboard":""}</p>)}
+    </div>}
+    {exceptions.length>0&&<div style={{padding:14,background:"#fff3e6",borderRadius:7,marginBottom:16}}>
+     <strong>Paid-session security and duplication issues ({exceptions.length})</strong>
+     {exceptions.map(e=><p key={e.sessionId} style={{fontSize:12}}>{e.code} · {e.sessionId} · {e.quoteId||e.expectedQuoteId||"unknown quote"} — reconcile Stripe funds and refunds</p>)}
+    </div>}
     <p style={{fontSize:13}}>Review all funds captured but not confirmed as submitted. When BuckyDrop submission is uncertain, search the original partner order reference in the BuckyDrop merchant portal before any manual resubmission or refund.</p>
     {reconciliation.length===0?<p>No paid-order records are available in the current ledger.</p>:
     reconciliation.map(r=><article key={r.sessionId} style={{padding:14,border:"1px solid #e3e9e0",marginBottom:12,borderRadius:7}}>
