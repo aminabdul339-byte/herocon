@@ -49,6 +49,12 @@ Set in the Vercel **Production** environment ONLY, after completing the correspo
 
 Shared private Blob token and existing BuckyDrop live credentials are already installed. Confirm permissions, balances, and operational costs before enabling supplier writes.
 
+## 19 November 2026 — private checkout admin access provisioned
+
+A new, independent `HEROCON_CHECKOUT_ADMIN_KEY` was added as a **sensitive Production Vercel environment variable** for the merchant-only checkout dashboard. It is delivered to the merchant separately in a locally downloadable protected text file; **its value is not committed to GitHub**.
+
+This enables merchant login and approval of private supplier-verified GBP quotes once the latest Vercel production deployment is ready. It **does not enable real customer charges**, BuckyDrop order submission or a sandbox payment session. Stripe TEST secret/webhook, live webhook secret, email provider, supplier manual-payment permissions, verified freight, legal sign-off and an end-to-end trial remain outstanding.
+
 ## Merchant key setup and sandbox checkout test
 
 The connected Mac is currently offline to ChatGPT, so Herocon cannot safely create and hand back a fresh merchant-owned key on that device.
