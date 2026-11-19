@@ -105,3 +105,14 @@
  outline:3px solid #b9dab3;
  outline-offset:4px;
 }
+
+/* Membership checkout and self-service billing */
+.hc-member-billing-button{
+ appearance:none;cursor:pointer;font:700 13px/1.5 Arial,sans-serif;
+ padding:15px 18px;width:100%;border:1px solid #284e33;
+ background:#f5f8f3;color:#1e432d;display:block;margin:14px 0;text-align:center;
+}
+button.hc-account-primary-link.hc-member-billing-button{background:#264a32;color:#fff;border-color:#264a32}
+.hc-member-billing-button:hover{background:#e3eddf}
+button.hc-account-primary-link.hc-member-billing-button:hover{background:#193722}
+.hc-member-billing-button:disabled{opacity:.55;cursor:wait}
