@@ -38,7 +38,7 @@ export default async function Home(){
       <Link className="hc-premium-text-link" href="/how-it-works">How it works <span aria-hidden="true">↗</span></Link>
      </div>
      <div className="hc-premium-hero-foot">
-      <span className="hc-premium-star" aria-hidden="true">✳</span>
+      <svg className="hc-premium-star" aria-hidden="true" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2.5v23M2.5 14h23M5.8 5.8l16.4 16.4M22.2 5.8 5.8 22.2"/></svg>
       <div><strong>{total.toLocaleString("en-GB")} products to explore</strong><span>Original marketplace listings</span></div>
      </div>
     </div>
