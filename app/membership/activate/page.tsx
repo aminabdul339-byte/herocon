@@ -7,7 +7,7 @@ import {useCart} from "@/components/CartProvider";
 
 type State={
  membershipActive?:boolean;testMembershipActive?:boolean;billingReady?:boolean;
- canSubscribe?:boolean;mode?:"test"|"live";status?:string;renewalAt?:string|null;
+ canSubscribe?:boolean;ownerLiveTest?:boolean;mode?:"test"|"live";status?:string;renewalAt?:string|null;
  cancelAtPeriodEnd?:boolean;hasBillingAccount?:boolean;
 };
 function safeNext(value:string|null){
@@ -70,6 +70,11 @@ function MembershipGate(){
       <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation ↗</button>
      </>:<>
       <p>£9.99 billed monthly. Products and international shipping are paid separately.</p>
+      {membership.ownerLiveTest&&<p role="note" style={{color:"#874d25",fontWeight:600}}>
+       Owner-only LIVE billing test: your card will be charged £9.99 now and renew monthly until you cancel.
+       Herocon's product ordering and international shipping checkout are not yet available.
+       Use Manage billing to cancel your test subscription.
+      </p>}
       {membership.billingReady&&membership.canSubscribe?
        <>
         {isTest&&<p style={{color:"#a36632"}}>Stripe test mode — no real money will be charged.</p>}
