@@ -37,7 +37,7 @@ export async function POST(request:Request){
    return reply({ok:true,message:"If an account exists, password-reset instructions will be sent to that email address."});
   }
   if(mode==="signup"){
-   const result=await authApi("/signup",{email,password});
+   const result=await authApi("/signup?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{email,password});
    if(result.user?.email_confirmed_at&&result.access_token&&result.refresh_token){
     const response=reply({ok:true,authenticated:true,accountEmail:email,freeAccount:true});
     setCustomerCookies(response,result);
