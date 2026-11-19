@@ -62,6 +62,46 @@ const cardPhotos=unstable_cache(async(link:string):Promise<string[]>=>{
   .filter(url=>/^https:\/\//.test(url)).slice(0,8);
 },["herocon-saved-card-photos-v1"],{revalidate:86400});
 
+
+/**
+ * Lead the unfiltered storefront with a varied, stable editorial selection:
+ * earrings → wigs → nail designs → home décor, repeated for up to four rounds.
+ * Use only real catalogue entries; keep all remaining products in their
+ * existing order, without duplication. No supplier API calls are made here.
+ * This intentionally runs AFTER saved partner products have been marked,
+ * so saved-details items remain the first candidates within each showcase.
+ */
+export function leadWithShowcaseMix(products:Product[],rounds=4):Product[]{
+ if(products.length<4)return products;
+ const earrings:Product[]=[],wigs:Product[]=[],nails:Product[]=[],decor:Product[]=[];
+ const goodImage=(p:Product)=>typeof p.imageUrl==="string"&&/^https:\/\/[^ ]+/i.test(p.imageUrl);
+ const isEarring=(p:Product)=>p.category==="Jewellery"&&/\b(?:earrings?|ear[\s-]?studs?|ear[\s-]?cuffs?)\b/i.test(p.title)
+  &&!/\b(?:holder|storage|rack|organizer|organiser|display stand)\b/i.test(p.title);
+ const isWig=(p:Product)=>p.category==="Wigs & Hair Extensions";
+ const isNail=(p:Product)=>p.category==="Nails & Nail Supplies"
+  &&/\b(?:press[\s-]?on|fake|false|wearable|manicure|nail[\s-]?(?:art|tips?|patches?|pieces?|sets?)|nails)\b/i.test(p.title);
+ const isDecor=(p:Product)=>p.category==="Home & Decor"
+  &&/\b(?:vases?|sculptures?|figurines?|candle[\s-]?holders?|candlesticks?|wall[\s-]?art|art[\s-]?prints?|photo[\s-]?frames?|picture[\s-]?frames?|mirrors?|planters?|flower[\s-]?pots?|ornaments?|decorations?|decor|decorative)\b/i.test(p.title);
+ for(const p of products){
+  if(!goodImage(p))continue;
+  if(isEarring(p))earrings.push(p);
+  else if(isWig(p))wigs.push(p);
+  else if(isNail(p))nails.push(p);
+  else if(isDecor(p))decor.push(p);
+ }
+ // Each bucket follows normal source order, including any saved-detail priority.
+ const pools=[earrings,wigs,nails,decor];
+ if(pools.some(pool=>pool.length===0))return products;
+ const chosen=new Set<Product>(),featured:Product[]=[];
+ for(let i=0;i<rounds;i++){
+  for(const pool of pools){
+   const p=pool[i];
+   if(p&&!chosen.has(p)){featured.push(p);chosen.add(p);}
+  }
+ }
+ return [...featured,...products.filter(p=>!chosen.has(p))];
+}
+
 export async function attachSavedPartnerImages(products:Product[]):Promise<Product[]>{
  if(!products.some(p=>p.hasPartnerDetails))return products;
  // Fetch at most the visible page and do not let a storage error blank images.

@@ -2,7 +2,7 @@ import Link from "next/link";
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import {getProducts} from "@/lib/catalogue-server";
-import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
+import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcaseMix} from "@/lib/catalogue-priority";
 export const dynamic="force-dynamic";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -25,6 +25,9 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  // Expand fully imported products first within every search and category,
  // keeping the requested sort inside the two groups.
  products=await prioritizeSavedPartnerProducts(products);
+ // Only the unfiltered Relevant view receives a mixed editorial lead.
+ // Search terms, category browsing, newest and price ordering stay unchanged.
+ if(!query&&!cat&&!collection&&sort==="recommended")products=leadWithShowcaseMix(products);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
  const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),pages=Math.max(1,Math.ceil(products.length/PAGE_SIZE)),page=Math.min(requestedPage,pages);
