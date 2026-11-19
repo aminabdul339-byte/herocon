@@ -87,7 +87,7 @@ export default function MerchantCheckout(){
  return <main style={{padding:"45px 22px 100px",maxWidth:980,margin:"auto",fontFamily:"Arial,sans-serif",lineHeight:1.6}}>
   <p style={{fontSize:12}}><Link href="/">Herocon</Link> / Merchant operations</p>
   <h1 style={{font:"400 46px/1.1 Georgia,serif",color:"#254632"}}>Approve a customer checkout quote</h1>
-  <p>Merchant-only pilot tool. Check the supplier price and stock, then approve the final GBP selling price, shipping and tax amount. The customer can only pay after production security and fulfilment gates are enabled. Supplier checks may be billable.</p>
+  <p>Merchant-only pilot tool. Check supplier stock and approve the GBP product payment. International shipping will be quoted and paid separately after warehouse arrival and QC. Include a realistic upfront shipping estimate to disclose before product payment. The payment systems remain disabled until independently tested. Supplier lookups may be billable.</p>
   <section style={{background:"#f3f6f1",padding:22,borderRadius:10,marginTop:26}}>
    <label style={{display:"block",fontWeight:700}}>Independent private checkout admin key</label>
    <input type="password" value={key} onChange={e=>setKey(e.target.value)} autoComplete="off" placeholder="Merchant key — never share" style={field}/>
@@ -137,16 +137,16 @@ export default function MerchantCheckout(){
     <button type="button" disabled={lines.length>=5} onClick={()=>setLines(old=>[...old,blank()])}>+ Add another variant (maximum 5)</button>
    </section>
    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-    <label>Confirmed total shipping (£)<input style={field} type="number" min="0" max="1000" step=".01" required value={shipping} onChange={e=>setShipping(e.target.value)}/></label>
-    <label>Applicable taxes / duties charged (£)<input style={field} type="number" min="0" max="1000" step=".01" required value={tax} onChange={e=>setTax(e.target.value)}/></label>
+    <label>Estimated international shipping, paid later (£)<input style={field} type="number" min=".01" max="1000" step=".01" required value={shipping} onChange={e=>setShipping(e.target.value)}/></label>
+    <label>Applicable product-stage taxes charged now (£)<input style={field} type="number" min="0" max="1000" step=".01" required value={tax} onChange={e=>setTax(e.target.value)}/></label>
    </div>
-   <p style={{fontSize:13,color:"#80633b"}}>Only enter £0 for shipping/tax if a legitimate, reviewed policy really makes those charges zero. Current BuckyDrop CNY shipping amounts are provisional; do not quote guessed freight as a payable price. Include your margin and all customer-facing fees in these final amounts.</p>
-   <label style={{display:"flex",gap:10,alignItems:"start"}}><input style={{marginTop:6}} type="checkbox" checked={approved} onChange={e=>setApproved(e.target.checked)} required/><span>I checked supplier cost, stock, delivery charges, taxes, pricing and my ability to fund fulfilment, and approve this exact GBP quote.</span></label>
+   <p style={{fontSize:13,color:"#80633b"}}>The shipping figure is an indicative estimate for the later freight payment and is NOT charged in this first checkout. Base it on a reasonable destination and weight estimate, not an unverified currency conversion. The final packed weight, eligible routes and duties will be checked after warehouse arrival. Explain the estimate and refund/cancellation conditions clearly before the customer buys.</p>
+   <label style={{display:"flex",gap:10,alignItems:"start"}}><input style={{marginTop:6}} type="checkbox" checked={approved} onChange={e=>setApproved(e.target.checked)} required/><span>I have checked product stock, approved the product-only GBP charge, disclosed a reasonable later freight estimate, and understand international shipping is a separate future payment after warehouse receipt and QC.</span></label>
    <button style={button} disabled={busy||key.length<32||!approved} type="submit">{busy?"Verifying seller and saving…":"Create approved private checkout quote"}</button>
   </form>
   {notice&&<p role="status" style={{padding:14,background:"#edf4e9",borderRadius:6}}>{notice}</p>}
   {result&&<section style={{padding:20,border:"1px solid #d3e1d0",borderRadius:10}}>
-   <h2>Quote created: £{result.totalGBP}</h2><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
+   <h2>Product-stage quote created: £{result.totalGBP} due first</h2><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
    <p><Link href={result.checkoutUrl}>{result.checkoutUrl}</Link></p>
    <button type="button" onClick={()=>navigator.clipboard.writeText(result.checkoutUrl)}>Copy private buyer link</button>
    <div style={{marginTop:15}}>
