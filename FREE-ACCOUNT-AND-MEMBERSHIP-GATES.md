@@ -3,7 +3,7 @@
 ## Intended customer experience
 
 - Browsing public products is free; opening a product page is free.
-- **Add to cart** checks a verified customer identity. If signed out, the selected seller SKUs and quantities are held for up to 30 minutes in this browser tab, and the shopper is redirected to /account. They can **register or sign in for free**. After email verification their pending selection is placed in their user-specific local browser cart. No subscription is required for this action.
+- **Add to cart** checks a verified customer identity. If signed out, the selected seller SKUs and quantities are held for up to 30 minutes in this browser across tabs, and the shopper is redirected to /account. They can **register or sign in for free**. After email verification their pending selection is placed in their user-specific local browser cart. No subscription is required for this action.
 - **Buy now** follows the same free sign-up path if needed, then takes the user to /membership/activate. A signed-in shopper can add items without paying.
 - **Continue to purchase** from /cart checks that the customer has a currently active membership in the server-owned membership table. The subscription is proposed at **GBP £9.99 per month**; product and later international shipping payments are separate.
 - Free account customers without a paid membership can still view and manage their cart. They cannot start a new product purchase.
