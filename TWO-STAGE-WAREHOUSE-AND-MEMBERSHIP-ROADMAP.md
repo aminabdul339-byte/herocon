@@ -30,14 +30,14 @@ A quote after warehouse arrival must never cause an automatic customer charge wi
 - Notifications when QC photos or an approved shipping quote appear; warehouse storage duration, failure-to-pay workflow, country-specific taxes and claims handling.
 - A proper account and order database before any membership launch.
 
-## Future £9.99/month Herocon membership — NOT ACTIVE
+## Current £9.99/month early-access membership — LIVE billing, purchasing NOT ACTIVE
 
 - When guests click Add to cart, sign them in/register and return to the same selected product; browsing remains open.
-- Charge £9.99 GBP monthly through Stripe Billing/Subscriptions, with secure authentication and verified subscription/renewal/cancellation webhooks.
+- Public £9.99 GBP/month membership subscriptions are now enabled through authenticated Stripe Billing/Checkout; subscription cancellations are scheduled at the end of the paid billing period. An end-to-end live payment, webhook and cancellation test has not yet been completed or independently confirmed.
 - Require an active membership to make **new product purchases** after the future launch of the paywall.
 - Never block existing customers from accessing their previously paid orders, QC photos, shipping invoices for already-owned items, tracking, refunds or support just because their membership lapses.
 - An authenticated account dashboard should show My orders, Warehouse, QC Gallery, Shipping invoices, Parcels, Saved products, Membership, billing portal and help.
-- Disclose recurring billing, renewal, cancellation and refunds separately from product and international shipping purchases. Membership billing, authentication and entitlement checks are not yet implemented.
+- Recurring billing, authentication, Stripe subscription status verification and a billing portal are implemented. Early-access scope and unavailable product checkout are disclosed. Product and freight payments remain unimplemented; a verified member must not be led to believe they can buy products through Herocon today.
 
 ## Questions for BuckyDrop
 
