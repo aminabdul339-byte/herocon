@@ -64,7 +64,7 @@ async function withStatus(request:QuoteRequest):Promise<QuoteRequestView>{
   const found=await get(root+request.userId+"/"+request.id+".json",{access:"private"});
   if(found?.statusCode===200&&found.stream){
    const raw=await new Response(found.stream).text();
-   if(raw.length<1500)update=JSON.parse(raw) as typeof update;
+   if(raw.length<1500)update=JSON.parse(raw) as {requestId?:string;userId?:string;status?:string;note?:string;updatedAt?:string};
   }
  }catch{}
  const valid=update?.requestId===request.id&&update?.userId===request.userId&&
