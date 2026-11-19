@@ -13,6 +13,8 @@ const PHOTO={
   clothing:"https://cdn.shopify.com/s/files/1/1127/4915/0598/files/herocon-clothing-card.webp?v=1794862181"
 };
 
+function ArrowIcon(){return <svg className="hc-inline-arrow" aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>;}
+
 const collections=[
  {number:"01",name:"Home & living",subtitle:"Objects with a point of view",href:"/search?category=Home%20%26%20Decor",image:PHOTO.home,alt:"Thoughtfully styled home décor and ceramic accessories"},
  {number:"02",name:"Jewellery",subtitle:"A little something special",href:"/search?category=Jewellery",image:PHOTO.jewellery,alt:"Curated jewellery and delicate accessories"},
@@ -34,8 +36,8 @@ export default async function Home(){
      <h1 id="hc-premium-hero-title">Source from China.<br/><em>Find more.</em></h1>
      <p className="hc-premium-hero-lead">Explore products from 1688, Taobao, Weidian and more. Find what you need or paste a product link.</p>
      <div className="hc-premium-hero-ctas">
-      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Browse products <span aria-hidden="true">↗</span></Link>
-      <Link className="hc-premium-text-link" href="/how-it-works">How it works <span aria-hidden="true">↗</span></Link>
+      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Browse products <ArrowIcon/></Link>
+      <Link className="hc-premium-text-link" href="/how-it-works">How it works <ArrowIcon/></Link>
      </div>
      <div className="hc-premium-hero-foot">
       <svg className="hc-premium-star" aria-hidden="true" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2.5v23M2.5 14h23M5.8 5.8l16.4 16.4M22.2 5.8 5.8 22.2"/></svg>
@@ -61,7 +63,7 @@ export default async function Home(){
     <form className="hc-premium-search-form" action="/search" role="search">
      <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
      <input name="q" placeholder="Products, suppliers, an idea…" aria-label="Search products or suppliers" required/>
-     <button type="submit" aria-label="Search products">Search <span aria-hidden="true">↗</span></button>
+     <button type="submit" aria-label="Search products">Search <ArrowIcon/></button>
     </form>
    </div>
   </section>
@@ -71,7 +73,7 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-journey-intro">
      <div><p className="hc-premium-kicker">HOW ORDERING WILL WORK</p><h2 id="hc-journey-title">From China <em>to your door.</em></h2></div>
-     <div><p>Browse products and follow original supplier links today. Herocon warehouse fulfilment and delivery checkout are planned for a later launch.</p><Link href="/how-it-works">How sourcing works <span aria-hidden="true">↗</span></Link></div>
+     <div><p>Browse products and follow original supplier links today. Herocon warehouse fulfilment and delivery checkout are planned for a later launch.</p><Link href="/how-it-works">How sourcing works <ArrowIcon/></Link></div>
     </div>
     <div className="hc-journey-grid">
      <article><span className="hc-journey-number">01 / SELECT</span><h3>Find &amp; explore.</h3><p>Browse the catalogue or paste a supplier link. Save selections in your cart and visit the original marketplace; Herocon product checkout is not yet live.</p></article>
@@ -80,7 +82,7 @@ export default async function Home(){
     </div>
     <div className="hc-journey-foot">
      <p>Product discovery and direct marketplace links are available. Product payments and international shipping checkout through Herocon remain unavailable until the full process is ready.</p>
-     <Link href="/membership">Membership · £9.99/month <span aria-hidden="true">↗</span></Link>
+     <Link href="/membership">Membership · £9.99/month <ArrowIcon/></Link>
     </div>
    </div>
   </section>
@@ -89,13 +91,13 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-premium-section-heading">
      <div><p className="hc-premium-kicker"><span>01</span> / THE COLLECTIONS</p><h2 id="hc-premium-collections-title">Follow your <em>curiosity.</em></h2></div>
-     <div className="hc-premium-heading-side"><p>Browse homeware, jewellery, clothing and accessories.</p><Link href="/search">View all categories <span aria-hidden="true">↗</span></Link></div>
+     <div className="hc-premium-heading-side"><p>Browse homeware, jewellery, clothing and accessories.</p><Link href="/search">View all categories <ArrowIcon/></Link></div>
     </div>
     <div className="hc-premium-category-grid">
      {collections.map((collection)=>(
       <Link href={collection.href} key={collection.name} className="hc-premium-category-tile">
        <div className="hc-premium-category-image"><img src={collection.image} alt={collection.alt} loading="lazy" decoding="async" width={570} height={640}/><span className="hc-premium-category-number">{collection.number}</span></div>
-       <div className="hc-premium-category-info"><div><h3>{collection.name}</h3><p>{collection.subtitle}</p></div><span className="hc-premium-tile-arrow" aria-hidden="true">↗</span></div>
+       <div className="hc-premium-category-info"><div><h3>{collection.name}</h3><p>{collection.subtitle}</p></div><span className="hc-premium-tile-arrow" aria-hidden="true"><ArrowIcon/></span></div>
       </Link>
      ))}
     </div>
@@ -106,10 +108,10 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-premium-section-heading hc-premium-edit-header">
      <div><p className="hc-premium-kicker"><span>02</span> / FRESH FINDS</p><h2 id="hc-premium-edit-title">The discovery <em>edit.</em></h2></div>
-     <div className="hc-premium-heading-side"><p>Browse product selections from original marketplace suppliers.</p><Link href="/search">Explore all products <span aria-hidden="true">↗</span></Link></div>
+     <div className="hc-premium-heading-side"><p>Browse product selections from original marketplace suppliers.</p><Link href="/search">Explore all products <ArrowIcon/></Link></div>
     </div>
     <div className="hc-premium-featured-grid">{featured.map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
-    <div className="hc-premium-under-grid"><span>GOOD FINDS. BIG POSSIBILITIES.</span><Link href="/search">Browse {total.toLocaleString("en-GB")} products <span aria-hidden="true">↗</span></Link></div>
+    <div className="hc-premium-under-grid"><span>GOOD FINDS. BIG POSSIBILITIES.</span><Link href="/search">Browse {total.toLocaleString("en-GB")} products <ArrowIcon/></Link></div>
    </div>
   </section>
 
@@ -118,7 +120,7 @@ export default async function Home(){
     <p className="hc-premium-kicker"><span>AN OPEN INVITATION</span></p>
     <h2 id="hc-premium-final-title">Already found <em>something special?</em></h2>
     <p>Paste a link from 1688, Taobao or Weidian.</p>
-    <Link className="hc-premium-button hc-premium-button-dark" href="/find-product">Paste a product link <span aria-hidden="true">↗</span></Link>
+    <Link className="hc-premium-button hc-premium-button-dark" href="/find-product">Paste a product link <ArrowIcon/></Link>
    </div>
   </section>
  </main>;
