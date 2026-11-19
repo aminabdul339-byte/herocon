@@ -2,6 +2,7 @@ import "server-only";
 import {createHash} from "node:crypto";
 import {get,list,put} from "@vercel/blob";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {notifyNewQuoteRequest} from "@/lib/quote-notifications";
 
 const PREFIX="checkout/quote-requests/v1/by-user/";
 const UUID=/^[a-f0-9-]{36}$/i;
@@ -99,5 +100,7 @@ export async function createCustomerRequest(input:unknown,user:{id:string;email:
   if(previously)return previously;
   throw new QuoteRequestError(503,"Could not save the quote request. No payment has been taken.");
  }
+ // Email is best-effort; the immutable private request remains available to the merchant even if email is unavailable.
+ await notifyNewQuoteRequest(request).catch(()=>({merchant:false,customer:false}));
  return request;
 }
