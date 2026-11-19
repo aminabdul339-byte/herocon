@@ -71,15 +71,15 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-journey-intro">
      <div><p className="hc-premium-kicker">HOW ORDERING WILL WORK</p><h2 id="hc-journey-title">From China <em>to your door.</em></h2></div>
-     <div><p>Browse products and request a free quote today. Warehouse fulfilment and delivery checkout are planned for a later launch.</p><Link href="/how-it-works">How sourcing works <span aria-hidden="true">↗</span></Link></div>
+     <div><p>Browse products and follow original supplier links today. Herocon warehouse fulfilment and delivery checkout are planned for a later launch.</p><Link href="/how-it-works">How sourcing works <span aria-hidden="true">↗</span></Link></div>
     </div>
     <div className="hc-journey-grid">
-     <article><span className="hc-journey-number">01 / SELECT</span><h3>Find &amp; enquire.</h3><p>Browse the catalogue or paste a supplier link. Add selections to your free cart and request a quote; product checkout is not yet live.</p></article>
+     <article><span className="hc-journey-number">01 / SELECT</span><h3>Find &amp; explore.</h3><p>Browse the catalogue or paste a supplier link. Save selections in your cart and visit the original marketplace; Herocon product checkout is not yet live.</p></article>
      <article><span className="hc-journey-number">02 / PLANNED WAREHOUSE</span><h3>Warehouse sourcing.</h3><p>Once purchasing launches, our sourcing partner will buy approved items and store them in its warehouse in China.</p></article>
      <article><span className="hc-journey-number">03 / PLANNED DELIVERY</span><h3>Ship &amp; receive.</h3><p>When delivery payments launch, shipping will be quoted and paid separately after warehouse receipt, before dispatch.</p></article>
     </div>
     <div className="hc-journey-foot">
-     <p>Free product enquiries are available. Product payments and international shipping checkout remain unavailable until the full process is ready.</p>
+     <p>Product discovery and direct marketplace links are available. Product payments and international shipping checkout through Herocon remain unavailable until the full process is ready.</p>
      <Link href="/membership">Membership · £9.99/month <span aria-hidden="true">↗</span></Link>
     </div>
    </div>
