@@ -3,12 +3,13 @@ import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
+import QuoteRequestForm from "@/components/QuoteRequestForm";
 
 type AvailabilityLine={title:string;skuCode:string;quantity:number;status:"confirmed"|"unavailable"|"unverified";reason:string;supplierUnitCny:number|null;supplierStock:number|null};
 type AvailabilityReport={verifiedAt:string;allConfirmed:boolean;checkoutReady:false;lines:AvailabilityLine[];checkoutBlockers:string[]};
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
- const {items,count,hydrated,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
+ const {items,count,hydrated,account,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
  const [checkout,setCheckout]=useState(false);
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
@@ -52,17 +53,6 @@ export default function CartPage(){
  const pricesMissing=selectedItems.some(item=>item.unitPrice==null);
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
- const requestQuoteHref="mailto:aminabdul339@outlook.com?subject="+
-  encodeURIComponent("Herocon product quote and estimated later freight")+"&body="+
-  encodeURIComponent([
-   "Hello Herocon, I would like a GBP product payment quote and a separately disclosed estimate of the international shipping cost due later after BuckyDrop warehouse receipt:",
-   ...selectedItems.slice(0,5).map((item,i)=>
-    [String(i+1)+". "+item.title,"Variant: "+(item.variant||"Not selected"),
-     "Supplier SKU: "+(item.skuCode||"Not available"),
-     "Quantity: "+item.quantity,"Marketplace link: "+item.marketplaceUrl].join("\n")),
-   "Please confirm the product-stage GBP amount, estimated later shipping cost and how the freight charge will be calculated, taxes/duties, applicable returns and cancellation policy, and a private Herocon quote link when the two-stage checkout is ready.",
-   "My destination country and postcode:"
-  ].join("\n\n"));
  return <main className="hc-cart-page"><Header/>
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">{checkout?"ORDER REVIEW":"YOUR SHOPPING CART"}</p>
@@ -119,15 +109,15 @@ export default function CartPage(){
     </div>
     <div className="hc-cart-checkout-note" style={{background:"#eaf1e6",border:"1px solid #d3dfcf"}}>
      <strong>Herocon Membership · £9.99/month</strong>
-     <p>Free to add to cart. Membership is required when you buy. Subscription checkout is currently unavailable.</p>
+     <p>Membership subscription billing is available at £9.99/month, but product ordering and international shipping checkout are still unavailable. You can request a product quote for free without subscribing.</p>
      {selectedLines>0?
-      <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>Continue to purchase ↗</Link>:
+      <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>View £9.99/month membership ↗</Link>:
       <p>Tick the products you want to buy to continue.</p>}
     </div>
     <div className="hc-cart-checkout-note">
      <strong>Request a product quote</strong>
-     <p>Request a GBP product quote and an estimated shipping charge. Final international shipping is paid separately after warehouse arrival.</p>
-     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request a quote ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
+     <p>Send a saved, free enquiry for merchant review. No payment or order is created. A GBP product quote and any later shipping cost must be confirmed separately.</p>
+     <QuoteRequestForm items={selectedItems} account={account}/>
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
