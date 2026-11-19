@@ -47,6 +47,11 @@ export async function callBucky<T extends Record<string,unknown>>(op:BuckyOperat
   if(code==="70000028")throw new BuckydropError("ACCOUNT_FUNDS",503,"The shipping provider cannot process this request for this account.");
   throw new BuckydropError("UPSTREAM_ERROR",502,"BuckyDrop could not complete the request.");
  }
+ // BuckyDrop OpenAPI v1.2.6 (client 0.5.7): Shop Order creation can be
+ // accepted (success=true, code=0) without an echoed data object. Preserve
+ // acceptance and let the caller reconcile the original partnerOrderNo.
+ // Never treat a missing write echo as permission to resubmit the order.
+ if(op==="create-shop-order"&&(obj.data===undefined||obj.data===null))return {} as T;
  if(!obj.data||typeof obj.data!=="object"||Array.isArray(obj.data))throw new BuckydropError("UPSTREAM_EMPTY",502,"BuckyDrop did not return the requested details.");
  return obj.data as T;
 }
