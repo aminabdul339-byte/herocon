@@ -4,37 +4,15 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
 
-type AvailabilityLine={title:string;skuCode:string;quantity:number;status:"confirmed"|"unavailable"|"unverified";reason:string;supplierUnitCny:number|null;supplierStock:number|null};
-type AvailabilityReport={verifiedAt:string;allConfirmed:boolean;checkoutReady:false;lines:AvailabilityLine[];checkoutBlockers:string[]};
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
  const {items,count,hydrated,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
- const [checkout,setCheckout]=useState(false);
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
- const [verification,setVerification]=useState<AvailabilityReport|null>(null);
- const [verifying,setVerifying]=useState(false);
- const [verificationError,setVerificationError]=useState("");
  const selectedItems=items.filter(item=>item.selected!==false);
  const selectedLines=selectedItems.length;
  const selectedUnits=selectedItems.reduce((sum,item)=>sum+item.quantity,0);
  const allSelected=items.length>0&&selectedLines===items.length;
- useEffect(()=>{setVerification(null);setVerificationError("");},[items]);
- async function verifySupplierCart(){
-  if(verifying||selectedLines===0||selectedLines>5||selectedItems.some(item=>!item.skuCode))return;
-  setVerifying(true);setVerification(null);setVerificationError("");
-  try{
-   const response=await fetch("/api/checkout/readiness",{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({lines:selectedItems.map(item=>({marketplaceUrl:item.marketplaceUrl,skuCode:item.skuCode||"",quantity:item.quantity,title:item.title}))}),cache:"no-store"
-   });
-   const result:unknown=await response.json();
-   if(!response.ok)throw Error(result&&typeof result==="object"&&"error" in result&&typeof result.error==="string"?result.error:"Supplier check is unavailable.");
-   setVerification(result as AvailabilityReport);
-  }catch(err){setVerificationError(err instanceof Error?err.message:"Supplier check is unavailable.");}
-  finally{setVerifying(false);}
- }
- useEffect(()=>{setCheckout(new URLSearchParams(window.location.search).get("checkout")==="1");},[]);
  useEffect(()=>{
   const controller=new AbortController();
   fetch("/api/fx/cny-gbp",{signal:controller.signal})
@@ -54,16 +32,16 @@ export default function CartPage(){
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
  return <main className="hc-cart-page"><Header/>
   <section className="sc-page-hero sc-container hc-cart-hero">
-   <p className="sc-kicker">{checkout?"ORDER REVIEW":"YOUR SHOPPING CART"}</p>
-   <h1>{checkout?"Review your ":"Your "}<em>{checkout?"selection.":"cart."}</em></h1>
-   <p>Choose your products and quantities. International shipping is quoted and paid separately.</p>
+   <p className="sc-kicker">YOUR SHOPPING CART</p>
+   <h1>Your <em>cart.</em></h1>
+   <p>Keep track of products you like and compare original marketplace listings. Herocon checkout is not yet available.</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
     <div className="hc-cart-empty"><h2>Your cart is empty.</h2><p>Explore the catalogue and add products to get started.</p><Link href="/search" className="sc-button sc-button-dark">Explore products ↗</Link></div>:
     <div className="hc-cart-layout"><div className="hc-cart-lines">
      <div className="hc-cart-head"><div><h2>{count} {count===1?"item":"items"} in your cart</h2><p className="hc-cart-selection-count">{selectedLines} of {items.length} product options selected</p></div><button type="button" onClick={clearCart}>Clear cart</button></div>
-     <div className="hc-cart-select-toolbar"><label className="hc-cart-select-all"><input type="checkbox" checked={allSelected} onChange={event=>selectAllItems(event.target.checked)}/><span>Select all ({items.length})</span></label><span>{selectedUnits} {selectedUnits===1?"item":"items"} selected to buy</span></div>
+     <div className="hc-cart-select-toolbar"><label className="hc-cart-select-all"><input type="checkbox" checked={allSelected} onChange={event=>selectAllItems(event.target.checked)}/><span>Select all ({items.length})</span></label><span>{selectedUnits} {selectedUnits===1?"item":"items"} selected</span></div>
      {items.map(item=><article className={"hc-cart-line"+(item.selected===false?" hc-cart-line-unselected":"")} key={item.key}>
       <label className="hc-cart-select-item" title={"Select "+item.title}><input type="checkbox" checked={item.selected!==false} onChange={event=>setItemSelected(item.key,event.target.checked)} aria-label={"Select "+item.title+" to buy"}/></label>
       <Link href={item.productPath} className="hc-cart-image">{item.image?<img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>:<span>Product</span>}</Link>
@@ -77,41 +55,19 @@ export default function CartPage(){
       </>}</strong>
      </article>)}
     </div>
-    <aside className="hc-cart-summary"><h2>{checkout?"Selected order review":"Selected items summary"}</h2><p className="hc-cart-selected-note">{selectedLines} product {selectedLines===1?"option":"options"} · {selectedUnits} {selectedUnits===1?"item":"items"} selected to buy</p><div className="hc-cart-totals">
+    <aside className="hc-cart-summary"><h2>Selected items summary</h2><p className="hc-cart-selected-note">{selectedLines} product {selectedLines===1?"option":"options"} · {selectedUnits} {selectedUnits===1?"item":"items"} selected</p><div className="hc-cart-totals">
      {selectedLines===0&&<p className="hc-cart-select-prompt">Tick at least one item to see your selected total.</p>}
      {cny>0&&<p><span>Products priced in CNY</span><strong className="hc-cart-dual-total">{money("CNY",cny)}<small>{fx?"≈ "+convertedGbp(cny):fxUnavailable?"GBP estimate unavailable":"Calculating GBP…"}</small></strong></p>}
      {gbp>0&&<p><span>Products priced in GBP</span><strong>{money("GBP",gbp)}</strong></p>}
      {selectedLines>0&&estimatedGbp!==null&&<p className="hc-cart-gbp-total"><span>{pricesMissing?"Priced items, approx. GBP":"Estimated product subtotal (GBP)"}</span><strong>{(cny>0?"≈ ":"")+money("GBP",estimatedGbp)}</strong></p>}
      {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
-     <p><span>International delivery (paid later)</span><strong>Warehouse quote pending</strong></p>
+     <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
-    <div className="hc-cart-checkout-note"><strong>Check supplier availability</strong><p>Check stock and listed prices for your selected items.</p>
-     <button type="button" className="sc-button sc-button-dark hc-cart-shop" onClick={verifySupplierCart} disabled={verifying||selectedLines===0||selectedLines>5||selectedItems.some(item=>!item.skuCode)}>
-      {verifying?"Checking seller options…":"Verify supplier stock & prices ↗"}
-     </button>
-     {selectedLines===0&&<p>Tick the products you want to buy before checking availability.</p>}
-     {selectedLines>5&&<p>Verify up to five selected options at a time. Untick some options to continue.</p>}
-     {selectedItems.some(item=>!item.skuCode)&&<p>Some selected items have no verified seller SKU. Return to the product page and choose a supplier option, or untick those items.</p>}
-     {verificationError&&<p role="alert">{verificationError}</p>}
-     {verification&&<div role="status">
-      <p><strong>{verification.allConfirmed?"Supplier options verified":"Some supplier options need attention"}</strong></p>
-      <p>Checked {new Date(verification.verifiedAt).toLocaleString("en-GB")}. Supplier prices are in CNY only.</p>
-      {verification.lines.map((line,i)=><p key={line.skuCode+"-"+i}>
-       <strong>{line.status==="confirmed"?"✓":line.status==="unavailable"?"×":"!"} {line.title}</strong>
-       {" · "}{line.quantity} item(s) · {line.reason}
-       {line.supplierUnitCny!=null?" · Seller ¥"+line.supplierUnitCny.toFixed(2)+" per item":""}
-      </p>)}
-      <p>Online checkout is currently unavailable.</p>
-     </div>}
-     <p>Prices shown are indicative and exclude international shipping.</p>
-    </div>
-    <div className="hc-cart-checkout-note" style={{background:"#eaf1e6",border:"1px solid #d3dfcf"}}>
-     <strong>Herocon Membership · £9.99/month</strong>
-     <p>Membership subscription billing is available at £9.99/month, but product ordering and international shipping checkout are still unavailable. Browse and save products for free without subscribing.</p>
-     {selectedLines>0?
-      <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>View £9.99/month membership ↗</Link>:
-      <p>Tick the products you want to buy to continue.</p>}
+    <div className="hc-cart-checkout-note">
+     <strong>Buying from the original supplier</strong>
+     <p>Use the direct product link beside each item to visit its original marketplace listing. Availability and prices should be confirmed with the seller or your chosen buying agent before paying.</p>
+     <p>Herocon does not yet accept product or international shipping payments. Listed prices are indicative and exclude shipping, duties and any taxes.</p>
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}
