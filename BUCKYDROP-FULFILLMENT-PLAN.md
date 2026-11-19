@@ -11,7 +11,13 @@ Based on the user's local BuckyDrop OpenAPI skill package v0.5.7, contract v1.2.
 - **Price currency caveat (temporary operator assumption, 19 November 2026):** Contract v1.2.6 exposes `records[].totalPrice` and `records[].price` but does not explicitly state their currency. At the merchant's request, production now sets `BUCKYDROP_QUOTE_CURRENCY=CNY`, displaying the API numeric amounts as **CNY (assumed)**. A rough GBP conversion may be shown for reference. This is **not verified** for the exact API field, and must not be used for binding checkout totals until BuckyDrop confirms its billing currency in writing.
 - No shipping purchase or parcel creation is triggered by the estimator.
 
-## Payment and supplier procurement: required launch sequence
+## Current Herocon implementation update (19 November 2026)
+
+The approved GBP merchant checkout, signed Stripe live webhook handoff, single-send BuckyDrop request guard, and merchant reconciliation were added behind **OFF-by-default** gates. One-time order submission occurs only after independently re-fetching the paid Stripe session and verifying the frozen original GBP quote. The merchant manually pays BuckyDrop after receiving the Shop Order. Herocon does not itself pay BuckyDrop automatically. See \`LIVE-CHECKOUT-LAUNCH-RUNBOOK.md\`.
+
+**No real payments or supplier orders have been initiated or verified by this implementation.**
+
+
 
 **Current customer checkout stays OFF**. The BuckyDrop public API does not expose a Store Order Confirm, settlement or payment operation. Acceptance of a Shop Order does not mean purchased, paid, or shipped; with BuckyDrop auto-fulfilment disabled it stays awaiting confirmation in the merchant portal, where the merchant must confirm and pay.
 
