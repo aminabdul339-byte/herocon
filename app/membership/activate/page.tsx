@@ -54,8 +54,8 @@ function MembershipGate(){
   <Header/>
   <section className="hc-member-purchase-shell">
    <p className="hc-premium-kicker">HEROCON MEMBERSHIP</p>
-   <h1>Full sourcing access.<br/><em>£9.99/month.</em></h1>
-   <p>Access 1688, Taobao, Weidian and other Chinese marketplaces. Your account and cart are free. Membership is required when you purchase products.</p>
+   <h1>Herocon membership.<br/><em>£9.99/month.</em></h1>
+   <p>Optional early-access membership. Your account, catalogue and cart are free. Product ordering, warehouse fulfilment and shipping payments are not currently available.</p>
    <div className="hc-member-purchase-card">
     <span>MONTHLY MEMBERSHIP</span>
     <strong>£9.99 <small>/ month</small></strong>
@@ -69,7 +69,7 @@ function MembershipGate(){
        <Link className="hc-account-primary-link" href={next}>Continue to checkout →</Link>}
       <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation ↗</button>
      </>:<>
-      <p>£9.99 billed monthly. Products and international shipping are paid separately.</p>
+      <p>£9.99 charged today and every month until cancelled. This supports Herocon while the sourcing checkout is being developed. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
       {membership.ownerLiveTest&&<p role="note" style={{color:"#874d25",fontWeight:600}}>
        Owner-only LIVE billing test: your card will be charged £9.99 now and renew monthly until you cancel.
        Herocon's product ordering and international shipping checkout are not yet available.
@@ -80,7 +80,7 @@ function MembershipGate(){
         {isTest&&<p style={{color:"#a36632"}}>Stripe test mode — no real money will be charged.</p>}
         <label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,lineHeight:1.6,margin:"20px 0"}}>
          <input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)} style={{marginTop:5}}/>
-         <span>I agree to a recurring £9.99 monthly subscription until cancelled. Products and international delivery cost extra. I can cancel through my billing portal, and I have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span>
+         <span>I understand that £9.99 will be charged now and every month until I cancel. Product ordering and shipping through Herocon are not yet available; this is an optional early-access membership while those features are being developed. Product and shipping costs are separate once available. I can cancel through Stripe and have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span>
         </label>
         <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working||!consents}
          onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":"Subscribe for £9.99/month →"}</button>
@@ -91,7 +91,7 @@ function MembershipGate(){
      </>}
     {error&&<p role="alert" style={{color:"#a14235"}}>{error}</p>}
    </div>
-   <p>Manage or cancel your membership through Stripe. Existing orders and their delivery payments remain accessible after cancellation.</p>
+   <p>You can manage or cancel your membership through Stripe. Orders and delivery payments are not yet available.</p>
   </section>
  </main>;
 }
