@@ -119,7 +119,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
    verifiedPaymentReference:session.id,verifiedTotalGBP:quote.totalPence/100,customer:buyer,
    lines:quote.lines.map(x=>({
     marketplaceUrl:x.marketplaceUrl,skuCode:x.skuCode,quantity:x.quantity,
-    verifiedSalePriceGBP:x.unitPriceGBP
+    verifiedSalePriceGBP:x.unitPriceGBP,maxSupplierPriceCNY:Math.round(x.supplierUnitCNY*1.02*100)/100
    }))
   };
   try{
