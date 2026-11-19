@@ -141,6 +141,18 @@ export async function createMembershipCheckout(user:Customer,mode:MembershipMode
  const customer=await memberStripeCustomer(user,mode,true);
  if(!customer)throw new MembershipBillingError(503,"Membership customer could not be created.");
  const {price}=stripeConfig(mode);
+ // Reuse an outstanding subscription Checkout rather than allowing a customer
+ // to accidentally pay for two memberships from separate browser tabs.
+ const pending=await stripe<{data:{url?:string;status?:string;mode?:string;metadata?:Record<string,string>;expires_at?:number}[]}>(mode,
+  "checkout/sessions?customer="+encodeURIComponent(customer)+"&status=open&limit=100");
+ const existingSession=(pending.data||[]).find(session=>
+  session.mode==="subscription"&&session.status==="open"&&
+  session.metadata?.purpose==="herocon_membership"&&
+  session.metadata?.herocon_user_id===user.id&&
+  session.metadata?.herocon_price_id===price&&
+  typeof session.expires_at==="number"&&session.expires_at*1000>Date.now()+60*1000&&
+  session.url?.startsWith("https://checkout.stripe.com/"));
+ if(existingSession?.url)return existingSession.url;
  const form=new URLSearchParams();
  form.set("mode","subscription");
  form.set("customer",customer);
@@ -149,6 +161,7 @@ export async function createMembershipCheckout(user:Customer,mode:MembershipMode
  form.set("client_reference_id",user.id);
  form.set("metadata[herocon_user_id]",user.id);
  form.set("metadata[purpose]","herocon_membership");
+ form.set("metadata[herocon_price_id]",price);
  form.set("subscription_data[metadata][herocon_user_id]",user.id);
  form.set("subscription_data[metadata][herocon_plan]","gbp_999_month");
  form.set("success_url","https://herocon.store/membership/activate?status=success");
