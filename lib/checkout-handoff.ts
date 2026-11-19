@@ -200,3 +200,36 @@ export async function listCheckoutReconciliation(){
  }
  return [...resultBySession.values()].sort((a,b)=>b.recordedAt.localeCompare(a.recordedAt)).slice(0,60);
 }
+
+export async function listCheckoutFinancialEvents(){
+ const prefix="checkout/payments/v1/financial-events/";
+ const result=await list({prefix,limit:150});
+ const events=await Promise.all([...result.blobs].sort((a,b)=>
+  new Date(b.uploadedAt).getTime()-new Date(a.uploadedAt).getTime()).slice(0,60)
+  .map(async b=>{
+   try{
+    const g=await get(b.pathname,{access:"private"});
+    if(!g||g.statusCode!==200||!g.stream)return null;
+    const body=await new Response(g.stream).text();
+    if(body.length>2000)return null;
+    return JSON.parse(body) as {eventId:string;type:string;objectId:string;receivedAt:string;requiresMerchantReview:boolean};
+   }catch{return null;}
+  }));
+ return events.filter((e):e is NonNullable<typeof e>=>Boolean(e)).slice(0,40);
+}
+export async function listCheckoutExceptions(){
+ const prefix="checkout/payments/v1/exceptions/";
+ const result=await list({prefix,limit:150});
+ const events=await Promise.all([...result.blobs].sort((a,b)=>
+  new Date(b.uploadedAt).getTime()-new Date(a.uploadedAt).getTime()).slice(0,60)
+  .map(async b=>{
+   try{
+    const g=await get(b.pathname,{access:"private"});
+    if(!g||g.statusCode!==200||!g.stream)return null;
+    const body=await new Response(g.stream).text();
+    if(body.length>2000)return null;
+    return JSON.parse(body) as {sessionId:string;quoteId?:string;expectedQuoteId?:string;code:string;at:string};
+   }catch{return null;}
+  }));
+ return events.filter((e):e is NonNullable<typeof e>=>Boolean(e)).slice(0,40);
+}
