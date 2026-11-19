@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {checkCartAvailability} from "@/lib/checkout-readiness";
+import {currentCustomer} from "@/lib/customer-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -7,6 +8,7 @@ const visitors=new Map<string,{start:number;count:number}>();
 const reply=(obj:unknown,status=200)=>NextResponse.json(obj,{status,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
 
 export async function POST(request:Request){
+ if(!await currentCustomer())return reply({error:"Create a free Herocon account or sign in before requesting a supplier stock check."},401);
  if(process.env.BUCKYDROP_ENV!=="live"||process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true")
   return reply({error:"Supplier verification is unavailable."},503);
  const origin=request.headers.get("origin");

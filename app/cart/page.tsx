@@ -117,8 +117,15 @@ export default function CartPage(){
      </div>}
      <p>Product payment and supplier purchasing remain disabled. Herocon must verify the two separate payment stages, warehouse QC and international dispatch before taking customer funds.</p>
     </div>
+    <div className="hc-cart-checkout-note" style={{background:"#eaf1e6",border:"1px solid #d3dfcf"}}>
+     <strong>Ready to buy? Membership is checked at purchase — not when you add to cart.</strong>
+     <p>Your free account and cart cost nothing. When live purchasing opens, a £9.99/month Herocon membership will be required before buying products. It will not be charged until you choose to subscribe; subscriptions are not active yet.</p>
+     {selectedLines>0?
+      <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>Continue to purchase ↗</Link>:
+      <p>Tick the products you want to buy to continue.</p>}
+    </div>
     <div className="hc-cart-checkout-note">
-     <strong>Request your final GBP checkout quote</strong>
+     <strong>Request a product quote</strong>
      <p>Herocon currently verifies supplier stock and product costs. Request a product-stage GBP quote for up to five selected options. International delivery is a separate payment later, once the warehouse has confirmed the actual packed parcel, and a realistic shipping estimate will be disclosed before any first-stage purchase.</p>
      {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request product quote & estimated later shipping ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
     </div>

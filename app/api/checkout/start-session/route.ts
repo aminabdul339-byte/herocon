@@ -2,6 +2,8 @@ import {NextResponse} from "next/server";
 import {getApprovedQuote,quoteIdOk,quoteIsCurrent,verifyApprovedQuoteStock,QuoteError} from "@/lib/approved-checkout";
 import {checkoutLaunchReadiness} from "@/lib/live-checkout";
 import {verifyLiveAccount} from "@/lib/stripe-live";
+import {currentCustomer} from "@/lib/customer-auth";
+import {checkActiveMembership} from "@/lib/membership-access";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const response=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"no-store"}});
@@ -15,6 +17,10 @@ function limit(ip:string){
 }
 export async function POST(request:Request){
  if(!checkoutLaunchReadiness().enabled)return response({error:"Live customer payments are not activated."},503);
+ const customer=await currentCustomer();
+ if(!customer)return response({error:"Sign in to your free Herocon account before purchasing."},401);
+ if(!await checkActiveMembership(customer))
+  return response({error:"An active Herocon membership (£9.99/month) is required only when purchasing products. Membership billing is not available yet."},403);
  const origin=request.headers.get("origin");
  try{if(!origin||new URL(origin).origin!=="https://herocon.store")return response({error:"Checkout must be started from Herocon."},403);}
  catch{return response({error:"Invalid request origin."},403);}
@@ -31,6 +37,8 @@ export async function POST(request:Request){
   return response({error:"Please acknowledge that international shipping is paid separately after warehouse arrival."},400);
  const quote=await getApprovedQuote(id);
  if(!quote)return response({error:"Quote not found."},404);
+ if(quote.customerEmail.toLowerCase()!==customer.email.toLowerCase())
+  return response({error:"Sign in with the email address this private checkout quote was prepared for."},403);
  if(quote.paymentStage!=="products"||quote.shippingPence!==0||
   !quote.estimatedLaterShippingPence)
   return response({error:"This quote is not approved for the two-stage product checkout."},409);

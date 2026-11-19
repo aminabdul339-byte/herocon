@@ -4,7 +4,7 @@ import {useState} from "react";
 import {useCart} from "@/components/CartProvider";
 export default function Header(){
   const [open,setOpen]=useState(false);
-  const {count}=useCart();
+  const {count,account}=useCart();
   const links=[["Explore products","/search"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
   return <>
     <div className="sc-announcement">YOUR GATEWAY TO SMARTER PRODUCT SOURCING FROM CHINA <span aria-hidden="true">✦</span> BUILT FOR INDEPENDENT BUSINESSES</div>
@@ -15,6 +15,7 @@ export default function Header(){
           {links.map(([label,url])=><Link key={url} href={url}>{label}</Link>)}
         </nav>
         <div className="sc-nav-actions">
+          <Link className="hc-cart-nav-link" href="/account">{account.status==="authenticated"?"My account":"Sign in / Join free"}</Link>
           <Link className="hc-cart-nav-link" href="/cart" aria-label={"Cart with "+count+" items"}>Cart <span>{count}</span></Link>
           <Link className="sc-saved" href="/saved" aria-label="Saved products"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M20.8 4.6a5.6 5.6 0 0 0-7.9 0L12 5.5l-.9-.9a5.6 5.6 0 1 0-7.9 7.9L12 21l8.8-8.5a5.6 5.6 0 0 0 0-7.9z"/></svg><span>Saved</span></Link>
           <Link className="sc-nav-cta" href="/find-product">Paste a product link <span aria-hidden="true">↗</span></Link>
@@ -23,7 +24,7 @@ export default function Header(){
           </button>
         </div>
       </div>
-      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} onClick={()=>setOpen(false)}>{label}<span aria-hidden="true">↗</span></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <span>↗</span></Link><Link href="/saved" onClick={()=>setOpen(false)}>Saved products <span>♡</span></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart <span>{count}</span></Link></nav>}
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} onClick={()=>setOpen(false)}>{label}<span aria-hidden="true">↗</span></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <span>↗</span></Link><Link href="/saved" onClick={()=>setOpen(false)}>Saved products <span>♡</span></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart <span>{count}</span></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <span>↗</span></Link></nav>}
     </header>
   </>;
 }

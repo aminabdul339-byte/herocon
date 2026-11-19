@@ -4,6 +4,7 @@ import "./premium-home.css";
 import "./contact-guide.css";
 import "./legal.css";
 import "./shop-journey.css";
+import "./account.css";
 import type {Metadata} from "next";
 import {SavedProvider} from "@/components/SavedProvider";
 import {CartProvider} from "@/components/CartProvider";
