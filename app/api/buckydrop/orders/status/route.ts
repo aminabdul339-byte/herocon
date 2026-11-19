@@ -50,7 +50,7 @@ export async function POST(request:Request){
  const so=object(order.soOrderInfo),code=integer(so.orderStatus);
  const purchaseOrders=Array.isArray(order.poOrderList)?order.poOrderList.slice(0,25).map(v=>{
   const po=object(v),status=integer(po.orderStatus);
-  return {reference:text(po.orderCode,100)||null,status:status===null?"Not reported":poLabels[status]||"Status "+status};
+  return {reference:text(po.orderCode,100)||null,status:status===null?"Not reported":poLabels[status]||"Status "+status,statusCode:status};
  }):[];
  const packageIds=Array.isArray(order.orderPackageList)?order.orderPackageList.map(v=>text(object(object(v).packageInfo).packageCode,100)).filter(Boolean).slice(0,5):[];
  const parcels=await Promise.all(packageIds.map(async packageCode=>{
@@ -71,7 +71,31 @@ export async function POST(request:Request){
   }catch{}
   return {packageCode,parcelStatus,trackingStatus,carrier,trackingNumber,events};
  }));
- return NextResponse.json({...base,salesStatus:code===null?null:salesLabels[code]||"Status "+code,
+ // These statuses reflect only provider-reported events; they do not
+ // confirm a final shipping invoice, paid freight or the availability of
+ // quality-control images in the BuckyDrop API.
+ const warehouseReceived=purchaseOrders.length>0&&purchaseOrders.every(po=>
+  po.statusCode!==null&&[7,10,11,12].includes(po.statusCode));
+ const warehouseInbound=purchaseOrders.some(po=>po.statusCode===9);
+ const internationalDispatched=parcels.some(parcel=>
+  !!parcel.trackingNumber||["Out of warehouse","Completed"].includes(parcel.parcelStatus||""));
+ const fulfilmentStage=internationalDispatched?"international_dispatched":
+  warehouseReceived?"warehouse_arrival_reported":
+  warehouseInbound?"arriving_at_warehouse":
+  purchaseOrders.length>0?"supplier_procurement":"awaiting_provider_update";
+ const warehouse={
+  stage:fulfilmentStage,
+  arrivalReported:warehouseReceived,
+  arrivalVerifiedForShipping:false, // QC and final weights not verified by this integration
+  qcInspection:"not_connected" as const,
+  qcPhotos:[] as string[],
+  finalShippingQuote:"not_available" as const,
+  shippingPaymentEnabled:false,
+  note:warehouseReceived
+   ?"Supplier records indicate warehouse receipt. QC photos, final packed weight and international delivery fees have not been confirmed to Herocon."
+   :"Warehouse receipt and QC photos have not been independently confirmed. Shipping cannot be charged yet."
+ };
+ return NextResponse.json({...base,warehouse,salesStatus:code===null?null:salesLabels[code]||"Status "+code,
   purchaseOrders,parcels,message:record.state==="outcome_unknown"?"The order is undergoing verification; any supplier status shown is based on the original reference.":null},{
   headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}
  });
