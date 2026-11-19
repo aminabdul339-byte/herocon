@@ -5,6 +5,9 @@ import {useState} from "react";
 type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
 const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
 type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;expiresAt:string;paymentEnabled:boolean;notice:string};
+type Reconciliation={quoteId:string;sessionId:string;email:string;totalPence:number;
+ state:string;reason:string;recordedAt:string;partnerOrderNo:string|null;
+ shopOrderNo:string|null;accessCode:string|null;customerEmailSent:boolean;merchantEmailSent:boolean;};
 const field:React.CSSProperties={padding:"11px 12px",border:"1px solid #bacfbd",borderRadius:7,width:"100%",background:"#fff"};
 const button:React.CSSProperties={padding:"12px 18px",background:"#254832",border:"none",color:"#fff",borderRadius:7,cursor:"pointer",fontWeight:700};
 export default function MerchantCheckout(){
@@ -16,6 +19,7 @@ export default function MerchantCheckout(){
  const [result,setResult]=useState<QuoteCreated|null>(null);
  const [notice,setNotice]=useState("");
  const [readiness,setReadiness]=useState<{enabled:boolean;missing:string[]}|null>(null);
+ const [reconciliation,setReconciliation]=useState<Reconciliation[]|null>(null);
  const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
  async function check(){
   setBusy(true);setNotice("");
@@ -25,6 +29,19 @@ export default function MerchantCheckout(){
    if(!res.ok)throw Error(data.error||"Unable to check launch readiness.");
    setReadiness(data.readiness);
   }catch(e){setNotice(e instanceof Error?e.message:"Unable to check readiness.");}
+  finally{setBusy(false);}
+ }
+ async function checkPaidOrders(){
+  setBusy(true);setNotice("");
+  try{
+   const r=await fetch("/api/admin/checkout/reconciliation",{
+    headers:{"x-herocon-checkout-admin":key.trim()},cache:"no-store"
+   });
+   const data=await r.json();
+   if(!r.ok)throw Error(data.error||"Unable to load paid-order reconciliation.");
+   setReconciliation(data.results as Reconciliation[]);
+   setNotice("Read-only merchant reconciliation loaded. This does not resubmit any supplier order.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Unable to read reconciliation records.");}
   finally{setBusy(false);}
  }
  async function create(e:React.FormEvent){
@@ -53,12 +70,28 @@ export default function MerchantCheckout(){
    <label style={{display:"block",fontWeight:700}}>Independent private checkout admin key</label>
    <input type="password" value={key} onChange={e=>setKey(e.target.value)} autoComplete="off" placeholder="Merchant key — never share" style={field}/>
    <p style={{fontSize:12,color:"#6a7a6c"}}>The key stays in this tab's memory; it is not saved to browser storage. It must be configured separately in Vercel before using this page.</p>
-   <button type="button" style={button} onClick={check} disabled={busy||key.length<32}>{busy?"Checking…":"Check launch requirements"}</button>
+   <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+    <button type="button" style={button} onClick={check} disabled={busy||key.length<32}>{busy?"Checking…":"Check launch requirements"}</button>
+    <button type="button" style={{...button,background:"#48684f"}} onClick={checkPaidOrders} disabled={busy||key.length<32}>Review paid-order ledger</button>
+   </div>
    {readiness&&<section style={{marginTop:15}}>
     <strong>{readiness.enabled?"All configured launch gates are present (still complete a controlled purchase test)":"Live payment is still disabled. Missing requirements:"}</strong>
     {!readiness.enabled&&<ul>{readiness.missing.map(x=><li key={x}>{x}</li>)}</ul>}
    </section>}
   </section>
+  {reconciliation&&<section style={{border:"1px solid #dce4d8",borderRadius:10,padding:18,marginTop:22}}>
+    <h2>Private paid-order reconciliation ({reconciliation.length})</h2>
+    <p style={{fontSize:13}}>Review all funds captured but not confirmed as submitted. When BuckyDrop submission is uncertain, search the original partner order reference in the BuckyDrop merchant portal before any manual resubmission or refund.</p>
+    {reconciliation.length===0?<p>No paid-order records are available in the current ledger.</p>:
+    reconciliation.map(r=><article key={r.sessionId} style={{padding:14,border:"1px solid #e3e9e0",marginBottom:12,borderRadius:7}}>
+     <strong>{r.state.replace(/_/g," ")} — {r.totalPence? "£"+(r.totalPence/100).toFixed(2):"Amount needs review"}</strong>
+     <p style={{fontSize:12}}>Quote: {r.quoteId} · Stripe session: {r.sessionId} · Buyer: {r.email||"See Stripe"}</p>
+     <p style={{fontSize:12}}>BuckyDrop partner ref: {r.partnerOrderNo||"Not confirmed"} · Shop order: {r.shopOrderNo||"Pending"}</p>
+     <p style={{fontSize:12,color:"#885a32"}}>{r.reason}</p>
+     <p style={{fontSize:12}}>Buyer email: {r.customerEmailSent?"sent":"needs follow-up"} · Merchant email: {r.merchantEmailSent?"sent":"needs follow-up"}</p>
+     {r.accessCode&&<p style={{fontSize:12}}>Private tracking access code (share securely with the correct buyer): <code>{r.accessCode}</code></p>}
+    </article>)}
+   </section>}
   <form onSubmit={create} style={{display:"grid",gap:20,marginTop:30}}>
    <div><label htmlFor="merchant-buyer">Buyer's email</label><input id="merchant-buyer" type="email" style={field} required value={email} onChange={e=>setEmail(e.target.value)} placeholder="buyer@example.com"/></div>
    <section><h2>Product variants</h2>
