@@ -25,6 +25,8 @@ export const maxDuration=60;
 const LIMIT=5000;
 const PER_REQUEST=3;
 const DELAY_MS=2200;
+const NEW_BATCH="makeup-brushes-20261119";
+type ImportScope="all"|"new-makeup";
 const ATTEMPTS="catalogue/buckydrop-import-attempts/v1/";
 const SAVED="catalogue/buckydrop-snapshots/v1/";
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
@@ -49,7 +51,7 @@ async function allPaths(prefix:string):Promise<string[]>{
  return paths;
 }
 function day(){return new Date().toISOString().slice(0,10);}
-async function state(){
+async function state(scope:ImportScope="all"){
  const [products,existing,attempted]=await Promise.all([
   getProducts(),allPaths(SAVED),allPaths(ATTEMPTS+day()+"/")
  ]);
@@ -62,10 +64,14 @@ async function state(){
  }
  const categories=new Map<string,{slug:string;list:{url:string;id:string;title:string}[]}>();
  const deduped=new Set<string>();
+ let scopedTotal=0,scopedSaved=0;
  for(const p of products){
+  if(scope==="new-makeup"&&p.sourceBatch!==NEW_BATCH)continue;
   const url=normalizeMarketplaceLink(p.originalMarketplaceUrl);
   if(!url||deduped.has(url))continue;
   deduped.add(url);
+  scopedTotal++;
+  if(savedHashes.has(sha(url)))scopedSaved++;
   const category=p.category||"Other";
   const entry=categories.get(category)||{slug:slug(category),list:[]};
   if(!savedHashes.has(sha(url))&&!attemptedHashes.has(sha(url))){
@@ -76,7 +82,7 @@ async function state(){
  const options=[...categories.entries()].filter(([,x])=>x.list.length>0)
   .sort((a,b)=>(categoryCounts.get(a[1].slug)||0)-(categoryCounts.get(b[1].slug)||0)||
         b[1].list.length-a[1].list.length||a[0].localeCompare(b[0]));
- return {catalogueProducts:products.length,snapshots:existing.length,attemptsToday:attempted.length,remainingDaily:Math.max(0,LIMIT-attempted.length),
+ return {catalogueProducts:scopedTotal,snapshots:scopedSaved,attemptsToday:attempted.length,remainingDaily:Math.max(0,LIMIT-attempted.length),
   categories:options,categoriesTotal:categories.size};
 }
 
@@ -84,7 +90,8 @@ export async function GET(request:Request){
  if(!authorized(request))return reply({error:"Unauthorized"},401);
  if(!process.env.BLOB_READ_WRITE_TOKEN)return reply({error:"Private Blob store not configured"},503);
  try{
-  const s=await state();
+  const scope:ImportScope=new URL(request.url).searchParams.get("scope")==="new-makeup"?"new-makeup":"all";
+  const s=await state(scope);
   return reply({catalogueProducts:s.catalogueProducts,permanentlySaved:s.snapshots,attemptsToday:s.attemptsToday,
    remainingDailyRequests:s.remainingDaily,categories:s.categories.map(([name,v])=>({name,missing:v.list.length})),
    maxDailyNewLookups:LIMIT,notice:"Merchant-authorised whole-catalogue import. No monetary cap: BuckyDrop bills per request later. Follow supplier rate limits."});
@@ -96,11 +103,13 @@ export async function POST(request:Request){
  if(!process.env.BLOB_READ_WRITE_TOKEN||process.env.BUCKYDROP_ENV!=="live"||
   process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true")return reply({error:"Live private storage or supplier lookup is not ready"},503);
  let requested=PER_REQUEST;
+ let scope:ImportScope="all";
  try{const raw=await request.text();if(raw.length>300)return reply({error:"Request too large"},413);
-  if(raw.trim()){const body=JSON.parse(raw);if(body&&typeof body.max==="number"&&Number.isInteger(body.max))requested=Math.min(PER_REQUEST,Math.max(1,body.max));}
+  if(raw.trim()){const body=JSON.parse(raw);if(body&&typeof body.max==="number"&&Number.isInteger(body.max))requested=Math.min(PER_REQUEST,Math.max(1,body.max));
+   if(body&&body.scope==="new-makeup")scope="new-makeup";}
  }catch{return reply({error:"Invalid request body"},400);}
  let s:Awaited<ReturnType<typeof state>>;
- try{s=await state();}
+ try{s=await state(scope);}
  catch{return reply({error:"Unable to inspect saved catalogue or usage budget"},503);}
  const results:{category:string;id:string;result:"saved"|"already_saved"|"failed";code?:string;variantCount?:number}[]=[];
  let stopReason:string|null=null;

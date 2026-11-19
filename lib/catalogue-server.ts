@@ -8,7 +8,7 @@ import {normalizeMarketplaceLink} from "./marketplace-links";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
-const additions = ["herocon-verified-marketplace-links.json", "herocon-wigs-20261118.json", "herocon-nails-20261118.json"];
+const additions = ["herocon-verified-marketplace-links.json", "herocon-wigs-20261118.json", "herocon-nails-20261118.json", "herocon-makeup-brushes-20261119.json"];
 const hosts = new Set(["detail.1688.com", "item.taobao.com", "detail.tmall.com", "weidian.com", "www.weidian.com"]);
 function validSource(value: unknown): string | undefined {
   if (typeof value !== "string") return;
@@ -35,6 +35,7 @@ function normalise(raw: Raw): Product | null {
     originalMarketplaceUrl: source,
     sourceMarketplace: source ? new URL(source).hostname : undefined,
     collectedAt: asString(raw.collectedAt),
+    sourceBatch: asString(raw.sourceBatch),
     variants: Array.isArray(raw.variants) ? raw.variants as Product["variants"] : undefined,
     agentLinks: raw.agentLinks && typeof raw.agentLinks === "object" && !Array.isArray(raw.agentLinks) ? raw.agentLinks as Record<string,string> : undefined,
   };
@@ -61,6 +62,7 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
           agentLinks: product.agentLinks || previous.agentLinks,
           sellerName: product.sellerName || previous.sellerName,
           sellerId: product.sellerId || previous.sellerId,
+          sourceBatch: product.sourceBatch || previous.sourceBatch,
         } : product);
       }
       return true;

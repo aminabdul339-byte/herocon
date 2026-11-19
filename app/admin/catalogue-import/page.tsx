@@ -22,10 +22,13 @@ type ImportResult={
  error?:string;
 };
 const PATH="/api/admin/catalogue/import-buckydrop";
+type ImportScope="new-makeup"|"all";
 const sleep=(ms:number)=>new Promise<void>(resolve=>setTimeout(resolve,ms));
 
 export default function CatalogueImportPage(){
  const [key,setKey]=useState("");
+ const [scope,setScope]=useState<ImportScope>("new-makeup");
+ const statusPath=PATH+"?scope="+encodeURIComponent(scope);
  const [state,setState]=useState<ImportState|null>(null);
  const [message,setMessage]=useState("Enter your private catalogue-import key to load the current progress.");
  const [working,setWorking]=useState(false);
@@ -43,7 +46,7 @@ export default function CatalogueImportPage(){
   if(!key.trim()){setMessage("Enter the private import key first.");return;}
   setLoading(true);
   try{
-   const response=await fetch(PATH,{headers:auth(),cache:"no-store"});
+   const response=await fetch(statusPath,{headers:auth(),cache:"no-store"});
    const d=await response.json() as ImportState;
    if(!response.ok)throw Error(d.error||"Cannot read importer status.");
    if(alive.current){setState(d);setMessage("Connected. Saved records are not fetched from BuckyDrop again.");}
@@ -55,14 +58,14 @@ export default function CatalogueImportPage(){
   if(running.current||!state||!key.trim())return;
   running.current=true;
   setWorking(true);setRuns(0);setSavedThisRun(0);setFailedThisRun(0);setHistory([]);
-  setMessage("Importing unsaved products from every category. Leave this tab open.");
+  setMessage(scope==="new-makeup"?"Importing unsaved details for the new makeup catalogue. Leave this tab open.":"Importing unsaved products from every category. Leave this tab open.");
   let batch=0,savedTotal=0,failedTotal=0;
   try{
    while(running.current&&alive.current){
     const response=await fetch(PATH,{
      method:"POST",
      headers:{...auth(),"Content-Type":"application/json"},
-     body:JSON.stringify({max:3}),
+     body:JSON.stringify({max:3,scope}),
      cache:"no-store"
     });
     const d=await response.json() as ImportResult;
@@ -86,7 +89,7 @@ export default function CatalogueImportPage(){
     }:previous);
     if(batch%25===0){
      try{
-      const statusResponse=await fetch(PATH,{headers:auth(),cache:"no-store"});
+      const statusResponse=await fetch(statusPath,{headers:auth(),cache:"no-store"});
       if(statusResponse.ok&&alive.current)setState(await statusResponse.json() as ImportState);
      }catch{}
     }
@@ -116,7 +119,7 @@ export default function CatalogueImportPage(){
   }finally{
    running.current=false;
    if(alive.current){setWorking(false);try{
-    const response=await fetch(PATH,{headers:auth(),cache:"no-store"});
+    const response=await fetch(statusPath,{headers:auth(),cache:"no-store"});
     if(response.ok)setState(await response.json() as ImportState);
    }catch{}}
   }
@@ -124,9 +127,16 @@ export default function CatalogueImportPage(){
  const outstanding=state?Math.max(0,state.catalogueProducts-state.permanentlySaved):0;
  return <main style={{maxWidth:900,margin:"48px auto",padding:"0 22px",fontFamily:"system-ui, sans-serif",color:"#1a3023"}}>
   <p style={{fontSize:13,color:"#667e6d"}}><Link href="/">Herocon</Link> / Private operations</p>
-  <h1 style={{fontFamily:"Georgia,serif",fontSize:"clamp(30px,5vw,48px)",margin:"12px 0"}}>Import all supplier products</h1>
+  <h1 style={{fontFamily:"Georgia,serif",fontSize:"clamp(30px,5vw,48px)",margin:"12px 0"}}>Import supplier product details</h1>
   <p style={{color:"#506955",lineHeight:1.6}}>Only the merchant can start this operation. Once our sourcing partner returns a product successfully, Herocon stores that response permanently. Previously saved products are skipped. New partner lookups may be billable, with charges deducted the following day.</p>
   <section style={{padding:20,border:"1px solid #d6e3d8",borderRadius:12,marginTop:22}}>
+   <label htmlFor="catalogue-scope" style={{fontWeight:700,display:"block",marginBottom:8}}>Choose which products to enrich</label>
+   <select id="catalogue-scope" value={scope} disabled={working||loading} onChange={e=>{setScope(e.target.value as ImportScope);setState(null);setMessage("Check progress for your selected catalogue before importing.");}}
+    style={{display:"block",width:"100%",padding:"12px 14px",border:"1px solid #b9cbbb",borderRadius:8,background:"white",color:"#244431",marginBottom:9}}>
+    <option value="new-makeup">New makeup &amp; beauty catalogue (50 linked items)</option>
+    <option value="all">Entire Herocon catalogue</option>
+   </select>
+   <p style={{fontSize:12,color:"#58705e",margin:"0 0 20px",lineHeight:1.5}}>Only verified supplier links are eligible. New BuckyDrop requests may incur a fee; previously saved product details are reused and not fetched again by this importer.</p>
    <label htmlFor="admin-key" style={{fontWeight:700,display:"block",marginBottom:8}}>Private catalogue import key</label>
    <input id="admin-key" type="password" autoComplete="off" spellCheck={false} value={key} onChange={e=>setKey(e.target.value)}
     placeholder="Paste the private key from your Mac" style={{width:"100%",boxSizing:"border-box",fontSize:14,border:"1px solid #b9cbbb",borderRadius:8,padding:"12px 14px"}}/>
