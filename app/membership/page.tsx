@@ -42,7 +42,7 @@ export default function MembershipPage(){
      <h2>Herocon early-access membership.</h2>
      <ul>{benefits.map(item=><li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
      <Link className="hc-membership-price-link" href="/membership/activate">Join for £9.99/month <span aria-hidden="true">↗</span></Link>
-     <small>Membership is optional while order checkout is unavailable. £9.99 is charged now and renews monthly until cancelled. The catalogue, account and cart are free; no product orders can currently be placed. Products and shipping are separate charges once launched.</small>
+     <small>Membership is optional while order checkout is unavailable. £9.99 is charged now and renews monthly until cancelled. The catalogue, account and cart are free; no product orders can currently be placed. Products and shipping are separate charges once launched. Cancel anytime through Stripe: membership ordinarily continues to the end of the paid month, with no next-month charge. Cancellation does not automatically refund unused time; statutory cancellation and refund rights still apply. <Link href="/terms-and-conditions">View terms</Link>.</small>
     </aside>
    </div>
   </section>
