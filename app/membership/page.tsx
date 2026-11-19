@@ -41,8 +41,8 @@ export default function MembershipPage(){
      <div className="hc-membership-price-rule"/>
      <h2>Full sourcing access.</h2>
      <ul>{benefits.map(item=><li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul>
-     <Link className="hc-membership-price-link" href="/account">Create your free account <span aria-hidden="true">↗</span></Link>
-     <small>Membership is required when purchasing, not for creating an account or adding to cart. Subscription payments are not yet available.</small>
+     <Link className="hc-membership-price-link" href="/membership/activate">Get full sourcing access <span aria-hidden="true">↗</span></Link>
+     <small>Create an account and add to cart for free. Membership is billed monthly and can be cancelled. Products and shipping are separate.</small>
     </aside>
    </div>
   </section>
