@@ -20,6 +20,7 @@ export default function MerchantCheckout(){
  const [notice,setNotice]=useState("");
  const [readiness,setReadiness]=useState<{enabled:boolean;missing:string[]}|null>(null);
  const [reconciliation,setReconciliation]=useState<Reconciliation[]|null>(null);
+ const [testUrl,setTestUrl]=useState("");
  const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
  async function check(){
   setBusy(true);setNotice("");
@@ -29,6 +30,21 @@ export default function MerchantCheckout(){
    if(!res.ok)throw Error(data.error||"Unable to check launch readiness.");
    setReadiness(data.readiness);
   }catch(e){setNotice(e instanceof Error?e.message:"Unable to check readiness.");}
+  finally{setBusy(false);}
+ }
+ async function startSandboxTest(){
+  if(!result)return;
+  setBusy(true);setNotice("");setTestUrl("");
+  try{
+   const r=await fetch("/api/admin/checkout/test-session",{
+    method:"POST",headers:{"Content-Type":"application/json","x-herocon-checkout-admin":key.trim()},
+    body:JSON.stringify({quoteId:result.id}),cache:"no-store"
+   });
+   const d=await r.json();
+   if(!r.ok||!d.testMode||typeof d.url!=="string")throw Error(d.error||"Stripe sandbox test unavailable.");
+   setTestUrl(d.url);
+   setNotice("TEST payment session generated. This cannot charge a live customer or submit BuckyDrop goods.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Unable to open sandbox test.");}
   finally{setBusy(false);}
  }
  async function checkPaidOrders(){
@@ -119,6 +135,11 @@ export default function MerchantCheckout(){
    <h2>Quote created: £{result.totalGBP}</h2><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
    <p><Link href={result.checkoutUrl}>{result.checkoutUrl}</Link></p>
    <button type="button" onClick={()=>navigator.clipboard.writeText(result.checkoutUrl)}>Copy private buyer link</button>
+   <div style={{marginTop:15}}>
+    <button type="button" disabled={busy} onClick={startSandboxTest} style={{...button,background:"#43657b"}}>Generate Stripe TEST payment for this exact quote</button>
+    {testUrl&&<p><a href={testUrl} target="_blank" rel="noopener noreferrer">Open Stripe TEST Checkout ↗</a></p>}
+    <p style={{fontSize:12}}>Requires Stripe test keys and test webhook configured in Vercel. TEST payments never create a supplier purchase.</p>
+   </div>
    <p><strong>{result.paymentEnabled?"Payment route is configured. Verify carefully before sharing.":"Payment remains disabled until the launch requirements pass."}</strong></p>
   </section>}
  </main>;
