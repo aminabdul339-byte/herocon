@@ -13,6 +13,7 @@ export type QuoteRequest={
  status:"received";deliveryCountry:"GB";postcode:string;notes:string;
  lines:QuoteRequestLine[];paymentStatus:"no_payment_requested";
 };
+export type QuoteRequestView=QuoteRequest&{reviewState:"received"|"reviewing"|"needs_details"|"closed";reviewNote:string;reviewedAt:string|null};
 export class QuoteRequestError extends Error{
  constructor(public status:number,message:string){super(message);}
 }
@@ -56,16 +57,44 @@ async function listPaths(prefix:string,limit:number){
  }
  return found.slice(0,limit);
 }
-export async function customerRequests(userId:string,limit=40):Promise<QuoteRequest[]>{
+async function withStatus(request:QuoteRequest):Promise<QuoteRequestView>{
+ const root="checkout/quote-requests/v1/status/";
+ let update:{requestId?:string;userId?:string;status?:string;note?:string;updatedAt?:string}|null=null;
+ try{
+  const found=await get(root+request.userId+"/"+request.id+".json",{access:"private"});
+  if(found?.statusCode===200&&found.stream){
+   const raw=await new Response(found.stream).text();
+   if(raw.length<1500)update=JSON.parse(raw) as typeof update;
+  }
+ }catch{}
+ const valid=update?.requestId===request.id&&update?.userId===request.userId&&
+  (update.status==="reviewing"||update.status==="needs_details"||update.status==="closed");
+ return {...request,reviewState:valid?update!.status as QuoteRequestView["reviewState"]:"received",
+  reviewNote:valid&&typeof update!.note==="string"?update!.note.slice(0,450):"",
+  reviewedAt:valid&&typeof update!.updatedAt==="string"?update!.updatedAt:null};
+}
+export async function merchantUpdateRequest(userId:string,id:string,status:string,note:unknown):Promise<QuoteRequestView>{
+ if(!UUID.test(userId)||!validId(id)||!["reviewing","needs_details","closed"].includes(status))
+  throw new QuoteRequestError(400,"Invalid request or status.");
+ const request=await read(pathFor(userId,id));
+ if(!request||request.userId!==userId)throw new QuoteRequestError(404,"Quote request not found.");
+ const reviewNote=str(note,450);
+ const update={version:1,requestId:id,userId,status,note:reviewNote,updatedAt:new Date().toISOString()};
+ await put("checkout/quote-requests/v1/status/"+userId+"/"+id+".json",JSON.stringify(update),{
+  access:"private",allowOverwrite:true,addRandomSuffix:false,contentType:"application/json"
+ });
+ return withStatus(request);
+}
+export async function customerRequests(userId:string,limit=40):Promise<QuoteRequestView[]>{
  if(!UUID.test(userId))return [];
  const paths=await listPaths(PREFIX+userId+"/",Math.min(limit,80));
  const rows=(await Promise.all(paths.map(read))).filter((x):x is QuoteRequest=>Boolean(x&&x.userId===userId));
- return rows.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,limit);
+ return Promise.all(rows.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,limit).map(withStatus));
 }
-export async function merchantRequests(limit=40):Promise<QuoteRequest[]>{
+export async function merchantRequests(limit=40):Promise<QuoteRequestView[]>{
  const paths=await listPaths(PREFIX,Math.min(Math.max(limit,1)*3,300));
  const rows=(await Promise.all(paths.map(read))).filter((x):x is QuoteRequest=>Boolean(x));
- return rows.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,limit);
+ return Promise.all(rows.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,limit).map(withStatus));
 }
 export async function createCustomerRequest(input:unknown,user:{id:string;email:string}):Promise<QuoteRequest>{
  if(!UUID.test(user.id)||!EMAIL.test(user.email)||!process.env.BLOB_READ_WRITE_TOKEN)
