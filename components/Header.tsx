@@ -5,7 +5,7 @@ import {useCart} from "@/components/CartProvider";
 export default function Header(){
   const [open,setOpen]=useState(false);
   const {count}=useCart();
-  const links=[["Explore products","/search"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Track order","/orders"]];
+  const links=[["Explore products","/search"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"]];
   return <>
     <div className="sc-announcement">YOUR GATEWAY TO SMARTER PRODUCT SOURCING FROM CHINA <span aria-hidden="true">✦</span> BUILT FOR INDEPENDENT BUSINESSES</div>
     <header className="sc-header">
