@@ -67,7 +67,7 @@ export default function CartPage(){
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">{checkout?"ORDER REVIEW":"YOUR SHOPPING CART"}</p>
    <h1>{checkout?"Review your ":"Your "}<em>{checkout?"selection.":"cart."}</em></h1>
-   <p>Tick the products you want, choose quantities and review the indicative product subtotal. International shipping will be quoted and paid separately after your goods arrive at the warehouse.</p>
+   <p>Choose your products and quantities. International shipping is quoted and paid separately.</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
@@ -97,7 +97,7 @@ export default function CartPage(){
      <p><span>International delivery (paid later)</span><strong>Warehouse quote pending</strong></p>
     </div>
     {fx&&cny>0&&<p className="hc-cart-fx-note">Approximate CNY to GBP conversion using the {fx.date} reference exchange rate. Actual rates may differ.</p>}
-    <div className="hc-cart-checkout-note"><strong>Live supplier check</strong><p>Only the products you tick above will be checked. This is not a final GBP checkout quote.</p>
+    <div className="hc-cart-checkout-note"><strong>Check supplier availability</strong><p>Check stock and listed prices for your selected items.</p>
      <button type="button" className="sc-button sc-button-dark hc-cart-shop" onClick={verifySupplierCart} disabled={verifying||selectedLines===0||selectedLines>5||selectedItems.some(item=>!item.skuCode)}>
       {verifying?"Checking seller options…":"Verify supplier stock & prices ↗"}
      </button>
@@ -113,21 +113,21 @@ export default function CartPage(){
        {" · "}{line.quantity} item(s) · {line.reason}
        {line.supplierUnitCny!=null?" · Seller ¥"+line.supplierUnitCny.toFixed(2)+" per item":""}
       </p>)}
-      <p><strong>Live checkout not yet available.</strong> A product-stage payment and separate warehouse-stage international shipping payment are being prepared. Final delivery charges and merchant fulfilment still require verification.</p>
+      <p>Online checkout is currently unavailable.</p>
      </div>}
-     <p>Product payment and supplier purchasing remain disabled. Herocon must verify the two separate payment stages, warehouse QC and international dispatch before taking customer funds.</p>
+     <p>Prices shown are indicative and exclude international shipping.</p>
     </div>
     <div className="hc-cart-checkout-note" style={{background:"#eaf1e6",border:"1px solid #d3dfcf"}}>
-     <strong>Ready to buy? Membership is checked at purchase — not when you add to cart.</strong>
-     <p>Your free account and cart cost nothing. When live purchasing opens, a £9.99/month Herocon membership will be required before buying products. It will not be charged until you choose to subscribe; subscriptions are not active yet.</p>
+     <strong>Herocon Membership · £9.99/month</strong>
+     <p>Free to add to cart. Membership is required when you buy. Subscription checkout is currently unavailable.</p>
      {selectedLines>0?
       <Link className="sc-button sc-button-dark hc-cart-shop" href={"/membership/activate?next="+encodeURIComponent("/cart?checkout=1")}>Continue to purchase ↗</Link>:
       <p>Tick the products you want to buy to continue.</p>}
     </div>
     <div className="hc-cart-checkout-note">
      <strong>Request a product quote</strong>
-     <p>Herocon currently verifies supplier stock and product costs. Request a product-stage GBP quote for up to five selected options. International delivery is a separate payment later, once the warehouse has confirmed the actual packed parcel, and a realistic shipping estimate will be disclosed before any first-stage purchase.</p>
-     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request product quote & estimated later shipping ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
+     <p>Request a GBP product quote and an estimated shipping charge. Final international shipping is paid separately after warehouse arrival.</p>
+     {selectedLines>0?<a className="sc-button sc-button-outline hc-cart-shop" href={requestQuoteHref}>Request a quote ↗</a>:<p>Tick the products you want before requesting your quote.</p>}
     </div>
     <Link className="sc-button sc-button-dark hc-cart-shop" href="/landed-cost">Estimate shipping ↗</Link><Link className="sc-button sc-button-outline hc-cart-shop" href="/orders">Track an order ↗</Link><Link className="hc-cart-shop" href="/search">Continue shopping ↗</Link>
     </aside></div>}

@@ -94,14 +94,14 @@ function AccountContent(){
   <section className="hc-account-shell">
    <div className="hc-account-intro">
     <p className="hc-premium-kicker">YOUR HEROCON / FREE ACCOUNT</p>
-    <h1>Find it. Save it.<br/><em>Make it yours.</em></h1>
-    <p>Create a free account to add products to your cart, save options and organise your finds. <strong>You do not need to pay £9.99 to create an account or add items.</strong></p>
+    <h1>Your account.<br/><em>Your cart.</em></h1>
+    <p>Create an account to add products to your cart. <strong>Registration is free.</strong></p>
     <div className="hc-account-perks">
-     <p><strong>01 / FREE</strong> Sign up or log in when adding your first item.</p>
-     <p><strong>02 / YOUR CART</strong> Your selected product returns to your personal cart after signing in.</p>
-     <p><strong>03 / ONLY AT PURCHASE</strong> A £9.99/month membership will be required when you decide to buy, once purchasing launches.</p>
+     <p><strong>01 / SIGN UP</strong> Create your free account.</p>
+     <p><strong>02 / YOUR CART</strong> Keep your selected products together.</p>
+     <p><strong>03 / MEMBERSHIP</strong> £9.99/month when you buy products.</p>
     </div>
-    {pending&&<p className="hc-account-pending">Your product selection is held in this browser while you sign in. No payment is due.</p>}
+    {pending&&<p className="hc-account-pending">Your selected product will be added after sign-in.</p>}
    </div>
    <div className="hc-account-card">
     {account.status==="authenticated"&&!next?<>
@@ -109,23 +109,22 @@ function AccountContent(){
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
      <Link className="hc-account-primary-link" href="/cart">View your cart →</Link>
-     <Link href="/membership">Learn about membership →</Link>
+     <Link href="/membership">Membership details →</Link>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
     </>:account.status==="unavailable"?<>
      <p className="hc-premium-kicker">ACCOUNT SETUP</p>
-     <h2>Free accounts are being connected.</h2>
-     <p>The sign-up service has not yet been configured. We haven't created an account, charged a subscription or added products without a verified login.</p>
-     <p>Once secure authentication is connected, this page will let you register for free and return to your chosen item.</p>
+     <h2>Sign-in unavailable.</h2>
+     <p>Please try again shortly or contact support.</p>
      <Link className="hc-account-primary-link" href="/search">Continue browsing →</Link>
     </>:account.status==="authenticated"&&next?<>
-     <h2>Restoring your selection…</h2><p>Your free account is signed in. We're returning you to your cart.</p>
+     <h2>Opening your cart…</h2>
     </>:<>
      <div className="hc-account-tabs">
       <button type="button" className={mode==="signup"?"active":""} onClick={()=>{setMode("signup");setNotice("");}}>Create account</button>
       <button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setNotice("");}}>Sign in</button>
      </div>
      <h2>{mode==="signup"?"Create your free account":mode==="login"?"Welcome back":"Reset your password"}</h2>
-     <p>{mode==="signup"?"No subscription required. Add to cart is free.":mode==="login"?"Sign in to your personal cart.":"We'll send reset instructions if this email has an account."}</p>
+     <p>{mode==="signup"?"Your account is free.":mode==="login"?"Sign in to your personal cart.":"We'll send reset instructions if this email has an account."}</p>
      <form onSubmit={handleSubmit}>
       <label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle}/></label>
       {mode!=="recover"&&<label>Password<input type="password" required minLength={12} maxLength={128} autoComplete={mode==="signup"?"new-password":"current-password"} value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle}/><small>At least 12 characters</small></label>}
@@ -136,7 +135,7 @@ function AccountContent(){
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
      {readyToConfirm&&<p className="hc-account-notice">Use the email link in this browser to restore the pending product, even if it opens a new tab. If you verify on another device, return to this one and sign in.</p>}
-     <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and acknowledge our <Link href="/privacy-policy">Privacy Policy</Link>. No membership subscription is purchased during registration.</p>
+     <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>
   </section>

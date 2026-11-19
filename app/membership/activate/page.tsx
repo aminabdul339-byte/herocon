@@ -27,22 +27,21 @@ function MembershipGate(){
   <Header/>
   <section className="hc-member-purchase-shell">
    <p className="hc-premium-kicker">HEROCON / PURCHASE ACCESS</p>
-   <h1>Ready to buy?<br/><em>Membership comes next.</em></h1>
-   <p>Your free account and cart cost nothing. When you decide to make a new product purchase, Herocon will check whether you have an active membership. The planned price is £9.99 per month.</p>
+   <h1>Your membership.<br/><em>£9.99/month.</em></h1>
+   <p>Membership gives you full sourcing access when purchasing products. Browsing and adding to cart are free.</p>
    <div className="hc-member-purchase-card">
-    <span>HEROCON MEMBERSHIP · PURCHASE STAGE ONLY</span>
+    <span>FULL SOURCING ACCESS</span>
     <strong>£9.99 <small>/ month</small></strong>
     {account.status==="checking"||loading?<p>Checking your account and membership…</p>:
      account.status!=="authenticated"?<>
-      <p>Sign in or create a <strong>free account</strong> first. No membership payment is required to add products to your cart.</p>
+      <p>Sign in or create a free account to continue.</p>
       <Link className="hc-account-primary-link" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Create free account / Sign in →</Link>
-     </>:active?<><p>Your paid membership is verified. You can return to your selection.</p><Link className="hc-account-primary-link" href={next}>Return to purchase review →</Link></>:<>
-      <p>{ready?"Your account does not currently have a verified active membership.":"Membership payment is not available yet. We're preparing the secure £9.99/month Stripe subscription and customer account billing system."}</p>
-      <p className="hc-member-purchase-caution">You will never be charged a membership fee simply for creating an account, browsing or adding items to your cart. Product purchases and international shipping are billed separately.</p>
-      <Link className="hc-account-primary-link" href="/cart">Return to your free cart →</Link>
+     </>:active?<><p>Membership active.</p><Link className="hc-account-primary-link" href={next}>Return to purchase review →</Link></>:<>
+      <p>{ready?"An active membership is required to purchase products.":"Membership checkout is currently unavailable."}</p>
+      <p className="hc-member-purchase-caution">Products and international shipping are charged separately from membership.</p>
+      <Link className="hc-account-primary-link" href="/cart">Return to cart →</Link>
      </>}
    </div>
-   <p>After membership activates in the future, customers will keep access to existing orders, warehouse QC, shipping invoices and refunds even if the membership ends.</p>
   </section>
  </main>;
 }

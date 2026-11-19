@@ -170,9 +170,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <div className="product-price">{priceLabel}</div>
     {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
     {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
-    {source&&<p className="sc-source-subprice">Saved partner product prices · {fx?"Approximate GBP equivalents":"Prices in CNY"} · Delivery calculated separately</p>}
-    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Partner details saved on {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Stock and prices may have changed and must be confirmed before payment.</p>}
-    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Our partner has not provided detailed seller options for this listing. You can still save the original product to your cart.</p>}
+    {source&&<p className="sc-source-subprice">Supplier prices · {fx?"Approximate GBP equivalents":"CNY"} · Shipping separate</p>}
+    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
+    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
       <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length} seller variants · Select quantities</span></div>
       <div className="sc-sku-list">
@@ -207,12 +207,12 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Buy now</button>
     </div>
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart →</Link>}</p>}
-    <p className="hc-checkout-note">A free account is required to add products. No subscription is charged for your cart. Membership (£9.99/month, planned) is only required when you try to purchase. Live purchasing is not active yet.</p>
+    <p className="hc-checkout-note">Adding to cart requires a free account. Membership is £9.99/month when you buy. Online checkout is currently unavailable.</p>
     {source&&<div className="sc-supplier-facts">
       {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
       {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {dualPrice(source.chinaDomesticFreight)}</p>}
       {source.available===false&&<p className="sc-supplier-unavailable">This seller listing is currently unavailable.</p>}
-      <p><strong>International delivery:</strong> Disclosed as an estimate before product payment; final freight will be paid separately after warehouse arrival and QC, when checkout becomes available.</p>
+      <p><strong>International delivery:</strong> Quoted and paid separately after your items reach the warehouse.</p>
     </div>}
     <a className="hc-product-details-anchor" href="#product-details">View product details ↓</a>
    </aside>
