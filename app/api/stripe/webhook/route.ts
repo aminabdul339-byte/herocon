@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {head,put} from "@vercel/blob";
 import {StripeGatewayError,verifyStripeWebhook} from "@/lib/stripe-gateway";
+import {getApprovedQuote} from "@/lib/approved-checkout";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -29,16 +30,29 @@ export async function POST(request:Request){
   return NextResponse.json({received:true},{headers:{"Cache-Control":"no-store"}});
  }
  const session=event.data.object;
- if(session.metadata?.purpose!=="herocon_integration_test"||session.metadata.fulfilment!=="disabled"||
-  session.mode!=="payment"||!session.id?.startsWith("cs_test_"))return NextResponse.json({received:true},{headers:{"Cache-Control":"no-store"}});
- if(session.payment_status!=="paid"||session.currency!=="gbp"||session.amount_total!==100){
-  return NextResponse.json({received:true},{headers:{"Cache-Control":"no-store"}});
- }
+ if(session.metadata?.fulfilment!=="disabled"||session.mode!=="payment"||
+  !session.id?.startsWith("cs_test_")||session.currency!=="gbp")
+  return NextResponse.json({received:true,ignored:true},{headers:{"Cache-Control":"no-store"}});
+ if(session.payment_status!=="paid")
+  return NextResponse.json({received:true,waitingForFunds:true},{headers:{"Cache-Control":"no-store"}});
+ const purpose=session.metadata.purpose;
+ let acceptedPence=100,quoteId:string|null=null;
+ if(purpose==="herocon_checkout_quote_test"){
+  const id=session.metadata.quoteId||"";
+  if(!/^hq_[a-f0-9]{40}$/.test(id))return NextResponse.json({error:"Invalid test quote"}, {status:400});
+  const quote=await getApprovedQuote(id);
+  if(!quote)return NextResponse.json({error:"Missing approved test quote"},{status:503});
+  acceptedPence=quote.totalPence;
+  quoteId=quote.id;
+ }else if(purpose!=="herocon_integration_test")return NextResponse.json({received:true,ignored:true});
+ if(session.amount_total!==acceptedPence)
+  return NextResponse.json({error:"Test payment does not match the approved GBP amount"},{status:400});
  if(!process.env.BLOB_READ_WRITE_TOKEN)return NextResponse.json({error:"Test receipt storage not configured."},{status:503});
  try{
   await put("payments/stripe-test/v1/"+event.id+".json",JSON.stringify({
    version:1,eventId:event.id,eventType:event.type,checkoutId:session.id,
-   currency:"gbp",amountPence:100,fulfilment:false,verifiedAt:new Date().toISOString()
+   quoteId,currency:"gbp",amountPence:acceptedPence,fulfilment:false,
+   verifiedAt:new Date().toISOString()
   }),{access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"});
  }catch{
   // A duplicate webhook event can be acknowledged. A storage outage must
