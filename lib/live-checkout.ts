@@ -10,6 +10,7 @@ export function checkoutLaunchReadiness(){
   ["Fresh rotated Stripe live key attested",process.env.HEROCON_STRIPE_KEY_ROTATED==="true"],
   ["Stripe live secret installed",(process.env.STRIPE_LIVE_SECRET_KEY||"").startsWith("sk_live_")],
   ["Read-only Stripe account verification enabled",process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true"],
+  ["Independent Stripe account-verification admin key installed",(process.env.HEROCON_STRIPE_LIVE_ADMIN_KEY||"").length>=32],
   ["Stripe live webhook signing enabled",process.env.HEROCON_STRIPE_LIVE_WEBHOOK_ENABLED==="true"&&(process.env.STRIPE_LIVE_WEBHOOK_SECRET||"").startsWith("whsec_")],
   ["Supplier submission enabled",process.env.HEROCON_ORDER_SUBMISSION_ENABLED==="true"],
   ["Private supplier handoff secret installed",(process.env.HEROCON_INTERNAL_FULFILMENT_KEY||"").length>=32],
