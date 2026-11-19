@@ -25,3 +25,5 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: TypeScript checks
         run: npm run typecheck
+      - name: BuckyDrop integration and safety tests (mocked, no live orders)
+        run: node --test tests/buckydrop-integration.test.cjs
