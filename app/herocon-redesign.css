@@ -726,3 +726,7 @@
  .sc-category-mobile select{border-radius:9px}
  .sc-category-mobile button{border-radius:9px}
 }
+
+.hc-site{font-variant-emoji:text}
+.hc-nav-cart-label{display:inline!important;min-width:0!important;height:auto!important;padding:0!important;border-radius:0!important;background:none!important;color:inherit!important;font:inherit!important}
+.sc-nav-cta svg{width:16px;height:16px;vertical-align:middle;flex:none}
