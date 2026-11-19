@@ -69,7 +69,7 @@
 .hc-membership-price li{display:flex;gap:13px;padding:11px 0;font-size:13px;line-height:1.65;color:#e4ede1;border-bottom:1px solid #3c5843}
 .hc-membership-price li span{color:#b9d7ae;font-weight:700}
 .hc-membership-price-link{display:flex;justify-content:space-between;background:#f0f3ec;color:#1e3d2b;text-decoration:none;padding:16px 18px;font-size:13px;font-weight:750}
-.hc-membership-price small{display:block;color:#cbd9c8;line-height:1.7;font-size:11px;margin-top:18px}
+.hc-membership-price small{display:block;color:#d5e1d1;line-height:1.7;font-size:12px;margin-top:18px}.hc-membership-price small a{color:#f4f8ef;text-decoration:underline;text-underline-offset:2px;font-weight:650}.hc-membership-price small a:focus-visible{outline:2px solid #f4f8ef;outline-offset:3px}
 .hc-membership-process{padding:86px 0 98px}
 .hc-membership-process-heading{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:30px}
 .hc-membership-process h2{font:400 clamp(35px,4.8vw,58px)/1.1 Georgia,serif;letter-spacing:-.04em;margin:13px 0 0}
