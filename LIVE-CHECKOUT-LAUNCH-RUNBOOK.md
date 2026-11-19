@@ -1,6 +1,8 @@
 # Herocon checkout launch runbook — Nov 19, 2026
 
-**Status: IMPLEMENTED BEHIND FAIL-CLOSED FLAGS, NOT LIVE.**
+**Status: PARTIALLY IMPLEMENTED BEHIND FAIL-CLOSED FLAGS, NOT LIVE.**
+**Important 19 Nov update:** The product purchase and freight payment are now designed as two separate customer charges. The first-stage product quote and an indicative later freight estimate exist, but the second-stage warehouse shipping invoice/payment/release is NOT implemented. The site refuses live payments until HEROCON_TWO_STAGE_SHIPPING_READY is explicitly enabled after testing.
+See TWO-STAGE-WAREHOUSE-AND-MEMBERSHIP-ROADMAP.md for the current model and future £9.99 monthly membership.
 Do not turn on customer-facing payments before the outstanding verification steps below.
 Current storefront remains a discovery/catalogue service that cannot collect payments.
 
@@ -8,11 +10,11 @@ Current storefront remains a discovery/catalogue service that cannot collect pay
 
 - Operator-only quote approval interface: \`/admin/checkout\`; API: \`/api/admin/checkout/quotes\`.
   - Independent header \`x-herocon-checkout-admin\` and server-only \`HEROCON_CHECKOUT_ADMIN_KEY\` (>=32 chars).
-  - Operator inputs buyer email, original marketplace link and BuckyDrop SKU, quantity, **final retail unit GBP price**, verified shipping charge GBP, and applicable tax/duty GBP.
+  - Operator inputs buyer email, original marketplace link and BuckyDrop SKU, quantity, **product-stage retail GBP price**, applicable stage-one product tax GBP, and a realistic **indicative future international shipping** estimate in GBP.
   - A new, private Vercel Blob approved quote is stored immutably. Fresh live BuckyDrop SKU/stock/price check is mandatory. Source lookups may be billable.
   - Quote expires after 23h and can be shared privately at \`https://herocon.store/checkout/<id>\`. It is **not** created from an untrusted browser cart total.
-- Customer quote page shows frozen GBP product, shipping, taxes and final payable total. Pay button remains disabled until all launch gates pass.
-- Server-only \`/api/checkout/start-session\` re-verifies supplier SKU/stock and guards Stripe account identity and ability to charge, then creates a **single Stripe LIVE hosted Checkout session** (idempotency key derived from quote). Restricted to GB addresses, credit/debit cards, phone collection, and terms acceptance.
+- Customer quote page shows frozen GBP PRODUCT-only amount due now and indicative later shipping amount **not included**; there is explicit second-shipping-payment disclosure. Pay button remains disabled until all launch gates pass.
+- Server-only customer product-stage Stripe Checkout rechecks SKU and captures only the approved product-stage GBP amount; shipping requires a **future, separate** Stripe Session and warehouse-release flow not yet built. Restricted to GB in the initial pilot.
 - \`/checkout/complete\` is navigation-only; it never treats the redirect as payment proof.
 - Signed \`/api/stripe/live-webhook\` accepts live Checkout paid events, re-reads the session from Stripe, verifies paid status / GBP amount / intended quote / email / mode / purpose, reserves an immutable per-quote claim, then — **only if separately enabled** — sends the trusted paid order to Herocon's internal BuckyDrop Shop Order creation route.
 - BuckyDrop paid-order submission rechecks actual SKU/stock/price and preserves a single-send reservation. Shop Order acceptance is **not** proof of supplier payment or shipment. Supplier funds are paid by the merchant in BuckyDrop's portal in the requested manual-payment model.
@@ -23,7 +25,7 @@ Current storefront remains a discovery/catalogue service that cannot collect pay
 ## Do NOT use the temporary CNY shipping setting to charge customers
 
 \`BUCKYDROP_QUOTE_CURRENCY=CNY\` is an assumption for DISPLAY of shipping quotes, not proof of the currency of \`totalPrice\` from BuckyDrop's OpenAPI.
-Before any paid order, obtain written confirmation of quote amount currency, and agree actual shipping, weight/dimensions, customs, VAT and merchant freight/margin policy. The approved-quote pilot demands manual verified shipping amounts in GBP; no buyer-entered total is trusted.
+Before any paid order, obtain written confirmation of quote amount currency, and agree actual shipping, weight/dimensions, customs, VAT and merchant freight/margin policy. The first-stage quote discloses an estimated later shipping charge. The final stage-two payable shipping amount must be verified independently before the customer can explicitly pay it. No buyer-entered total is trusted.
 
 ## Launch gates, ALL initially default OFF
 
@@ -45,7 +47,8 @@ Set in the Vercel **Production** environment ONLY, after completing the correspo
 | \`RESEND_API_KEY\` | Server-side provider API key and verified sending domain |
 | \`HEROCON_ORDER_EMAIL_FROM\` | Verified sender e.g. "Herocon <orders@herocon.store>" ONLY after DNS verification |
 | \`HEROCON_ORDER_ALERT_EMAIL\` | Merchant order alert mailbox monitored daily |
-| \`HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED=true\` | **FINAL** production authorisation after whole-system test; last switch to set |
+| \`HEROCON_TWO_STAGE_SHIPPING_READY=true\` | **MUST remain unset/off** until separate final freight invoice, warehouse status/QC checks, signed shipping-payment webhook, and BuckyDrop shipping-release process are tested |
+| \`HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED=true\` | **FINAL** production authorisation after both product and shipping stages pass end-to-end testing; last switch to set |
 
 Shared private Blob token and existing BuckyDrop live credentials are already installed. Confirm permissions, balances, and operational costs before enabling supplier writes.
 
@@ -79,11 +82,11 @@ For LIVE mode, register a **separate** Stripe LIVE webhook destination \`https:/
 1. Buyer selects SKU(s) in cart and requests a final quote.
 2. Merchant verifies stock, actual supplier purchase costs, shipping cost, profit, VAT and taxes.
 3. Merchant approves frozen GBP quote in \`/admin/checkout\` and sends the private customer link.
-4. Buyer reviews exact total + UK shipping and pays via Stripe-hosted Checkout once enabled.
+4. Buyer reviews product-stage GBP amount plus an estimated later freight charge, acknowledges the second payment, and pays only the product amount through Stripe once enabled.
 5. Stripe signs a webhook. Herocon fetches the paid session and compares it against its immutable quote.
 6. Herocon reserves the paid quote and sends **one** BuckyDrop Shop Order. If there is a timeout/ambiguous response, it does not submit twice; merchant reconciles in dashboard.
 7. Merchant receives alert and **manually confirms and pays BuckyDrop**. Merchant must keep enough funds in BuckyDrop even if Stripe's payout has not yet reached the bank.
-8. BuckyDrop purchases/inspects/ships as its account agreement allows; Herocon reads linked supplier tracking by private order reference + access code.
+8. BuckyDrop buys and receives items at the warehouse, performs QC and provides photo assets if supported. After verified weight and approved shipping quote, Herocon must create a separate customer freight payment and confirm the funds before any international dispatch. This stage is **not yet implemented**.
 9. Merchant handles refunds, shipping disputes, changed supplier prices, and buyers' statutory cancellation/return rights.
 
 ## Test plan (required before setting last switch)
@@ -101,7 +104,7 @@ For LIVE mode, register a **separate** Stripe LIVE webhook destination \`https:/
 
 ## Known limitations
 
-- Self-service **public cart to instant payable checkout** is not implemented; merchant approval is required for each final all-in quote.
+- Self-service **public cart to instant payable checkout** is not implemented; merchant approval is required for each first-stage product quote. Final international shipping is a separate, unimplemented payment after warehouse receipt.
 - No provider-confirmed BuckyDrop shipping API currency or automated all-in tax calculation.
 - No automatically executed refunds. Refunds/chargebacks must be handled with the merchant's real Stripe account, recorded and reconciled.
 - Email requires Resend/domain verification. Failure does not erase a paid order but requires manual follow-up.
