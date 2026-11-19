@@ -132,11 +132,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   const verified=account.status==="checking"?await refreshAccount():account;
   if(verified.status!=="authenticated"){
    try{
-    sessionStorage.setItem(PENDING_CART_KEY,JSON.stringify({
+    localStorage.setItem(PENDING_CART_KEY,JSON.stringify({
      version:1,rows,buyNow,requestedAt:Date.now()
     }));
    }catch{
-    setCartMessage("Your browser did not allow us to save your selection before sign-up. Please enable session storage and try again.");
+    setCartMessage("Your browser did not allow us to save your selection before sign-up. Please enable browser storage and try again.");
     return;
    }
    const destination=buyNow?"/membership/activate?next="+encodeURIComponent("/cart?checkout=1"):"/cart";
