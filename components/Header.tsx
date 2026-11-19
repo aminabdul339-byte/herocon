@@ -2,6 +2,7 @@
 import Link from "next/link";
 import {useState} from "react";
 import {useCart} from "@/components/CartProvider";
+function NavArrow(){return <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>;}
 export default function Header(){
   const [open,setOpen]=useState(false);
   const {count,account}=useCart();
@@ -15,15 +16,21 @@ export default function Header(){
           {links.map(([label,url])=><Link key={url} href={url}>{label}</Link>)}
         </nav>
         <div className="sc-nav-actions">
-          <Link className="hc-cart-nav-link" href="/account">{account.status==="authenticated"?"My account":"Sign in / Join free"}</Link>
-          <Link className="hc-cart-nav-link" href="/cart" aria-label={"Cart with "+count+" items"}>Cart <span>{count}</span></Link>
+          <Link className="hc-cart-nav-link hc-mobile-account-link" href="/account" aria-label={account.status==="authenticated"?"My account":"Sign in or create an account"}>
+            <svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5.3 20c.3-4 2.7-6.1 6.7-6.1s6.4 2.1 6.7 6.1"/></svg>
+            <span className="hc-nav-account-label">{account.status==="authenticated"?"My account":"Sign in / Join free"}</span>
+          </Link>
+          <Link className="hc-cart-nav-link hc-mobile-cart-link" href="/cart" aria-label={"Cart with "+count+" items"}>
+            <svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 5.5h2l2 10.5h11.4l2-8H6.2"/><circle cx="9" cy="19.5" r="1"/><circle cx="18" cy="19.5" r="1"/></svg>
+            <span className="hc-nav-cart-label">Cart</span><span className="hc-nav-cart-count">{count}</span>
+          </Link>
           <Link className="sc-nav-cta" href="/find-product">Paste a product link <span aria-hidden="true">↗</span></Link>
           <button type="button" className="sc-mobile-toggle" aria-label={open?"Close menu":"Open menu"} aria-expanded={open} aria-controls="sc-mobile-menu" onClick={()=>setOpen(!open)}>
             <span></span><span></span><span></span>
           </button>
         </div>
       </div>
-      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} onClick={()=>setOpen(false)}>{label}<span aria-hidden="true">↗</span></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <span>↗</span></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart <span>{count}</span></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <span>↗</span></Link></nav>}
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
     </header>
   </>;
 }
