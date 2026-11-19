@@ -22,6 +22,19 @@ function stripeConfig(mode:MembershipMode){
     !price?.startsWith("price_"))throw new MembershipBillingError(503,"Membership payment setup is incomplete.");
  return {key,price};
 }
+function ownerTestConfigured(){
+ return process.env.HEROCON_MEMBERSHIP_OWNER_TEST_ENABLED==="true"&&
+  UUID.test(process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID||"");
+}
+export function ownerTestAllowed(user:Customer){
+ return ownerTestConfigured()&&user.id===process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID;
+}
+export function canSubscribeToMembership(user:Customer,mode:MembershipMode){
+ return mode==="test"||
+  (process.env.HEROCON_MEMBERSHIP_LIVE_ENABLED==="true"&&
+   process.env.HEROCON_MEMBERSHIP_POLICIES_APPROVED==="true")||
+  ownerTestAllowed(user);
+}
 export function enabledMembershipMode():MembershipMode|null{
  const test=process.env.HEROCON_MEMBERSHIP_TEST_ENABLED==="true"&&
   process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")&&
@@ -29,13 +42,14 @@ export function enabledMembershipMode():MembershipMode|null{
   process.env.HEROCON_MEMBERSHIP_TEST_WEBHOOK_SECRET?.startsWith("whsec_")&&
   process.env.HEROCON_MEMBERSHIP_TEST_PORTAL_CONFIGURATION_ID?.startsWith("bpc_");
 
- const live=process.env.HEROCON_MEMBERSHIP_LIVE_ENABLED==="true"&&
+ const live=(ownerTestConfigured()||
+    (process.env.HEROCON_MEMBERSHIP_LIVE_ENABLED==="true"&&
+     process.env.HEROCON_MEMBERSHIP_POLICIES_APPROVED==="true"))&&
   process.env.HEROCON_STRIPE_KEY_ROTATED==="true"&&
   process.env.STRIPE_LIVE_SECRET_KEY?.startsWith("sk_live_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_PRICE_ID?.startsWith("price_")&&
   process.env.HEROCON_MEMBERSHIP_LIVE_WEBHOOK_SECRET?.startsWith("whsec_")&&
-  process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID?.startsWith("bpc_")&&
-  process.env.HEROCON_MEMBERSHIP_POLICIES_APPROVED==="true";
+  process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID?.startsWith("bpc_");
  if(live)return "live";
  return test?"test":null;
 }
@@ -123,6 +137,26 @@ export async function getMembershipStatus(user:Customer,mode:MembershipMode):Pro
   renewalAt:typeof expiry==="number"?new Date(expiry*1000).toISOString():null,
   subscriptionId:subscription.id,mode};
 }
+async function verifyLiveAccountAndCancellationPortal(){
+ const [account,portal]=await Promise.all([
+  stripe<{id:string;country:string;charges_enabled:boolean}>("live","account"),
+  stripe<{id:string;livemode:boolean;active:boolean;features?:{
+   subscription_cancel?:{enabled?:boolean;mode?:string};
+   payment_method_update?:{enabled?:boolean};
+   invoice_history?:{enabled?:boolean};
+  }}>("live","billing_portal/configurations/"+
+   encodeURIComponent(process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID||""))
+ ]);
+ if(account.id!=="acct_1TGeApDWTSpscVhc"||account.country!=="GB"||
+   account.charges_enabled!==true||
+   portal.id!==process.env.HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID||
+   portal.livemode!==true||portal.active!==true||
+   portal.features?.subscription_cancel?.enabled!==true||
+   portal.features?.subscription_cancel?.mode!=="at_period_end"||
+   portal.features?.payment_method_update?.enabled!==true||
+   portal.features?.invoice_history?.enabled!==true)
+  throw new MembershipBillingError(503,"Live billing and cancellation settings could not be verified. No charge was started.");
+}
 async function verifyMonthlyPrice(mode:MembershipMode){
  const {price}=stripeConfig(mode);
  const object=await stripe<StripePrice>(mode,"prices/"+encodeURIComponent(price));
@@ -133,7 +167,9 @@ async function verifyMonthlyPrice(mode:MembershipMode){
 }
 export async function createMembershipCheckout(user:Customer,mode:MembershipMode):Promise<string>{
  if(!billingConfigured(mode))throw new MembershipBillingError(503,"Membership checkout is not enabled.");
+ if(!canSubscribeToMembership(user,mode))throw new MembershipBillingError(403,"Membership is not available for this account.");
  await verifyMonthlyPrice(mode);
+ if(mode==="live")await verifyLiveAccountAndCancellationPortal();
  const existing=await getMembershipStatus(user,mode);
  if(existing.active)throw new MembershipBillingError(409,"Your Herocon membership is already active.");
  if(["past_due","unpaid","incomplete","paused"].includes(existing.status))
