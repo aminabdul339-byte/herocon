@@ -2,7 +2,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
-import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcaseMix} from "@/lib/catalogue-priority";
+import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
 
 export const dynamic="force-dynamic";
 
@@ -23,7 +23,7 @@ const collections=[
 export default async function Home(){
  const products=await prioritizeSavedPartnerProducts(await getProducts());
  const total=products.length;
- const featured=await attachSavedPartnerImages(leadWithShowcaseMix(products,1).slice(0,4));
+ const featured=await attachSavedPartnerImages(selectDiscoveryEditProducts(products));
 
  return <main className="hc-premium-home">
   <Header/>

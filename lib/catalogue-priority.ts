@@ -115,3 +115,52 @@ export async function attachSavedPartnerImages(products:Product[]):Promise<Produ
   }catch{return product;}
  }));
 }
+
+
+/**
+ * Editorial four: wig, home décor, nails, shoes.
+ * Use actual catalogue products, never placeholder cards or extra API calls.
+ * Prioritise an existing saved supplier snapshot (full options and images),
+ * then listings with working photographs and marketplace links.
+ */
+export function selectDiscoveryEditProducts(products:Product[]):Product[]{
+ const realImage=(p:Product)=>typeof p.imageUrl==="string"&&/^https?:\/\/\S+/i.test(p.imageUrl);
+ const named=(p:Product)=>(p.title||"").toLowerCase();
+ const groups=[
+  {category:"Wigs & Hair Extensions",specific:(p:Product)=>
+   /\b(?:wigs?|lace[\s-]?front(?:al)?s?)\b/i.test(named(p))&&
+   !/\b(?:wig[\s-]?(?:caps?|stands?|holders?|racks?)|accessories|adhesives?|glues?|extensions?[\s-]?rings?)\b/i.test(named(p))},
+  {category:"Home & Decor",specific:(p:Product)=>
+   /\b(?:vases?|sculptures?|figurines?|ornaments?|candlesticks?|candle[\s-]?holders?|wall[\s-]?art|art[\s-]?prints?|picture[\s-]?frames?|photo[\s-]?frames?|mirrors?|planters?|flower[\s-]?pots?|decorative[\s-]?(?:trays?|objects?))\b/i.test(named(p))&&
+   !/\b(?:phone[\s-]?cases?|sunglasses?|car[\s-]?(?:dashboard|accessories)|toy[\s-]?cars?|shoe[\s-]?racks?)\b/i.test(named(p))},
+  {category:"Nails & Nail Supplies",specific:(p:Product)=>
+   /\b(?:wearable[\s-]?nails?|press[\s-]?on[\s-]?nails?|fake[\s-]?nails?|false[\s-]?nails?|nail[\s-]?(?:patches?|tips?|pieces?|sets?)|removable[\s-]?(?:nails?|manicure))\b/i.test(named(p))&&
+   !/\b(?:polish|gel[\s-]?polish|glue|drill|lamp|dryer|tool[\s-]?kit)\b/i.test(named(p))},
+  {category:"Shoes",specific:(p:Product)=>
+   /\b(?:shoes?|sneakers?|trainers?|boots?|heels?|loafers?|slippers?|sandals?)\b/i.test(named(p))&&
+   !/\b(?:shoe[\s-]?(?:racks?|cabinets?|organizers?|organisers?|bags?|boxes?|storage|covers?|accessories)|shoelaces?|keychains?|charms?)\b/i.test(named(p))}
+ ] as const;
+ const chosen=new Set<string>();
+ const selection:Product[]=[];
+ for(const group of groups){
+  const choices=products.map((product,index)=>({product,index}))
+   .filter(({product})=>product.category===group.category&&realImage(product)&&
+    typeof product.originalMarketplaceUrl==="string"&&
+    !chosen.has(product.doppelProductId||product.canonicalId||""));
+  // Prefer a photographed, verified-source product with rich supplier
+  // details. An exact product-type match always beats a category-only match.
+  choices.sort((a,b)=>{
+   const grade=(p:Product)=>(group.specific(p)?10000:0)+
+    (p.hasPartnerDetails?1000:0)+
+    Math.min((p.variants||[]).length,20)*4+
+    Math.min((p.images||[]).length,12);
+   return grade(b.product)-grade(a.product)||a.index-b.index;
+  });
+  const first=choices[0]?.product;
+  if(first){
+   selection.push(first);
+   chosen.add(first.doppelProductId||first.canonicalId||"");
+  }
+ }
+ return selection;
+}

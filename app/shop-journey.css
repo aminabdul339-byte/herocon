@@ -82,3 +82,26 @@
 .hc-membership-shipping-note{font-size:12px;line-height:1.8;color:#718071;margin-top:23px;max-width:760px}
 @media(max-width:900px){.hc-membership-layout{grid-template-columns:1fr;gap:43px}.hc-membership-price{max-width:580px}.hc-membership-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.hc-membership-step:nth-child(3){border-left:0;padding-left:0}.hc-membership-step:nth-child(n+3){border-top:1px solid #d4dcd1}}
 @media(max-width:620px){.hc-membership-hero{padding:58px 0 65px}.hc-membership-price{padding:29px 25px}.hc-membership-process{padding:57px 0 70px}.hc-membership-steps{grid-template-columns:1fr}.hc-membership-step,.hc-membership-step:not(:first-child),.hc-membership-step:nth-child(3){padding:22px 0;border-left:0}.hc-membership-step:not(:first-child){border-top:1px solid #d4dcd1}.hc-membership-ctas{gap:18px}}
+
+
+/* Clear, accessible contrast for the membership account CTA.
+   The global storefront's link colours must not override button text. */
+.hc-member-page.hc-membership-clean .hc-membership-price a.hc-membership-price-link,
+.hc-member-page.hc-membership-clean .hc-membership-price a.hc-membership-price-link:visited{
+ background:#edf4e9 !important;
+ color:#183c27 !important;
+ border:1px solid #d4e3ce;
+ font-size:14px;
+ font-weight:800;
+ text-decoration:none;
+ opacity:1;
+}
+.hc-member-page.hc-membership-clean .hc-membership-price a.hc-membership-price-link:hover{
+ background:#ffffff !important;
+ color:#183c27 !important;
+ border-color:#ffffff;
+}
+.hc-member-page.hc-membership-clean .hc-membership-price a.hc-membership-price-link:focus-visible{
+ outline:3px solid #b9dab3;
+ outline-offset:4px;
+}
