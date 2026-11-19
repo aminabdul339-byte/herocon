@@ -6,6 +6,18 @@ export const dynamic="force-dynamic";
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store"}});
 export async function POST(request:Request){
  if(!accountOriginValid(request))return reply({error:"Start checkout on Herocon."},403);
+ if(!(request.headers.get("content-type")||"").startsWith("application/json"))
+  return reply({error:"Billing confirmation required."},415);
+ let data:Record<string,unknown>;
+ try{
+  const raw=await request.text();
+  if(raw.length>250)return reply({error:"Request too long."},413);
+  const parsed:unknown=JSON.parse(raw);
+  if(!parsed||typeof parsed!=="object"||Array.isArray(parsed))throw Error("Invalid");
+  data=parsed as Record<string,unknown>;
+ }catch{return reply({error:"Invalid billing confirmation."},400);}
+ if(data.recurringBillingAcknowledged!==true)
+  return reply({error:"Please agree to recurring £9.99 monthly billing before continuing."},400);
  const user=await currentCustomer();
  if(!user)return reply({error:"Sign in to your free account first."},401);
  const mode=enabledMembershipMode();
