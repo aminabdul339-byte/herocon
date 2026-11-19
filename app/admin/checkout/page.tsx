@@ -3,7 +3,7 @@ import Link from "next/link";
 import {useState} from "react";
 
 type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
-type CustomerRequest={id:string;userId:string;customerEmail:string;createdAt:string;postcode:string;notes:string;lines:{title:string;marketplaceUrl:string;skuCode:string|null;variant:string|null;quantity:number}[]};
+type CustomerRequest={id:string;userId:string;customerEmail:string;createdAt:string;postcode:string;notes:string;reviewState:"received"|"reviewing"|"needs_details"|"closed";reviewNote:string;lines:{title:string;marketplaceUrl:string;skuCode:string|null;variant:string|null;quantity:number}[]};
 const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
 type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;estimatedLaterShippingGBP:string;paymentStage:"products";expiresAt:string;paymentEnabled:boolean;notice:string};
 type FinancialEvent={eventId:string;type:string;objectId:string;receivedAt:string;requiresMerchantReview:boolean};
@@ -27,6 +27,7 @@ export default function MerchantCheckout(){
  const [exceptions,setExceptions]=useState<PaymentException[]>([]);
  const [testUrl,setTestUrl]=useState("");
  const [quoteRequests,setQuoteRequests]=useState<CustomerRequest[]|null>(null);
+ const [reviewNotes,setReviewNotes]=useState<Record<string,string>>({});
  const update=(i:number,k:keyof Line,v:string)=>setLines(old=>old.map((line,n)=>n===i?{...line,[k]:v}:line));
  async function check(){
   setBusy(true);setNotice("");
@@ -49,6 +50,22 @@ export default function MerchantCheckout(){
    setQuoteRequests(Array.isArray(data.requests)?data.requests:[]);
    setNotice("Read-only customer quote queue loaded. No customer payment or supplier order has been created.");
   }catch(e){setNotice(e instanceof Error?e.message:"Could not load quote requests.");}
+  finally{setBusy(false);}
+ }
+ async function markQuoteRequest(req:CustomerRequest,status:"reviewing"|"needs_details"|"closed"){
+  if(busy)return;
+  setBusy(true);setNotice("");
+  try{
+   const res=await fetch("/api/admin/checkout/requests",{
+    method:"POST",headers:{"Content-Type":"application/json","x-herocon-checkout-admin":key.trim()},
+    body:JSON.stringify({userId:req.userId,id:req.id,status,note:reviewNotes[req.id]||req.reviewNote||""}),
+    cache:"no-store"
+   });
+   const data=await res.json();
+   if(!res.ok)throw Error(data.error||"Unable to update review.");
+   setQuoteRequests(old=>old?.map(x=>x.id===req.id?data.request:x)||null);
+   setNotice("Request review updated. No customer payment or supplier purchase was started.");
+  }catch(e){setNotice(e instanceof Error?e.message:"Could not update request.");}
   finally{setBusy(false);}
  }
  function useRequest(req:CustomerRequest){
@@ -131,9 +148,19 @@ export default function MerchantCheckout(){
    {quoteRequests.length===0?<p>No requests received yet.</p>:
     quoteRequests.map(req=><article key={req.id} style={{padding:"17px 0",borderTop:"1px solid #dce4d8"}}>
      <p><strong>{req.customerEmail}</strong> · {new Date(req.createdAt).toLocaleString("en-GB")} · {req.postcode}</p>
-     <p style={{fontSize:12}}>Reference {req.id} · {req.notes||"No additional notes"}</p>
+     <p style={{fontSize:12}}>Reference {req.id} · State: {req.reviewState.replace("_"," ")} · {req.notes||"No additional notes"}</p>
      <ul>{req.lines.map((line,i)=><li key={i}>{line.quantity} × {line.title} {line.variant?"("+line.variant+")":""} · SKU: {line.skuCode||"Not selected"} · <a href={line.marketplaceUrl} target="_blank" rel="noopener noreferrer">Supplier listing</a></li>)}</ul>
-     <button type="button" style={{...button,background:"#617665"}} onClick={()=>useRequest(req)}>Load into manual GBP approval form</button>
+     <div style={{display:"grid",gap:10,marginBottom:14}}>
+      <label style={{fontSize:12}}>Merchant review note visible to buyer
+       <textarea value={reviewNotes[req.id]??req.reviewNote??""} onChange={e=>setReviewNotes(old=>({...old,[req.id]:e.target.value}))} maxLength={450} rows={2} style={field}/>
+      </label>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+       <button type="button" style={{...button,background:"#617665"}} onClick={()=>useRequest(req)}>Load for manual pricing</button>
+       <button type="button" style={{...button,background:"#52725b"}} disabled={busy} onClick={()=>markQuoteRequest(req,"reviewing")}>Mark reviewing</button>
+       <button type="button" style={{...button,background:"#80633b"}} disabled={busy} onClick={()=>markQuoteRequest(req,"needs_details")}>Request details</button>
+       <button type="button" style={{...button,background:"#75615c"}} disabled={busy} onClick={()=>markQuoteRequest(req,"closed")}>Close request</button>
+      </div>
+     </div>
     </article>)}
   </section>}
   {reconciliation&&<section style={{border:"1px solid #dce4d8",borderRadius:10,padding:18,marginTop:22}}>
