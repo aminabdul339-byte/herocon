@@ -1,6 +1,6 @@
 # Herocon £9.99 monthly membership — launch checklist
 
-Updated 19 November 2026. Subscription code and test billing integrations are built. **No real membership charges are enabled.** Free sign-up and Add to cart remain free; membership is checked only when trying to buy products.
+Updated 19 November 2026. **Public £9.99/month LIVE membership checkout has been enabled for any verified Herocon account**; customers explicitly acknowledge recurring billing and early-access limitations. A successful end-to-end customer payment, cancellation, webhook and invoice lifecycle still requires verification. Free sign-up and Add to cart remain free; product ordering and international shipping checkout are independently disabled.
 
 ## Built and deployed
 
@@ -10,7 +10,7 @@ Updated 19 November 2026. Subscription code and test billing integrations are bu
 - Read-only Stripe status check (including item billing-period expiry) on every product purchase, so cancellations and failed payments cannot be bypassed by client flags.
 - Billing Portal for invoices, payment methods, cancel-at-period-end.
 - A separately signed Stripe test/live webhook records subscription, invoice and cancellation events.
-- Membership page and purchase gate present Subscribe and Manage billing controls only when the required configuration is complete. Test subscriptions never enable live product orders.
+- Membership page and purchase gate present Subscribe and Manage billing controls only when the required configuration is complete. Test subscriptions never enable live product orders. Public live membership is available, but product ordering and two-stage shipping charges remain disabled and prominently disclosed.
 
 ## Configured in Stripe TEST
 
@@ -29,16 +29,16 @@ Updated 19 November 2026. Subscription code and test billing integrations are bu
 4. Set HEROCON_MEMBERSHIP_TEST_ENABLED=true in Vercel Production and redeploy.
 5. Test subscription, renewal, failure, cancellation, invoice history and account access at https://herocon.store/membership/activate. TEST mode never accepts real money and never unlocks LIVE purchasing.
 
-## Complete LIVE configuration
+## LIVE membership status and outstanding verification
 
-1. Rotate previously exposed STRIPE_LIVE_SECRET_KEY, install the new key securely, and only then set HEROCON_STRIPE_KEY_ROTATED=true.
-2. Confirm Herocon's actual live Stripe account, tax obligations (including UK VAT if relevant), customer refund/cancellation policy and merchant descriptor.
-3. Create a separate LIVE £9.99/month Stripe Price, and set HEROCON_MEMBERSHIP_LIVE_PRICE_ID.
-4. Register a separate LIVE webhook at the same route; store its distinct signing secret as HEROCON_MEMBERSHIP_LIVE_WEBHOOK_SECRET.
-5. Create a LIVE Billing Portal configuration supporting cancellation, payment methods and invoices; set HEROCON_MEMBERSHIP_LIVE_PORTAL_CONFIGURATION_ID.
-6. Complete end-to-end product order and separate warehouse shipping checkout BEFORE charging customers recurring membership for sourcing access.
-7. After complete testing, set HEROCON_MEMBERSHIP_POLICIES_APPROVED=true and HEROCON_MEMBERSHIP_LIVE_ENABLED=true. Redeploy and test a controlled live subscription.
+1. The merchant confirms the previously exposed STRIPE_LIVE_SECRET_KEY was replaced, and HEROCON_STRIPE_KEY_ROTATED=true is configured. The live Stripe API key's identity, permissions and complete payment cycle have NOT been independently verified by this development session.
+2. Confirm the live Stripe account, current VAT/tax obligations, customer cancellation/refund rights, merchant descriptor and missing legal operator information. Stripe's live connected ChatGPT plugin currently exposes TEST mode only.
+3. The live recurring Price ID and exact £9.99/month GBP server-side price validation are configured.
+4. The live Stripe membership webhook and its private signing secret are configured. Send and verify an actual signed event and confirm the receipt in the private audit ledger.
+5. The live Billing Portal ID is installed. Stripe's customer portal was observed with cancel-at-period-end, payment method updates and invoice history enabled; verify the complete customer path.
+6. Product ordering, supplier purchasing, warehouse stage-two shipping payment and dispatch release are NOT live. Membership is presented as optional early access/support during buildout; this scope is clearly disclosed. Obtain commercial and legal approval before advertising full sourcing/fulfilment as available.
+7. HEROCON_MEMBERSHIP_POLICIES_APPROVED=true and HEROCON_MEMBERSHIP_LIVE_ENABLED=true are already set, with owner-only pilot OFF. Do not misinterpret those flags as independent legal sign-off or evidence of a completed Stripe transaction.
 
-Product and shipping payments remain separate and disabled. Never collect £9.99 for a service that cannot be used yet.
+Product and shipping payments remain disabled. Before promoting membership, confirm that the early-access services paid members receive are genuine and clearly described, and handle statutory refunds, cooling-off requests and disputes fairly.
 
 Sources: https://docs.stripe.com/billing/subscriptions/overview ; https://docs.stripe.com/customer-management ; https://docs.stripe.com/webhooks
