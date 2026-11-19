@@ -15,9 +15,9 @@ function safeNext(value:string|null){
 }
 function savePendingSelection(userId:string){
  try{
-  const raw=sessionStorage.getItem(PENDING_CART_KEY);
+  const raw=localStorage.getItem(PENDING_CART_KEY);
   if(!raw)return false;
-  sessionStorage.removeItem(PENDING_CART_KEY);
+  localStorage.removeItem(PENDING_CART_KEY);
   const d=JSON.parse(raw) as {version?:number;rows?:CartItem[];requestedAt?:number};
   if(d.version!==1||typeof d.requestedAt!=="number"||Date.now()-d.requestedAt>30*60*1000||
    !Array.isArray(d.rows)||d.rows.length>20)return false;
@@ -135,7 +135,7 @@ function AccountContent(){
      </form>
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
-     {readyToConfirm&&<p className="hc-account-notice">Use the confirmation email in the same browser to restore your pending product automatically. If you open it elsewhere, sign in again here.</p>}
+     {readyToConfirm&&<p className="hc-account-notice">Use the email link in this browser to restore the pending product, even if it opens a new tab. If you verify on another device, return to this one and sign in.</p>}
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and acknowledge our <Link href="/privacy-policy">Privacy Policy</Link>. No membership subscription is purchased during registration.</p>
     </>}
    </div>
