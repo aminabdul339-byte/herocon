@@ -27,6 +27,7 @@ export async function POST(request:Request){
   const quote=await createApprovedQuote(input);
   return answer({
    id:quote.id,customerEmail:quote.customerEmail,totalGBP:(quote.totalPence/100).toFixed(2),
+   paymentStage:"products",estimatedLaterShippingGBP:((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
    expiresAt:quote.expiresAt,checkoutUrl:"https://herocon.store/checkout/"+quote.id,
    paymentEnabled:checkoutLaunchReadiness().enabled,
    notice:"Share this private link only with the intended buyer. Supplier checks can incur BuckyDrop fees. Live charges remain disabled until all launch requirements are verified."
