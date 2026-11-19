@@ -31,15 +31,15 @@ export default async function Home(){
    <div className="hc-premium-container hc-premium-hero-inner">
     <div className="hc-premium-hero-copy">
      <div className="hc-premium-eyebrow"><span className="hc-premium-eyebrow-line"/>A NEW WAY TO DISCOVER <span className="hc-premium-edition">HEROCON · EST. 2026</span></div>
-     <h1 id="hc-premium-hero-title">Discover what&apos;s next.<br/><em>Create what&apos;s yours.</em></h1>
-     <p className="hc-premium-hero-lead">Thoughtful product discovery for ideas worth bringing to life. Explore original wholesale finds, compare sourcing options, and start building something of your own.</p>
+     <h1 id="hc-premium-hero-title">Source from China.<br/><em>Find more.</em></h1>
+     <p className="hc-premium-hero-lead">Explore products from 1688, Taobao, Weidian and more. Find what you need or paste a product link.</p>
      <div className="hc-premium-hero-ctas">
-      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore the collection <span aria-hidden="true">↗</span></Link>
-      <Link className="hc-premium-text-link" href="/how-it-works">Discover our approach <span aria-hidden="true">↗</span></Link>
+      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Browse products <span aria-hidden="true">↗</span></Link>
+      <Link className="hc-premium-text-link" href="/how-it-works">How it works <span aria-hidden="true">↗</span></Link>
      </div>
      <div className="hc-premium-hero-foot">
       <span className="hc-premium-star" aria-hidden="true">✳</span>
-      <div><strong>{total.toLocaleString("en-GB")} products to explore</strong><span>One considered place to begin.</span></div>
+      <div><strong>{total.toLocaleString("en-GB")} products to explore</strong><span>Original marketplace listings</span></div>
      </div>
     </div>
     <div className="hc-premium-hero-art" aria-label="Herocon lifestyle and product inspiration">
@@ -70,19 +70,17 @@ export default async function Home(){
   <section className="hc-journey-home" aria-labelledby="hc-journey-title">
    <div className="hc-premium-container">
     <div className="hc-journey-intro">
-     <div><p className="hc-premium-kicker">THE FUTURE OF HEROCON / TWO-STAGE CHECKOUT</p>
-      <h2 id="hc-journey-title">From your cart <em>to your doorstep.</em></h2></div>
-     <div><p>We're preparing a shopping experience that gives you visibility from supplier purchase to warehouse checks and international delivery.</p>
-      <Link href="/how-it-works">See how ordering will work <span aria-hidden="true">↗</span></Link></div>
+     <div><p className="hc-premium-kicker">HOW IT WORKS</p><h2 id="hc-journey-title">From China <em>to your door.</em></h2></div>
+     <div><p>Products from Chinese marketplaces, purchased and shipped through our sourcing partner.</p><Link href="/how-it-works">How sourcing works <span aria-hidden="true">↗</span></Link></div>
     </div>
     <div className="hc-journey-grid">
-     <article><span className="hc-journey-number">01 / PRODUCT PAYMENT</span><h3>Find it. Buy it.</h3><p>Browse original marketplace finds and choose your variants. When checkout launches, you'll pay the approved product price first, with an estimated shipping charge disclosed beforehand.</p></article>
-     <article><span className="hc-journey-number">02 / WAREHOUSE & QC</span><h3>See it arrive.</h3><p>Follow sourcing and warehouse progress. We're working towards displaying inspection photos when our fulfilment partner makes them available.</p></article>
-     <article><span className="hc-journey-number">03 / SHIPPING PAYMENT</span><h3>Ship when ready.</h3><p>After warehouse checks, review the final international shipping quote and pay separately before your parcel is dispatched.</p></article>
+     <article><span className="hc-journey-number">01 / ORDER</span><h3>Find &amp; buy.</h3><p>Browse the catalogue or paste a supplier link. Choose your items and pay for the products.</p></article>
+     <article><span className="hc-journey-number">02 / WAREHOUSE</span><h3>We source it.</h3><p>Our partner purchases your items and stores them at its warehouse in China.</p></article>
+     <article><span className="hc-journey-number">03 / SHIPPING</span><h3>Pay &amp; receive.</h3><p>Pay the confirmed international shipping cost separately, then receive your parcel.</p></article>
     </div>
     <div className="hc-journey-foot">
-     <p><strong>Checkout is not accepting payments yet.</strong> Delivery and shipping payments remain in development. Product prices shown in the catalogue are indicative.</p>
-     <Link href="/membership">Explore the planned Herocon membership <span aria-hidden="true">↗</span></Link>
+     <p>International shipping is charged separately. Online checkout is currently unavailable.</p>
+     <Link href="/membership">Membership · £9.99/month <span aria-hidden="true">↗</span></Link>
     </div>
    </div>
   </section>
@@ -91,7 +89,7 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-premium-section-heading">
      <div><p className="hc-premium-kicker"><span>01</span> / THE COLLECTIONS</p><h2 id="hc-premium-collections-title">Follow your <em>curiosity.</em></h2></div>
-     <div className="hc-premium-heading-side"><p>From everyday essentials to the little details that make a difference. Start exploring wherever your inspiration takes you.</p><Link href="/search">View all categories <span aria-hidden="true">↗</span></Link></div>
+     <div className="hc-premium-heading-side"><p>Browse homeware, jewellery, clothing and accessories.</p><Link href="/search">View all categories <span aria-hidden="true">↗</span></Link></div>
     </div>
     <div className="hc-premium-category-grid">
      {collections.map((collection)=>(
@@ -108,21 +106,10 @@ export default async function Home(){
    <div className="hc-premium-container">
     <div className="hc-premium-section-heading hc-premium-edit-header">
      <div><p className="hc-premium-kicker"><span>02</span> / FRESH FINDS</p><h2 id="hc-premium-edit-title">The discovery <em>edit.</em></h2></div>
-     <div className="hc-premium-heading-side"><p>Explore products with saved partner details, including the options and images available from their original marketplaces.</p><Link href="/search">Explore all products <span aria-hidden="true">↗</span></Link></div>
+     <div className="hc-premium-heading-side"><p>Browse product selections from original marketplace suppliers.</p><Link href="/search">Explore all products <span aria-hidden="true">↗</span></Link></div>
     </div>
     <div className="hc-premium-featured-grid">{featured.map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
     <div className="hc-premium-under-grid"><span>GOOD FINDS. BIG POSSIBILITIES.</span><Link href="/search">Browse {total.toLocaleString("en-GB")} products <span aria-hidden="true">↗</span></Link></div>
-   </div>
-  </section>
-
-  <section className="hc-premium-story" aria-labelledby="hc-premium-story-title">
-   <div className="hc-premium-container hc-premium-story-inner">
-    <div className="hc-premium-story-lead"><p className="hc-premium-kicker"><span>03</span> / THE HEROCON WAY</p><h2 id="hc-premium-story-title">Your vision.<br/><em>A world of possibility.</em></h2><p>Behind every brilliant idea is a first step. Herocon makes the discovery part feel a little more considered.</p><Link className="hc-premium-button hc-premium-button-light" href="/start-a-business">Start with an idea <span aria-hidden="true">↗</span></Link></div>
-    <div className="hc-premium-story-steps">
-     <div className="hc-premium-story-step"><span>01 / DISCOVER</span><h3>Find your inspiration.</h3><p>Browse product categories and uncover original marketplace opportunities.</p></div>
-     <div className="hc-premium-story-step"><span>02 / COMPARE</span><h3>Explore the detail.</h3><p>Review available partner-sourced options and indicative product prices.</p></div>
-     <div className="hc-premium-story-step"><span>03 / CREATE</span><h3>Make it your own.</h3><p>Save the pieces you love and start shaping your next business idea.</p></div>
-    </div>
    </div>
   </section>
 
@@ -130,8 +117,8 @@ export default async function Home(){
    <div className="hc-premium-container hc-premium-final-inner">
     <p className="hc-premium-kicker"><span>AN OPEN INVITATION</span></p>
     <h2 id="hc-premium-final-title">Already found <em>something special?</em></h2>
-    <p>Bring a product link from 1688, Taobao or Weidian. We&apos;ll help you explore it in one place.</p>
-    <Link className="hc-premium-button hc-premium-button-dark" href="/find-product">Explore a product link <span aria-hidden="true">↗</span></Link>
+    <p>Paste a link from 1688, Taobao or Weidian.</p>
+    <Link className="hc-premium-button hc-premium-button-dark" href="/find-product">Paste a product link <span aria-hidden="true">↗</span></Link>
    </div>
   </section>
  </main>;
