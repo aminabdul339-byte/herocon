@@ -4,7 +4,7 @@ import {useState} from "react";
 
 type Line={marketplaceUrl:string;skuCode:string;quantity:string;unitPriceGBP:string};
 const blank=():Line=>({marketplaceUrl:"",skuCode:"",quantity:"1",unitPriceGBP:""});
-type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;expiresAt:string;paymentEnabled:boolean;notice:string};
+type QuoteCreated={id:string;checkoutUrl:string;customerEmail:string;totalGBP:string;estimatedLaterShippingGBP:string;paymentStage:"products";expiresAt:string;paymentEnabled:boolean;notice:string};
 type FinancialEvent={eventId:string;type:string;objectId:string;receivedAt:string;requiresMerchantReview:boolean};
 type PaymentException={sessionId:string;quoteId?:string;expectedQuoteId?:string;code:string;at:string};
 type Reconciliation={quoteId:string;sessionId:string;email:string;totalPence:number;
@@ -146,7 +146,7 @@ export default function MerchantCheckout(){
   </form>
   {notice&&<p role="status" style={{padding:14,background:"#edf4e9",borderRadius:6}}>{notice}</p>}
   {result&&<section style={{padding:20,border:"1px solid #d3e1d0",borderRadius:10}}>
-   <h2>Product-stage quote created: £{result.totalGBP} due first</h2><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
+   <h2>Product-stage quote: £{result.totalGBP} payable first</h2><p>Estimated later international shipping: approximately £{result.estimatedLaterShippingGBP} (not included or charged yet; final quote after warehouse QC).</p><p>For {result.customerEmail}. Expires {new Date(result.expiresAt).toLocaleString("en-GB")}</p>
    <p><Link href={result.checkoutUrl}>{result.checkoutUrl}</Link></p>
    <button type="button" onClick={()=>navigator.clipboard.writeText(result.checkoutUrl)}>Copy private buyer link</button>
    <div style={{marginTop:15}}>
