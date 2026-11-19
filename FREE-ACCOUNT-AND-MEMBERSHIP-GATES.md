@@ -12,14 +12,14 @@
 
 ## Authentication setup — external merchant action required
 
-Supabase was suggested for connecting secure customer accounts. It is NOT connected or configured yet. To activate registration:
+Supabase project `Herocon` (`qwthqnvkusuneifieykr`, London `eu-west-2`) was created on the free plan on 19 November 2026, and the publishable key and project URL were installed into Vercel Production. The `herocon_memberships` table with read-only customer RLS is deployed; the security advisor found no warnings. Herocon free-account signup endpoints are connected, but **email confirmation links, SMTP settings and real browser signup still need end-to-end testing** before public registrations are announced. To complete authentication setup:
 
-1. Create or connect the merchant-owned Supabase project. **Enable email confirmation** before signup. Review bot/CAPTCHA, abuse rate limiting, email verification and password policy.
-2. Add **server-only** sensitive Production Vercel environment variables:
+1. Open the existing [Herocon Supabase project](https://supabase.com/dashboard/project/qwthqnvkusuneifieykr). In Authentication > Providers, ensure email/password and **email confirmation** are enabled; review CAPTCHA, signup limits, password policy and SMTP before inviting customers.
+2. **Already configured in Vercel Production** (server only):
    - HEROCON_SUPABASE_URL = https://YOUR_PROJECT.supabase.co
    - HEROCON_SUPABASE_PUBLISHABLE_KEY = Supabase publishable/anon key (not service role)
-   Use a legitimate merchant-owned project; do not share secrets in chat or the repo.
-3. Supabase Auth: set Site URL to https://herocon.store and use an approved production SMTP provider for confirmation/reset mail. In authentication email templates, set **Confirm signup** link to:
+   These values were added via the connected integration; no service-role key was used. Redeploy after any future changes.
+3. **Still required in the Supabase dashboard:** Set Authentication > URL Configuration > Site URL to https://herocon.store and add https://herocon.store/** to Redirect URLs. The signup endpoint requests redirect_to=https://herocon.store/account?confirmed=1. Set up a production SMTP provider for confirmation/reset mail. In authentication email templates, set **Confirm signup** link to:
    https://herocon.store/api/account/confirm?token_hash={{ .TokenHash }}&type=signup
    Set **Reset password** link to:
    https://herocon.store/api/account/confirm?token_hash={{ .TokenHash }}&type=recovery
@@ -27,6 +27,15 @@ Supabase was suggested for connecting secure customer accounts. It is NOT connec
 4. Redeploy Vercel after variables change. Test creating an account in a private browsing session; check that an email confirmation actually arrives and verifies the browser session. Test login/logout, wrong password, expired link, password reset, pending product restoration, and separate users' carts.
 5. Update privacy/data-retention and user deletion policy before inviting customers. The cart is scoped to the verified user ID in the local browser, but is NOT yet synced across devices; a secure account database is needed for server-side cross-device cart history.
 6. Test the site fully (mobile included). Do not enable real payment by simply adding identity credentials.
+
+## 19 November 2026 setup status
+
+- Supabase free project created: `qwthqnvkusuneifieykr` (London, eu-west-2), ACTIVE_HEALTHY.
+- Supabase connection URL and publishable key configured as Vercel production environment variables; no secret/service_role key stored.
+- `public.herocon_memberships` migration applied; row-level security verified; security advisors reported no findings.
+- Account code deployed in GitHub. Requires latest Vercel production deployment to pick up new environment variables.
+- The Supabase OAuth connection does not grant Herocon access to Auth provider email templates or site URL through the currently available management integration. Merchant must configure Auth > URL Configuration, confirm signup email behavior, and test email/password account lifecycle in the browser.
+- Membership £9.99 billing and two-stage BuckyDrop purchase remain off.
 
 ## Membership billing — separate future launch
 
