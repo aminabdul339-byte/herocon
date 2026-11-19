@@ -72,13 +72,13 @@ export default function ShippingEstimator(){
   {error&&<div className="hc-shipping-error" role="alert">{error}</div>}
   {quote&&<>
    <div className="hc-shipping-comparison-top"><div><h3>Shipping options</h3><p>{quote.returned} provider routes returned · Quoted {new Date(quote.quotedAt).toLocaleString("en-GB")}</p></div><span>Costs are estimates, not booked shipments</span></div>
-   {quote.currencyWarning&&<p className="hc-shipping-currency-alert" role="status">Shipping quote amounts are shown without a currency symbol until our partner&apos;s billing currency is confirmed. They are not payable checkout prices.</p>}
+   {quote.currencyWarning&&<p className="hc-shipping-currency-alert" role="status">{quote.currencyWarning}</p>}
    {quote.rates.length===0?<div className="hc-shipping-empty">The provider returned no shipping options for this parcel. Check the parcel details or try another destination.</div>:
     <div className="hc-shipping-route-list">{quote.rates.map((route,i)=><article className="hc-shipping-route" key={route.serviceCode+"-"+i}>
      <div className="hc-route-main">
       <div className="hc-route-identity"><span className="hc-route-overline">{route.available===false?"UNAVAILABLE":route.risks.length?"CHECK RESTRICTIONS":"PROVIDER SHIPPING OPTION"}</span><h4>{route.name}</h4><p>{route.provider||"Delivery service"} · {route.serviceCode}</p></div>
       <div className="hc-route-measure"><small>Chargeable weight</small><strong>{route.billedKg!=null?route.billedKg+" kg":"To be confirmed"}</strong><small>Estimated delivery</small><strong>{route.estimatedDays||"Not provided"}</strong></div>
-      <div className="hc-route-price"><strong>{route.amount==null?"Price unavailable":route.approxGBP!=null?"≈ "+CURRENCY.format(route.approxGBP):route.amount.toFixed(2)}</strong><small>{route.currency==="CNY"?"¥"+(route.amount?.toFixed(2)||"")+" CNY · estimated GBP above":"Provider currency unconfirmed"}</small></div>
+      <div className="hc-route-price"><strong>{route.amount==null?"Price unavailable":route.currency==="CNY"?"¥"+route.amount.toFixed(2):route.amount.toFixed(2)}</strong><small>{route.currency==="CNY"?"CNY (assumed)"+(route.approxGBP!=null?" · ≈ "+CURRENCY.format(route.approxGBP)+" estimated GBP":""):"Provider currency unconfirmed"}</small></div>
      </div>
      <details className="hc-route-details"><summary>Delivery details and conditions</summary>
       {route.reason&&<p><strong>Availability:</strong> {route.reason}</p>}
