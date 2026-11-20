@@ -15,6 +15,21 @@ const CATEGORY_INFO=[
  {value:"Accessories",label:"Accessories",icon:"🕶",number:"05"}
 ] as const;
 const PER_PAGE=36;
+
+// A reproducible Fisher–Yates shuffle mixes the five categories in All finds.
+// Keeping a fixed seed avoids cards changing position between pagination clicks.
+function mixAllFinds(items:ShopItem[]):ShopItem[]{
+ const mixed=[...items];
+ let seed=0x627c3e21;
+ for(let i=mixed.length-1;i>0;i--){
+  seed^=seed<<13;
+  seed^=seed>>>17;
+  seed^=seed<<5;
+  const j=(seed>>>0)%(i+1);
+  [mixed[i],mixed[j]]=[mixed[j],mixed[i]];
+ }
+ return mixed;
+}
 const countLinked=(p:ShopItem)=>Boolean(p.shopUrl)||p.additionalLinks.length>0;
 const priceFormat=(v:number)=>"¥"+v.toLocaleString("en-GB",{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});
 const gbpFormat=(v:number)=>"£"+v.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -45,6 +60,8 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
   if(sort==="price-low")items.sort((a,b)=>(a.priceCny??Number.POSITIVE_INFINITY)-(b.priceCny??Number.POSITIVE_INFINITY));
   if(sort==="price-high")items.sort((a,b)=>(b.priceCny??Number.NEGATIVE_INFINITY)-(a.priceCny??Number.NEGATIVE_INFINITY));
   if(sort==="name")items.sort((a,b)=>a.name.localeCompare(b.name));
+  // Only the default All finds view is mixed; category order and explicit sorts stay unchanged.
+  if(category==="All"&&sort==="original")return mixAllFinds(items);
   return items;
  },[products,category,query,sort,linksOnly,failedPhotoIds]);
  const totalPages=Math.max(1,Math.ceil(filtered.length/PER_PAGE));
@@ -61,7 +78,7 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
   <div className="hc-self-toolbar">
    <label className="hc-self-search"><svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" strokeWidth="1.7" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.6"/><path d="m15.5 15.5 5 5"/></svg><span className="hc-self-sr-only">Search products</span><input value={query} placeholder="Search by product name…" onChange={e=>{setQuery(e.target.value);resetPage();}}/></label>
    <label className="hc-self-linked-filter"><input type="checkbox" checked={linksOnly} onChange={e=>{setLinksOnly(e.target.checked);resetPage();}}/> External links only</label>
-   <label className="hc-self-sort">Sort <select value={sort} onChange={e=>{setSort(e.target.value);resetPage();}}><option value="original">Spreadsheet order</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
+   <label className="hc-self-sort">Sort <select value={sort} onChange={e=>{setSort(e.target.value);resetPage();}}><option value="original">{category==="All"?"Mixed finds":"Spreadsheet order"}</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></label>
   </div>
   <div className="hc-self-results-caption" aria-live="polite"><div><strong>{filtered.length.toLocaleString("en-GB")} results</strong><span>{category==="All"?"All categories":category}</span></div><span>Showing {filtered.length?(currentPage-1)*PER_PAGE+1:0}–{Math.min(currentPage*PER_PAGE,filtered.length)} of {filtered.length.toLocaleString("en-GB")}</span></div>
   {visible.length?<div className="hc-self-grid">
