@@ -2,6 +2,7 @@
 import {useMemo,useState} from "react";
 import Link from "next/link";
 import {ExternalArrowIcon,ShopCategoryIcon} from "@/components/ShopIcons";
+import {withoutEmoji} from "@/lib/emoji-free";
 
 type AdditionalLink={label:string;url:string};
 type ShopItem={
@@ -41,7 +42,8 @@ const thumbKind=(value:string)=>{
  return "accessories";
 };
 
-export default function ShopForYourself({products}:{products:ShopItem[]}){
+export default function ShopForYourself({products:rawProducts}:{products:ShopItem[]}){
+ const products=useMemo(()=>rawProducts.map(item=>({...item,name:withoutEmoji(item.name)})),[rawProducts]);
  const [category,setCategory]=useState("All");
  const [query,setQuery]=useState("");
  const [sort,setSort]=useState("original");
