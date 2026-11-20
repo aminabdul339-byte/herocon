@@ -37,7 +37,11 @@
 .hc-self-category{text-align:left;display:flex;flex-direction:column;position:relative;gap:20px;min-height:146px;padding:18px 14px;border:1px solid #e1e5dc;border-radius:10px;background:#fff;cursor:pointer;transition:transform .15s,border-color .15s,background .15s;color:#304634}
 .hc-self-category:hover{transform:translateY(-2px);border-color:#92ae90}
 .hc-self-category-active{background:#31573b;color:#fff;border-color:#31573b;box-shadow:0 11px 25px #33583c25}
-.hc-self-category-icon{font-size:30px;line-height:1}
+.hc-self-category-icon{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;color:#506c55;background:#f2f5ef;border:1px solid #e0e8dc;border-radius:11px}
+.hc-self-category-icon svg{display:block;width:23px;height:23px}
+.hc-self-category-active .hc-self-category-icon{background:#ffffff20;color:#fff;border-color:#ffffff50}
+.hc-external-arrow-icon{display:inline-block;flex:none;width:13px;height:13px;vertical-align:-2px;margin-left:3px}
+
 .hc-self-category-title{font-size:13px;font-weight:800;line-height:1.25;max-width:150px}
 .hc-self-category-title small{font-weight:500;font-size:11px;margin-top:6px;display:block;opacity:.74}
 .hc-self-category-number{position:absolute;top:15px;right:13px;font-size:10px;font-weight:700;opacity:.55}
@@ -139,3 +143,6 @@
  .hc-self-category-title{font-size:12px}
 }
 .hc-self-note-copy{font-size:17px;line-height:1.7;color:#314937;margin:0}
+
+.hc-self-product-shop-link .hc-external-arrow-icon{width:14px;height:14px;vertical-align:-2px;margin-left:6px}
+.hc-self-link-secondary .hc-external-arrow-icon{width:12px;height:12px}

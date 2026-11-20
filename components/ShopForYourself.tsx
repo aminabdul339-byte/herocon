@@ -1,6 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import Link from "next/link";
+import {ExternalArrowIcon,ShopCategoryIcon} from "@/components/ShopIcons";
 
 type AdditionalLink={label:string;url:string};
 type ShopItem={
@@ -8,12 +9,12 @@ type ShopItem={
  shopUrl:string; originalUrl:string; additionalLinks:AdditionalLink[]; itemTip:string|null
 };
 const CATEGORY_INFO=[
- {value:"All",label:"All categories",icon:"✳",number:"00"},
- {value:"Shoes",label:"Shoes",icon:"👟",number:"01"},
- {value:"Tops",label:"Tops",icon:"👕",number:"02"},
- {value:"Bottoms & shorts",label:"Bottoms & shorts",icon:"👖",number:"03"},
- {value:"Jackets & coats",label:"Jackets & coats",icon:"🧥",number:"04"},
- {value:"Accessories",label:"Accessories",icon:"🕶",number:"05"}
+ {value:"All",label:"All categories",number:"00"},
+ {value:"Shoes",label:"Shoes",number:"01"},
+ {value:"Tops",label:"Tops",number:"02"},
+ {value:"Bottoms & shorts",label:"Bottoms & shorts",number:"03"},
+ {value:"Jackets & coats",label:"Jackets & coats",number:"04"},
+ {value:"Accessories",label:"Accessories",number:"05"}
 ] as const;
 const PER_PAGE=36;
 
@@ -70,7 +71,7 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
   <div className="hc-self-section-head"><div><p className="hc-self-eyebrow">THE FULL EDIT / 05 COLLECTIONS</p><h2 id="hc-self-listing-title">Find your <em>favourite.</em></h2></div><p>Explore our selected finds with verified direct marketplace links. Product quality and supplier authenticity are not independently assessed.</p></div>
   <nav className="hc-self-categories" aria-label="Shop for Yourself categories">
    {CATEGORY_INFO.map(cat=><button key={cat.value} type="button" className={"hc-self-category"+(category===cat.value?" hc-self-category-active":"")} onClick={()=>{setCategory(cat.value);resetPage();}} aria-pressed={category===cat.value}>
-     <span className="hc-self-category-icon" aria-hidden="true">{cat.icon}</span><span className="hc-self-category-title">{cat.label}<small>{(totals[cat.value]||0).toLocaleString("en-GB")} finds</small></span><span className="hc-self-category-number">{cat.number}</span>
+     <span className="hc-self-category-icon" aria-hidden="true"><ShopCategoryIcon category={cat.value}/></span><span className="hc-self-category-title">{cat.label}<small>{(totals[cat.value]||0).toLocaleString("en-GB")} finds</small></span><span className="hc-self-category-number">{cat.number}</span>
     </button>)}
   </nav>
   <div className="hc-self-toolbar">
@@ -92,7 +93,7 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
       <div className="hc-self-item-price">{p.priceGBP!==null?<><strong>{gbpFormat(p.priceGBP)}</strong><span>reference price*</span></>:<span className="hc-self-price-missing">Price on request</span>}</div>
       <div className="hc-self-item-actions">
        <Link href={"/shop-for-yourself/"+encodeURIComponent(p.id)} prefetch={false} className="hc-self-link-primary">View product <span aria-hidden="true">→</span></Link>
-       <a href={p.originalUrl} target="_blank" rel="noopener noreferrer nofollow" className="hc-self-link-secondary">Direct supplier listing ↗</a>
+       <a href={p.originalUrl} target="_blank" rel="noopener noreferrer nofollow" className="hc-self-link-secondary">Direct supplier listing <ExternalArrowIcon/></a>
       </div>
      </div>
     </article>;

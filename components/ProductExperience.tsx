@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
+import {ExternalArrowIcon} from "@/components/ShopIcons";
 import {variantsFor} from "@/lib/catalogue";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
@@ -165,7 +166,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <h1>{title}</h1>
     <div className="hc-seller-row">
      <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller"}</span>
-     {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link ↗</a>}
+     {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link <ExternalArrowIcon/></a>}
     </div>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller ↗</Link>}
     <div className="product-price">{priceLabel}</div>
@@ -239,7 +240,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       {product.dimensions&&<><dt>Dimensions</dt><dd>{product.dimensions}</dd></>}
       {detailAttributes.map(attr=><div className="hc-spec-pair" key={attr.name}><dt>{attr.name}</dt><dd>{attr.value}</dd></div>)}
      </dl>
-     {marketplace&&<a className="hc-detail-source-button" href={marketplace} target="_blank" rel="noopener noreferrer">View original product ↗</a>}
+     {marketplace&&<a className="hc-detail-source-button" href={marketplace} target="_blank" rel="noopener noreferrer">View original product <ExternalArrowIcon/></a>}
      <small>Details and availability can change at the source marketplace.</small>
     </aside>
    </div>
