@@ -40,7 +40,7 @@ export default function StartBusiness(){
        <span className="hc-founder-eyebrow">THE FOUNDER&apos;S EDIT / HEROCON 2026</span>
        <h1 id="hc-founder-title">Your next<br/>chapter <em>starts here.</em></h1>
        <p>Every brand begins with a first idea. Explore products, research original suppliers and build a considered sourcing plan — without rushing into a bulk order.</p>
-       <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="/search">Find products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
+       <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="/search">Explore products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
      </div>
      <div className="hc-founder-photo">
        <img src={BUSINESS_PHOTO} alt="Real photograph of a person carrying an elegant stack of packaged boxes in a neutral indoor setting" width={800} height={1000} fetchPriority="high"/>
