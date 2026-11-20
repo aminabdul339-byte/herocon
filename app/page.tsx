@@ -7,7 +7,7 @@ import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryE
 export const dynamic = "force-dynamic";
 
 const IMAGES = {
-  personal: "https://images.pexels.com/photos/4452389/pexels-photo-4452389.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
+  personal: "https://images.pexels.com/photos/16470015/pexels-photo-16470015.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
   business: "https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
   wardrobe: "https://images.unsplash.com/photo-1603400521630-9f2de124b33b?auto=format&fit=crop&w=1100&q=85"
 };
@@ -40,7 +40,7 @@ export default async function Home(){
 
     <section className="hc-choice-paths hc-choice-container" aria-label="Choose your Herocon experience">
       <Link className="hc-choice-path hc-choice-personal" href="/shop-for-yourself" aria-label="Shop for yourself — explore the personal edit">
-        <img src={IMAGES.personal} alt="Real fashion still-life photograph of a brown leather handbag, sunglasses and lifestyle accessories" width={950} height={1170} fetchPriority="high"/>
+        <img src={IMAGES.personal} alt="Real boutique photograph of elegant neutral beige coats and garments arranged on clothing rails" width={950} height={1170} fetchPriority="high"/>
         <span className="hc-choice-path-shade" aria-hidden="true"/>
         <div className="hc-choice-path-top"><span className="hc-choice-image-badge">EVERYDAY SHOPPING</span><span className="hc-choice-path-number">HEROCON / 01</span></div>
         <div className="hc-choice-path-bottom">
