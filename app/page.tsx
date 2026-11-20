@@ -7,8 +7,8 @@ import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryE
 export const dynamic = "force-dynamic";
 
 const IMAGES = {
-  personal: "https://images.unsplash.com/photo-1762605135012-56a59a059e60?auto=format&fit=crop&w=1400&q=85",
-  business: "https://images.unsplash.com/photo-1773146916231-e6aeae932080?auto=format&fit=crop&w=1400&q=85",
+  personal: "https://images.pexels.com/photos/4452389/pexels-photo-4452389.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
+  business: "https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
   wardrobe: "https://images.unsplash.com/photo-1603400521630-9f2de124b33b?auto=format&fit=crop&w=1100&q=85"
 };
 
@@ -40,22 +40,22 @@ export default async function Home(){
 
     <section className="hc-choice-paths hc-choice-container" aria-label="Choose your Herocon experience">
       <Link className="hc-choice-path hc-choice-personal" href="/shop-for-yourself" aria-label="Shop for yourself — explore the personal edit">
-        <img src={IMAGES.personal} alt="Fashion model wearing a taupe outfit in a minimalist architectural studio" width={950} height={1170} fetchPriority="high"/>
+        <img src={IMAGES.personal} alt="Real fashion still-life photograph of a brown leather handbag, sunglasses and lifestyle accessories" width={950} height={1170} fetchPriority="high"/>
         <span className="hc-choice-path-shade" aria-hidden="true"/>
-        <div className="hc-choice-path-top"><span>01 / THE PERSONAL EDIT</span><span>DISCOVER & ENJOY</span></div>
+        <div className="hc-choice-path-top"><span className="hc-choice-image-badge">EVERYDAY SHOPPING</span><span className="hc-choice-path-number">HEROCON / 01</span></div>
         <div className="hc-choice-path-bottom">
-          <div><span className="hc-choice-path-label">FOR THE EVERYDAY DISCOVERER</span><h2>Shop for<br/><em>yourself.</em></h2><p>Fashion, accessories and little discoveries that feel like you.</p></div>
-          <span className="hc-choice-round-arrow"><Arrow diagonal/></span>
+          <div className="hc-choice-path-copy"><span className="hc-choice-path-label">PERSONAL SHOPPING</span><h2>Shop for<br/><em>yourself.</em></h2><p>Discover fashion, accessories and everyday finds.</p></div>
+          <span className="hc-choice-card-button">Explore products <Arrow/></span>
         </div>
       </Link>
 
       <Link className="hc-choice-path hc-choice-business" href="/start-a-business" aria-label="Start a business — explore sourcing for your brand">
-        <img src={IMAGES.business} alt="Small-business owner preparing orders in a warm, sunlit packaging studio" width={950} height={1170} fetchPriority="high"/>
+        <img src={IMAGES.business} alt="Real photograph of stacked cardboard boxes in a warehouse, representing wholesale sourcing" width={950} height={1170} fetchPriority="high"/>
         <span className="hc-choice-path-shade" aria-hidden="true"/>
-        <div className="hc-choice-path-top"><span>02 / THE FOUNDER'S EDIT</span><span>DISCOVER & BUILD</span></div>
+        <div className="hc-choice-path-top"><span className="hc-choice-image-badge">SOURCING &amp; WHOLESALE</span><span className="hc-choice-path-number">HEROCON / 02</span></div>
         <div className="hc-choice-path-bottom">
-          <div><span className="hc-choice-path-label">FOR THE IDEAS WORTH PURSUING</span><h2>Start a<br/><em>business.</em></h2><p>Find products, explore suppliers and take your first step towards a brand.</p></div>
-          <span className="hc-choice-round-arrow"><Arrow diagonal/></span>
+          <div className="hc-choice-path-copy"><span className="hc-choice-path-label">BUILD SOMETHING OF YOUR OWN</span><h2>Start a<br/><em>business.</em></h2><p>Find suppliers, compare costs and discover products to sell.</p></div>
+          <span className="hc-choice-card-button">Explore sourcing <Arrow/></span>
         </div>
       </Link>
     </section>
