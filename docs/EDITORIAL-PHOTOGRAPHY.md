@@ -15,7 +15,7 @@ These photos are available under the [Unsplash License](https://unsplash.com/lic
 ## Implementation
 
 - The homepage is at `/`, with prominent links to `/shop-for-yourself` and `/start-a-business`.
-- One catalogue continues to serve both journeys. Product searches, source links and cart features remain unchanged.
+- The existing general catalogue and personal-shopping edit remain separate data sources for now. Product searches, source links and cart features remain unchanged.
 - Visual styles live in `app/experience.css`, loaded after previous styles for reliable scope and responsive layout.
 - Photos are served remotely by `images.unsplash.com` with size and quality parameters. Production teams can locally optimise/host the assets later if uptime or performance requires it.
 - Verify desktop, tablet and mobile layouts as part of final release checks.
