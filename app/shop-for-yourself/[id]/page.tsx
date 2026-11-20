@@ -70,8 +70,8 @@ export default async function PersonalShopProductPage({params}:ProductParams){
   />
   <section className="hc-self-item-notes" aria-labelledby="hc-self-notes-title">
    <div><p className="hc-self-eyebrow">INSIDER NOTES</p><h2 id="hc-self-notes-title">Notes from <em>Herocon.</em></h2></div>
-   <div>{item.itemTip?<blockquote>{item.itemTip}</blockquote>:<p>No additional product tips are available yet.</p>}
-    <small>Shopping observations supplied with this listing. Opinions, product claims and supplier quality have not been independently verified by Herocon.</small>
+   <div>{item.itemTip?<p className="hc-self-note-copy">{item.itemTip}</p>:<p>No additional product tips are available yet.</p>}
+    <small>Curated product guidance. Supplier claims, product quality and authenticity have not been independently verified by Herocon.</small>
     {item.additionalLinks.length>0&&<div className="hc-self-extra-listings">{item.additionalLinks.map((link,i)=><a key={link.url+i} href={link.url} target="_blank" rel="noopener noreferrer nofollow sponsored">Additional purchasing option {i+1} ↗</a>)}</div>}
    </div>
   </section>

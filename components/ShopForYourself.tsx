@@ -8,7 +8,7 @@ type ShopItem={
  shopUrl:string; originalUrl:string; additionalLinks:AdditionalLink[]; itemTip:string|null
 };
 const CATEGORY_INFO=[
- {value:"All",label:"All finds",icon:"✳",number:"00"},
+ {value:"All",label:"All categories",icon:"✳",number:"00"},
  {value:"Shoes",label:"Shoes",icon:"👟",number:"01"},
  {value:"Tops",label:"Tops",icon:"👕",number:"02"},
  {value:"Bottoms & shorts",label:"Bottoms & shorts",icon:"👖",number:"03"},
@@ -17,7 +17,7 @@ const CATEGORY_INFO=[
 ] as const;
 const PER_PAGE=36;
 
-// A reproducible Fisher–Yates shuffle mixes the five categories in All finds.
+// A reproducible Fisher–Yates shuffle mixes the five categories in All categories.
 // Keeping a fixed seed avoids cards changing position between pagination clicks.
 function mixAllFinds(items:ShopItem[]):ShopItem[]{
  const mixed=[...items];
@@ -58,7 +58,7 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
   if(sort==="price-low")items.sort((a,b)=>(a.priceGBP??Number.POSITIVE_INFINITY)-(b.priceGBP??Number.POSITIVE_INFINITY));
   if(sort==="price-high")items.sort((a,b)=>(b.priceGBP??Number.NEGATIVE_INFINITY)-(a.priceGBP??Number.NEGATIVE_INFINITY));
   if(sort==="name")items.sort((a,b)=>a.name.localeCompare(b.name));
-  // Only the default All finds view is mixed; category order and explicit sorts stay unchanged.
+  // Only the default All categories view is mixed; category order and explicit sorts stay unchanged.
   if(category==="All"&&sort==="original")return mixAllFinds(items);
   return items;
  },[products,category,query,sort,failedPhotoIds]);
