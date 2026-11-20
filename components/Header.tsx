@@ -6,7 +6,7 @@ function NavArrow(){return <svg aria-hidden="true" width="16" height="16" viewBo
 export default function Header(){
   const [open,setOpen]=useState(false);
   const {count,account}=useCart();
-  const links=[["Explore products","/search"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
+  const links=[["Explore products","/search"],["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
   return <>
     <div className="sc-announcement">SOURCE FROM 1688, TAOBAO, WEIDIAN &amp; MORE</div>
     <header className="sc-header">
