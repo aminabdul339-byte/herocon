@@ -1,10 +1,10 @@
 # Herocon — premium real-photo direction
 
-The homepage and two primary journeys use **real photographic stock images**, not AI-generated illustrations or mock-ups. Images were chosen to directly correspond to the original handbag/sunglasses and shipping-cartons concept, while preserving Herocon's warm ivory and sage brand styling.
+The homepage and two primary journeys use **real photographic stock images**, not AI-generated illustrations or mock-ups. Images were chosen to directly correspond to the original neutral boutique clothing-rail and shipping-cartons concept, while preserving Herocon's warm ivory and sage brand styling.
 
 | Placement | Photographer | Licensed photo page | In-use CDN |
 |---|---|---|---|
-| Homepage: Shop for Yourself + personal shopping hero | Vlada Karpovich | https://www.pexels.com/photo/brown-leather-sling-bag-sunglasses-on-the-wooden-table-4452389/ | https://images.pexels.com/photos/4452389/pexels-photo-4452389.jpeg |
+| Homepage: Shop for Yourself + personal shopping hero | pratik prasad | https://www.pexels.com/photo/clothes-racks-at-store-16470015/ | https://images.pexels.com/photos/16470015/pexels-photo-16470015.jpeg |
 | Homepage: Start a Business (warehouse cardboard cartons) | Freek Wolsink | https://www.pexels.com/photo/industrial-warehouse-with-stacked-cardboard-boxes-34221998/ | https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg |
 | Founder landing: boxes in a minimalist business setting | Hanna Pad | https://www.pexels.com/photo/close-up-shot-of-a-person-holding-a-stack-of-boxes-7552578/ | https://images.pexels.com/photos/7552578/pexels-photo-7552578.jpeg |
 | Editorial clothing rail and founder collection | Thom Bradley | https://unsplash.com/photos/clothing-racks-with-neutral-toned-garments-mwa_nzFpnJw | https://images.unsplash.com/photo-1603400521630-9f2de124b33b |
