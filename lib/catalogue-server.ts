@@ -5,6 +5,7 @@ import type { Product } from "./types";
 import {classifyProduct} from "./product-taxonomy";
 import {getDiscoveredProducts} from "./discovered-products";
 import {normalizeMarketplaceLink} from "./marketplace-links";
+import {withoutEmoji} from "./emoji-free";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
@@ -23,15 +24,15 @@ function normalise(raw: Raw): Product | null {
   return {
     canonicalId: "doppel:" + id,
     doppelProductId: id,
-    title: asString(raw.title) || asString(raw.originalTitle) || "Product",
-    originalTitle: asString(raw.originalTitle),
+    title: withoutEmoji(asString(raw.title) || asString(raw.originalTitle) || "Product") || "Product",
+    originalTitle: raw.originalTitle ? withoutEmoji(asString(raw.originalTitle) || "") : undefined,
     imageUrl: image,
     images: Array.isArray(raw.images) ? raw.images.filter((x): x is string => typeof x === "string" && /^https?:\/\//.test(x)) : undefined,
     price: asString(raw.price) || (typeof raw.priceGBP === "number" ? `£${raw.priceGBP.toFixed(2)}` : undefined),
     priceGBP: typeof raw.priceGBP === "number" ? raw.priceGBP : undefined,
     category: asString(raw.category),
     sellerId: asString(raw.sellerId),
-    sellerName: asString(raw.sellerName),
+    sellerName: raw.sellerName ? withoutEmoji(asString(raw.sellerName) || "") : undefined,
     originalMarketplaceUrl: source,
     sourceMarketplace: source ? new URL(source).hostname : undefined,
     collectedAt: asString(raw.collectedAt),
@@ -81,7 +82,7 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
 // appear in product search, category browsing, saved items, and product pages.
 export const getProducts = cache(async ():Promise<Product[]>=>{
  const staticProducts=await getBaseProducts();
- const discovered=await getDiscoveredProducts();
+ const discovered=(await getDiscoveredProducts()).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
  if(!discovered.length)return staticProducts;
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));
