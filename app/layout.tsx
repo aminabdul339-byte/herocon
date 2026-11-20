@@ -6,6 +6,7 @@ import "./legal.css";
 import "./shop-journey.css";
 import "./account.css";
 import "./experience.css";
+import "./sourcing-guide.css";
 import type {Metadata} from "next";
 import {CartProvider} from "@/components/CartProvider";
 import Footer from "@/components/Footer";
