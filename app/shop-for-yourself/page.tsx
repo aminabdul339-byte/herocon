@@ -9,7 +9,7 @@ export const metadata:Metadata={
  description:"Discover fashion, shoes, accessories and the little things worth finding, with original marketplace links and transparent product information."
 };
 
-const PERSONAL_PHOTO="https://images.unsplash.com/photo-1762605135012-56a59a059e60?auto=format&fit=crop&w=1400&q=85";
+const PERSONAL_PHOTO="https://images.pexels.com/photos/4452389/pexels-photo-4452389.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
 
 export default function ShopForYourselfPage(){
  return <main className="hc-self">
@@ -26,7 +26,7 @@ export default function ShopForYourselfPage(){
         </div>
       </div>
       <div className="hc-self-editorial-image">
-        <img src={PERSONAL_PHOTO} alt="Fashion model in a refined taupe outfit against a minimalist cream architectural background" width={800} height={1000} fetchPriority="high"/>
+        <img src={PERSONAL_PHOTO} alt="Real editorial flat-lay photograph of a brown leather bag, sunglasses and everyday accessories" width={800} height={1000} fetchPriority="high"/>
         <span><span>THE EVERYDAY EDIT</span><span>01 / PERSONAL DISCOVERY</span></span>
       </div>
     </div>
