@@ -59,7 +59,7 @@ export default async function Home(){
         </div>
       </Link>
     </section>
-    <div className="hc-choice-after-cards hc-choice-container"><span>ONE CATALOGUE. TWO WAYS TO DISCOVER.</span><span>SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span></div>
+    <div className="hc-choice-after-cards hc-choice-container"><span>ONE DESTINATION. TWO WAYS TO DISCOVER.</span><span>SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span></div>
 
     <section className="hc-choice-search-section" aria-labelledby="hc-choice-search-title">
       <div className="hc-choice-container hc-choice-search-grid">
