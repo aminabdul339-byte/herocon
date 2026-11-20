@@ -7,7 +7,7 @@ export const metadata:Metadata={
  description:"Find products, research suppliers, estimate sourcing costs and make a practical plan for your first product business with Herocon."
 };
 
-const BUSINESS_PHOTO="https://images.unsplash.com/photo-1773146916231-e6aeae932080?auto=format&fit=crop&w=1400&q=85";
+const BUSINESS_PHOTO="https://images.pexels.com/photos/7552578/pexels-photo-7552578.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
 const WARDROBE_PHOTO="https://images.unsplash.com/photo-1603400521630-9f2de124b33b?auto=format&fit=crop&w=1200&q=85";
 
 const tools=[
@@ -43,7 +43,7 @@ export default function StartBusiness(){
        <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="/search">Find products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
      </div>
      <div className="hc-founder-photo">
-       <img src={BUSINESS_PHOTO} alt="Real photograph of an independent business owner working in a warm packaging and order-preparation studio" width={800} height={1000} fetchPriority="high"/>
+       <img src={BUSINESS_PHOTO} alt="Real photograph of a person carrying an elegant stack of packaged boxes in a neutral indoor setting" width={800} height={1000} fetchPriority="high"/>
        <div className="hc-founder-photo-tag"><span>THE FOUNDER&apos;S EDIT</span><span>02 / SOURCE & BUILD</span></div>
      </div>
    </div>
