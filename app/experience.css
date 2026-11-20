@@ -37,7 +37,7 @@
 .hc-choice-after-cards span span{padding-left:7px;font-size:16px}
 .hc-choice-search-section{background:#e9eee6;padding:78px 0}
 .hc-choice-search-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end}
-.hc-choice-home h2:not(.hc-choice-path h2){font:400 clamp(42px,4.7vw,69px)/1.07 var(--hc-serif);letter-spacing:-.05em;margin:15px 0 0}
+.hc-choice-search-section h2,.hc-choice-discover h2,.hc-choice-what-is h2,.hc-choice-products h2{font:400 clamp(42px,4.7vw,69px)/1.07 var(--hc-serif);letter-spacing:-.05em;margin:15px 0 0}
 .hc-choice-search-right p{margin:0 0 30px;font-size:15px;line-height:1.75;color:#617365;max-width:455px}
 .hc-choice-search-field{display:flex;width:100%;align-items:center;border-bottom:1px solid #344b3d;padding:0}
 .hc-choice-search-field input{min-width:0;flex:1;background:transparent;border:0;outline:0;padding:17px 0;color:#263e30;font:400 18px/1.4 var(--hc-serif)}
@@ -90,6 +90,9 @@
 .hc-choice-button-outline{color:#f8f9f4!important}
 .hc-choice-button:hover{transform:translateY(-2px)}
 
+.hc-site .sc-desktop-links a[aria-current="page"]{color:#244633;position:relative}
+.hc-site .sc-desktop-links a[aria-current="page"]:after{content:"";position:absolute;left:0;right:0;height:1px;bottom:-12px;background:#5a8061}
+.hc-site .sc-mobile-menu a[aria-current="page"]{color:#254b34;font-weight:800}
 /* Personal shopping entry: an editorial first impression, unchanged real catalogue underneath. */
 .hc-self .hc-self-editorial{background:#f7f5ef;padding:65px 0 80px}
 .hc-self .hc-self-editorial-grid{width:min(1300px,90%);margin:auto;display:grid;grid-template-columns:.94fr 1.06fr;gap:7%;align-items:center}
@@ -180,7 +183,7 @@
  .hc-choice-after-cards{padding-bottom:44px;font-size:8px}
  .hc-choice-search-section{padding:57px 0}
  .hc-choice-search-grid{display:block}
- .hc-choice-home h2:not(.hc-choice-path h2){font-size:47px}
+ .hc-choice-search-section h2,.hc-choice-discover h2,.hc-choice-what-is h2,.hc-choice-products h2{font-size:47px}
  .hc-choice-search-right p{margin:26px 0 15px}
  .hc-choice-discover,.hc-choice-products{padding:76px 0}
  .hc-choice-section-heading{display:block;margin-bottom:26px}
