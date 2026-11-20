@@ -15,6 +15,8 @@ const CATEGORY_INFO=[
  {value:"Accessories",label:"Accessories",icon:"🕶",number:"05"}
 ] as const;
 const PER_PAGE=36;
+// Five source rows have no embedded picture; preserve the category artwork there.
+const MISSING_PHOTO_IDS=new Set(["480556134-10","2052363225-18","1155948127-44","579377089-77","579377089-107"]);
 const countLinked=(p:ShopItem)=>Boolean(p.shopUrl)||p.additionalLinks.length>0;
 const priceFormat=(v:number)=>"¥"+v.toLocaleString("en-GB",{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});
 const gbpFormat=(v:number)=>"£"+v.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -69,6 +71,7 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
      <div className={"hc-self-thumbnail hc-self-thumbnail-"+thumbKind(p.category)}>
       <div className="hc-self-thumb-noise" aria-hidden="true"></div>
       <span className="hc-self-thumb-emoji" aria-hidden="true">{catInfo?.icon||"✦"}</span>
+      {!MISSING_PHOTO_IDS.has(p.id)&&<img className="hc-self-thumb-photo" src={"/shop-for-yourself-images/"+p.id+".webp"} alt={"Photo from source spreadsheet: "+p.name} width={330} height={330} loading="lazy" decoding="async" onError={event=>{event.currentTarget.style.display="none";}}/>}
       <span className="hc-self-thumb-label">{p.category}</span>
       <span className="hc-self-thumb-index" aria-hidden="true">{p.id.split("-").pop()}</span>
      </div>
