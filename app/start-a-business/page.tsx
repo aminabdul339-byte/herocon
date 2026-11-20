@@ -99,7 +99,7 @@ export default async function StartBusiness({searchParams}:{searchParams:Promise
       <nav className="hc-founder-catalogue-filters" aria-label="Sourcing product categories">
         <Link className={!category?"is-active":""} aria-current={!category?"page":undefined} href={catalogueHref({category:null,page:null})}>All products</Link>
         {quickCategories.map(name=><Link key={name} className={category===name?"is-active":""} aria-current={category===name?"page":undefined} href={catalogueHref({category:name,page:null})}>{name}</Link>)}
-        {category&&!quickCategories.includes(category)&&<Link className="is-active" aria-current="page" href={catalogueHref({category,page:null})}>{category}</Link>}
+        {category&&!quickCategories.some(name=>name===category)&&<Link className="is-active" aria-current="page" href={catalogueHref({category,page:null})}>{category}</Link>}
       </nav>
       <div className="hc-founder-catalogue-meta"><span>{total.toLocaleString("en-GB")} {total===1?"product":"products"}{category?" · "+category:""}{query?' · Search: "'+query+'"':""}</span>{total>0&&<span>Showing {(start+1).toLocaleString("en-GB")}–{Math.min(total,start+PAGE_SIZE).toLocaleString("en-GB")}</span>}</div>
       {shown.length?
