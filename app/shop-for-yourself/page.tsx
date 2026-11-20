@@ -22,7 +22,7 @@ export default function ShopForYourselfPage(){
         <p>The pieces you&apos;ll reach for, the accessories that make an outfit, the little discoveries that feel like you. Explore our personal shopping edit.</p>
         <div className="hc-self-editorial-actions">
           <a href="#browse-finds" className="hc-self-editorial-cta">Explore the edit <span aria-hidden="true">↗</span></a>
-          <a href="/search" className="hc-self-editorial-links">All products ↗</a>
+          <a href="#browse-finds" className="hc-self-editorial-links">View the personal edit ↗</a>
         </div>
       </div>
       <div className="hc-self-editorial-image">
