@@ -6,7 +6,7 @@ import "./shop-for-yourself.css";
 
 export const metadata:Metadata={
  title:"Shop for Yourself",
- description:"Explore shoes, clothing, outerwear and accessories from a linked third-party shopping spreadsheet. Browse names, reference prices and external listings."
+ description:"Discover clothing, shoes and accessories with direct links to original Chinese marketplace listings, GBP reference prices and product notes."
 };
 
 export default function ShopForYourselfPage(){
@@ -17,8 +17,8 @@ export default function ShopForYourselfPage(){
     <div className="hc-self-hero-copy">
      <p className="hc-self-eyebrow"><span className="hc-self-eyebrow-dot"/>THE PERSONAL EDIT <span className="hc-self-edition">HEROCON / 2026</span></p>
      <h1 id="hc-self-hero-title">Shop for<br/><em>yourself.</em></h1>
-     <p className="hc-self-hero-lead">A little something for you. Explore footwear, clothing and accessories gathered into one easy-to-browse edit.</p>
-     <div className="hc-self-hero-actions"><a className="hc-self-primary" href="#browse-finds">Browse the edit <span aria-hidden="true">↗</span></a><a className="hc-self-subtle-link" href="https://docs.google.com/spreadsheets/d/1UPZerApqDKyhiZk4GOOzr4IY3LvgTZsXCtPdENlEwok/edit" target="_blank" rel="noopener noreferrer">Original spreadsheet <span aria-hidden="true">↗</span></a></div>
+     <p className="hc-self-hero-lead">A little something for you. Discover clothes, footwear and accessories with verified original marketplace links and carefully organised finds.</p>
+     <div className="hc-self-hero-actions"><a className="hc-self-primary" href="#browse-finds">Browse the edit <span aria-hidden="true">↗</span></a></div>
     </div>
     <div className="hc-self-hero-image">
      <img src="https://cdn.shopify.com/s/files/1/1127/4915/0598/files/herocon-clothing-card.webp?v=1794862181" alt="Curated clothing displayed in a stylish neutral setting" width={720} height={820} fetchPriority="high" />
@@ -28,7 +28,7 @@ export default function ShopForYourselfPage(){
   </section>
   <ShopForYourself products={products}/>
   <section className="hc-self-note">
-   <div className="hc-self-wrap hc-self-note-inner"><div><p className="hc-self-eyebrow">GOOD TO KNOW</p><h2>Explore with <em>confidence.</em></h2></div><div><p>This is a directory of information from a third-party spreadsheet, reproduced as a dated snapshot for convenience. Prices are indicative spreadsheet figures, not live quotes. External sellers and agents control their own listings, stock, shipping and checkout. Herocon has not independently verified the products, their authenticity, safety or the accuracy of the listings.</p><p>Herocon does not currently take payment for these products. Before ordering, check the seller, the product, applicable laws, shipping charges and any taxes yourself.</p><a href="https://docs.google.com/spreadsheets/d/1UPZerApqDKyhiZk4GOOzr4IY3LvgTZsXCtPdENlEwok/edit" target="_blank" rel="noopener noreferrer">View source spreadsheet ↗</a></div></div>
+   <div className="hc-self-wrap hc-self-note-inner"><div><p className="hc-self-eyebrow">SHOP SMARTER</p><h2>Shop with <em>confidence.</em></h2></div><div><p>Every product in this edit has a direct link to a recognised Chinese marketplace listing. We verify the link format and keep the original destination visible so you can check the product yourself.</p><p>Supplier identity, authenticity, quality, safety, stock and fulfilment have not been independently audited by Herocon. Prices are estimates in GBP and exclude delivery, agent fees and taxes.</p></div></div>
   </section>
  </main>;
 }

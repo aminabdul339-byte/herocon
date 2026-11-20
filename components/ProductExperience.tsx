@@ -12,7 +12,7 @@ type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string}){
  const router=useRouter();
  const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
@@ -38,7 +38,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    .catch(()=>{if(!controller.signal.aborted)setFx(null);});
   return ()=>controller.abort();
  },[buckydropEnabled,initialFx]);
- const dualPrice=(cny:number)=>formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
+ const dualPrice=(cny:number)=>gbpOnly?(fx?formatGBP(cny*fx.rate):"GBP price unavailable"):formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  // Partner details are merged server-side from permanent storage. Never call a
  // billable partner endpoint merely because a customer opened the product page.
@@ -62,9 +62,10 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const minPrice=variantPrices.length?Math.min(...variantPrices):null;
  const maxPrice=variantPrices.length?Math.max(...variantPrices):null;
  const priceRange=minPrice!=null&&maxPrice!=null?(minPrice===maxPrice?dualPrice(minPrice):
+  gbpOnly?(fx?formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"GBP price unavailable"):
   formatCNY(minPrice)+" – "+formatCNY(maxPrice)+(fx?" ≈ "+formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"")):null;
  const cataloguePrice=price&&price!=="View marketplace price"?price:"Price to be confirmed";
- const priceLabel=source?(source.variants.length>0&&!sourceVariant?"Option unavailable":
+ const priceLabel=source?(gbpOnly&&!fx?cataloguePrice:source.variants.length>0&&!sourceVariant?"Option unavailable":
   activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
   (priceCNY!=null?dualPrice(priceCNY):cataloguePrice)):
   cataloguePrice;
@@ -99,7 +100,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   // remains disabled; final selected SKU, price and stock require a fresh check.
   if(!marketplace){setCartMessage("This product does not have a direct marketplace link.");return;}
   if(outOfStock){setCartMessage("The seller currently lists this product as unavailable.");return;}
-  const productPath=id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace):"/product/"+encodeURIComponent(id);
+  const productPath=customProductPath|| (id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace):"/product/"+encodeURIComponent(id));
   const common={productId:id,productPath,title,image:gallery[chosenIndex]||product.imageUrl,marketplaceUrl:marketplace};
   let rows:CartItem[]=[];
   if(source&&source.variants.length>0){
@@ -170,7 +171,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <div className="product-price">{priceLabel}</div>
     {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
     {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
-    {source&&<p className="sc-source-subprice">Supplier prices · {fx?"Approximate GBP equivalents":"CNY"} · Shipping separate</p>}
+    {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
