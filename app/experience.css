@@ -569,3 +569,22 @@
   .hc-choice-home .hc-choice-card-button { min-width:215px; }
   .hc-choice-home .hc-choice-intro-body { gap:28px; }
 }
+
+
+/* The global legacy footer selector set display:flex. The current site-wide
+   footer contains three full-width sections and must be a block container. */
+.hc-site .sc-footer { display:block;width:100%; }
+.hc-site .sc-footer-top,.hc-site .sc-footer-bottom,.hc-site .hc-footer-legal {
+  max-width:100%;min-width:0;
+}
+@media (max-width:760px) {
+  .hc-site .sc-footer { padding:35px 0 24px; }
+  .hc-site .sc-footer-top,.hc-site .sc-footer-bottom,.hc-site .hc-footer-legal {
+    width:calc(100% - 34px);margin-left:auto;margin-right:auto;
+  }
+  .hc-site .sc-footer-top,.hc-site .sc-footer-bottom { display:block; }
+  .hc-site .sc-footer-links { display:flex;flex-wrap:wrap;gap:26px 18px; }
+  .hc-site .sc-footer-links>div { flex:1 1 125px; }
+  .hc-site .hc-footer-legal-links { gap:10px 18px; }
+  .hc-site .hc-footer-disclosure { overflow-wrap:anywhere; }
+}
