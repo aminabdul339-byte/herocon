@@ -45,7 +45,7 @@ export default async function Home(){
         <div className="hc-choice-path-top"><span className="hc-choice-image-badge">EVERYDAY SHOPPING</span><span className="hc-choice-path-number">HEROCON / 01</span></div>
         <div className="hc-choice-path-bottom">
           <div className="hc-choice-path-copy"><span className="hc-choice-path-label">PERSONAL SHOPPING</span><h2>Shop for<br/><em>yourself.</em></h2><p>Discover fashion, accessories and everyday finds.</p></div>
-          <span className="hc-choice-card-button">Explore products <Arrow/></span>
+          <span className="hc-choice-card-button">Shop the edit <Arrow/></span>
         </div>
       </Link>
 
@@ -55,7 +55,7 @@ export default async function Home(){
         <div className="hc-choice-path-top"><span className="hc-choice-image-badge">SOURCING &amp; WHOLESALE</span><span className="hc-choice-path-number">HEROCON / 02</span></div>
         <div className="hc-choice-path-bottom">
           <div className="hc-choice-path-copy"><span className="hc-choice-path-label">BUILD SOMETHING OF YOUR OWN</span><h2>Start a<br/><em>business.</em></h2><p>Find suppliers, compare costs and discover products to sell.</p></div>
-          <span className="hc-choice-card-button">Explore sourcing <Arrow/></span>
+          <span className="hc-choice-card-button">Explore products <Arrow/></span>
         </div>
       </Link>
     </section>
