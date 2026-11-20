@@ -20,7 +20,7 @@ export default function ShopForYourselfPage(){
      <h1 id="hc-self-hero-title">Shop for<br/><em>yourself.</em></h1>
      <p className="hc-self-hero-lead">A little something for you. Explore footwear, clothing and accessories gathered into one easy-to-browse edit.</p>
      <div className="hc-self-hero-actions"><a className="hc-self-primary" href="#browse-finds">Browse the edit <span aria-hidden="true">↗</span></a><a className="hc-self-subtle-link" href="https://docs.google.com/spreadsheets/d/1UPZerApqDKyhiZk4GOOzr4IY3LvgTZsXCtPdENlEwok/edit" target="_blank" rel="noopener noreferrer">Original spreadsheet <span aria-hidden="true">↗</span></a></div>
-     <p className="hc-self-hero-footnote">A snapshot of a third-party spreadsheet, not live inventory. Links open external sites.</p>
+     <p className="hc-self-hero-footnote">Product photos, names and prices are reproduced from a third-party spreadsheet. Listings are not live inventory; external links open independently operated sites.</p>
     </div>
     <div className="hc-self-art" aria-hidden="true">
      <div className="hc-self-art-disc hc-self-art-disc-a"></div><div className="hc-self-art-disc hc-self-art-disc-b"></div>
