@@ -1,4 +1,5 @@
 import type{Product,Variant}from"./types";
+import {withoutEmoji} from "./emoji-free";
 export const productId=(p:Product)=>p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||"";
 export const productPrice=(p:Product)=>p.price||(p.priceGBP!=null?`£${p.priceGBP.toFixed(2)}`:"View marketplace price");
 const titleNoise=/\\b(?:cross[- ]border|hot[- ]selling|wholesale|factory supply|amazon|aliexpress|temu|wish|same style|new style|in stock|big brand|high quality|versatile|fashion|trendy|wear|clothing|for men and women|men and women|for women and men|women and men|european and american style|spring and autumn|autumn and winter|202[0-9]|new arrival|commuter|lazy|chic|high[- ]end|summer fashion)\\b/gi;
@@ -47,7 +48,7 @@ const features:[RegExp,string][]=[
  [/\\b(?:short[- ]sleeve)\\b/i,"Short-Sleeve"]
 ];
 export function cleanTitle(p:Product){
- const raw=(p.displayTitle||p.title||"").trim();
+ const raw=withoutEmoji((p.displayTitle||p.title||"").trim());
  if(!raw)return p.category?`${p.category} Product`:"Product";
  const plain=raw.replace(/[【\\[][^[\\]【】]*[】\\]]/g," ").replace(/\\s+/g," ").trim();
  const found=types.find(([re])=>re.test(plain));
