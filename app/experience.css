@@ -555,3 +555,17 @@
 @media (prefers-reduced-motion:reduce) {
   .hc-site .sc-mobile-toggle span { transition:none; }
 }
+
+
+/* Portrait tablets: stacked editorial panels instead of two cramped half-cards. */
+@media (min-width:761px) and (max-width:960px) {
+  .hc-choice-home .hc-choice-paths { grid-template-columns:minmax(0,1fr);gap:18px; }
+  .hc-choice-home .hc-choice-path { height:420px; }
+  .hc-choice-home .hc-choice-path>img { width:60%; }
+  .hc-choice-home .hc-choice-path-bottom { inset:85px 0 0;padding:13px 36px 30px; }
+  .hc-choice-home .hc-choice-path-copy { max-width:47%;min-width:0; }
+  .hc-choice-home .hc-choice-path h2 { font-size:clamp(47px,6.7vw,61px)!important; }
+  .hc-choice-home .hc-choice-path p { max-width:310px; }
+  .hc-choice-home .hc-choice-card-button { min-width:215px; }
+  .hc-choice-home .hc-choice-intro-body { gap:28px; }
+}
