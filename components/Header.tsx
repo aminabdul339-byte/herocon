@@ -8,7 +8,7 @@ export default function Header(){
   const [open,setOpen]=useState(false);
   const pathname=usePathname();
   const {count,account}=useCart();
-  const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["Explore products","/search"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
+  const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
   return <>
     <div className="sc-announcement">SOURCE FROM 1688, TAOBAO, WEIDIAN &amp; MORE</div>
     <header className="sc-header">
