@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import Header from "@/components/Header";
+import {ExternalArrowIcon} from "@/components/ShopIcons";
 import ShopForYourself from "@/components/ShopForYourself";
 import products from "@/data/shop-for-yourself.json";
 import "./shop-for-yourself.css";
@@ -18,7 +19,7 @@ export default function ShopForYourselfPage(){
      <p className="hc-self-eyebrow"><span className="hc-self-eyebrow-dot"/>THE PERSONAL EDIT <span className="hc-self-edition">HEROCON / 2026</span></p>
      <h1 id="hc-self-hero-title">Shop for<br/><em>yourself.</em></h1>
      <p className="hc-self-hero-lead">A little something for you. Discover clothes, footwear and accessories with verified original marketplace links and carefully organised finds.</p>
-     <div className="hc-self-hero-actions"><a className="hc-self-primary" href="#browse-finds">Browse the edit <span aria-hidden="true">↗</span></a></div>
+     <div className="hc-self-hero-actions"><a className="hc-self-primary" href="#browse-finds">Browse the edit <ExternalArrowIcon/></a></div>
     </div>
     <div className="hc-self-hero-image">
      <img src="https://cdn.shopify.com/s/files/1/1127/4915/0598/files/herocon-clothing-card.webp?v=1794862181" alt="Curated clothing displayed in a stylish neutral setting" width={720} height={820} fetchPriority="high" />
