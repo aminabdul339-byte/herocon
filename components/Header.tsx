@@ -1,12 +1,22 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 import {usePathname} from "next/navigation";
 import {useCart} from "@/components/CartProvider";
 function NavArrow(){return <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>;}
 export default function Header(){
   const [open,setOpen]=useState(false);
   const pathname=usePathname();
+  // Keep the mobile navigation in sync with route and viewport changes.
+  useEffect(()=>{setOpen(false);},[pathname]);
+  useEffect(()=>{
+    const onKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape")setOpen(false);};
+    const onResize=()=>{if(window.innerWidth>1120)setOpen(false);};
+    window.addEventListener("keydown",onKeyDown);
+    window.addEventListener("resize",onResize);
+    return ()=>{window.removeEventListener("keydown",onKeyDown);window.removeEventListener("resize",onResize);};
+  },[]);
+
   const {count,account}=useCart();
   const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
   return <>
