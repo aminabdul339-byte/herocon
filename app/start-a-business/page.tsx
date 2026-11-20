@@ -1,5 +1,10 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import ProductCard from "@/components/ProductCard";
+import {getProducts} from "@/lib/catalogue-server";
+import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcaseMix} from "@/lib/catalogue-priority";
+import {productSearchScore} from "@/lib/product-search";
+import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import type {Metadata} from "next";
 
 export const metadata:Metadata={
@@ -26,7 +31,39 @@ const checklist=[
  "Start small, gather feedback and refine your offer"
 ];
 
-export default function StartBusiness(){
+export const dynamic="force-dynamic";
+const PAGE_SIZE=12;
+export default async function StartBusiness({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){
+ const params=await searchParams;
+ const query=(params.q||"").trim().slice(0,120);
+ const requestedCategory=(params.category||"").trim();
+ const category=resolveCategory(requestedCategory)||requestedCategory;
+ const all=await getProducts();
+ const found=all.map(product=>({product,score:productSearchScore(product,query)}))
+   .filter(item=>item.score>0&&(!category||item.product.category===category))
+   .sort((a,b)=>b.score-a.score)
+   .map(item=>item.product);
+ let catalogue=await prioritizeSavedPartnerProducts(found);
+ if(!query&&!category)catalogue=leadWithShowcaseMix(catalogue);
+ const total=catalogue.length;
+ const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+ const requestedPage=Number.parseInt(params.page||"1",10);
+ const page=Number.isFinite(requestedPage)?Math.min(pages,Math.max(1,requestedPage)):1;
+ const start=(page-1)*PAGE_SIZE;
+ const shown=await attachSavedPartnerImages(catalogue.slice(start,start+PAGE_SIZE));
+ const categoryCounts=new Map<string,number>();
+ for(const product of all)if(product.category)categoryCounts.set(product.category,(categoryCounts.get(product.category)||0)+1);
+ const quickCategories=PRIMARY_CATEGORIES.filter(name=>categoryCounts.has(name))
+   .sort((a,b)=>(categoryCounts.get(b)||0)-(categoryCounts.get(a)||0)).slice(0,6);
+ const catalogueHref=(changes:{page?:number|null;category?:string|null;q?:string|null})=>{
+   const next=new URLSearchParams();
+   const nextQuery=changes.q!==undefined?changes.q:query;
+   const nextCategory=changes.category!==undefined?changes.category:category;
+   if(nextQuery)next.set("q",nextQuery);
+   if(nextCategory)next.set("category",nextCategory);
+   if(changes.page&&changes.page>1)next.set("page",String(changes.page));
+   return "/start-a-business"+(next.toString()?"?"+next.toString():"")+"#sourcing-catalogue";
+ };
  return <main className="hc-founder">
   <Header/>
   <section className="hc-founder-hero" aria-labelledby="hc-founder-title">
@@ -35,7 +72,7 @@ export default function StartBusiness(){
        <span className="hc-founder-eyebrow">THE FOUNDER&apos;S EDIT / HEROCON 2026</span>
        <h1 id="hc-founder-title">Your next<br/>chapter <em>starts here.</em></h1>
        <p>Every brand begins with a first idea. Explore products, research original suppliers and build a considered sourcing plan — without rushing into a bulk order.</p>
-       <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="/search">Explore products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
+       <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="#sourcing-catalogue">Explore products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
      </div>
      <div className="hc-founder-photo">
        <img src={BUSINESS_PHOTO} alt="Real photograph of a person carrying an elegant stack of packaged boxes in a neutral indoor setting" width={800} height={1000} fetchPriority="high"/>
@@ -44,6 +81,41 @@ export default function StartBusiness(){
    </div>
   </section>
   <div className="hc-founder-trust"><div className="hc-founder-container hc-founder-trust-inner"><span>DISCOVER PRODUCTS</span><span>EXPLORE ORIGINAL SUPPLIERS</span><span>PLAN YOUR FIRST ORDER</span></div></div>
+
+
+  <section id="sourcing-catalogue" className="hc-founder-catalogue" aria-labelledby="hc-founder-catalogue-title">
+    <div className="hc-founder-container">
+      <div className="hc-founder-catalogue-heading">
+        <div><span className="hc-founder-eyebrow">THE SOURCING CATALOGUE</span><h2 id="hc-founder-catalogue-title">Products worth <em>exploring.</em></h2><p>Real products from Herocon&apos;s sourcing catalogue, with links to their original marketplace listings.</p></div>
+        <Link className="hc-founder-catalogue-all" href="/search">Browse the full catalogue <span aria-hidden="true">↗</span></Link>
+      </div>
+      <form className="hc-founder-catalogue-search" role="search" action="/start-a-business#sourcing-catalogue" method="get">
+        <label htmlFor="hc-founder-catalogue-query" className="hc-choice-sr-only">Search sourcing products</label>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
+        <input id="hc-founder-catalogue-query" type="search" name="q" defaultValue={query} placeholder="Search products or suppliers…" />
+        {category&&<input type="hidden" name="category" value={category}/>}
+        <button type="submit">Search <span aria-hidden="true">→</span></button>
+      </form>
+      <nav className="hc-founder-catalogue-filters" aria-label="Sourcing product categories">
+        <Link className={!category?"is-active":""} aria-current={!category?"page":undefined} href={catalogueHref({category:null,page:null})}>All products</Link>
+        {quickCategories.map(name=><Link key={name} className={category===name?"is-active":""} aria-current={category===name?"page":undefined} href={catalogueHref({category:name,page:null})}>{name}</Link>)}
+        {category&&!quickCategories.includes(category)&&<Link className="is-active" aria-current="page" href={catalogueHref({category,page:null})}>{category}</Link>}
+      </nav>
+      <div className="hc-founder-catalogue-meta"><span>{total.toLocaleString("en-GB")} {total===1?"product":"products"}{category?" · "+category:""}{query?' · Search: "'+query+'"':""}</span>{total>0&&<span>Showing {(start+1).toLocaleString("en-GB")}–{Math.min(total,start+PAGE_SIZE).toLocaleString("en-GB")}</span>}</div>
+      {shown.length?
+        <div className="hc-founder-catalogue-grid">{shown.map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<4}/>)}</div>:
+        <div className="hc-founder-catalogue-empty"><h3>No matching products found.</h3><p>Try another search or browse all sourcing products.</p><Link href={catalogueHref({q:null,category:null,page:null})}>Show all products ↗</Link></div>}
+      <div className="hc-founder-catalogue-bottom">
+        <nav className="hc-founder-catalogue-pages" aria-label="Sourcing catalogue pagination">
+          {page>1?<Link href={catalogueHref({page:page-1})}>← Previous</Link>:<span className="hc-founder-page-disabled">← Previous</span>}
+          <span>Page {page} of {pages}</span>
+          {page<pages?<Link href={catalogueHref({page:page+1})}>Next →</Link>:<span className="hc-founder-page-disabled">Next →</span>}
+        </nav>
+        <Link className="hc-founder-catalogue-browse" href="/search">View full sourcing catalogue <span aria-hidden="true">↗</span></Link>
+      </div>
+      <p className="hc-founder-catalogue-disclosure">Prices shown are listing references only. Shipping, taxes, seller availability and any agent charges must be checked before ordering.</p>
+    </div>
+  </section>
 
   <section className="hc-founder-section" aria-labelledby="hc-founder-tools-title">
     <div className="hc-founder-container">
