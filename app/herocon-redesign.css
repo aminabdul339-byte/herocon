@@ -733,3 +733,6 @@
 
 /* Distinguish a fresh BuckyDrop API response from a saved supplier snapshot. */
 .hc-link-found-header .hc-link-connection-status{color:#466950;font-size:12px;line-height:1.6;margin:11px 0 0;max-width:720px}
+
+/* Consistent external-link line icon on product details, including mobile. */
+.hc-direct-link .hc-external-arrow-icon,.hc-detail-source-button .hc-external-arrow-icon{display:inline-block;width:13px;height:13px;margin-left:4px;vertical-align:-2px;flex:none}

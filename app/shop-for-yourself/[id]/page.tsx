@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import Link from "next/link";
+import {ExternalArrowIcon} from "@/components/ShopIcons";
 import {notFound} from "next/navigation";
 import Header from "@/components/Header";
 import ProductExperience from "@/components/ProductExperience";
@@ -52,7 +53,7 @@ export default async function PersonalShopProductPage({params}:ProductParams){
   <Header/>
   <div className="hc-self-product-top">
    <nav aria-label="Breadcrumb"><Link href="/shop-for-yourself">Shop for Yourself</Link><span>/</span><span>{item.category}</span></nav>
-   <a className="hc-self-product-shop-link" href={item.shopUrl} target="_blank" rel="noopener noreferrer nofollow sponsored">Shop using an agent ↗</a>
+   <a className="hc-self-product-shop-link" href={item.shopUrl} target="_blank" rel="noopener noreferrer nofollow sponsored">Shop using an agent <ExternalArrowIcon/></a>
   </div>
   <ProductExperience
    key={item.id}
