@@ -1,21 +1,22 @@
-# Herocon editorial photography
+# Herocon — premium real-photo direction
 
-The new homepage and its two shopping journeys use real, licensed editorial photographs, not generated illustrations.
+The homepage and two primary journeys use **real photographic stock images**, not AI-generated illustrations or mock-ups. Images were chosen to directly correspond to the original handbag/sunglasses and shipping-cartons concept, while preserving Herocon's warm ivory and sage brand styling.
 
-| Placement | Photographer | Photo | Direct image |
+| Placement | Photographer | Licensed photo page | In-use CDN |
 |---|---|---|---|
-| Personal shopping hero and home choice card | Mina Rad | https://unsplash.com/photos/woman-in-a-long-beige-coat-stands-on-stairs-2O2cXJemDmo | https://images.unsplash.com/photo-1762605135012-56a59a059e60 |
-| Business sourcing hero and home choice card | Filipp Romanovski | https://unsplash.com/photos/woman-working-at-a-desk-with-craft-supplies-ag5H7Nqbf9U | https://images.unsplash.com/photo-1773146916231-e6aeae932080 |
-| Editorial clothing rail and business collection | Thom Bradley | https://unsplash.com/photos/clothing-racks-with-neutral-toned-garments-mwa_nzFpnJw | https://images.unsplash.com/photo-1603400521630-9f2de124b33b |
+| Homepage: Shop for Yourself + personal shopping hero | Vlada Karpovich | https://www.pexels.com/photo/brown-leather-sling-bag-sunglasses-on-the-wooden-table-4452389/ | https://images.pexels.com/photos/4452389/pexels-photo-4452389.jpeg |
+| Homepage: Start a Business (warehouse cardboard cartons) | Freek Wolsink | https://www.pexels.com/photo/industrial-warehouse-with-stacked-cardboard-boxes-34221998/ | https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg |
+| Founder landing: boxes in a minimalist business setting | Hanna Pad | https://www.pexels.com/photo/close-up-shot-of-a-person-holding-a-stack-of-boxes-7552578/ | https://images.pexels.com/photos/7552578/pexels-photo-7552578.jpeg |
+| Editorial clothing rail and founder collection | Thom Bradley | https://unsplash.com/photos/clothing-racks-with-neutral-toned-garments-mwa_nzFpnJw | https://images.unsplash.com/photo-1603400521630-9f2de124b33b |
 
-These photos are available under the [Unsplash License](https://unsplash.com/license), which permits many commercial website uses without attribution; credit is included here voluntarily.
+The three Pexels photos are marked **Free to use** at their source pages, subject to the [Pexels License](https://www.pexels.com/license/). The clothing-rail photo uses the [Unsplash License](https://unsplash.com/license). All photography is third-party stock, not Herocon's own warehouse, staff or listed products. Avoid implying otherwise. These assets should never be labelled as a specific supplier's physical products. Always verify any restricted trademarks or identifiable individual usage before a further paid advertising campaign.
 
-**Important:** These are editorial/lifestyle images. They are not photographs of products on sale, Herocon employees, registered suppliers, or Herocon operations, and should never be described that way. Ensure privacy, model/publicity and third-party rights are satisfied for any later brand campaign. All actual product photographs are still provided by the existing catalogue.
+## Implementation / verification
 
-## Implementation
-
-- The homepage is at `/`, with prominent links to `/shop-for-yourself` and `/start-a-business`.
-- The existing general catalogue and personal-shopping edit remain separate data sources for now. Product searches, source links and cart features remain unchanged.
-- Visual styles live in `app/experience.css`, loaded after previous styles for reliable scope and responsive layout.
-- Photos are served remotely by `images.unsplash.com` with size and quality parameters. Production teams can locally optimise/host the assets later if uptime or performance requires it.
-- Verify desktop, tablet and mobile layouts as part of final release checks.
+- The home entry cards use dark type on pastel cream and sage, masked real photos and clear inset buttons; they link to existing `/shop-for-yourself` and `/start-a-business` routes.
+- Each destination keeps its own site functionality; real matching editorial photography has replaced the earlier model/desk image in the hero.
+- The existing general catalogue and personal-shopping edit are separate data sources for now. Product searches, agent links, source links and cart behaviour are unchanged.
+- Changes are scoped to `app/experience.css` and hero markup, with dedicated mobile layout and reduced-motion support.
+- Direct photo CDN endpoints were checked for HTTP 200 / image/jpeg in a Vercel sandbox on 20 November 2026.
+- The photos are remotely hosted by `images.pexels.com` and `images.unsplash.com`, with image compression parameters. A future production hardening step can mirror and optimise licensed assets to Herocon-owned hosting to avoid hotlink outages.
+- Verify tablet/mobile visual layout, destination links and image loads in a real browser before merging into production.
