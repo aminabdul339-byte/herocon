@@ -15,8 +15,6 @@ const CATEGORY_INFO=[
  {value:"Accessories",label:"Accessories",icon:"🕶",number:"05"}
 ] as const;
 const PER_PAGE=36;
-// Five source rows have no embedded picture; preserve the category artwork there.
-const MISSING_PHOTO_IDS=new Set(["480556134-10","2052363225-18","1155948127-44","579377089-77","579377089-107"]);
 const countLinked=(p:ShopItem)=>Boolean(p.shopUrl)||p.additionalLinks.length>0;
 const priceFormat=(v:number)=>"¥"+v.toLocaleString("en-GB",{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});
 const gbpFormat=(v:number)=>"£"+v.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -34,19 +32,21 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
  const [sort,setSort]=useState("original");
  const [linksOnly,setLinksOnly]=useState(false);
  const [page,setPage]=useState(1);
+ const [failedPhotoIds,setFailedPhotoIds]=useState<Set<string>>(()=>new Set());
  const totals=useMemo(()=>{
   const counts:Record<string,number>={All:products.length};
-  for(const item of products)counts[item.category]=(counts[item.category]||0)+1;
+  counts.All=0;
+  for(const item of products){if(failedPhotoIds.has(item.id))continue;counts.All++;counts[item.category]=(counts[item.category]||0)+1;}
   return counts;
- },[products]);
+ },[products,failedPhotoIds]);
  const filtered=useMemo(()=>{
   const q=query.toLocaleLowerCase().trim();
-  const items=products.filter(p=>(category==="All"||p.category===category)&&(!linksOnly||countLinked(p))&&(!q||(p.name+" "+p.category).toLocaleLowerCase().includes(q)));
+  const items=products.filter(p=>!failedPhotoIds.has(p.id)&&(category==="All"||p.category===category)&&(!linksOnly||countLinked(p))&&(!q||(p.name+" "+p.category).toLocaleLowerCase().includes(q)));
   if(sort==="price-low")items.sort((a,b)=>(a.priceCny??Number.POSITIVE_INFINITY)-(b.priceCny??Number.POSITIVE_INFINITY));
   if(sort==="price-high")items.sort((a,b)=>(b.priceCny??Number.NEGATIVE_INFINITY)-(a.priceCny??Number.NEGATIVE_INFINITY));
   if(sort==="name")items.sort((a,b)=>a.name.localeCompare(b.name));
   return items;
- },[products,category,query,sort,linksOnly]);
+ },[products,category,query,sort,linksOnly,failedPhotoIds]);
  const totalPages=Math.max(1,Math.ceil(filtered.length/PER_PAGE));
  const currentPage=Math.min(page,totalPages);
  const visible=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);
@@ -66,12 +66,9 @@ export default function ShopForYourself({products}:{products:ShopItem[]}){
   <div className="hc-self-results-caption" aria-live="polite"><div><strong>{filtered.length.toLocaleString("en-GB")} results</strong><span>{category==="All"?"All categories":category}</span></div><span>Showing {filtered.length?(currentPage-1)*PER_PAGE+1:0}–{Math.min(currentPage*PER_PAGE,filtered.length)} of {filtered.length.toLocaleString("en-GB")}</span></div>
   {visible.length?<div className="hc-self-grid">
    {visible.map((p)=>{
-    const catInfo=CATEGORY_INFO.find(c=>c.value===p.category);
     return <article className="hc-self-item" key={p.id}>
      <div className={"hc-self-thumbnail hc-self-thumbnail-"+thumbKind(p.category)}>
-      <div className="hc-self-thumb-noise" aria-hidden="true"></div>
-      <span className="hc-self-thumb-emoji" aria-hidden="true">{catInfo?.icon||"✦"}</span>
-      {!MISSING_PHOTO_IDS.has(p.id)&&<img className="hc-self-thumb-photo" src={"/shop-for-yourself-images/"+p.id+".webp"} alt={"Photo from source spreadsheet: "+p.name} width={330} height={330} loading="lazy" decoding="async" onError={event=>{event.currentTarget.style.display="none";}}/>}
+      <img className="hc-self-thumb-photo" src={"/shop-for-yourself-images/"+p.id+".webp"} alt={p.name} width={330} height={330} loading="lazy" decoding="async" onError={()=>setFailedPhotoIds(current=>{if(current.has(p.id))return current;const next=new Set(current);next.add(p.id);return next;})}/>
       <span className="hc-self-thumb-label">{p.category}</span>
       <span className="hc-self-thumb-index" aria-hidden="true">{p.id.split("-").pop()}</span>
      </div>
