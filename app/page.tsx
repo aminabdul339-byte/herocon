@@ -76,20 +76,8 @@ export default async function Home(){
       </div>
     </section>
 
-    <section className="hc-choice-what-is" aria-labelledby="hc-choice-how-title">
-      <div className="hc-choice-container">
-        <div className="hc-choice-section-heading"><div><span className="hc-choice-eyebrow">02 / THE HEROCON WAY</span><h2 id="hc-choice-how-title">More than <em>a search.</em></h2></div><p>Go from inspiration to an original marketplace listing, with the information you need to make a considered decision.</p></div>
-        <div className="hc-choice-how-grid">
-          <article><span>01 — DISCOVER</span><h3>Explore freely.</h3><p>Browse curated edits or search the wider catalogue for something specific.</p></article>
-          <article><span>02 — COMPARE</span><h3>See the source.</h3><p>Check original marketplace destinations, product details and available variants.</p></article>
-          <article><span>03 — PLAN</span><h3>Make it yours.</h3><p>Save finds and evaluate the full sourcing and shipping cost before deciding.</p></article>
-        </div>
-        <div className="hc-choice-disclaimer"><span>PLEASE NOTE</span><p>Herocon currently supports product discovery and links to external marketplaces. Direct Herocon purchasing and warehouse/shipping checkout are not yet available.</p><Link href="/how-it-works">How sourcing works <Arrow diagonal/></Link></div>
-      </div>
-    </section>
-
     <section className="hc-choice-products hc-choice-container" aria-labelledby="hc-choice-products-title">
-      <div className="hc-choice-section-heading"><div><span className="hc-choice-eyebrow">03 / PRODUCT DISCOVERY</span><h2 id="hc-choice-products-title">Currently <em>catching our eye.</em></h2></div><Link className="hc-choice-underlined" href="/search">Explore {total.toLocaleString("en-GB")} products <Arrow diagonal/></Link></div>
+      <div className="hc-choice-section-heading"><div><span className="hc-choice-eyebrow">02 / PRODUCT DISCOVERY</span><h2 id="hc-choice-products-title">Currently <em>catching our eye.</em></h2></div><Link className="hc-choice-underlined" href="/search">Explore {total.toLocaleString("en-GB")} products <Arrow diagonal/></Link></div>
       <div className="hc-premium-featured-grid hc-choice-featured-grid">{featured.slice(0,4).map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
       <div className="hc-choice-products-footer"><span>DISCOVER SOMETHING NEW EVERY TIME</span><Link href="/search">View the full catalogue <Arrow/></Link></div>
     </section>
