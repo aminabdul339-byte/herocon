@@ -26,7 +26,7 @@ export function HeroArtwork(){
     <circle cx="346" cy="420" r="13" fill="#B7A592"/>
    </svg>
    <div className="sc-float sc-float-top"><span className="sc-float-over">PRODUCT DISCOVERY</span><strong>Find your next bestseller</strong><small>Explore original marketplace links</small></div>
-   <div className="sc-float sc-float-bottom"><span className="sc-float-over">SOURCING MADE CLEAR</span><strong>Home &amp; lifestyle</strong><small><span aria-hidden="true">✓</span> Marketplace source available</small></div>
+   <div className="sc-float sc-float-bottom"><span className="sc-float-over">SOURCING MADE CLEAR</span><strong>Home &amp; lifestyle</strong><small><svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"middle"}}><path d="m5 12 4.5 4.5L19 7"/></svg> Marketplace source available</small></div>
   </div>;
 }
 export function HairArt(){return <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="159" cy="205" rx="110" ry="12" fill="#C6AAA5" opacity=".36"/><path d="M121 91C77 33 30 67 54 119C79 167 120 131 151 106" fill="#B88783" stroke="#A97875" strokeWidth="4"/><path d="M180 91C223 33 269 66 245 119C222 166 183 131 152 106" fill="#C19892" stroke="#A97875" strokeWidth="4"/><rect x="135" y="80" width="40" height="49" rx="10" fill="#A87874"/><path d="M140 125C119 151 109 195 112 198L155 168L188 199L169 123" fill="#B98A84"/><g transform="translate(234 172) rotate(19)"><ellipse rx="45" ry="26" fill="#D1AFAB" stroke="#B58B88" strokeWidth="8" strokeDasharray="10 6"/><ellipse rx="22" ry="10" fill="#EADBD8"/></g></svg>}
