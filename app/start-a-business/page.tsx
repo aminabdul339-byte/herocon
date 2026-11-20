@@ -16,11 +16,6 @@ const tools=[
  {number:"03",title:"Estimate your costs",description:"Work out the landed cost before setting a resale price.",href:"/landed-cost"},
  {number:"04",title:"Understand sourcing",description:"Learn what happens now and what comes next.",href:"/how-it-works"}
 ];
-const principles=[
- {number:"01",title:"Discover",description:"Choose a customer, a category and products you genuinely believe in."},
- {number:"02",title:"Validate",description:"Check supplier listings, minimum quantities, samples, safety and real customer demand."},
- {number:"03",title:"Plan",description:"Calculate purchase costs, delivery, taxes and realistic margins before you commit."}
-];
 const checklist=[
  "Define your audience and a product niche",
  "Look for actual demand and relevant competitors",
@@ -57,18 +52,11 @@ export default function StartBusiness(){
     </div>
   </section>
 
-  <section className="hc-founder-path-section" aria-labelledby="hc-founder-path-title">
-    <div className="hc-founder-container">
-      <div className="hc-founder-section-head"><div><span className="hc-founder-eyebrow">02 / A THOUGHTFUL BEGINNING</span><h2 id="hc-founder-path-title">Start small.<br/><em>Think bigger.</em></h2></div><p>You don&apos;t need thousands of pounds in inventory to start learning. Focus on proof, not promises.</p></div>
-      <div className="hc-founder-steps">{principles.map(step=><article className="hc-founder-step" key={step.number}><span>{step.number} / THE PROCESS</span><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
-    </div>
-  </section>
-
   <section className="hc-founder-section" aria-labelledby="hc-founder-check-title">
     <div className="hc-founder-container hc-founder-list">
       <div className="hc-founder-list-photo"><img src={WARDROBE_PHOTO} alt="Real photograph of neutral garments displayed on clothing rails, suggesting a carefully selected first collection" width={760} height={950} loading="lazy" decoding="async"/></div>
       <div>
-        <span className="hc-founder-eyebrow">03 / BEFORE THE FIRST ORDER</span>
+        <span className="hc-founder-eyebrow">02 / BEFORE THE FIRST ORDER</span>
         <h2 id="hc-founder-check-title" style={{font:"400 clamp(40px,4.4vw,62px)/1.06 Georgia,serif",letterSpacing:"-.05em",margin:"14px 0 0"}}>A little research.<br/><em style={{color:"#8a9c88"}}>A lot more clarity.</em></h2>
         <ol className="hc-founder-checklist">{checklist.map((item,i)=><li key={item}><span>{String(i+1).padStart(2,"0")}</span>{item}</li>)}</ol>
         <Link href="/landed-cost" className="hc-founder-cta" style={{marginTop:22}}>Calculate a landed cost <span aria-hidden="true">↗</span></Link>
