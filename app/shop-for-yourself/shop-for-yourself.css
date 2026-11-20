@@ -125,3 +125,17 @@
 .hc-self-product-related-card img{width:100%;height:200px;object-fit:cover;display:block}
 .hc-self-product-related-card span{display:block;padding:13px;font-size:13px;font-weight:700}
 @media(max-width:780px){.hc-self-item-notes{grid-template-columns:1fr;padding:23px;gap:12px}.hc-self-product-related-grid{grid-template-columns:repeat(2,1fr)}.hc-self-product-related-card img{height:170px}}
+
+/* A clean, type-led mobile catalogue: no emoji category icons. */
+@media(max-width:780px){
+ .hc-self-category-icon{display:none}
+ .hc-self-categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .hc-self-category{min-height:83px;gap:4px;justify-content:flex-end;padding:15px 14px}
+ .hc-self-category-title{font-size:13px;line-height:1.25;max-width:none}
+ .hc-self-category-number{top:12px;right:13px;font-size:10px}
+}
+@media(max-width:490px){
+ .hc-self-category{min-height:78px;padding:13px 12px}
+ .hc-self-category-title{font-size:12px}
+}
+.hc-self-note-copy{font-size:17px;line-height:1.7;color:#314937;margin:0}
