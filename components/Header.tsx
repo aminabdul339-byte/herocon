@@ -18,9 +18,9 @@ export default function Header(){
   },[]);
 
   const {count,account}=useCart();
-  const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
+  const showSourcingGuide=pathname==="/shop-for-yourself"||pathname.startsWith("/shop-for-yourself/")||pathname==="/start-a-business";
+  const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],...(showSourcingGuide?[["How sourcing works","/how-it-works"]]:[]),["Membership","/membership"]];
   return <>
-    <div className="sc-announcement">SOURCE FROM 1688, TAOBAO, WEIDIAN &amp; MORE</div>
     <header className="sc-header">
       <div className="sc-nav-inner">
         <Link href="/" className="sc-wordmark" aria-label="Herocon homepage">hero<span>con.</span></Link>

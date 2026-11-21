@@ -38,7 +38,6 @@ export default async function ShopForYourselfPage({searchParams}:{searchParams:P
       </div>
       <div className="hc-self-editorial-image">
         <img src={audience==="women"?WOMEN_PHOTO:MEN_PHOTO} alt={audience==="women"?"Warm brown handbag in an elegant neutral wardrobe":"Warm brown jackets on a boutique rail in a neutral dressing room"} width={800} height={1000} fetchPriority="high"/>
-        <span><span>{audience==="women"?"THE WOMEN’S EDIT":"THE MEN’S EDIT"}</span><span>STYLED TO DISCOVER</span></span>
       </div>
     </div>
     <div className="hc-self-editorial-strip"><span>{audience==="women"?"THE HANDBAG EDIT":"THE EVERYDAY EDIT"}</span><span>{audience==="women"?"BAGS · JEWELLERY · FOOTWEAR":"CLOTHING · FOOTWEAR · ACCESSORIES"}</span><span>ORIGINAL MARKETPLACE LINKS</span></div>

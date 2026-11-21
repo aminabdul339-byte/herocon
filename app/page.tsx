@@ -66,7 +66,7 @@ export default async function Home(){
 
     <div className="hm-bottom hm-shell">
       <p>Real finds. Original marketplace links. <span>One place to discover more.</span></p>
-      <div><Link href="/search">Search all products <Arrow up/></Link><Link href="/how-it-works">How sourcing works <Arrow up/></Link></div>
+      <div><Link href="/search">Search all products <Arrow up/></Link></div>
     </div>
     <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;

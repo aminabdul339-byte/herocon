@@ -235,3 +235,330 @@
 @media(prefers-reduced-motion:reduce){
  .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{transition:none}
 }
+
+
+/* HEROCON EDITS V3 — unmistakable but refined Women (pink) and Men (blue).
+ * All gender colours are self-contained to Shop for Yourself and its product pages.
+ * Colour follows the destination for tabs, never the page currently hovered.
+ */
+.hc-self-v2[data-audience="women"]{
+ --ps-accent:#963f6d;
+ --ps-accent-hover:#772b53;
+ --ps-accent-soft:#fbe6f1;
+ --ps-accent-border:#ebc8da;
+ --ps-em:#bf83a3;
+ --ps-ink:#44303c;
+ --ps-muted:#766572;
+ --ps-panel:#fff7fb;
+ --ps-tile:#fff8fb;
+ --ps-shadow:#963f6d1b;
+ background:#fffafb;
+ color:var(--ps-ink);
+}
+.hc-self-v2[data-audience="men"]{
+ --ps-accent:#2b5f8d;
+ --ps-accent-hover:#20486d;
+ --ps-accent-soft:#e7f1fa;
+ --ps-accent-border:#cbddec;
+ --ps-em:#7da5c9;
+ --ps-ink:#293e54;
+ --ps-muted:#65798d;
+ --ps-panel:#f6faff;
+ --ps-tile:#f8fbfe;
+ --ps-shadow:#2b5f8d1b;
+ background:#f9fbff;
+ color:var(--ps-ink);
+}
+
+/* Distinct luxury campaign panels instead of shared moss-green. */
+.hc-self-v2[data-audience="women"] .hc-self-editorial{
+ background:linear-gradient(118deg,#fff9fb 5%,#f9e8f1 100%);
+ border-bottom-color:#f2dbe7;
+}
+.hc-self-v2[data-audience="men"] .hc-self-editorial{
+ background:linear-gradient(118deg,#f9fcff 5%,#e4eff9 100%);
+ border-bottom-color:#d6e4ef;
+}
+.hc-self-v2[data-audience] .hc-self-editorial-label,
+.hc-self-v2[data-audience] .hc-self-eyebrow{
+ color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-self-editorial h1,
+.hc-self-v2[data-audience] .hc-personal-catalogue-intro h2,
+.hc-self-v2[data-audience] .hc-personal-related-heading h2{
+ color:var(--ps-ink)!important;
+}
+.hc-self-v2[data-audience] .hc-self-editorial h1 em,
+.hc-self-v2[data-audience] .hc-personal-catalogue-intro h2 em,
+.hc-self-v2[data-audience] .hc-personal-related-heading h2 em{
+ color:var(--ps-em)!important;
+}
+.hc-self-v2[data-audience] .hc-self-editorial-copy>p,
+.hc-self-v2[data-audience] .hc-personal-catalogue-intro>div:first-child>p:last-child{
+ color:var(--ps-muted);
+}
+.hc-self-v2[data-audience] .hc-self-editorial-image{
+ background:var(--ps-accent-soft);
+ border:1px solid var(--ps-accent-border);
+ box-shadow:0 20px 40px var(--ps-shadow);
+}
+.hc-self-v2[data-audience] .hc-self-editorial-image>span{
+ display:none!important;
+}
+.hc-self-v2[data-audience] .hc-self-editorial-strip{
+ background:var(--ps-accent-soft);
+ color:var(--ps-accent);
+ border-top:1px solid var(--ps-accent-border);
+}
+
+/* Permanent destination-based pink/blue button identities.
+   Nonselected buttons change on hover; selected buttons also darken and lift. */
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{
+ border-radius:5px;
+ min-height:57px;
+ transform:translateY(0);
+ transition:background-color .22s ease,box-shadow .22s ease,transform .22s ease,border-color .22s ease,color .22s ease;
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=women"]{
+ background:#fff4f9;
+ border-color:#dbafc7;
+ color:#8c3d67!important;
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=men"]{
+ background:#eef6fe;
+ border-color:#aac8e2;
+ color:#285c89!important;
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=women"]:is(:hover,:focus-visible),
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=women"].is-active{
+ background:#963f6d;
+ border-color:#963f6d;
+ color:#fff!important;
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=women"]:is(:hover,:focus-visible){
+ background:#752a50;
+ border-color:#752a50;
+ box-shadow:0 8px 22px #963f6d34;
+ transform:translateY(-2px);
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=men"]:is(:hover,:focus-visible),
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=men"].is-active{
+ background:#2b5f8d;
+ border-color:#2b5f8d;
+ color:#fff!important;
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta[href*="audience=men"]:is(:hover,:focus-visible){
+ background:#1f466c;
+ border-color:#1f466c;
+ box-shadow:0 8px 22px #2b5f8d30;
+ transform:translateY(-2px);
+}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta svg{
+ stroke:currentColor;
+}
+
+/* Catalogue audience tabs: pink Women, blue Men, across either page. */
+.hc-self-v2 .hc-personal-audience{
+ background:linear-gradient(90deg,#fff0f6,#edf5fd);
+ border:1px solid #e5dce9;
+ padding:6px;
+ gap:6px;
+ border-radius:9px;
+}
+.hc-self-v2 .hc-personal-audience>a{
+ border:1px solid transparent;
+ border-radius:6px;
+ min-height:65px;
+ transition:background-color .2s,color .2s,box-shadow .2s,transform .2s;
+}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=women"]{
+ background:#fff5fa;
+ color:#91466c;
+ border-color:#f1d8e6;
+}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=women"] small{color:#ad7d96}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=men"]{
+ background:#f3f9ff;
+ color:#315f88;
+ border-color:#d7e6f4;
+}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=men"] small{color:#7896b4}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=women"].is-active{
+ background:#963f6d;
+ border-color:#963f6d;
+ color:#fff;
+ box-shadow:0 5px 16px #963f6d2c;
+}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=men"].is-active{
+ background:#2b5f8d;
+ border-color:#2b5f8d;
+ color:#fff;
+ box-shadow:0 5px 16px #2b5f8d2b;
+}
+.hc-self-v2 .hc-personal-audience>a.is-active small{color:#f3f3f7}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=women"]:hover{
+ background:#7a3057;
+ border-color:#7a3057;
+ color:#fff;
+ box-shadow:0 7px 21px #963f6d2b;
+ transform:translateY(-1px);
+}
+.hc-self-v2 .hc-personal-audience>a[href*="audience=men"]:hover{
+ background:#214970;
+ border-color:#214970;
+ color:#fff;
+ box-shadow:0 7px 21px #2b5f8d2a;
+ transform:translateY(-1px);
+}
+.hc-self-v2 .hc-personal-audience>a:hover small{color:#f4f7fa}
+.hc-self-v2 .hc-personal-shared-note{color:var(--ps-muted)}
+.hc-self-v2 .hc-personal-shared-note svg{color:var(--ps-accent)}
+
+/* Category filter chips, outlines, pricing and controls inherit the selected edit. */
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+ background:var(--ps-tile);
+ border-color:var(--ps-accent-border);
+ color:var(--ps-ink);
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-icon{
+ color:var(--ps-accent);
+ background:var(--ps-accent-soft);
+ border-color:var(--ps-accent-border);
+ display:inline-flex;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category:hover{
+ background:var(--ps-accent-soft);
+ border-color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category-active,
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category-active:hover{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+ color:#fff;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category-active .hc-self-category-icon{
+ background:#ffffff24;
+ color:#fff;
+ border-color:#ffffff5d;
+}
+.hc-self-v2[data-audience] .hc-personal-toolbar{
+ border-color:var(--ps-accent-border);
+}
+.hc-self-v2[data-audience] .hc-personal-toolbar .hc-self-search,
+.hc-self-v2[data-audience] .hc-personal-toolbar .hc-self-sort select{
+ background:#fff;
+ border-color:var(--ps-accent-border);
+ color:var(--ps-ink);
+}
+.hc-self-v2[data-audience] .hc-personal-toolbar input:focus-visible,
+.hc-self-v2[data-audience] .hc-personal-toolbar select:focus-visible{
+ outline:2px solid var(--ps-accent);
+ outline-offset:2px;
+}
+.hc-self-v2[data-audience] .hc-personal-search-button{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+ color:#fff;
+}
+.hc-self-v2[data-audience] .hc-personal-search-button:hover{
+ background:var(--ps-accent-hover);
+ border-color:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-self-results-caption strong{color:var(--ps-accent)}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-personal-item{
+ background:#fff;
+ border-color:var(--ps-accent-border);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-personal-item:hover{
+ border-color:var(--ps-accent);
+ box-shadow:0 10px 25px var(--ps-shadow);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-personal-thumbnail{
+ background:var(--ps-accent-soft);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-item-category{
+ color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-item h3{
+ color:var(--ps-ink);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-item-price strong{
+ color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-link-primary{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+ color:#fff!important;
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-link-primary:hover{
+ background:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-personal-grid .hc-self-link-secondary{
+ color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-personal-pagination>a{
+ background:var(--ps-panel);
+ border-color:var(--ps-accent-border);
+ color:var(--ps-accent);
+}
+.hc-self-v2[data-audience] .hc-personal-pagination>a:hover{
+ background:var(--ps-accent-soft);
+}
+.hc-self-v2[data-audience] .hc-self-table-note,
+.hc-self-v2[data-audience] .hc-self-note p{
+ color:var(--ps-muted);
+}
+.hc-self-v2[data-audience] .hc-self-note{
+ background:var(--ps-accent-soft);
+ border-color:var(--ps-accent-border);
+}
+.hc-self-v2[data-audience] .hc-self-note h2,
+.hc-self-v2[data-audience] .hc-self-note h2 em{
+ color:var(--ps-accent);
+}
+/* Product detail uses the matching edition throughout. */
+.hc-personal-product-page[data-audience] .hc-personal-breadcrumb a,
+.hc-personal-product-page[data-audience] .hc-personal-detail-reference strong,
+.hc-personal-product-page[data-audience] .hc-personal-related-heading>a,
+.hc-personal-product-page[data-audience] .hc-personal-experience .buy-panel .hc-direct-link{
+ color:var(--ps-accent);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .buy-panel h1{
+ color:var(--ps-ink)!important;
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .buy-panel .product-price{
+ color:var(--ps-accent);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .gallery-main{
+ background:var(--ps-panel);
+ border-color:var(--ps-accent-border);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-buy-actions .hc-add-cart-button{
+ color:var(--ps-accent)!important;
+ border-color:var(--ps-accent);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-buy-actions .hc-buy-now-button{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-buy-actions .hc-buy-now-button:hover{
+ background:var(--ps-accent-hover);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-buy-actions .hc-add-cart-button:hover{
+ background:var(--ps-accent-soft);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-simple-quantity .sc-sku-qty{
+ background:var(--ps-panel);
+ border-color:var(--ps-accent-border);
+}
+.hc-personal-product-page[data-audience] .hc-personal-experience .hc-simple-quantity>span{color:var(--ps-ink)}
+.hc-personal-product-page[data-audience] .hc-personal-detail-reference{
+ border-color:var(--ps-accent-border);
+}
+@media(prefers-reduced-motion:reduce){
+ .hc-self-v2 .hc-personal-audience>a,
+ .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{
+  transition:none!important;
+  transform:none!important;
+ }
+}
