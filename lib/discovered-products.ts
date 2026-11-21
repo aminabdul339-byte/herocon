@@ -3,6 +3,8 @@ import {get,head,list,put} from "@vercel/blob";
 import {unstable_cache,revalidateTag} from "next/cache";
 import {classifyProduct} from "@/lib/product-taxonomy";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {marketplaceIdentity} from "@/lib/catalogue-identity";
+import type {Variant} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 import type {Product} from "@/lib/types";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
@@ -10,6 +12,7 @@ import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 const PREFIX="catalogue/discovered/v1/";
 const ACCESS="private" as const;
 const MAX_IMAGES=12;
+const MAX_VARIANTS=100;
 const ID_PREFIX="link-";
 
 export type DiscoverySaveResult={
@@ -49,6 +52,26 @@ function storedRecord(input:unknown):Product|null {
  const preview=imageUrl(obj.imageUrl)||gallery[0];
  if(!preview)return null;
  const priceGBP=typeof obj.priceGBP==="number"&&Number.isFinite(obj.priceGBP)&&obj.priceGBP>=0?obj.priceGBP:undefined;
+ const priceCNY=typeof obj.priceCNY==="number"&&Number.isFinite(obj.priceCNY)&&obj.priceCNY>=0?obj.priceCNY:undefined;
+ const identity=marketplaceIdentity(link);
+ const variants:Variant[]=Array.isArray(obj.variants)?obj.variants.slice(0,MAX_VARIANTS)
+  .map((value:unknown):Variant|null=>{
+    if(!value||typeof value!=="object"||Array.isArray(value))return null;
+    const v=value as Record<string,unknown>;
+    const id=safeName(v.id,100);
+    if(!id)return null;
+    const amount=typeof v.priceCNY==="number"&&Number.isFinite(v.priceCNY)&&v.priceCNY>=0?v.priceCNY:undefined;
+    return {id,label:safeName(v.label,200)||undefined,colour:safeName(v.colour,100)||undefined,
+      size:safeName(v.size,100)||undefined,style:safeName(v.style,100)||undefined,
+      material:safeName(v.material,100)||undefined,priceCNY:amount,image:imageUrl(v.image)};
+  }).filter((v:Variant|null):v is Variant=>v!==null):[];
+ const sourceSpecs=Array.isArray(obj.sourceSpecs)?obj.sourceSpecs.slice(0,50).map((v:unknown)=>{
+   if(!v||typeof v!=="object"||Array.isArray(v))return null;
+   const row=v as Record<string,unknown>;
+   const name=safeName(row.name,100),value=safeName(row.value,250);
+   return name&&value?{name,value}:null;
+ }).filter((v):v is {name:string;value:string}=>v!==null):[];
+ const detailImages=Array.isArray(obj.detailImages)?obj.detailImages.map(imageUrl).filter((x):x is string=>!!x).slice(0,24):[];
  return {
   canonicalId:"doppel:"+id,
   doppelProductId:id,
@@ -58,10 +81,17 @@ function storedRecord(input:unknown):Product|null {
   imageUrl:preview,
   images:gallery,
   priceGBP,
+  priceCNY,
   price:priceGBP!=null?"£"+priceGBP.toFixed(2):undefined,
+  variants,
+  variantCount:typeof obj.variantCount==="number"&&Number.isInteger(obj.variantCount)&&obj.variantCount>=0?obj.variantCount:variants.length,
+  descriptionText:safeName(obj.descriptionText,10000)||undefined,
+  detailImages,
+  sourceSpecs,
   originalMarketplaceUrl:link,
   sellerName:safeName(obj.sellerName,130)||undefined,
-  sourceMarketplace:new URL(link).hostname,
+  sourceMarketplace:identity?.marketplace,
+  sourceProductId:identity?.productId,
   collectedAt:typeof obj.collectedAt==="string"?obj.collectedAt:undefined,
   discoverySource:"customer-link-search"
  };
@@ -89,6 +119,15 @@ export async function saveDiscoveredProduct(link:string,source:BuckydropProduct)
  const lowest=source.variants.map(v=>v.price).filter((n):n is number=>n!=null&&Number.isFinite(n)&&n>=0);
  const base=lowest.length?Math.min(...lowest):source.offerPrice??source.listPrice;
  const priceGBP=referenceRate!=null&&base!=null?Math.round(base*referenceRate*100)/100:undefined;
+ const variants=source.variants.slice(0,MAX_VARIANTS).map(v=>{
+   const options=v.options.map(o=>({name:o.name.toLowerCase(),value:o.value}));
+   const get=(pattern:RegExp)=>options.find(o=>pattern.test(o.name))?.value;
+   return {
+     id:v.skuCode,label:v.title,priceCNY:v.price??undefined,image:v.image,
+     colour:get(/colou?r|color classification/),size:get(/size/),
+     style:get(/style|model|specification/),material:get(/material|fabric/)
+   };
+ });
  const product=storedRecord({
   doppelProductId:productId,
   title:safeName(source.title)||"Marketplace product",
@@ -97,6 +136,12 @@ export async function saveDiscoveredProduct(link:string,source:BuckydropProduct)
   images:source.images,
   sellerName:source.sellerName,
   priceGBP,
+  priceCNY:base,
+  variants,
+  variantCount:source.variants.length,
+  descriptionText:source.descriptionText,
+  detailImages:source.detailImages,
+  sourceSpecs:source.productProps,
   collectedAt:new Date().toISOString()
  });
  if(!product)return {status:"unavailable",productId:null};
@@ -124,7 +169,7 @@ async function readStoredProduct(pathname:string):Promise<Product|null>{
   const result=await get(pathname,{access:ACCESS});
   if(!result||result.statusCode!==200||!result.stream)return null;
   const text=await new Response(result.stream).text();
-  if(text.length>30000)return null;
+  if(text.length>120000)return null;
   return storedRecord(JSON.parse(text));
  }catch(error){
   console.error("[catalogue] Failed to read discovered record:",pathname,error instanceof Error?error.message:"unknown");
