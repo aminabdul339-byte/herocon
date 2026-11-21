@@ -10,7 +10,7 @@ type Check={
  writeActionsEnabled?:boolean;error?:string;requestId?:string
 };
 const guidance:Record<string,string>={
- "api_not_enabled":"Fulfillbot has not enabled API access for this account. Open Fulfillbot Settings → API access, check whether an access request or approval is needed, and contact your account manager if it remains disabled.",
+ "api_not_enabled":"Fulfillbot has not enabled API access for this account. Open Fulfillbot Settings, then API access, check whether an access request or approval is needed, and contact your account manager if it remains disabled.",
  "account_action_required":"Sign in to Fulfillbot and finish any required account step, such as changing a temporary password. Then run this test again.",
  "insufficient_scope":"Your key lacks access to this endpoint. Create a Custom read-only key with View products and inventory and the other viewing permissions, save it to Vercel, redeploy, and retry.",
  "invalid_api_key":"This API key may be incorrect, expired or revoked. Check the production FULFILLBOT_API_KEY value in Vercel without posting the key in chat.",
