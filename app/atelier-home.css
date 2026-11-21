@@ -1,0 +1,93 @@
+/* The Discovery Atelier: homepage hero only. The existing Discovery Edit and catalogue stay untouched. */
+.hm-home .ha-hero{--ha-forest:#253e31;--ha-sage:#afc0b0;--ha-paper:#faf8f2;display:grid;grid-template-columns:55% 45%;width:calc(100% - 64px);max-width:1600px;min-height:782px;margin:16px auto 0;overflow:hidden;background:var(--ha-forest);color:#f5f2e9;isolation:isolate}
+.hm-home .ha-copy{padding:66px 36px 55px clamp(54px,5.76vw,100px);min-width:0;position:relative;z-index:1}
+.hm-home .ha-eyebrow{font:700 11px/1.5 Arial,Helvetica,sans-serif;letter-spacing:.21em;color:#c6d3c1}
+.hm-home .ha-copy h1{font:400 clamp(65px,6.05vw,91px)/.97 Georgia,'Times New Roman',serif!important;letter-spacing:-.064em!important;color:#f7f4e9!important;margin:44px 0 30px!important;max-width:100%}
+.hm-home .ha-copy h1>span{display:block}
+.hm-home .ha-copy h1 em{font-weight:400;font-style:italic;color:#b8cbb7}
+.hm-home .ha-copy>p{font:400 14px/1.75 Arial,Helvetica,sans-serif;color:#ced9ca;max-width:410px;margin:0}
+.hm-home .ha-actions{display:flex;flex-direction:column;gap:11px;margin-top:40px;width:min(100%,450px)}
+.hm-home .ha-action{min-height:52px;padding:0 19px;display:flex;align-items:center;justify-content:space-between;gap:15px;text-decoration:none!important;font:400 12px/1.5 Arial,Helvetica,sans-serif;transition:background .2s,transform .2s,border-color .2s;outline-offset:4px}
+.hm-home .ha-action span{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:12px;row-gap:2px}
+.hm-home .ha-action strong{font-size:12px;font-weight:700}
+.hm-home .ha-action small{font-size:11px;font-weight:400;opacity:.76}
+.hm-home .ha-action svg{flex-shrink:0}
+.hm-home .ha-action-primary{background:#f0f0e9;border:1px solid #f0f0e9;color:#253f31}
+.hm-home .ha-action-secondary{border:1px solid #718677;color:#f5f2e9}
+.hm-home .ha-action-primary:hover{background:#fff;transform:translateY(-2px)}
+.hm-home .ha-action-secondary:hover{background:#3b5845;transform:translateY(-2px)}
+.hm-home .ha-action:focus-visible{outline:3px solid #e8d7af}
+.hm-home .ha-art{background:radial-gradient(ellipse at 43% 43%,#d4decf 0%,#b9c8b8 55%,#a8bcaa 100%);position:relative;overflow:hidden;min-width:0;min-height:782px}
+.hm-home .ha-artboard{position:absolute;left:50%;top:50%;width:620px;height:780px;transform:translate(-50%,-50%) scale(1);transform-origin:center center}
+.hm-home .ha-orbit{position:absolute;left:51px;top:92px;width:535px;height:575px;border:1px solid #e9efe5a9;border-radius:50%;transform:rotate(18deg)}
+.hm-home .ha-art-corner{position:absolute;top:30px;right:25px;font:700 9px Arial,Helvetica,sans-serif;letter-spacing:.21em;color:#456149}
+.hm-home .ha-art-pill{position:absolute;left:33px;top:94px;border-radius:25px;background:#e9efe5c9;color:#43634b;padding:10px 17px;font:700 8px/1.2 Arial,Helvetica,sans-serif;letter-spacing:.15em;white-space:nowrap;z-index:8}
+.hm-home .ha-art-pill span{padding:0 6px}
+.hm-home .ha-visual-card{position:absolute;background:#faf8f1;border:1px solid #eeeae0;border-radius:5px;box-shadow:0 21px 43px #26382b36,0 4px 10px #24372c12;overflow:hidden;color:#284534}
+.hm-home .ha-card-kicker{font:700 8px/1.3 Arial,Helvetica,sans-serif;color:#6e8b70;letter-spacing:.17em}
+.hm-home .ha-market-card{top:252px;left:22px;width:229px;height:298px;transform:rotate(-7deg);padding:21px 19px;z-index:3}
+.hm-home .ha-market-title{font:400 29px/.98 Georgia,serif;color:#2e4b36;margin:22px 0 19px;letter-spacing:-.04em}
+.hm-home .ha-market-title em{font-weight:400;color:#89a18a}
+.hm-home .ha-market-rows{border-top:1px solid #d5dfd2}
+.hm-home .ha-market-rows div{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #d5dfd2;font:700 12px Arial,Helvetica,sans-serif}
+.hm-home .ha-market-rows svg{width:12px;height:12px;stroke:#69836e}
+.hm-home .ha-edit-card{top:139px;left:163px;width:282px;height:485px;padding:18px 17px;transform:rotate(-1deg);z-index:4}
+.hm-home .ha-edit-brand{font:bold 25px/.96 Arial,Helvetica,sans-serif;letter-spacing:-.08em;margin:16px 0 11px;color:#294a36}
+.hm-home .ha-edit-brand span{color:#a6b6a1}
+.hm-home .ha-edit-photo{width:100%;height:132px;overflow:hidden;border-radius:3px;background:#e5e4db}
+.hm-home .ha-edit-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:78% 45%}
+.hm-home .ha-edit-title{font:400 30px/.93 Georgia,serif;letter-spacing:-.04em;color:#2c4938;margin:15px 0 16px}
+.hm-home .ha-edit-title em{color:#8ca48c;font-weight:400}
+.hm-home .ha-edit-products{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.hm-home .ha-edit-product{height:128px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:2px 4px 8px}
+.hm-home .ha-edit-product-bag{background:#f0e9de}
+.hm-home .ha-edit-product-bottle{background:#e1e8de}
+.hm-home .ha-edit-product .ha-drawing{height:103px;width:100%}
+.hm-home .ha-edit-product span{font:700 8px/1 Arial,Helvetica,sans-serif;color:#536d56}
+.hm-home .ha-detail-card{top:270px;left:425px;width:194px;height:306px;padding:14px 13px;transform:rotate(7deg);z-index:5}
+.hm-home .ha-detail-product{height:151px;display:flex;justify-content:center;align-items:center;margin:12px 0 13px;background:#e3e1d9}
+.hm-home .ha-detail-product .ha-drawing{width:145px;height:145px}
+.hm-home .ha-detail-name{font:700 11px/1.25 Arial,Helvetica,sans-serif;margin-top:2px}
+.hm-home .ha-detail-description{font:400 8px/1.4 Arial,Helvetica,sans-serif;color:#81917e;margin-top:7px}
+.hm-home .ha-detail-button{margin-top:14px;height:31px;background:#284a37;color:#fff;display:flex;justify-content:center;align-items:center;gap:8px;font:400 9px/1 Arial,Helvetica,sans-serif}
+.hm-home .ha-detail-button svg{width:12px;height:12px}
+.hm-home .ha-connector{position:absolute;inset:0;width:620px;height:780px;z-index:6;pointer-events:none}
+.hm-home .ha-art-signoff{position:absolute;right:31px;bottom:28px;font:italic 23px Georgia,serif;color:#3c6249}
+@media(max-width:1250px){
+ .hm-home .ha-hero{min-height:685px}
+ .hm-home .ha-copy{padding-left:clamp(36px,5vw,70px);padding-top:65px}
+ .hm-home .ha-copy h1{font-size:clamp(57px,6.05vw,78px)!important}
+ .hm-home .ha-art{min-height:685px}
+ .hm-home .ha-artboard{transform:translate(-50%,-50%) scale(.83)}
+}
+@media(max-width:930px){
+ .hm-home .ha-hero{grid-template-columns:1fr;width:calc(100% - 38px);min-height:0}
+ .hm-home .ha-copy{padding:58px 50px 54px}
+ .hm-home .ha-copy h1{font-size:clamp(65px,8vw,87px)!important;max-width:760px}
+ .hm-home .ha-copy>p{max-width:500px}
+ .hm-home .ha-art{min-height:590px}
+ .hm-home .ha-artboard{transform:translate(-50%,-50%) scale(.75)}
+}
+@media(max-width:600px){
+ .hm-home .ha-hero{width:100%;margin-top:0}
+ .hm-home .ha-copy{padding:45px 24px 44px}
+ .hm-home .ha-eyebrow{font-size:9px;letter-spacing:.16em}
+ .hm-home .ha-copy h1{font-size:clamp(46px,10.4vw,63px)!important;line-height:1.01!important;margin:26px 0 22px!important}
+ .hm-home .ha-copy h1>span{display:block}
+ .hm-home .ha-copy>p{font-size:13px;line-height:1.7}
+ .hm-home .ha-actions{margin-top:29px}
+ .hm-home .ha-action{padding:11px 14px;min-height:54px}
+ .hm-home .ha-action span{column-gap:8px}
+ .hm-home .ha-action strong{font-size:11px}
+ .hm-home .ha-action small{font-size:10px}
+ .hm-home .ha-art{min-height:446px}
+ .hm-home .ha-artboard{transform:translate(-50%,-50%) scale(.56)}
+ .hm-home .hm-featured{padding-top:48px}
+}
+@media(max-width:390px){
+ .hm-home .ha-copy{padding-left:19px;padding-right:19px}
+ .hm-home .ha-copy h1{font-size:clamp(43px,10.5vw,50px)!important}
+ .hm-home .ha-art{min-height:400px}
+ .hm-home .ha-artboard{transform:translate(-50%,-50%) scale(.50)}
+}
+@media(prefers-reduced-motion:reduce){.hm-home .ha-action{transition:none!important}}
