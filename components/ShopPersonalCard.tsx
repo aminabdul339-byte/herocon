@@ -3,7 +3,7 @@ import {useState} from "react";
 import Link from "next/link";
 import {ExternalArrowIcon} from "@/components/ShopIcons";
 import type {PersonalShopProduct} from "@/lib/personal-shop";
-import {productPrice} from "@/lib/personal-shop";
+import {shopPrice} from "@/lib/shop-price";
 
 export default function ShopPersonalCard({product}:{product:PersonalShopProduct}){
  const [imageFailed,setImageFailed]=useState(false);
@@ -17,7 +17,7 @@ export default function ShopPersonalCard({product}:{product:PersonalShopProduct}
    <div className="hc-self-item-body">
      <p className="hc-self-item-category">{product.category} <span>·</span> ORIGINAL MARKETPLACE SOURCE</p>
      <h3><Link href={path} prefetch={false}>{product.name}</Link></h3>
-     <div className="hc-self-item-price"><strong>{productPrice(product)}</strong><span>source reference price*</span></div>
+     <div className="hc-self-item-price"><strong>{shopPrice(product)}</strong><span>source reference price*</span></div>
      <div className="hc-self-item-actions">
        <Link href={path} prefetch={false} className="hc-self-link-primary">View product <span aria-hidden="true">→</span></Link>
        <a href={product.originalUrl} target="_blank" rel="noopener noreferrer nofollow" className="hc-self-link-secondary">Original listing <ExternalArrowIcon/></a>
