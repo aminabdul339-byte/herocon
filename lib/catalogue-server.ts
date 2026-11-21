@@ -68,9 +68,19 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
         const previous = byId.get(id);
         byId.set(id, previous ? {
           ...previous, ...product,
-          originalMarketplaceUrl: product.originalMarketplaceUrl || previous.originalMarketplaceUrl,
-          imageUrl: product.imageUrl || previous.imageUrl,
-          images: product.images || previous.images,
+          title: product.title&&product.title!=="Product"?product.title:previous.title,
+          originalTitle:product.originalTitle||previous.originalTitle,
+          price:product.price||previous.price,
+          priceGBP:product.priceGBP??previous.priceGBP,
+          category:product.category||previous.category,
+          collectedAt:product.collectedAt||previous.collectedAt,
+          sourceMarketplace:product.sourceMarketplace||previous.sourceMarketplace,
+          sourceProductId:product.sourceProductId||previous.sourceProductId,
+          originalMarketplaceUrl:product.originalMarketplaceUrl||previous.originalMarketplaceUrl,
+          imageUrl:product.imageUrl||previous.imageUrl,
+          images:product.images?.length
+            ?[...new Set([...(previous.images||[]),...(product.images||[])])].slice(0,36)
+            :previous.images,
           variants:product.variants?.length?product.variants:previous.variants,
           variantCount:product.variantCount??previous.variantCount,
           descriptionText:product.descriptionText||previous.descriptionText,
