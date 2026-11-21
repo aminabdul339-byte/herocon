@@ -12,17 +12,44 @@ function authorised(request:Request):boolean {
   const a=Buffer.from(expected),b=Buffer.from(supplied);
   return a.length===b.length&&timingSafeEqual(a,b);
 }
+function invalidReply(error:string,status=503){
+ return NextResponse.json({ok:false,connection:"failed",apiKeyConfigured:true,
+  webhookSecretConfigured:Boolean(process.env.FULFILLBOT_WEBHOOK_SECRET?.trim()),
+  writeActionsEnabled:false,error},{status,headers});
+}
 export async function GET(request:Request){
   if(!authorised(request))return NextResponse.json({ok:false,error:"unauthorised"},{status:401,headers});
-  const secretConfigured=Boolean(process.env.FULFILLBOT_WEBHOOK_SECRET?.trim());
-  if(!partnerKeyConfigured())
-    return NextResponse.json({ok:true,connection:"awaiting_api_key",apiKeyConfigured:false,webhookSecretConfigured:secretConfigured,writeActionsEnabled:false},{headers});
+  const webhookSecretConfigured=Boolean(process.env.FULFILLBOT_WEBHOOK_SECRET?.trim());
+  if(!partnerKeyConfigured())return NextResponse.json({
+    ok:false,connection:"awaiting_api_key",apiKeyConfigured:false,
+    webhookSecretConfigured,writeActionsEnabled:false
+  },{headers});
   try{
-    const result=await partnerRead("me");
-    const payload=result&&typeof result==="object"?result as {success?:boolean}:{};
-    return NextResponse.json({ok:payload.success!==false,connection:"connected",apiKeyConfigured:true,webhookSecretConfigured:secretConfigured,writeActionsEnabled:false},{headers});
+    // Never return the customer's identity, balances, API token or any
+    // order/product records; the private page needs status flags only.
+    const me=await partnerRead("me");
+    if(!me||typeof me!=="object"||(me as {success?:boolean}).success===false)
+      return invalidReply("invalid_partner_response");
+    let catalogue:"readable"|"unavailable"="unavailable";
+    let productCount:number|null=null;
+    let catalogueError:string|null=null;
+    try{
+      const listed=await partnerRead("products",{page:1});
+      const result=listed&&typeof listed==="object"?listed as {
+        success?:boolean;data?:unknown;meta?:{total?:number}
+      }:{};
+      if(result.success===false)throw new PartnerReadError(502,"partner_products_error");
+      catalogue="readable";
+      if(Array.isArray(result.data))productCount=result.data.length;
+    }catch(error){
+      catalogueError=error instanceof PartnerReadError?error.code:"partner_unavailable";
+    }
+    return NextResponse.json({
+      ok:true,connection:"connected",apiKeyConfigured:true,
+      webhookSecretConfigured,catalogue,productCountFirstPage:productCount,
+      catalogueError,writeActionsEnabled:false
+    },{headers});
   }catch(error){
-    const code=error instanceof PartnerReadError?error.code:"unknown_error";
-    return NextResponse.json({ok:false,connection:"failed",apiKeyConfigured:true,webhookSecretConfigured:secretConfigured,writeActionsEnabled:false,error:code},{status:503,headers});
+    return invalidReply(error instanceof PartnerReadError?error.code:"partner_unavailable");
   }
 }
