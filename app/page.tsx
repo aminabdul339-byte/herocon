@@ -36,20 +36,20 @@ export default async function Home(){
     </section>
 
     <section className="hm-options hm-shell" aria-label="Explore Herocon">
-      <Link className="hm-option hm-option-personal" href="/shop-for-yourself" aria-label="Shop for yourself: browse fashion, accessories and everyday finds">
-        <div className="hm-option-photo"><img src={PHOTOS.personal} alt="Warm brown coats and jackets displayed on a boutique clothing rail" width={900} height={1100} fetchPriority="high"/></div>
-        <div className="hm-option-content">
-          <span className="hm-option-eyebrow">01 / FOR YOURSELF</span>
-          <div className="hm-option-bottom"><div><h2>Shop for <em>yourself.</em></h2><p>Fashion, accessories and the little finds you love.</p></div>
-          <span className="hm-option-action">Explore the edit <Arrow up/></span></div>
-        </div>
-      </Link>
       <Link className="hm-option hm-option-business" href="/start-a-business" aria-label="Start a business: explore products and original marketplace suppliers">
         <div className="hm-option-photo"><img src={PHOTOS.business} alt="Real photograph of stacked shipping boxes in a sourcing warehouse" width={900} height={1100} fetchPriority="high"/></div>
         <div className="hm-option-content">
-          <span className="hm-option-eyebrow">02 / FOR YOUR BUSINESS</span>
+          <span className="hm-option-eyebrow">01 / FOR YOUR BUSINESS</span>
           <div className="hm-option-bottom"><div><h2>Start a <em>business.</em></h2><p>Explore products, suppliers and your next big idea.</p></div>
           <span className="hm-option-action">Explore sourcing <Arrow up/></span></div>
+        </div>
+      </Link>
+      <Link className="hm-option hm-option-personal" href="/shop-for-yourself" aria-label="Shop for yourself: browse fashion, accessories and everyday finds">
+        <div className="hm-option-photo"><img src={PHOTOS.personal} alt="Warm brown coats and jackets displayed on a boutique clothing rail" width={900} height={1100} fetchPriority="high"/></div>
+        <div className="hm-option-content">
+          <span className="hm-option-eyebrow">02 / FOR YOURSELF</span>
+          <div className="hm-option-bottom"><div><h2>Shop for <em>yourself.</em></h2><p>Fashion, accessories and the little finds you love.</p></div>
+          <span className="hm-option-action">Explore the edit <Arrow up/></span></div>
         </div>
       </Link>
     </section>
