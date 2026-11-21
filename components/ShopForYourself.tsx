@@ -54,6 +54,15 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
       </Link>)}
     </nav>
   </div>
+  <form className="hc-personal-catalogue-search" role="search" action="/shop-for-yourself#browse-finds" method="get">
+    <input name="audience" type="hidden" value={audience}/>
+    {category!=="All"&&<input name="category" type="hidden" value={category}/>}
+    {sort==="name"&&<input name="sort" type="hidden" value="name"/>}
+    <label htmlFor="hc-personal-catalogue-query" className="hc-self-sr-only">Search products</label>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
+    <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
+    <button type="submit">Search <span aria-hidden="true">→</span></button>
+  </form>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
       <span className="hc-self-category-title">All products</span>
@@ -62,18 +71,9 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
       <span className="hc-self-category-title">{cat}</span>
     </Link>)}
   </nav>
-  <form className="hc-self-toolbar hc-personal-toolbar" action="/shop-for-yourself#browse-finds" method="get">
-    <input name="audience" type="hidden" value={audience}/>
-    {category!=="All"&&<input name="category" type="hidden" value={category}/>}
-    <label className="hc-self-search"><svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" strokeWidth="1.7" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.6"/><path d="m15.5 15.5 5 5"/></svg>
-      <span className="hc-self-sr-only">Search products</span><input type="search" name="q" defaultValue={filters.q} placeholder={"Search "+genderName[audience]+" finds…"}/>
-    </label>
-    <label className="hc-self-sort">Sort <select name="sort" defaultValue={sort==="name"?"name":"featured"}><option value="featured">Featured</option><option value="name">Name: A to Z</option></select></label>
-    <button type="submit" className="hc-personal-search-button">Search <span aria-hidden="true">→</span></button>
-  </form>
-  <div className="hc-self-results-caption">
-    <div><strong>{matching.length.toLocaleString("en-GB")} finds</strong><span>{category==="All"?"All categories":category}</span></div>
-    <span>Showing {matching.length?(page-1)*PER_PAGE+1:0}–{Math.min(page*PER_PAGE,matching.length)} of {matching.length.toLocaleString("en-GB")}</span>
+  <div className="hc-self-results-caption hc-personal-catalogue-meta">
+    <span><strong>{matching.length.toLocaleString("en-GB")} {matching.length===1?"product":"products"}</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
+    {matching.length>0&&<span>Showing {((page-1)*PER_PAGE+1).toLocaleString("en-GB")}–{Math.min(page*PER_PAGE,matching.length).toLocaleString("en-GB")}</span>}
   </div>
   {shown.length?
     <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
