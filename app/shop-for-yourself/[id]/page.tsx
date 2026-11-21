@@ -1,87 +1,82 @@
 import type {Metadata} from "next";
 import Link from "next/link";
-import {ExternalArrowIcon} from "@/components/ShopIcons";
 import {notFound} from "next/navigation";
 import Header from "@/components/Header";
 import ProductExperience from "@/components/ProductExperience";
-import products from "@/data/shop-for-yourself.json";
+import ShopPersonalCard from "@/components/ShopPersonalCard";
+import {findPersonalProduct,personalShopProducts} from "@/lib/personal-shop";
+import {getPersonalShopRates} from "@/lib/personal-shop-fx";
+import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import type {Product} from "@/lib/types";
-import type {BuckydropProduct} from "@/lib/buckydrop";
-import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
-import {getReferenceCnyGbpRate,type FxRate} from "@/lib/fx-reference";
 import "../shop-for-yourself.css";
+import "../personal-shop-v2.css";
 
-// Read-only detail pages. Never request paid supplier lookups when browsing.
 export const dynamic="force-dynamic";
+type Params={params:Promise<{id:string}>;searchParams:Promise<{audience?:string}>};
 
-type ProductParams={params:Promise<{id:string}>};
-const priceText=(amount:number|null)=>amount===null?"Price on request":"£"+amount.toFixed(2);
-
-export async function generateMetadata({params}:ProductParams):Promise<Metadata>{
+export async function generateMetadata({params}:Params):Promise<Metadata>{
  const {id}=await params;
- const item=products.find(p=>p.id===id);
- if(!item)return {title:"Product not found"};
- return {title:item.name+" | Shop for Yourself",description:"Explore "+item.name+" with an original marketplace link, GBP reference price and Herocon shopping notes."};
+ const item=findPersonalProduct(id);
+ if(!item)return {title:"Product not found | Herocon"};
+ return {title:item.name+" | The Personal Edit | Herocon",description:"Explore "+item.name+" with its GBP reference price and original marketplace listing."};
 }
 
-export default async function PersonalShopProductPage({params}:ProductParams){
+export default async function ShopProductPage({params,searchParams}:Params){
  const {id}=await params;
- const item=products.find(p=>p.id===id);
+ const item=findPersonalProduct(id);
  if(!item)notFound();
- const localPhoto="/shop-for-yourself-images/"+item.id+".webp";
+ const search=await searchParams;
+ const audience=item.gender==="unisex"
+  ?(search.audience==="men"?"men":"women")
+  :item.gender;
+ const rates=await getPersonalShopRates();
+ const price=shopPrice(item,rates);
+ const amount=priceAmountGbp(item,rates);
  const product:Product={
-  canonicalId:"personal:"+item.id,
-  doppelProductId:item.id,
-  title:item.name,
-  originalTitle:item.name,
+  canonicalId:"personal:"+item.id,doppelProductId:item.id,
+  title:item.name,displayTitle:item.name,originalTitle:item.name,
   category:item.category,
-  priceGBP:item.priceGBP??undefined,
-  price:priceText(item.priceGBP),
-  imageUrl:localPhoto,
+  imageUrl:item.imageUrl,
+  images:[item.imageUrl],
   originalMarketplaceUrl:item.originalUrl,
-  sourceMarketplace:new URL(item.originalUrl).hostname
+  sourceMarketplace:item.originalUrl.includes("1688.com")?"1688":item.originalUrl.includes("taobao.com")?"Taobao":"Weidian",
+  ...(amount!==null?{priceGBP:amount}:{}),
+  price
  };
- let saved:BuckydropProduct|null=null;
- let fx:FxRate|undefined;
- // The BuckyDrop import will eventually populate permanent snapshots.
- // This reads any existing snapshot only; it NEVER invokes the billable API.
- try {saved=await getSavedBuckydropProduct(item.originalUrl);}
- catch {saved=null;}
- if(saved){try{fx=await getReferenceCnyGbpRate();}catch{fx=undefined;}}
- const related=products.filter(p=>p.category===item.category&&p.id!==item.id).slice(0,4);
- return <main className="hc-self">
-  <Header/>
-  <div className="hc-self-product-top">
-   <nav aria-label="Breadcrumb"><Link href="/shop-for-yourself">Shop for Yourself</Link><span>/</span><span>{item.category}</span></nav>
-   <a className="hc-self-product-shop-link" href={item.shopUrl} target="_blank" rel="noopener noreferrer nofollow sponsored">Shop using an agent <ExternalArrowIcon/></a>
-  </div>
-  <ProductExperience
-   key={item.id}
-   product={product}
-   id={item.id}
-   title={item.name}
-   images={[localPhoto]}
-   price={priceText(item.priceGBP)}
-   initialSource={saved||undefined}
-   initialFx={fx}
-   buckydropEnabled={Boolean(saved)}
-   sourceLookupFailed={!saved}
-   gbpOnly
-   customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)}
-  />
-  <section className="hc-self-item-notes" aria-labelledby="hc-self-notes-title">
-   <div><p className="hc-self-eyebrow">INSIDER NOTES</p><h2 id="hc-self-notes-title">Notes from <em>Herocon.</em></h2></div>
-   <div>{item.itemTip?<p className="hc-self-note-copy">{item.itemTip}</p>:<p>No additional product tips are available yet.</p>}
-    <small>Curated product guidance. Supplier claims, product quality and authenticity have not been independently verified by Herocon.</small>
-    {item.additionalLinks.length>0&&<div className="hc-self-extra-listings">{item.additionalLinks.map((link,i)=><a key={link.url+i} href={link.url} target="_blank" rel="noopener noreferrer nofollow sponsored">Additional purchasing option {i+1} ↗</a>)}</div>}
+ const related=personalShopProducts.filter(p=>p.id!==item.id&&p.category===item.category&&(p.gender===audience||p.gender==="unisex")).slice(0,4);
+ const audienceUrl="/shop-for-yourself?audience="+audience;
+ return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
+   <Header/>
+   <div className="hc-self-wrap hc-personal-detail-wrap">
+     <nav className="hc-personal-breadcrumb" aria-label="Product breadcrumbs">
+       <Link href="/">Herocon</Link><span>/</span>
+       <Link href={audienceUrl+"#browse-finds"}>{audience==="women"?"Women’s Edit":"Men’s Edit"}</Link><span>/</span>
+       <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>{item.category}</Link>
+     </nav>
+     <div className="hc-personal-experience">
+       <ProductExperience
+         key={item.id}
+         product={product}
+         id={item.id}
+         title={item.name}
+         images={[item.imageUrl]}
+         price={price}
+         gbpOnly
+         buckydropEnabled={false}
+         sourceLookupFailed
+         customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
+       />
+     </div>
+     <aside className="hc-personal-detail-reference" aria-label="Price and marketplace notes">
+       <div><strong>{priceIsConverted(item)?"Approximate GBP estimate":"Reference price in GBP"}</strong><p>{ratesDisclosure(rates)} This reference amount is not a live offer. Final prices, delivery, taxes and any agent fees may vary.</p></div>
+       <div><strong>Original marketplace only</strong><p>Direct source links open the original Weidian, Taobao or 1688 listing. Herocon cannot independently confirm supplier inventory, brand authenticity or product quality.</p></div>
+     </aside>
+     {related.length>0&&<section className="hc-personal-detail-related" aria-labelledby="hc-personal-related-title">
+       <div className="hc-personal-related-heading"><div><span className="hc-personal-detail-kicker">MORE TO DISCOVER</span><h2 id="hc-personal-related-title">You might also <em>love.</em></h2></div>
+         <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>Explore {item.category.toLowerCase()} →</Link>
+       </div>
+       <div className="hc-self-grid hc-personal-grid">{related.map(p=><ShopPersonalCard product={p} rates={rates} audience={audience} key={p.id}/>)}</div>
+     </section>}
    </div>
-  </section>
-  {related.length>0&&<section className="hc-self-product-related">
-   <p className="hc-self-eyebrow">MORE TO EXPLORE</p><h2>More in {item.category.toLowerCase()}.</h2>
-   <div className="hc-self-product-related-grid">{related.map(p=><Link className="hc-self-product-related-card" key={p.id} href={"/shop-for-yourself/"+encodeURIComponent(p.id)}>
-    <img src={"/shop-for-yourself-images/"+p.id+".webp"} alt={p.name} width={330} height={330} loading="lazy"/>
-    <span>{p.name} · {priceText(p.priceGBP)}</span>
-   </Link>)}</div>
-  </section>}
  </main>;
 }
