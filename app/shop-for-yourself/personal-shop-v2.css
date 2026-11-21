@@ -761,3 +761,211 @@
   transition:none!important;
  }
 }
+
+
+/* SHARED CATALOGUE RHYTHM V4
+ * Mirrors Start a Business in spacing, information hierarchy and controls:
+ * heading -> single search field -> compact pills -> result count -> products.
+ * Only the accent changes with the selected audience.
+ */
+.hc-self-v2[data-audience] .hc-personal-catalogue-intro{
+ margin-bottom:21px;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search{
+ display:flex;
+ align-items:center;
+ gap:13px;
+ width:100%;
+ min-width:0;
+ min-height:51px;
+ margin:0;
+ padding:5px 6px 5px 16px;
+ background:#fff;
+ border:1px solid var(--ps-accent-border);
+ border-radius:8px;
+ box-shadow:none;
+ transition:border-color .2s ease,box-shadow .2s ease;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search:focus-within{
+ border-color:var(--ps-accent);
+ box-shadow:0 0 0 3px var(--ps-shadow);
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search svg{
+ flex-shrink:0;
+ width:20px;
+ height:20px;
+ color:var(--ps-muted);
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search input[type="search"]{
+ flex:1;
+ min-width:0;
+ width:auto;
+ border:0;
+ outline:none;
+ background:transparent;
+ padding:12px 0;
+ font-size:14px;
+ line-height:1.4;
+ color:var(--ps-ink);
+ -webkit-appearance:none;
+ appearance:none;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search input[type="search"]::placeholder{
+ color:#89968b;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search button{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:18px;
+ flex:0 0 auto;
+ min-height:41px;
+ padding:11px 22px;
+ border:0;
+ border-radius:5px;
+ background:var(--ps-accent);
+ color:#fff;
+ font-size:12px;
+ font-weight:700;
+ line-height:1.3;
+ cursor:pointer;
+ transition:background-color .2s ease;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search button:hover{
+ background:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-search button:focus-visible{
+ outline:2px solid var(--ps-accent);
+ outline-offset:2px;
+}
+/* Same pill dimensions as the sourcing catalogue: 8x12, 11px text. */
+.hc-self-v2[data-audience] .hc-personal-categories{
+ display:flex;
+ flex-wrap:wrap;
+ align-items:center;
+ gap:7px;
+ margin:13px 0 14px;
+ padding:0;
+ overflow:visible;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ flex:0 0 auto;
+ width:auto;
+ min-width:0;
+ max-width:none;
+ min-height:0;
+ height:auto;
+ margin:0;
+ padding:8px 12px;
+ border:1px solid var(--ps-accent-border);
+ border-radius:100px;
+ background:var(--ps-accent-soft);
+ color:var(--ps-accent);
+ text-align:center;
+ font-size:11px;
+ line-height:1.25;
+ font-weight:700;
+ box-shadow:none;
+ transform:none;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-title{
+ display:inline;
+ max-width:none;
+ padding:0;
+ margin:0;
+ font-size:11px;
+ line-height:1.25;
+ font-weight:700;
+ color:inherit;
+ white-space:nowrap;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category:hover{
+ border-color:var(--ps-accent);
+ background:var(--ps-accent-border);
+ color:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active,
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active:hover{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+ color:#fff;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active:hover{
+ background:var(--ps-accent-hover);
+ border-color:var(--ps-accent-hover);
+}
+/* Matching source-catalogue meta row rather than a tall toolbar divider. */
+.hc-self-v2[data-audience] .hc-personal-catalogue-meta{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ flex-wrap:wrap;
+ gap:12px;
+ margin:12px 0 12px;
+ padding:0;
+ border:0;
+ font-size:12px;
+ line-height:1.5;
+ color:var(--ps-muted);
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-meta strong{
+ color:var(--ps-ink);
+ font-size:12px;
+ font-weight:750;
+}
+.hc-self-v2[data-audience] .hc-personal-catalogue-meta>span:last-child{
+ color:var(--ps-muted);
+}
+/* Avoid oversized category navigation on touch devices. */
+@media(max-width:760px){
+ .hc-self-v2[data-audience] .hc-personal-catalogue-intro{margin-bottom:15px}
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search{
+  padding:5px 6px 5px 13px;
+  min-height:48px;
+  gap:9px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search input[type="search"]{font-size:13px}
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search button{
+  min-height:41px;
+  gap:8px;
+  padding:11px 14px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-categories{
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-inline:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  gap:7px;
+  padding:0 0 8px;
+  margin:11px 0 8px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+  padding:8px 12px;
+  min-height:0;
+ }
+ .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-title{
+  font-size:11px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-catalogue-meta{
+  margin:10px 0 12px;
+  font-size:11px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-catalogue-meta strong{
+  font-size:11px;
+ }
+}
+@media(max-width:360px){
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search button{padding:10px 11px}
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search button span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search,
+ .hc-self-v2[data-audience] .hc-personal-catalogue-search button{
+  transition:none;
+ }
+}
