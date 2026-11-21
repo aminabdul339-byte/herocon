@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {ShopAudienceIcon} from "@/components/ShopIcons";
@@ -61,7 +62,7 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
     <label htmlFor="hc-personal-catalogue-query" className="hc-self-sr-only">Search products</label>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
     <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
-    <button type="submit">Search <span aria-hidden="true">→</span></button>
+    <button type="submit">Search <span aria-hidden="true"><ArrowIcon direction="right"/></span></button>
   </form>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
@@ -79,9 +80,9 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
     <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
     <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
-    {page>1?<Link href={href({page:page-1})}>← Previous</Link>:<span className="is-disabled">← Previous</span>}
+    {page>1?<Link href={href({page:page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
     <span>Page {page} of {pageCount}</span>
-    {page<pageCount?<Link href={href({page:page+1})}>Next →</Link>:<span className="is-disabled">Next →</span>}
+    {page<pageCount?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
   </nav>}
   <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
  </section>;

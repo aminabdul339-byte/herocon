@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import Header from "@/components/Header";
 import type {Metadata} from "next";
@@ -31,8 +32,8 @@ export default function MembershipPage(){
      <p className="hc-membership-lead">Discover products across 1688, Taobao, Weidian and other Chinese marketplaces.</p>
      <p className="hc-membership-intro">Our optional monthly early-access membership supports Herocon during its rollout. Browse the catalogue and explore supplier links now; product ordering, warehouse fulfilment and international shipping checkout are not yet available.</p>
      <div className="hc-membership-ctas">
-      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore products <span aria-hidden="true">↗</span></Link>
-      <Link className="hc-membership-secondary" href="/account">Create a free account ↗</Link>
+      <Link className="hc-premium-button hc-premium-button-dark" href="/search">Explore products <span aria-hidden="true"><ArrowIcon/></span></Link>
+      <Link className="hc-membership-secondary" href="/account">Create a free account <ArrowIcon/></Link>
      </div>
     </div>
     <aside className="hc-membership-price" aria-label="Herocon membership pricing">
@@ -41,7 +42,7 @@ export default function MembershipPage(){
      <div className="hc-membership-price-rule"/>
      <h2>Herocon early-access membership.</h2>
      <ul>{benefits.map(item=><li key={item}><svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>{item}</li>)}</ul>
-     <Link className="hc-membership-price-link" href="/membership/activate">Join for £9.99/month <span aria-hidden="true">↗</span></Link>
+     <Link className="hc-membership-price-link" href="/membership/activate">Join for £9.99/month <span aria-hidden="true"><ArrowIcon/></span></Link>
      <small>Membership is optional while order checkout is unavailable. £9.99 is charged now and renews monthly until cancelled. The catalogue, account and cart are free; no product orders can currently be placed. Products and shipping are separate charges once launched. Cancel anytime through Stripe: membership ordinarily continues to the end of the paid month, with no next-month charge. Cancellation does not automatically refund unused time; statutory cancellation and refund rights still apply. <Link href="/terms-and-conditions">View terms</Link>.</small>
     </aside>
    </div>

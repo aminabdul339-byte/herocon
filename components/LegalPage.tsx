@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import Header from "@/components/Header";
 import type {ReactNode} from "react";
@@ -30,5 +31,5 @@ export function LegalSection({title,children}:{title:string;children:ReactNode})
  return <section className="hc-legal-section"><h2>{title}</h2>{children}</section>;
 }
 export function LegalContact({subject="Herocon legal enquiry",label="Contact the Herocon team"}:{subject?:string;label?:string}){
- return <a href={"mailto:aminabdul339@outlook.com?subject="+encodeURIComponent(subject)}>{label} <span aria-hidden="true">↗</span></a>;
+ return <a href={"mailto:aminabdul339@outlook.com?subject="+encodeURIComponent(subject)}>{label} <span aria-hidden="true"><ArrowIcon/></span></a>;
 }

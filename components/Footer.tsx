@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 const SUPPORT="aminabdul339@outlook.com";
@@ -11,7 +12,7 @@ export default function Footer(){
    <div className="sc-footer-links">
     <div><strong>Discover</strong><Link href="/search">All products</Link><Link href="/shop-for-yourself">Shop for yourself</Link><Link href="/search?category=Home%20%26%20Decor">Home &amp; Decor</Link></div>
     <div><strong>Learn</strong><Link href="/start-a-business">Start a business</Link>{showSourcingGuide&&<Link href="/how-it-works">How sourcing works</Link>}<Link href="/membership">Membership</Link><Link href="/cart">Shopping cart</Link></div>
-    <div className="hc-footer-support"><strong>Need help?</strong><Link href="/contact">Contact us</Link><a href={`mailto:${SUPPORT}?subject=Herocon%20support%20enquiry`}>Email our support team <span aria-hidden="true">↗</span></a></div>
+    <div className="hc-footer-support"><strong>Need help?</strong><Link href="/contact">Contact us</Link><a href={`mailto:${SUPPORT}?subject=Herocon%20support%20enquiry`}>Email our support team <span aria-hidden="true"><ArrowIcon/></span></a></div>
    </div>
   </div>
   <div className="hc-footer-legal">

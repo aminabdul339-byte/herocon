@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
@@ -73,7 +74,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
      </aside>
      {related.length>0&&<section className="hc-personal-detail-related" aria-labelledby="hc-personal-related-title">
        <div className="hc-personal-related-heading"><div><span className="hc-personal-detail-kicker">MORE TO DISCOVER</span><h2 id="hc-personal-related-title">You might also <em>love.</em></h2></div>
-         <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>Explore {item.category.toLowerCase()} →</Link>
+         <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>Explore {item.category.toLowerCase()} <ArrowIcon direction="right"/></Link>
        </div>
        <div className="hc-self-grid hc-personal-grid">{related.map(p=><ShopPersonalCard product={p} rates={rates} audience={audience} key={p.id}/>)}</div>
      </section>}

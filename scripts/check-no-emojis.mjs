@@ -7,7 +7,7 @@ import {readdir,readFile} from "node:fs/promises";
 import path from "node:path";
 const scanDirs=["app","components","lib"];
 const extensions=new Set([".tsx",".ts",".jsx",".js",".css"]);
-const forbidden=/[\p{Emoji_Presentation}\uFE0F\u2600-\u27BF]/gu;
+const forbidden=/[\p{Emoji_Presentation}\uFE0F\u2600-\u27BF\u2190-\u21FF\u00D7]/gu;
 let violations=0;
 async function scan(dir){
   for(const entry of await readdir(dir,{withFileTypes:true})){

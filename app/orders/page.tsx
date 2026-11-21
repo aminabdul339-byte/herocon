@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -40,7 +41,7 @@ export default function OrdersPage(){
     <form onSubmit={check} className="hc-order-form">
      <label htmlFor="hc-order-ref">Herocon order reference</label><input id="hc-order-ref" value={reference} onChange={e=>setReference(e.target.value)} placeholder="HC-…" maxLength={50} required autoComplete="off"/>
      <label htmlFor="hc-order-code">Private tracking access code</label><input id="hc-order-code" type="password" value={accessCode} onChange={e=>setAccessCode(e.target.value)} placeholder="Access code" maxLength={200} required autoComplete="off"/>
-     <button type="submit" className="sc-button sc-button-dark" disabled={loading}>{loading?"Checking order…":"Check order status ↗"}</button>
+     <button type="submit" className="sc-button sc-button-dark" disabled={loading}>{loading?"Checking order…":<>Check order status <ArrowIcon/></>}</button>
     </form>
     {error&&<p className="hc-shipping-error" role="alert">{error}</p>}
    </div>
@@ -77,6 +78,6 @@ export default function OrdersPage(){
    </div>}
   </section>
   <section className="sc-resource-note sc-container">Online ordering is currently unavailable. Tracking is for Herocon orders only.</section>
-  <div className="sc-container hc-order-footer"><Link href="/cart" className="sc-button sc-button-outline">View your cart ↗</Link></div>
+  <div className="sc-container hc-order-footer"><Link href="/cart" className="sc-button sc-button-outline">View your cart <ArrowIcon/></Link></div>
  </main>;
 }

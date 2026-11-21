@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import {Suspense} from "react";
 import {notFound} from "next/navigation";
@@ -35,7 +36,7 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
   <Suspense key={id} fallback={<ProductLoadingSkeleton/>}>
    <EnrichedCatalogueProduct {...common}/>
   </Suspense>
-  {product.sellerId&&<Link className="seller-strip" href={"/seller/"+encodeURIComponent(product.sellerId)}><span><small>SELLER</small><b>{product.sellerName}</b></span><span>Explore all products →</span></Link>}
+  {product.sellerId&&<Link className="seller-strip" href={"/seller/"+encodeURIComponent(product.sellerId)}><span><small>SELLER</small><b>{product.sellerName}</b></span><span>Explore all products <ArrowIcon direction="right"/></span></Link>}
   {more.length>0&&<ProductSection eyebrow="THE SELLER EDIT" title={"More from "+product.sellerName+"."} products={more}/>}
   <ProductSection eyebrow="CHOSEN FOR YOU" title="You may also like." products={similar} alt/>
  </main>;

@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useState,type FormEvent} from "react";
 type Kind="ip"|"dsa";
 export default function LegalReportForm({kind}:{kind:Kind}){
@@ -51,7 +52,7 @@ export default function LegalReportForm({kind}:{kind:Kind}){
    <div><label htmlFor={kind+"-reply"}>Reply email (optional)</label><input id={kind+"-reply"} type="email" maxLength={180} value={reply} onChange={e=>setReply(e.target.value)}/></div>
   </div>
   <label className="hc-report-check"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} required/><span>I confirm this report is made in good faith and that the information is accurate to the best of my knowledge.</span></label>
-  <button type="submit" className="hc-legal-primary">Prepare report email <span aria-hidden="true">↗</span></button>
+  <button type="submit" className="hc-legal-primary">Prepare report email <span aria-hidden="true"><ArrowIcon/></span></button>
   <p className="hc-legal-small">This opens your email app; Herocon does not receive or store the report until you send it. Do not include passwords, bank details or unnecessary sensitive information.</p>
   {notice&&<p role="status" className="hc-legal-confirmation">{notice}</p>}
  </form>;

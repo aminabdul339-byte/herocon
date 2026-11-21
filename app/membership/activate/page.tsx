@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {Suspense,useEffect,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import Link from "next/link";
@@ -62,12 +63,12 @@ function MembershipGate(){
     {account.status==="checking"||loading?<p>Checking membership…</p>:
      account.status!=="authenticated"?<>
       <p>Create a free account or sign in to continue.</p>
-      <Link className="hc-account-primary-link" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Sign in / Create an account →</Link>
+      <Link className="hc-account-primary-link" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Sign in / Create an account <ArrowIcon direction="right"/></Link>
      </>:active?<>
       <p><strong>{isTest?"Test membership active":"Membership active"}</strong>{through?" · Paid through "+through:""}{membership.cancelAtPeriodEnd?" · Cancels at period end.":""}</p>
       {isTest?<p>Stripe test mode. No real payment has been made, and product purchases remain locked.</p>:
-       <><p>Product ordering and international shipping payments are not currently available through Herocon.</p><Link className="hc-account-primary-link" href="/search">Browse the catalogue →</Link></>}
-      <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation ↗</button>
+       <><p>Product ordering and international shipping payments are not currently available through Herocon.</p><Link className="hc-account-primary-link" href="/search">Browse the catalogue <ArrowIcon direction="right"/></Link></>}
+      <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation <ArrowIcon/></button>
      </>:<>
       <p className="hc-member-purchase-fine-print">£9.99 charged today and every month until cancelled. This supports Herocon while the sourcing checkout is being developed. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
       {membership.ownerLiveTest&&<p role="note" style={{color:"#874d25",fontWeight:600}}>
@@ -84,11 +85,11 @@ function MembershipGate(){
         </label>
         <p className="hc-member-cancellation-note">Cancel anytime. Regular cancellation takes effect at the end of your paid billing period: access continues until then, with no further monthly payment. Cancellation does not automatically refund unused time; your statutory cancellation and refund rights remain unaffected.</p>
         <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working||!consents}
-         onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":"Subscribe for £9.99/month →"}</button>
+         onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":<>Subscribe for £9.99/month <ArrowIcon direction="right"/></>}</button>
        </>:
        <p>Membership payments are currently unavailable.</p>}
-      {membership.hasBillingAccount&&<button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage existing billing →</button>}
-      <Link className="hc-membership-secondary" href="/cart">Return to cart →</Link>
+      {membership.hasBillingAccount&&<button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage existing billing <ArrowIcon direction="right"/></button>}
+      <Link className="hc-membership-secondary" href="/cart">Return to cart <ArrowIcon direction="right"/></Link>
      </>}
     {error&&<p role="alert" style={{color:"#a14235"}}>{error}</p>}
    </div>

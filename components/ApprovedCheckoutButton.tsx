@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useState} from "react";
 export default function ApprovedCheckoutButton({quoteId,enabled}:{quoteId:string;enabled:boolean}){
  const [busy,setBusy]=useState(false);
@@ -25,7 +26,7 @@ export default function ApprovedCheckoutButton({quoteId,enabled}:{quoteId:string
   </label>
   <button onClick={start} type="button" disabled={busy||!enabled||!shippingAcknowledged}
    style={{width:"100%",background:enabled?"#234830":"#99ad9b",color:"#fff",border:0,padding:"18px 22px",fontWeight:750,fontSize:15,borderRadius:6,cursor:enabled?"pointer":"not-allowed"}}>
-   {busy?"Preparing secure checkout…":enabled?"Pay for products with Stripe →":"Product payments not yet activated"}
+   {busy?"Preparing secure checkout…":enabled?<>Pay for products with Stripe <ArrowIcon direction="right"/></>:"Product payments not yet activated"}
   </button>
   {error&&<p role="alert" style={{color:"#a34b37",fontSize:13}}>{error}</p>}
   {!enabled&&<p style={{fontSize:13,color:"#697a6b"}}>Herocon is finishing the required supplier, payment and business checks. Your quote is saved but no money can be taken yet.</p>}

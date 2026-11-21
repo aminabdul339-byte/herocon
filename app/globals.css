@@ -107,3 +107,9 @@
 .hc-agent-direct-actions a,.hc-agent-direct-actions button{padding:7px 9px;font-size:11px}
 .hc-agent-note{font-size:10px;margin:8px 0 0}
 @media(max-width:560px){.hc-agent-dialog{padding:12px;max-height:85dvh}.hc-agent-dialog-head h2{font-size:18px}.hc-agent-option,.hc-agent-direct{padding:9px 10px}.hc-agent-option-actions{padding-left:0}.hc-agent-logo{width:34px;height:34px}}
+
+/* Herocon line-icon system: consistent weight and scale on all screens. */
+.hc-ui-icon{width:16px;height:16px;display:inline-block;vertical-align:-.17em;flex:0 0 auto;stroke-linecap:round;stroke-linejoin:round}
+a .hc-ui-icon,button .hc-ui-icon{transition:transform .2s ease}
+a:hover .hc-ui-icon,button:not(:disabled):hover .hc-ui-icon{transform:translate(1px,-1px)}
+@media(prefers-reduced-motion:reduce){a .hc-ui-icon,button .hc-ui-icon{transition:none!important;transform:none!important}}

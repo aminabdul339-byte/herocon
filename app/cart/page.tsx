@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -38,7 +39,7 @@ export default function CartPage(){
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
-    <div className="hc-cart-empty"><h2>Your cart is empty.</h2><p>Explore the catalogue and add products to get started.</p><Link href="/search" className="sc-button sc-button-dark">Explore products ↗</Link></div>:
+    <div className="hc-cart-empty"><h2>Your cart is empty.</h2><p>Explore the catalogue and add products to get started.</p><Link href="/search" className="sc-button sc-button-dark">Explore products <ArrowIcon/></Link></div>:
     <div className="hc-cart-layout"><div className="hc-cart-lines">
      <div className="hc-cart-head"><div><h2>{count} {count===1?"item":"items"} in your cart</h2><p className="hc-cart-selection-count">{selectedLines} of {items.length} product options selected</p></div><button type="button" onClick={clearCart}>Clear cart</button></div>
      <div className="hc-cart-select-toolbar"><label className="hc-cart-select-all"><input type="checkbox" checked={allSelected} onChange={event=>selectAllItems(event.target.checked)}/><span>Select all ({items.length})</span></label><span>{selectedUnits} {selectedUnits===1?"item":"items"} selected</span></div>

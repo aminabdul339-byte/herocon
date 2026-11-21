@@ -1,3 +1,4 @@
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Header from "@/components/Header";
 import Link from "next/link";
 import type {Metadata} from "next";
@@ -9,7 +10,7 @@ export default function TestPaymentResult(){
    <h1>Test checkout <em>returned.</em></h1>
    <p>This page is for Herocon's internal Stripe sandbox only. No real purchase, supplier order or shipment will be created.</p>
    <p>Returning here does not independently prove payment. The private Stripe webhook confirms the payment and records a minimal test receipt.</p>
-   <div className="sc-button-row"><Link className="sc-button sc-button-dark" href="/cart">Back to cart ↗</Link><Link className="sc-button sc-button-outline" href="/landed-cost">Estimate shipping →</Link></div>
+   <div className="sc-button-row"><Link className="sc-button sc-button-dark" href="/cart">Back to cart <ArrowIcon/></Link><Link className="sc-button sc-button-outline" href="/landed-cost">Estimate shipping <ArrowIcon direction="right"/></Link></div>
   </section>
  </main>;
 }

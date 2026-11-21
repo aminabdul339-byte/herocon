@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -28,6 +29,6 @@ export default function NewPasswordPage(){
    <button type="submit" disabled={working}>{working?"Updating…":"Update password"}</button>
   </form>
   {message&&<p role="status">{message}</p>}
-  <p><Link href="/account">Return to your account →</Link></p>
+  <p><Link href="/account">Return to your account <ArrowIcon direction="right"/></Link></p>
  </section></main>;
 }

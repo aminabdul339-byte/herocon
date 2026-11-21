@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import {Suspense,useEffect,useMemo,useState} from "react";
 import {useSearchParams} from "next/navigation";
@@ -108,14 +109,14 @@ function AccountContent(){
      <p className="hc-premium-kicker">ACCOUNT ACTIVE</p>
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
-     <Link className="hc-account-primary-link" href="/cart">View your cart →</Link>
-     <Link href="/membership/activate">Manage membership and billing →</Link>
+     <Link className="hc-account-primary-link" href="/cart">View your cart <ArrowIcon direction="right"/></Link>
+     <Link href="/membership/activate">Manage membership and billing <ArrowIcon direction="right"/></Link>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
     </>:account.status==="unavailable"?<>
      <p className="hc-premium-kicker">ACCOUNT SETUP</p>
      <h2>Sign-in unavailable.</h2>
      <p>Please try again shortly or contact support.</p>
-     <Link className="hc-account-primary-link" href="/search">Continue browsing →</Link>
+     <Link className="hc-account-primary-link" href="/search">Continue browsing <ArrowIcon direction="right"/></Link>
     </>:account.status==="authenticated"&&next?<>
      <h2>Opening your cart…</h2>
     </>:<>

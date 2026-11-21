@@ -65,7 +65,7 @@ const cardPhotos=unstable_cache(async(link:string):Promise<string[]>=>{
 
 /**
  * Lead the unfiltered storefront with a varied, stable editorial selection:
- * earrings → wigs → nail designs → home décor, repeated for up to four rounds.
+ * earrings, wigs, nail designs and home decor, repeated for up to four rounds.
  * Use only real catalogue entries; keep all remaining products in their
  * existing order, without duplication. No supplier API calls are made here.
  * This intentionally runs AFTER saved partner products have been marked,

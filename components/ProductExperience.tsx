@@ -1,4 +1,5 @@
 "use client";
+import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
@@ -159,7 +160,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      <span className="gallery-count">{gallery.length?chosenIndex+1:0} / {gallery.length}</span>
     </div>
     {gallery.length>1&&<div className="thumbs">{gallery.slice(0,16).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}</div>}
-    {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">See seller's product photos and description ↓</a>}
+    {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">See seller's product photos and description <ArrowIcon direction="down"/></a>}
    </div>
    <aside className="buy-panel">
     <p className="eyebrow">{product.category||"PRODUCT DETAILS"}</p>
@@ -168,7 +169,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller"}</span>
      {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link <ExternalArrowIcon/></a>}
     </div>
-    {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller ↗</Link>}
+    {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller <ArrowIcon/></Link>}
     <div className="product-price">{priceLabel}</div>
     {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
     {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
@@ -196,7 +197,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
         </div>;
        })}
       </div>
-      {source.variants.length>8&&<button type="button" className="sc-sku-show-more" onClick={()=>setShowAllSkus(value=>!value)}>{showAllSkus?"Show fewer options":"Show all "+source.variants.length+" options"} <span aria-hidden="true">{showAllSkus?"↑":"↓"}</span></button>}
+      {source.variants.length>8&&<button type="button" className="sc-sku-show-more" onClick={()=>setShowAllSkus(value=>!value)}>{showAllSkus?"Show fewer options":"Show all "+source.variants.length+" options"} <ArrowIcon direction={showAllSkus?"up":"down"}/></button>}
       {selectedRows.length>0&&<div className="sc-sku-summary"><div><strong>{totalUnits} selected</strong><span>{totalUnits<minOrder?"Seller minimum: "+minOrder+" units":"Seller minimum met"}</span></div><div><strong>{hasUnknownPrice?"Price on request":dualPrice(subtotal)}</strong><span>Product subtotal</span></div></div>}
     </div>:<>
       <Selector label="COLOUR" value={colour} items={colours} set={value=>{setColour(value);setCartMessage("");}}/>
@@ -208,7 +209,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
      <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Buy now</button>
     </div>
-    {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart →</Link>}</p>}
+    {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
     <p className="hc-checkout-note">Adding to cart requires a free account. Membership is £9.99/month when you buy. Online checkout is currently unavailable.</p>
     {source&&<div className="sc-supplier-facts">
       {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
@@ -216,7 +217,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       {source.available===false&&<p className="sc-supplier-unavailable">This seller listing is currently unavailable.</p>}
       <p><strong>International delivery:</strong> Quoted and paid separately after your items reach the warehouse.</p>
     </div>}
-    <a className="hc-product-details-anchor" href="#product-details">View product details ↓</a>
+    <a className="hc-product-details-anchor" href="#product-details">View product details <ArrowIcon direction="down"/></a>
    </aside>
   </section>
   <section id="product-details" className="hc-product-detail-panel">
@@ -224,8 +225,8 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    <div className="hc-product-detail-grid">
     <div className="hc-seller-description">
      <h3>Seller description</h3>
-     {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} ↓</button>}</>:
-      <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing ↗</a></>}</p>}
+     {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
+      <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing <ArrowIcon/></a></>}</p>}
      {detailImages.length>0&&<div className="hc-detail-photos"><h3>Seller's detailed photos</h3>{detailImages.map((src,index)=><img key={src} src={src} alt={"Seller product detail "+(index+1)} loading="lazy" referrerPolicy="no-referrer"/>)}</div>}
     </div>
     <aside className="hc-product-specs">
@@ -245,7 +246,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </aside>
    </div>
   </section>
-  <div className="mobile-buy"><span><b>{priceLabel}</b><small>Delivery calculated separately</small></span><Link href="/cart">View cart →</Link></div>
+  <div className="mobile-buy"><span><b>{priceLabel}</b><small>Delivery calculated separately</small></span><Link href="/cart">View cart <ArrowIcon direction="right"/></Link></div>
  </>;
 }
 function Selector({label,value,items,set}:{label:string;value?:string;items:string[];set:(v:string)=>void}){
