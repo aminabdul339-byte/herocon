@@ -6,6 +6,7 @@ import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcase
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import type {Metadata} from "next";
+import "./catalogue-first.css";
 
 export const metadata:Metadata={
  title:"Start a Business — The Founder's Edit",
