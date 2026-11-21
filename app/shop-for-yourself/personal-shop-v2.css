@@ -662,3 +662,102 @@
  .hc-self-v2 .hc-personal-catalogue-intro h1{font-size:33px!important}
  .hc-self-v2 .hc-personal-audience-title strong{font-size:10px}
 }
+
+
+/* REFINED COLLECTION FILTERS
+ * Matching the Start a Business pill navigation: one-line text-only rounded
+ * category pills, with personal-shopping pink or blue preserved as the accent.
+ * The active state follows the collection; no source-catalogue green leaks in.
+ */
+.hc-self-v2[data-audience] .hc-personal-categories{
+ display:flex;
+ flex-wrap:nowrap;
+ align-items:center;
+ gap:10px;
+ padding:3px 0 14px;
+ margin:0 0 8px;
+ overflow-x:auto;
+ overflow-y:hidden;
+ overscroll-behavior-inline:contain;
+ -webkit-overflow-scrolling:touch;
+ scrollbar-width:thin;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+ display:inline-flex;
+ flex-direction:row;
+ flex:0 0 auto;
+ justify-content:center;
+ align-items:center;
+ gap:0;
+ width:auto;
+ min-width:0;
+ max-width:none;
+ min-height:48px;
+ padding:10px 22px;
+ border:1px solid var(--ps-accent-border);
+ border-radius:999px;
+ background:var(--ps-accent-soft);
+ color:var(--ps-accent);
+ box-shadow:none;
+ font-weight:700;
+ text-align:center;
+ transform:none;
+ transition:background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-title{
+ display:inline;
+ width:auto;
+ max-width:none;
+ margin:0;
+ padding:0;
+ font-size:13px;
+ font-weight:750;
+ line-height:1.4;
+ white-space:nowrap;
+ color:inherit;
+ letter-spacing:-.015em;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-icon,
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-title small{
+ display:none!important;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category:hover{
+ transform:none;
+ background:var(--ps-accent-border);
+ border-color:var(--ps-accent);
+ color:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active,
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active:hover{
+ background:var(--ps-accent);
+ border-color:var(--ps-accent);
+ color:#fff;
+ box-shadow:none;
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category.hc-self-category-active:hover{
+ background:var(--ps-accent-hover);
+ border-color:var(--ps-accent-hover);
+}
+.hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category:focus-visible{
+ outline:2px solid var(--ps-accent);
+ outline-offset:3px;
+}
+@media(max-width:760px){
+ .hc-self-v2[data-audience] .hc-personal-categories{
+  gap:8px;
+  margin-bottom:7px;
+  padding:2px 0 12px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+  min-height:44px;
+  padding:10px 17px;
+ }
+ .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category .hc-self-category-title{
+  font-size:12px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+  transition:none!important;
+ }
+}
