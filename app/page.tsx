@@ -3,85 +3,71 @@ import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
+import type {Metadata} from "next";
 
-export const dynamic = "force-dynamic";
+export const dynamic="force-dynamic";
 
-const IMAGES = {
-  personal: "https://images.pexels.com/photos/7679685/pexels-photo-7679685.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
-  business: "https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85",
-  wardrobe: "https://images.unsplash.com/photo-1603400521630-9f2de124b33b?auto=format&fit=crop&w=1100&q=85"
+export const metadata:Metadata={
+  title:"Herocon — Discover Products. Explore the Source.",
+  description:"Find fashion, accessories and original product listings from 1688, Taobao and Weidian. Discover for yourself or explore sourcing for your business."
 };
 
-function Arrow({diagonal=false}:{diagonal?:boolean}){
-  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">{diagonal?<path d="M5 19 19 5M8 5h11v11"/>:<path d="M4 12h16m-7-7 7 7-7 7"/>}</svg>;
-}
+const PHOTOS={
+  personal:"https://images.pexels.com/photos/7679685/pexels-photo-7679685.jpeg?auto=compress&cs=tinysrgb&w=1300&q=85",
+  business:"https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg?auto=compress&cs=tinysrgb&w=1300&q=85"
+};
 
-const interests = [
-  {name:"Fashion & clothing",hint:"Pieces worth finding",href:"/search?collection=clothing",number:"01"},
-  {name:"Jewellery",hint:"The finishing touches",href:"/search?category=Jewellery",number:"02"},
-  {name:"Home & living",hint:"Everyday objects, thoughtfully found",href:"/search?category=Home%20%26%20Decor",number:"03"},
-  {name:"Hair & accessories",hint:"Small details, big difference",href:"/search?category=Hair%20Accessories",number:"04"}
-];
+function Arrow({up=false}:{up?:boolean}){
+  return <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" focusable="false">{up?<path d="M5 19 19 5M8 5h11v11"/>:<path d="M4 12h16m-7-7 7 7-7 7"/>}</svg>;
+}
 
 export default async function Home(){
   const products=await prioritizeSavedPartnerProducts(await getProducts());
   const featured=await attachSavedPartnerImages(selectDiscoveryEditProducts(products));
-  const total=products.length;
-
-  return <main className="hc-premium-home hc-choice-home">
+  return <main className="hm-home">
     <Header/>
-    <section className="hc-choice-intro hc-choice-container" aria-labelledby="hc-choice-title">
-      <div className="hc-choice-intro-top"><span className="hc-choice-eyebrow"><span className="hc-choice-sun"/> WELCOME TO HEROCON</span><span className="hc-choice-volume">CURATED DISCOVERY · EST. 2026</span></div>
-      <div className="hc-choice-intro-body">
-        <h1 id="hc-choice-title">A world of finds.<br/><em>Yours to explore.</em></h1>
-        <div className="hc-choice-intro-aside"><p>Whether it&apos;s something for you or the start of something bigger, discover products and possibilities in one place.</p><span>CHOOSE YOUR EXPERIENCE <Arrow/></span></div>
+    <section className="hm-intro" aria-labelledby="hm-title">
+      <div className="hm-shell">
+        <div className="hm-eyebrow"><span className="hm-dot"/> WELCOME TO HEROCON <span className="hm-eyebrow-line"/></div>
+        <h1 id="hm-title">Discover your next find.<br/><em>Source your next idea.</em></h1>
+        <p className="hm-intro-description">Explore products from 1688, Taobao and Weidian. Find something for yourself, or discover original marketplace suppliers for a business.</p>
+        <span className="hm-intro-cue">CHOOSE YOUR EXPERIENCE <svg aria-hidden="true" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></span>
       </div>
     </section>
 
-    <section className="hc-choice-paths hc-choice-container" aria-label="Choose your Herocon experience">
-      <Link className="hc-choice-path hc-choice-personal" href="/shop-for-yourself" aria-label="Shop for yourself — explore the personal edit">
-        <img src={IMAGES.personal} alt="Real boutique photograph of warm brown jackets on hangers in a refined clothing store" width={950} height={1170} fetchPriority="high"/>
-        <span className="hc-choice-path-shade" aria-hidden="true"/>
-        <div className="hc-choice-path-top"><span className="hc-choice-image-badge">EVERYDAY SHOPPING</span><span className="hc-choice-path-number">HEROCON / 01</span></div>
-        <div className="hc-choice-path-bottom">
-          <div className="hc-choice-path-copy"><span className="hc-choice-path-label">PERSONAL SHOPPING</span><h2>Shop for<br/><em>yourself.</em></h2><p>Discover fashion, accessories and everyday finds.</p></div>
-          <span className="hc-choice-card-button">Shop the edit <Arrow/></span>
+    <section className="hm-options hm-shell" aria-label="Explore Herocon">
+      <Link className="hm-option hm-option-personal" href="/shop-for-yourself" aria-label="Shop for yourself: browse fashion, accessories and everyday finds">
+        <div className="hm-option-photo"><img src={PHOTOS.personal} alt="Warm brown coats and jackets displayed on a boutique clothing rail" width={900} height={1100} fetchPriority="high"/></div>
+        <div className="hm-option-content">
+          <span className="hm-option-eyebrow">01 / FOR YOURSELF</span>
+          <div className="hm-option-bottom"><div><h2>Shop for <em>yourself.</em></h2><p>Fashion, accessories and the little finds you love.</p></div>
+          <span className="hm-option-action">Explore the edit <Arrow up/></span></div>
         </div>
       </Link>
-
-      <Link className="hc-choice-path hc-choice-business" href="/start-a-business" aria-label="Start a business — explore sourcing for your brand">
-        <img src={IMAGES.business} alt="Real photograph of stacked cardboard boxes in a warehouse, representing wholesale sourcing" width={950} height={1170} fetchPriority="high"/>
-        <span className="hc-choice-path-shade" aria-hidden="true"/>
-        <div className="hc-choice-path-top"><span className="hc-choice-image-badge">SOURCING &amp; WHOLESALE</span><span className="hc-choice-path-number">HEROCON / 02</span></div>
-        <div className="hc-choice-path-bottom">
-          <div className="hc-choice-path-copy"><span className="hc-choice-path-label">BUILD SOMETHING OF YOUR OWN</span><h2>Start a<br/><em>business.</em></h2><p>Find suppliers, compare costs and discover products to sell.</p></div>
-          <span className="hc-choice-card-button">Explore products <Arrow/></span>
+      <Link className="hm-option hm-option-business" href="/start-a-business" aria-label="Start a business: explore products and original marketplace suppliers">
+        <div className="hm-option-photo"><img src={PHOTOS.business} alt="Real photograph of stacked shipping boxes in a sourcing warehouse" width={900} height={1100} fetchPriority="high"/></div>
+        <div className="hm-option-content">
+          <span className="hm-option-eyebrow">02 / FOR YOUR BUSINESS</span>
+          <div className="hm-option-bottom"><div><h2>Start a <em>business.</em></h2><p>Explore products, suppliers and your next big idea.</p></div>
+          <span className="hm-option-action">Explore sourcing <Arrow up/></span></div>
         </div>
       </Link>
     </section>
-    <div className="hc-choice-after-cards hc-choice-container"><span>ONE DESTINATION. TWO WAYS TO DISCOVER.</span><span>SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span></div>
 
-    <section className="hc-choice-search-section" aria-labelledby="hc-choice-search-title">
-      <div className="hc-choice-container hc-choice-search-grid">
-        <div><span className="hc-choice-eyebrow">FIND WHAT MOVES YOU</span><h2 id="hc-choice-search-title">Something in mind?<br/><em>Let&apos;s find it.</em></h2></div>
-        <div className="hc-choice-search-right"><p>Search products from 1688, Taobao and Weidian, or browse the collections below.</p><form action="/search" role="search" className="hc-choice-search-field"><label htmlFor="hc-choice-search-input" className="hc-choice-sr-only">Search the catalogue</label><input id="hc-choice-search-input" type="search" name="q" placeholder="Try a product, style or supplier" required/><button type="submit" aria-label="Search Herocon"><Arrow/></button></form></div>
+    <section className="hm-featured hm-shell" aria-labelledby="hm-featured-title">
+      <div className="hm-featured-heading">
+        <div><span className="hm-featured-eyebrow">THE DISCOVERY EDIT</span><h2 id="hm-featured-title">Currently <em>catching our eye.</em></h2></div>
+        <Link className="hm-featured-view-all" href="/search">Explore all products <Arrow up/></Link>
       </div>
+      {featured.length>0
+        ? <div className="hm-featured-grid hc-premium-featured-grid">{featured.slice(0,4).map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
+        : <div className="hm-featured-empty"><p>Our next edit is on its way.</p><Link href="/search">Browse all products <Arrow up/></Link></div>}
     </section>
 
-    <section className="hc-choice-discover hc-choice-container" aria-labelledby="hc-choice-discover-title">
-      <div className="hc-choice-section-heading"><div><span className="hc-choice-eyebrow">01 / EXPLORE THE EDIT</span><h2 id="hc-choice-discover-title">Find your <em>next thing.</em></h2></div><Link href="/search" className="hc-choice-underlined">Browse all categories <Arrow diagonal/></Link></div>
-      <div className="hc-choice-collection-layout">
-        <div className="hc-choice-collection-photo"><img src={IMAGES.wardrobe} alt="Real photograph of neutral clothing arranged on minimalist boutique rails" width={720} height={880} loading="lazy" decoding="async"/><span>THE CURATED EDIT / 2026</span></div>
-        <div className="hc-choice-collection-list">{interests.map((item)=><Link href={item.href} key={item.name} className="hc-choice-collection-row"><span className="hc-choice-collection-number">{item.number}</span><span className="hc-choice-collection-copy"><strong>{item.name}</strong><small>{item.hint}</small></span><span className="hc-choice-collection-icon"><Arrow diagonal/></span></Link>)}</div>
-      </div>
-    </section>
-
-    <section className="hc-choice-products hc-choice-container" aria-labelledby="hc-choice-products-title">
-      <div className="hc-choice-section-heading"><div><span className="hc-choice-eyebrow">02 / PRODUCT DISCOVERY</span><h2 id="hc-choice-products-title">Currently <em>catching our eye.</em></h2></div><Link className="hc-choice-underlined" href="/search">Explore {total.toLocaleString("en-GB")} products <Arrow diagonal/></Link></div>
-      <div className="hc-premium-featured-grid hc-choice-featured-grid">{featured.slice(0,4).map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
-      <div className="hc-choice-products-footer"><span>DISCOVER SOMETHING NEW EVERY TIME</span><Link href="/search">View the full catalogue <Arrow/></Link></div>
-    </section>
-
-    <section className="hc-choice-end" aria-labelledby="hc-choice-end-title"><div className="hc-choice-container hc-choice-end-inner"><span className="hc-choice-eyebrow">THE POSSIBILITIES ARE YOURS</span><h2 id="hc-choice-end-title">Small finds. <em>Big ideas.</em></h2><p>For the things you love, and the things you&apos;re dreaming of building.</p><div><Link href="/shop-for-yourself" className="hc-choice-button hc-choice-button-light">Shop for yourself <Arrow diagonal/></Link><Link href="/start-a-business" className="hc-choice-button hc-choice-button-outline">Start a business <Arrow diagonal/></Link></div></div></section>
+    <div className="hm-bottom hm-shell">
+      <p>Real finds. Original marketplace links. <span>One place to discover more.</span></p>
+      <div><Link href="/search">Search all products <Arrow up/></Link><Link href="/how-it-works">How sourcing works <Arrow up/></Link></div>
+    </div>
+    <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;
 }
