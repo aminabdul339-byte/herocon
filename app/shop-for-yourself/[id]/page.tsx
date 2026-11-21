@@ -8,6 +8,7 @@ import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {findPersonalProduct,audienceProducts} from "@/lib/personal-shop";
 import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
+import {getSavedPersonalSource} from "@/lib/personal-shop-enrichment";
 import type {Product} from "@/lib/types";
 import "../shop-for-yourself.css";
 import "../personal-shop-v2.css";
@@ -30,7 +31,9 @@ export default async function ShopProductPage({params,searchParams}:Params){
  const audience=item.gender==="unisex"
   ?(search.audience==="men"?"men":"women")
   :item.gender;
- const rates=await getPersonalShopRates();
+ const [rates,source]=await Promise.all([
+  getPersonalShopRates(),getSavedPersonalSource(item.originalUrl)
+ ]);
  const price=shopPrice(item,rates);
  const amount=priceAmountGbp(item,rates);
  const product:Product={
@@ -38,7 +41,9 @@ export default async function ShopProductPage({params,searchParams}:Params){
   title:item.name,displayTitle:item.name,originalTitle:item.name,
   category:item.category,
   imageUrl:item.imageUrl,
-  images:[item.imageUrl],
+  images:[...new Set([item.imageUrl,...(source?.images||[])])].slice(0,36),
+  sellerName:source?.sellerName||undefined,
+  variantCount:source?.variants.length,
   originalMarketplaceUrl:item.originalUrl,
   sourceMarketplace:item.originalUrl.includes("1688.com")?"1688":item.originalUrl.includes("taobao.com")?"Taobao":"Weidian",
   ...(amount!==null?{priceGBP:amount}:{}),
@@ -60,11 +65,13 @@ export default async function ShopProductPage({params,searchParams}:Params){
          product={product}
          id={item.id}
          title={item.name}
-         images={[item.imageUrl]}
+         images={[...new Set([item.imageUrl,...(source?.images||[])])].slice(0,36)}
          price={price}
          gbpOnly
-         buckydropEnabled={false}
-         sourceLookupFailed
+         initialSource={source||undefined}
+         initialFx={source?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
+         buckydropEnabled={Boolean(source)}
+         sourceLookupFailed={!source}
          customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
        />
      </div>

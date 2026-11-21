@@ -4,6 +4,7 @@ import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {ShopAudienceIcon} from "@/components/ShopIcons";
 import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
+import {enrichPersonalCards} from "@/lib/personal-shop-enrichment";
 
 type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
@@ -15,7 +16,7 @@ const ORDER:Record<Audience,string[]>={
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
-export default function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
+export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
  const {audience,sort}=filters;
  const everything=audienceProducts(audience);
  const categoryTotals=new Map<string,number>();
@@ -31,7 +32,7 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
  });
  const pageCount=Math.max(1,Math.ceil(matching.length/PER_PAGE));
  const page=Math.min(pageCount,Math.max(1,filters.page));
- const shown=matching.slice((page-1)*PER_PAGE,page*PER_PAGE);
+ const shown=await enrichPersonalCards(matching.slice((page-1)*PER_PAGE,page*PER_PAGE));
  function href(changes:Partial<Filters>){
   const p:Filters={...filters,...changes};
   const q=new URLSearchParams();

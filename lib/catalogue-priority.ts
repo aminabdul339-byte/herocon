@@ -34,7 +34,13 @@ const savedHashes=unstable_cache(async():Promise<string[]>=>{
   console.warn("[herocon] Saved partner index currently inaccessible",error instanceof Error?error.name:"UNKNOWN");
   return [];
  }
-},["herocon-saved-partner-index-v2"],{revalidate:60});
+},["herocon-saved-partner-index-v2"],{revalidate:60,tags:["herocon-saved-partner-index"]});
+
+/** Indexed hashes allow other collections to reuse snapshots without
+ * issuing storage GETs for thousands of products without saved details. */
+export async function savedPartnerSnapshotHashes():Promise<ReadonlySet<string>>{
+ return new Set(await savedHashes());
+}
 
 export async function prioritizeSavedPartnerProducts(products:Product[]):Promise<Product[]>{
  if(products.length<2)return products;
