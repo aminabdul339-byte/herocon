@@ -1105,3 +1105,19 @@
  .hc-self-v2 .hc-personal-audience>a{transition:none}
  .hc-self-v2 .hc-personal-audience>a:hover{transform:none}
 }
+
+
+/* Destination colour must override older per-page hover rules on BOTH collections. */
+.hc-self-v2[data-audience] .hc-personal-audience{
+ background:linear-gradient(115deg,rgba(253,238,245,.72),rgba(232,241,250,.81));
+}
+.hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=women"]:hover{
+ background:#803456;
+ border-color:#803456;
+ color:#fff;
+}
+.hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=men"]:hover{
+ background:#26567f;
+ border-color:#26567f;
+ color:#fff;
+}
