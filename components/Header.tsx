@@ -4,7 +4,7 @@ import {useEffect,useState} from "react";
 import {usePathname} from "next/navigation";
 import {useCart} from "@/components/CartProvider";
 function NavArrow(){return <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>;}
-export default function Header(){
+export default function Header({editorial=false}:{editorial?:boolean}={}){
   const [open,setOpen]=useState(false);
   const pathname=usePathname();
   // Keep the mobile navigation in sync with route and viewport changes.
@@ -18,7 +18,7 @@ export default function Header(){
   },[]);
 
   const {count,account}=useCart();
-  const links=[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
+  const links=editorial?[["Shop","/shop-for-yourself"],["Source","/start-a-business"],["How it works","/how-it-works"]]:[["Shop for yourself","/shop-for-yourself"],["Start a business","/start-a-business"],["How sourcing works","/how-it-works"],["Membership","/membership"]];
   return <>
     <div className="sc-announcement">SOURCE FROM 1688, TAOBAO, WEIDIAN &amp; MORE</div>
     <header className="sc-header">
