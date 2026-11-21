@@ -45,7 +45,7 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
   <div className="hc-personal-catalogue-intro">
     <div>
       <p className="hc-self-eyebrow">{audience==="women"?"WOMEN’S COLLECTION":"MEN’S COLLECTION"} / HEROCON</p>
-      <h1 id="hc-self-listing-title">{audience==="women"?"Women’s":"Men’s"} <em>Collection.</em></h1>
+      <h1 id="hc-self-listing-title">The {audience==="women"?"Women’s":"Men’s"} <em>Collection.</em></h1>
       <p>{audience==="women"?"Discover handbags, accessories and beautiful everyday finds.":"Explore clothing, shoes and accessories from original marketplace sources."}</p>
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
