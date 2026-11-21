@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
-import {ShopCategoryIcon,ShopAudienceIcon} from "@/components/ShopIcons";
+import {ShopAudienceIcon} from "@/components/ShopIcons";
 import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
 
@@ -44,23 +44,22 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
  return <section id="browse-finds" className="hc-self-listing hc-self-wrap hc-personal-catalogue" aria-labelledby="hc-self-listing-title">
   <div className="hc-personal-catalogue-intro">
     <div>
-      <p className="hc-self-eyebrow">THE PERSONAL EDIT / HEROCON</p>
-      <h1 id="hc-self-listing-title">Your {genderName[audience]} <em>edit.</em></h1>
+      <p className="hc-self-eyebrow">{audience==="women"?"WOMEN’S COLLECTION":"MEN’S COLLECTION"} / HEROCON</p>
+      <h1 id="hc-self-listing-title">The {audience==="women"?"Women’s":"Men’s"} <em>Collection.</em></h1>
       <p>{audience==="women"?"Discover handbags, accessories and beautiful everyday finds.":"Explore clothing, shoes and accessories from original marketplace sources."}</p>
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
-        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"The Women’s Edit":"The Men’s Edit"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
+        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"Women’s Collection":"Men’s Collection"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
       </Link>)}
     </nav>
   </div>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
-      <span className="hc-self-category-icon"><ShopCategoryIcon category="All"/></span><span className="hc-self-category-title">All finds<small>{everything.length.toLocaleString("en-GB")} products</small></span>
+      <span className="hc-self-category-title">All products</span>
     </Link>
     {availableCategories.map(cat=><Link key={cat} className={"hc-self-category"+(category===cat?" hc-self-category-active":"")} href={href({category:cat,page:1})} aria-current={category===cat?"page":undefined}>
-      <span className="hc-self-category-icon"><ShopCategoryIcon category={cat}/></span>
-      <span className="hc-self-category-title">{cat}<small>{(categoryTotals.get(cat)||0).toLocaleString("en-GB")} products</small></span>
+      <span className="hc-self-category-title">{cat}</span>
     </Link>)}
   </nav>
   <form className="hc-self-toolbar hc-personal-toolbar" action="/shop-for-yourself#browse-finds" method="get">
@@ -69,7 +68,7 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
     <label className="hc-self-search"><svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" strokeWidth="1.7" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.6"/><path d="m15.5 15.5 5 5"/></svg>
       <span className="hc-self-sr-only">Search products</span><input type="search" name="q" defaultValue={filters.q} placeholder={"Search "+genderName[audience]+" finds…"}/>
     </label>
-    <label className="hc-self-sort">Sort <select name="sort" defaultValue={sort==="name"?"name":"featured"}><option value="featured">The edit</option><option value="name">Name: A to Z</option></select></label>
+    <label className="hc-self-sort">Sort <select name="sort" defaultValue={sort==="name"?"name":"featured"}><option value="featured">Featured</option><option value="name">Name: A to Z</option></select></label>
     <button type="submit" className="hc-personal-search-button">Search <span aria-hidden="true">→</span></button>
   </form>
   <div className="hc-self-results-caption">
@@ -78,7 +77,7 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
   </div>
   {shown.length?
     <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
-    <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full edit.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
+    <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
     {page>1?<Link href={href({page:page-1})}>← Previous</Link>:<span className="is-disabled">← Previous</span>}
     <span>Page {page} of {pageCount}</span>
