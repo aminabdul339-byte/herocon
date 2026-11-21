@@ -11,7 +11,7 @@
 .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta.is-active{background:#294934;color:#fff!important}
 .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta:hover{background:#35573d;color:#fff!important}
 .hc-personal-catalogue{max-width:1310px;padding-top:84px;padding-bottom:92px}
-.hc-personal-catalogue-intro{display:flex;justify-content:space-between;align-items:end;gap:35px;margin-bottom:25px}
+.hc-personal-catalogue-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:35px;margin-bottom:25px}
 .hc-personal-catalogue-intro>div:first-child{min-width:0}
 .hc-personal-catalogue-intro h2{font:400 clamp(50px,5.1vw,76px)/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.06em;color:#293f2f;margin:0 0 13px}
 .hc-personal-catalogue-intro h2 em{font-style:italic;color:#859d85}
@@ -87,7 +87,7 @@
 .hc-personal-detail-facts strong{font-size:12px;font-weight:700;color:#36533c}
 .hc-personal-detail-disclaimer{font-size:10px;line-height:1.8;color:#869689;margin-top:29px;max-width:510px}
 .hc-personal-detail-related{padding-top:96px}
-.hc-personal-related-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:27px}
+.hc-personal-related-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:27px}
 .hc-personal-related-heading h2{font:400 clamp(41px,4.5vw,62px)/1 Georgia,"Times New Roman",serif;letter-spacing:-.05em;margin:15px 0 0}
 .hc-personal-related-heading h2 em{color:#87a189}
 .hc-personal-related-heading>a{font-size:12px;color:#36563f;text-decoration:none;font-weight:700;border-bottom:1px solid #8eaa93;padding-bottom:8px;white-space:nowrap}
