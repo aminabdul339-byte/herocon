@@ -67,7 +67,7 @@ export default function ShippingEstimator(){
    <div className="hc-shipping-field"><label htmlFor="hc-shipping-height">Height (cm)</label><input id="hc-shipping-height" type="number" min=".01" max="200" step=".01" value={height} onChange={e=>{reset();setHeight(e.target.value);}}/></div>
    <div className="hc-shipping-field hc-shipping-postcode"><label htmlFor="hc-shipping-postcode">Postcode (optional)</label><input id="hc-shipping-postcode" type="text" maxLength={10} value={postCode} onChange={e=>{reset();setPostCode(e.target.value);}} placeholder="e.g. SW1A 1AA"/></div>
    <div className="hc-shipping-submit"><button type="button" className="sc-button sc-button-dark" disabled={!valid||loading} onClick={getQuotes}>{loading?"Checking available routes…":<>Get shipping quotes <ArrowIcon/></>}</button>
-    <button type="button" className="hc-shipping-example" onClick={resetForm}>Reset values ↺</button></div>
+    <button type="button" className="hc-shipping-example" onClick={resetForm}>Reset values <ArrowIcon direction="refresh"/></button></div>
   </div>
   {!valid&&<p className="hc-shipping-error" role="status">Please enter a weight between 1 g and 60 kg and dimensions between 0 and 200 cm.</p>}
   {error&&<div className="hc-shipping-error" role="alert">{error}</div>}
