@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
-import {ShopCategoryIcon} from "@/components/ShopIcons";
+import {ShopCategoryIcon,ShopAudienceIcon} from "@/components/ShopIcons";
+import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
 
 type Audience="women"|"men";
@@ -13,7 +14,7 @@ const ORDER:Record<Audience,string[]>={
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
-export default function ShopForYourself({filters}:{filters:Filters}){
+export default function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
  const {audience,sort}=filters;
  const everything=audienceProducts(audience);
  const categoryTotals=new Map<string,number>();
@@ -49,7 +50,7 @@ export default function ShopForYourself({filters}:{filters:Filters}){
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
-        <span>{option==="women"?"Women":"Men"}</span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
+        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"The Women’s Edit":"The Men’s Edit"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
       </Link>)}
     </nav>
   </div>
@@ -77,13 +78,13 @@ export default function ShopForYourself({filters}:{filters:Filters}){
     <span>Showing {matching.length?(page-1)*PER_PAGE+1:0}–{Math.min(page*PER_PAGE,matching.length)} of {matching.length.toLocaleString("en-GB")}</span>
   </div>
   {shown.length?
-    <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p}/>)}</div>:
+    <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
     <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full edit.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
     {page>1?<Link href={href({page:page-1})}>← Previous</Link>:<span className="is-disabled">← Previous</span>}
     <span>Page {page} of {pageCount}</span>
     {page<pageCount?<Link href={href({page:page+1})}>Next →</Link>:<span className="is-disabled">Next →</span>}
   </nav>}
-  <p className="hc-self-table-note">* Prices are reference amounts in the source currency (GBP, USD or CNY) and may have changed. Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
+  <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
  </section>;
 }
