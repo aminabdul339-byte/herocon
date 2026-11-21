@@ -62,7 +62,7 @@
 /* Sections reveal once, if JS and motion are available. */
 .eh-home.eh-motion-on [data-eh-reveal]{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
 .eh-home.eh-motion-on [data-eh-reveal].eh-is-visible{opacity:1;transform:none}
-.eh-section-head{display:flex;align-items:end;justify-content:space-between;gap:45px;margin-bottom:32px}
+.eh-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:45px;margin-bottom:32px}
 .eh-section-head h2{font-size:clamp(45px,4.9vw,69px)!important;line-height:1.05!important;margin:12px 0 0!important;color:#253e2d!important}
 .eh-section-head h2 em{color:#839883}
 .eh-section-head>p{max-width:315px;font-size:13px;line-height:1.75;color:#7a877c;margin:0 0 4px}
@@ -219,4 +219,12 @@
  .eh-home.eh-motion-on [data-eh-reveal]{opacity:1!important;transform:none!important}
  .eh-hero-photo img{will-change:auto}
  .eh-path:hover,.hc-site .eh-featured-grid .hc-product-card:hover{transform:none!important}
+}
+
+
+/* Three short editorial navigation links fit comfortably on laptop widths. */
+@media (min-width:921px) and (max-width:1120px){
+ .hc-site:has(.eh-home) .sc-desktop-links{display:flex!important;gap:22px}
+ .hc-site:has(.eh-home) .sc-mobile-toggle{display:none!important}
+ .hc-site:has(.eh-home) .sc-mobile-menu{display:none!important}
 }
