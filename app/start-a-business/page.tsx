@@ -76,7 +76,6 @@ export default async function StartBusiness({searchParams}:{searchParams:Promise
      </div>
      <div className="hc-founder-photo">
        <img src={BUSINESS_PHOTO} alt="Real photograph of a person carrying an elegant stack of packaged boxes in a neutral indoor setting" width={800} height={1000} fetchPriority="high"/>
-       <div className="hc-founder-photo-tag"><span>THE FOUNDER&apos;S EDIT</span><span>02 / SOURCE & BUILD</span></div>
      </div>
    </div>
   </section>
