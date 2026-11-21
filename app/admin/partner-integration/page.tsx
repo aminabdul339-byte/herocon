@@ -7,7 +7,8 @@ type Check={
  ok:boolean;connection?:string;apiKeyConfigured?:boolean;
  webhookSecretConfigured?:boolean;catalogue?:string;
  productCountFirstPage?:number|null;catalogueError?:string|null;
- writeActionsEnabled?:boolean;error?:string;requestId?:string
+ writeActionsEnabled?:boolean;error?:string;requestId?:string;
+ keyPrefixMatches?:"yes"|"no"|"not_checked";keyFormatValid?:boolean
 };
 const guidance:Record<string,string>={
  "api_not_enabled":"Fulfillbot has not enabled API access for this account. Open Fulfillbot Settings, then API access, check whether an access request or approval is needed, and contact your account manager if it remains disabled.",
@@ -27,6 +28,7 @@ const styles={
 };
 export default function PartnerIntegrationAdmin(){
  const [privateKey,setPrivateKey]=useState("");
+ const [prefix,setPrefix]=useState("");
  const [busy,setBusy]=useState(false);
  const [check,setCheck]=useState<Check|null>(null);
  const [error,setError]=useState("");
@@ -36,7 +38,10 @@ export default function PartnerIntegrationAdmin(){
   setBusy(true);setCheck(null);setError("");
   try{
    const response=await fetch("/api/admin/partner-integration/status",{
-     method:"GET",cache:"no-store",headers:{"x-herocon-catalogue-admin":privateKey}
+     method:"GET",cache:"no-store",headers:{
+       "x-herocon-catalogue-admin":privateKey,
+       ...(prefix.trim()?{"x-herocon-partner-key-prefix":prefix.trim()}:{})
+     }
    });
    const body=await response.json() as Check;
    if(response.status===401)throw Error("Private admin key was not accepted. Use your existing Herocon catalogue-import key.");
@@ -61,6 +66,14 @@ export default function PartnerIntegrationAdmin(){
       <p style={{fontSize:12,lineHeight:1.6,color:"#5b7560",margin:"9px 0 20px"}}>
        This uses your existing Herocon admin key, not the sourcing partner API key. Your input stays on this page and is sent only to your Herocon server for verification.
       </p>
+      <label htmlFor="partner-prefix" style={{display:"block",fontWeight:700,fontSize:13}}>Fulfillbot key prefix (optional)</label>
+      <input id="partner-prefix" style={styles.field} value={prefix} onChange={e=>setPrefix(e.target.value)}
+        type="text" autoComplete="off" spellCheck={false} placeholder="For example, pak_ followed by the visible characters"
+        maxLength={22}/>
+      <p style={{fontSize:12,lineHeight:1.6,color:"#5b7560",margin:"9px 0 20px"}}>
+       Enter only the visible part before the dots in Fulfillbot's API key list. Never enter the full API key here.
+       We compare its prefix privately against the Vercel setting and never return the stored key.
+      </p>
       <button type="submit" disabled={!privateKey.trim()||busy}
        style={{background:"#284b36",border:0,color:"#fff",borderRadius:5,padding:"13px 20px",fontSize:13,fontWeight:750,cursor:"pointer",opacity:busy?.7:1}}>
        {busy?"Checking connection…":"Test read-only connection"}
@@ -75,12 +88,16 @@ export default function PartnerIntegrationAdmin(){
       <h2 style={{margin:"0 0 16px",font:"400 25px Georgia,serif"}}>{outcome?"API connection verified":"Connection requires attention"}</h2>
       <dl style={{display:"grid",gridTemplateColumns:"minmax(155px,1fr) auto",rowGap:14,columnGap:20,fontSize:13,lineHeight:1.5,margin:0}}>
        <dt>API key configured</dt><dd style={styles.badge}>{check.apiKeyConfigured?"Yes":"No"}</dd>
+       <dt>API key format</dt><dd style={styles.badge}>{check.keyFormatValid?"Looks valid":"Check Vercel key value"}</dd>
+       <dt>Displayed key prefix matches Vercel</dt><dd style={styles.badge}>{check.keyPrefixMatches==="yes"?"Yes":check.keyPrefixMatches==="no"?"No - different key":"Not checked"}</dd>
        <dt>API authentication</dt><dd style={styles.badge}>{outcome?"Successful":"Not confirmed"}</dd>
        <dt>Product catalogue read</dt><dd style={styles.badge}>{check.catalogue==="readable"?"Successful":check.catalogueError||"Not confirmed"}</dd>
        <dt>Products on first API page</dt><dd style={styles.badge}>{typeof check.productCountFirstPage==="number"?check.productCountFirstPage:"—"}</dd>
        <dt>Webhook secret configured</dt><dd style={styles.badge}>{check.webhookSecretConfigured?"Yes":"No"}</dd>
        <dt>Order and shipment write actions</dt><dd style={styles.badge}>Disabled in Herocon</dd>
       </dl>
+      {check.keyPrefixMatches==="no"&&<p style={{fontSize:13,lineHeight:1.7,color:"#9c4132",margin:"14px 0 0"}}>The visible Fulfillbot key prefix does not match the credential in Vercel. Check that Vercel contains the key issued for this account, then redeploy the latest production commit.</p>}
+      {check.keyPrefixMatches==="yes"&&!outcome&&<p style={{fontSize:13,lineHeight:1.7,color:"#56745c",margin:"14px 0 0"}}>The visible prefix matches the key configured in Vercel. This does not verify the full key or confirm API access; the provider may still require account approval.</p>}
       <p style={{fontSize:12,lineHeight:1.6,margin:"18px 0 0",color:"#5f7662"}}>A successful test confirms the API can be reached and read. A real signed webhook delivery must be checked separately. This tool never returns your customer data or token.</p>
     </div>}
    </section>
