@@ -2,60 +2,80 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import Header from "@/components/Header";
-import ShopDetailPhoto from "@/components/ShopDetailPhoto";
+import ProductExperience from "@/components/ProductExperience";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
-import {ExternalArrowIcon} from "@/components/ShopIcons";
-import {findPersonalProduct,personalShopProducts,productPrice} from "@/lib/personal-shop";
+import {findPersonalProduct,personalShopProducts} from "@/lib/personal-shop";
+import {getPersonalShopRates} from "@/lib/personal-shop-fx";
+import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
+import type {Product} from "@/lib/types";
 import "../shop-for-yourself.css";
 import "../personal-shop-v2.css";
 
 export const dynamic="force-dynamic";
-type Params={params:Promise<{id:string}>};
+type Params={params:Promise<{id:string}>;searchParams:Promise<{audience?:string}>};
 
 export async function generateMetadata({params}:Params):Promise<Metadata>{
  const {id}=await params;
  const item=findPersonalProduct(id);
  if(!item)return {title:"Product not found | Herocon"};
- return {title:item.name+" | The Personal Edit | Herocon",description:"Explore "+item.name+" with its original marketplace listing and reference price. Supplier claims are unverified."};
+ return {title:item.name+" | The Personal Edit | Herocon",description:"Explore "+item.name+" with its GBP reference price and original marketplace listing."};
 }
 
-export default async function ShopProductPage({params}:Params){
+export default async function ShopProductPage({params,searchParams}:Params){
  const {id}=await params;
  const item=findPersonalProduct(id);
  if(!item)notFound();
- const gender=item.gender==="men"?"men":"women";
- const category=item.category;
- const market=item.originalUrl.includes("weidian.com")?"Weidian":item.originalUrl.includes("1688.com")?"1688":item.originalUrl.includes("taobao.com")?"Taobao":"Original marketplace";
- const related=personalShopProducts.filter(p=>p.id!==item.id&&p.category===category&&(p.gender===item.gender||p.gender==="unisex")).slice(0,4);
- return <main className="hc-self hc-self-v2">
+ const search=await searchParams;
+ const audience=item.gender==="unisex"
+  ?(search.audience==="men"?"men":"women")
+  :item.gender;
+ const rates=await getPersonalShopRates();
+ const price=shopPrice(item,rates);
+ const amount=priceAmountGbp(item,rates);
+ const product:Product={
+  canonicalId:"personal:"+item.id,doppelProductId:item.id,
+  title:item.name,displayTitle:item.name,originalTitle:item.name,
+  category:item.category,
+  imageUrl:item.imageUrl,
+  images:[item.imageUrl],
+  originalMarketplaceUrl:item.originalUrl,
+  sourceMarketplace:item.originalUrl.includes("1688.com")?"1688":item.originalUrl.includes("taobao.com")?"Taobao":"Weidian",
+  ...(amount!==null?{priceGBP:amount}:{}),
+  price
+ };
+ const related=personalShopProducts.filter(p=>p.id!==item.id&&p.category===item.category&&(p.gender===audience||p.gender==="unisex")).slice(0,4);
+ const audienceUrl="/shop-for-yourself?audience="+audience;
+ return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>
    <div className="hc-self-wrap hc-personal-detail-wrap">
      <nav className="hc-personal-breadcrumb" aria-label="Product breadcrumbs">
        <Link href="/">Herocon</Link><span>/</span>
-       <Link href={"/shop-for-yourself?audience="+gender+"#browse-finds"}>Shop {gender}</Link><span>/</span>
-       <Link href={"/shop-for-yourself?audience="+gender+"&category="+encodeURIComponent(category)+"#browse-finds"}>{category}</Link>
+       <Link href={audienceUrl+"#browse-finds"}>{audience==="women"?"Women’s Edit":"Men’s Edit"}</Link><span>/</span>
+       <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>{item.category}</Link>
      </nav>
-     <section className="hc-personal-detail" aria-labelledby="hc-personal-detail-title">
-       <ShopDetailPhoto src={item.imageUrl} alt={item.name}/>
-       <div className="hc-personal-detail-info">
-         <span className="hc-personal-detail-kicker">THE PERSONAL EDIT / {category.toUpperCase()}</span>
-         <h1 id="hc-personal-detail-title">{item.name}</h1>
-         <div className="hc-personal-detail-price">{productPrice(item)}<span>Reference price, not a live quote</span></div>
-         <p>Discover this piece through its original {market} listing. Review product details, available colours, sizes and current pricing with the marketplace seller before ordering.</p>
-         <a className="hc-personal-detail-cta" href={item.originalUrl} target="_blank" rel="noopener noreferrer nofollow">View original {market} product <ExternalArrowIcon/></a>
-         <p className="hc-personal-detail-source">This link opens the original marketplace listing, not a buying agent or Herocon checkout.</p>
-         <div className="hc-personal-detail-rule"/>
-         <div className="hc-personal-detail-facts">
-           <div><span>Marketplace</span><strong>{market}</strong></div>
-           <div><span>Collection</span><strong>{item.gender==="unisex"?"Unisex / Women & Men":item.gender==="men"?"Men":"Women"}</strong></div>
-           <div><span>Product type</span><strong>{item.category}</strong></div>
-         </div>
-         <p className="hc-personal-detail-disclaimer">Third-party product names and images are supplier-provided. Herocon has not verified brand authenticity, seller stock, safety, quality or delivery. Prices and links may change without notice.</p>
-       </div>
-     </section>
+     <div className="hc-personal-experience">
+       <ProductExperience
+         key={item.id}
+         product={product}
+         id={item.id}
+         title={item.name}
+         images={[item.imageUrl]}
+         price={price}
+         gbpOnly
+         buckydropEnabled={false}
+         sourceLookupFailed
+         customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
+       />
+     </div>
+     <aside className="hc-personal-detail-reference" aria-label="Price and marketplace notes">
+       <div><strong>{priceIsConverted(item)?"Approximate GBP estimate":"Reference price in GBP"}</strong><p>{ratesDisclosure(rates)} This reference amount is not a live offer. Final prices, delivery, taxes and any agent fees may vary.</p></div>
+       <div><strong>Original marketplace only</strong><p>Direct source links open the original Weidian, Taobao or 1688 listing. Herocon cannot independently confirm supplier inventory, brand authenticity or product quality.</p></div>
+     </aside>
      {related.length>0&&<section className="hc-personal-detail-related" aria-labelledby="hc-personal-related-title">
-       <div className="hc-personal-related-heading"><div><span className="hc-personal-detail-kicker">MORE TO DISCOVER</span><h2 id="hc-personal-related-title">You might also <em>love.</em></h2></div><Link href={"/shop-for-yourself?audience="+gender+"&category="+encodeURIComponent(category)+"#browse-finds"}>Explore {category.toLowerCase()} →</Link></div>
-       <div className="hc-self-grid hc-personal-grid">{related.map(p=><ShopPersonalCard product={p} key={p.id}/>)}</div>
+       <div className="hc-personal-related-heading"><div><span className="hc-personal-detail-kicker">MORE TO DISCOVER</span><h2 id="hc-personal-related-title">You might also <em>love.</em></h2></div>
+         <Link href={audienceUrl+"&category="+encodeURIComponent(item.category)+"#browse-finds"}>Explore {item.category.toLowerCase()} →</Link>
+       </div>
+       <div className="hc-self-grid hc-personal-grid">{related.map(p=><ShopPersonalCard product={p} rates={rates} audience={audience} key={p.id}/>)}</div>
      </section>}
    </div>
  </main>;
