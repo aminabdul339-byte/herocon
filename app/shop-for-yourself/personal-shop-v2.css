@@ -130,3 +130,108 @@
  .hc-self-v2 .hc-personal-item{transition:none}
  .hc-self-v2 .hc-personal-item:hover{transform:none}
 }
+
+
+
+/* Editorial gender distinction — refined accents rather than separate brands. */
+.hc-self-v2[data-audience="women"]{--ps-accent:#77534e;--ps-accent-hover:#60403d;--ps-accent-soft:#f0e5e1;--ps-accent-border:#dfcfc8;--ps-em:#a1847a}
+.hc-self-v2[data-audience="men"]{--ps-accent:#294936;--ps-accent-hover:#193a29;--ps-accent-soft:#e7ede7;--ps-accent-border:#d0ded1;--ps-em:#849a88}
+.hc-self-v2[data-audience="women"] .hc-self-editorial{background:linear-gradient(110deg,#fcf8f3 10%,#f3eae6 100%)}
+.hc-self-v2[data-audience="men"] .hc-self-editorial{background:linear-gradient(110deg,#f8f9f4 10%,#e9eee9 100%)}
+.hc-self-v2[data-audience="women"] .hc-self-editorial h1 em,
+.hc-self-v2[data-audience="women"] .hc-personal-catalogue-intro h2 em,
+.hc-self-v2[data-audience="women"] .hc-personal-related-heading h2 em{color:#ab8d84}
+.hc-self-v2[data-audience="men"] .hc-self-editorial h1 em{color:#819d87}
+.hc-self-v2 .hc-self-editorial h1{max-width:670px}
+.hc-self-v2[data-audience="women"] .hc-self-editorial-label{color:#a17c70}
+.hc-self-v2[data-audience="men"] .hc-self-editorial-label{color:#6c8872}
+.hc-self-v2[data-audience="women"] .hc-self-editorial-image{box-shadow:0 15px 38px #6b463b0e}
+.hc-self-v2[data-audience="women"] .hc-self-editorial-image img{filter:saturate(.86);object-position:50% 50%}
+.hc-self-v2[data-audience="men"] .hc-self-editorial-image img{filter:saturate(.78);object-position:52% 49%}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{display:inline-flex!important;align-items:center;gap:14px;min-height:54px;transition:background .22s,color .22s,box-shadow .22s,border .22s;box-shadow:none}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta svg{width:20px;height:20px;flex:none}
+.hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta span:last-child{margin-left:auto}
+.hc-self-v2[data-audience="women"] .hc-personal-hero-actions .hc-self-editorial-cta{border-color:#b9a19b;color:#674b47!important;background:#fffcf8}
+.hc-self-v2[data-audience="women"] .hc-personal-hero-actions .hc-self-editorial-cta.is-active{background:#72524c;color:#fff!important;border-color:#72524c}
+.hc-self-v2[data-audience="women"] .hc-personal-hero-actions .hc-self-editorial-cta:hover{background:#644541;color:#fff!important}
+.hc-self-v2[data-audience="men"] .hc-personal-hero-actions .hc-self-editorial-cta.is-active{background:#284c37;border-color:#284c37}
+.hc-self-v2[data-audience="women"] .hc-personal-audience{background:#f3eae6;border-color:#e3d4ce}
+.hc-self-v2[data-audience="women"] .hc-personal-audience>a.is-active{background:#74544e}
+.hc-self-v2[data-audience="women"] .hc-personal-audience>a:not(.is-active):hover{background:#fff9f4}
+.hc-self-v2 .hc-personal-audience>a{min-width:142px}
+.hc-self-v2 .hc-personal-audience-title{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px}
+.hc-self-v2 .hc-personal-audience-title svg{width:22px;height:22px;flex:none}
+.hc-self-v2 .hc-personal-audience-title strong{font-size:12px;font-weight:750;white-space:nowrap}
+.hc-self-v2[data-audience="women"] .hc-personal-audience a:not(.is-active){color:#82665f}
+.hc-self-v2[data-audience="women"] .hc-personal-audience a:not(.is-active) small{color:#9a8983}
+.hc-self-v2[data-audience="women"] .hc-personal-categories>.hc-self-category{border-color:#eaded8;background:#fcf8f5}
+.hc-self-v2[data-audience="women"] .hc-personal-categories>.hc-self-category:hover{background:#f6eeeb}
+.hc-self-v2[data-audience="women"] .hc-personal-categories>.hc-self-category-active,
+.hc-self-v2[data-audience="women"] .hc-personal-categories>.hc-self-category-active:hover{border-color:#74544e;background:#74544e}
+.hc-self-v2[data-audience="women"] .hc-personal-categories>.hc-self-category-active .hc-self-category-icon{background:#ffffff1e;color:white;border-color:#ffffff44}
+.hc-self-v2[data-audience="women"] .hc-personal-search-button,
+.hc-self-v2[data-audience="women"] .hc-personal-grid .hc-self-link-primary{background:#74544e;border-color:#74544e;color:#fff!important}
+.hc-self-v2[data-audience="women"] .hc-personal-search-button:hover,
+.hc-self-v2[data-audience="women"] .hc-personal-grid .hc-self-link-primary:hover{background:#5c413c}
+.hc-self-v2[data-audience="women"] .hc-personal-grid .hc-self-thumb-label{color:#75564e;background:#fffcf4e6}
+.hc-self-v2[data-audience="women"] .hc-personal-grid .hc-self-item-price strong{color:#77544e}
+.hc-self-v2[data-audience="women"] .hc-personal-shared-note svg{color:#a68b7f}
+
+/* Align all personal product pages with the existing Herocon product-page system. */
+.hc-personal-product-page .hc-personal-detail-wrap{padding-top:23px;padding-bottom:88px}
+.hc-personal-experience .product-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:clamp(30px,5vw,88px);max-width:none;margin:0;padding:10px 0 34px}
+.hc-personal-experience .gallery-main{aspect-ratio:1/1.05;min-height:350px;background:#f6f6f1;border:1px solid #e5e9e0}
+.hc-personal-experience .gallery-main img{object-fit:contain;background:#fff}
+.hc-personal-experience .gallery-count{background:#ffffffdd;color:#7a887b;border:1px solid #e8eae1}
+.hc-personal-experience .buy-panel{position:sticky;top:94px;min-width:0}
+.hc-personal-experience .buy-panel h1{font:400 clamp(44px,5.2vw,73px)/1.045 Georgia,"Times New Roman",serif!important;letter-spacing:-.06em!important;color:#23382a;margin:13px 0 24px!important;overflow-wrap:anywhere}
+.hc-personal-experience .buy-panel .eyebrow{color:var(--ps-accent);font-size:11px;letter-spacing:.14em}
+.hc-personal-experience .buy-panel .product-price{font-size:36px;font-weight:760;letter-spacing:-.055em;color:#273d2c;margin:34px 0 26px}
+.hc-personal-experience .buy-panel .supplier-title{font-size:12px;color:#92998f}
+.hc-personal-experience .buy-panel .hc-direct-link{color:var(--ps-accent);font-size:12px;font-weight:740}
+.hc-personal-experience .buy-panel .sc-source-subprice{font-size:12px;line-height:1.85;color:#738474;margin:0 0 25px}
+.hc-personal-experience .hc-simple-quantity{display:flex;align-items:center;gap:24px;margin:26px 0}
+.hc-personal-experience .hc-simple-quantity>span{font-size:14px;font-weight:750;color:#37503b}
+.hc-personal-experience .hc-simple-quantity .sc-sku-qty{border:1px solid #dce4d9;border-radius:8px;background:#f3f6f1}
+.hc-personal-experience .hc-buy-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.hc-personal-experience .hc-buy-actions button{min-height:60px;border-radius:7px;font-size:15px;font-weight:750;cursor:pointer;transition:background .2s,transform .2s}
+.hc-personal-experience .hc-buy-actions button:focus-visible{outline:3px solid #a7b5a5;outline-offset:2px}
+.hc-personal-experience .hc-add-cart-button{color:var(--ps-accent)!important;background:#fff;border:1.5px solid var(--ps-accent)}
+.hc-personal-experience .hc-buy-now-button{color:#fff!important;background:var(--ps-accent);border:1.5px solid var(--ps-accent)}
+.hc-personal-experience .hc-buy-now-button:hover{background:var(--ps-accent-hover)}
+.hc-personal-experience .hc-add-cart-button:hover{background:var(--ps-accent-soft)}
+.hc-personal-experience .hc-buy-actions button:disabled{opacity:.5;cursor:not-allowed}
+.hc-personal-product-page .hc-personal-detail-reference{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-block:1px solid #e0e7dd;padding:24px 0;margin-top:13px}
+.hc-personal-detail-reference strong{font-size:12px;line-height:1.5;color:var(--ps-accent)}
+.hc-personal-detail-reference p{font-size:11px;line-height:1.8;max-width:570px;color:#829184;margin:7px 0 0}
+.hc-personal-product-page[data-audience="women"] .hc-personal-experience .buy-panel h1{color:#3c322f}
+.hc-personal-product-page[data-audience="women"] .hc-personal-experience .product-price{color:#70534d}
+.hc-personal-product-page[data-audience="women"] .gallery-main{background:#f4edeb;border-color:#eaded9}
+
+@media(max-width:850px){
+ .hc-personal-experience .product-layout{grid-template-columns:1fr;gap:29px}
+ .hc-personal-experience .gallery-main{max-width:750px;aspect-ratio:1/0.91;margin:auto}
+ .hc-personal-experience .buy-panel{position:static}
+ .hc-personal-experience .buy-panel h1{font-size:clamp(42px,8vw,64px)!important;max-width:770px}
+}
+@media(max-width:660px){
+ .hc-self-v2 .hc-personal-audience>a{min-width:0;padding:11px 10px}
+ .hc-self-v2 .hc-personal-audience-title{gap:6px}
+ .hc-self-v2 .hc-personal-audience-title strong{font-size:11px}
+ .hc-self-v2 .hc-personal-audience-title svg{width:18px;height:18px}
+ .hc-personal-experience .product-layout{padding:0 0 24px;gap:25px}
+ .hc-personal-experience .gallery-main{min-height:0;aspect-ratio:1}
+ .hc-personal-experience .buy-panel h1{font-size:clamp(39px,10vw,51px)!important;letter-spacing:-.055em!important}
+ .hc-personal-experience .buy-panel .product-price{font-size:31px;margin:23px 0}
+ .hc-personal-experience .hc-buy-actions{gap:9px}
+ .hc-personal-experience .hc-buy-actions button{font-size:12px;padding:12px 7px;min-height:55px}
+ .hc-personal-product-page .hc-personal-detail-reference{grid-template-columns:1fr;gap:15px;padding-block:18px}
+}
+@media(max-width:360px){
+ .hc-self-v2 .hc-personal-audience-title strong{font-size:10px}
+ .hc-self-v2 .hc-personal-audience>a{padding:10px 5px}
+ .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{gap:9px!important;padding-inline:11px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .hc-self-v2 .hc-personal-hero-actions .hc-self-editorial-cta{transition:none}
+}
