@@ -1,0 +1,65 @@
+/* Start a Business: editorial catalogue begins directly under navigation. */
+.hc-founder .hc-founder-catalogue{
+ padding:clamp(22px,3.4vw,44px) 0 74px;
+ scroll-margin-top:80px;
+}
+.hc-founder .hc-founder-catalogue-heading{
+ align-items:center;
+ gap:24px;
+ margin-bottom:21px;
+}
+.hc-founder .hc-founder-catalogue-heading h1{
+ font:400 clamp(39px,4.3vw,60px)/1.06 Georgia,"Times New Roman",serif;
+ letter-spacing:-.051em;
+ color:#283f2f;
+ margin:8px 0 6px!important;
+}
+.hc-founder .hc-founder-catalogue-heading h1 em{
+ color:#839d87;
+ font-style:italic;
+ font-weight:400;
+}
+.hc-founder .hc-founder-catalogue-heading p{
+ font-size:12px;
+ line-height:1.6;
+}
+.hc-founder .hc-founder-catalogue-heading .hc-founder-eyebrow{
+ font-size:9px;
+ letter-spacing:.16em;
+}
+.hc-founder .hc-founder-catalogue-all{
+ align-self:flex-end;
+ font-size:11px;
+ padding-bottom:6px;
+}
+.hc-founder .hc-founder-catalogue-search{
+ min-height:51px;
+ padding:5px 6px 5px 16px;
+}
+.hc-founder .hc-founder-catalogue-search button{min-height:41px}
+.hc-founder .hc-founder-catalogue-filters{
+ margin:13px 0 14px;
+ gap:7px;
+}
+.hc-founder .hc-founder-catalogue-filters a{padding:8px 12px}
+.hc-founder .hc-founder-catalogue-meta{margin:12px 0 12px}
+@media(max-width:760px){
+ .hc-founder .hc-founder-catalogue{
+  padding-top:19px;
+  padding-bottom:58px;
+  scroll-margin-top:68px;
+ }
+ .hc-founder .hc-founder-catalogue-heading{margin-bottom:15px}
+ .hc-founder .hc-founder-catalogue-heading h1{
+  font-size:clamp(35px,8.7vw,49px);
+  margin:6px 0!important;
+ }
+ .hc-founder .hc-founder-catalogue-heading p{font-size:11px}
+ .hc-founder .hc-founder-catalogue-all{
+  margin-top:10px;
+  padding-bottom:4px;
+ }
+ .hc-founder .hc-founder-catalogue-search{min-height:48px}
+ .hc-founder .hc-founder-catalogue-filters{margin:11px 0 8px}
+ .hc-founder .hc-founder-catalogue-meta{margin:10px 0}
+}

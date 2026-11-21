@@ -45,8 +45,8 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
   <div className="hc-personal-catalogue-intro">
     <div>
       <p className="hc-self-eyebrow">THE PERSONAL EDIT / HEROCON</p>
-      <h2 id="hc-self-listing-title">Your {genderName[audience]} <em>edit.</em></h2>
-      <p>Find something worth keeping. Original marketplace sources, thoughtful browsing and no unnecessary detours.</p>
+      <h1 id="hc-self-listing-title">Your {genderName[audience]} <em>edit.</em></h1>
+      <p>{audience==="women"?"Discover handbags, accessories and beautiful everyday finds.":"Explore clothing, shoes and accessories from original marketplace sources."}</p>
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
@@ -54,7 +54,6 @@ export default function ShopForYourself({filters,rates}:{filters:Filters;rates:S
       </Link>)}
     </nav>
   </div>
-  <p className="hc-personal-shared-note"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/></svg> Shoes, sunglasses and other unisex favourites appear in both edits.</p>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
       <span className="hc-self-category-icon"><ShopCategoryIcon category="All"/></span><span className="hc-self-category-title">All finds<small>{everything.length.toLocaleString("en-GB")} products</small></span>

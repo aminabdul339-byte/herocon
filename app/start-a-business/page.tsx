@@ -6,13 +6,13 @@ import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcase
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import type {Metadata} from "next";
+import "./catalogue-first.css";
 
 export const metadata:Metadata={
  title:"Start a Business — The Founder's Edit",
  description:"Find products, research suppliers, estimate sourcing costs and make a practical plan for your first product business with Herocon."
 };
 
-const BUSINESS_PHOTO="https://images.pexels.com/photos/7552578/pexels-photo-7552578.jpeg?auto=compress&cs=tinysrgb&w=1400&q=85";
 const WARDROBE_PHOTO="https://images.unsplash.com/photo-1603400521630-9f2de124b33b?auto=format&fit=crop&w=1200&q=85";
 
 const tools=[
@@ -66,26 +66,10 @@ export default async function StartBusiness({searchParams}:{searchParams:Promise
  };
  return <main className="hc-founder">
   <Header/>
-  <section className="hc-founder-hero" aria-labelledby="hc-founder-title">
-   <div className="hc-founder-container hc-founder-hero-grid">
-     <div className="hc-founder-hero-copy">
-       <span className="hc-founder-eyebrow">THE FOUNDER&apos;S EDIT / HEROCON 2026</span>
-       <h1 id="hc-founder-title">Your next<br/>chapter <em>starts here.</em></h1>
-       <p>Every brand begins with a first idea. Explore products, research original suppliers and build a considered sourcing plan — without rushing into a bulk order.</p>
-       <div className="hc-founder-hero-actions"><Link className="hc-founder-cta" href="#sourcing-catalogue">Explore products <span aria-hidden="true">↗</span></Link><Link className="hc-founder-quiet-link" href="/landed-cost">Estimate your costs ↗</Link></div>
-     </div>
-     <div className="hc-founder-photo">
-       <img src={BUSINESS_PHOTO} alt="Real photograph of a person carrying an elegant stack of packaged boxes in a neutral indoor setting" width={800} height={1000} fetchPriority="high"/>
-     </div>
-   </div>
-  </section>
-  <div className="hc-founder-trust"><div className="hc-founder-container hc-founder-trust-inner"><span>DISCOVER PRODUCTS</span><span>EXPLORE ORIGINAL SUPPLIERS</span><span>PLAN YOUR FIRST ORDER</span></div></div>
-
-
   <section id="sourcing-catalogue" className="hc-founder-catalogue" aria-labelledby="hc-founder-catalogue-title">
     <div className="hc-founder-container">
       <div className="hc-founder-catalogue-heading">
-        <div><span className="hc-founder-eyebrow">THE SOURCING CATALOGUE</span><h2 id="hc-founder-catalogue-title">Products worth <em>exploring.</em></h2><p>Real products from Herocon&apos;s sourcing catalogue, with links to their original marketplace listings.</p></div>
+        <div><span className="hc-founder-eyebrow">THE SOURCING CATALOGUE</span><h1 id="hc-founder-catalogue-title">Products worth <em>exploring.</em></h1><p>Real products from Herocon&apos;s sourcing catalogue, with links to their original marketplace listings.</p></div>
         <Link className="hc-founder-catalogue-all" href="/search">Browse the full catalogue <span aria-hidden="true">↗</span></Link>
       </div>
       <form className="hc-founder-catalogue-search" role="search" action="/start-a-business#sourcing-catalogue" method="get">
