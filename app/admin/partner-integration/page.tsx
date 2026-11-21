@@ -7,7 +7,17 @@ type Check={
  ok:boolean;connection?:string;apiKeyConfigured?:boolean;
  webhookSecretConfigured?:boolean;catalogue?:string;
  productCountFirstPage?:number|null;catalogueError?:string|null;
- writeActionsEnabled?:boolean;error?:string
+ writeActionsEnabled?:boolean;error?:string;requestId?:string
+};
+const guidance:Record<string,string>={
+ "api_not_enabled":"Fulfillbot has not enabled API access for this account. Open Fulfillbot Settings → API access, check whether an access request or approval is needed, and contact your account manager if it remains disabled.",
+ "account_action_required":"Sign in to Fulfillbot and finish any required account step, such as changing a temporary password. Then run this test again.",
+ "insufficient_scope":"Your key lacks access to this endpoint. Create a Custom read-only key with View products and inventory and the other viewing permissions, save it to Vercel, redeploy, and retry.",
+ "invalid_api_key":"This API key may be incorrect, expired or revoked. Check the production FULFILLBOT_API_KEY value in Vercel without posting the key in chat.",
+ "partner_permission_or_account":"Fulfillbot returned a 403 permission response without a recognisable code. Ask their account manager to check API account access; include the request ID below if one is shown.",
+ "partner_unavailable":"Herocon could not reach the partner API. Retry after checking the partner service status.",
+ "rate_limited":"Too many API requests have been sent. Wait before retrying.",
+ "partner_api_error":"The partner API returned an unexpected error. Please contact the partner's support team if this continues."
 };
 const styles={
  shell:{maxWidth:780,margin:"60px auto",padding:"0 22px",color:"#263f31",fontFamily:"Arial,Helvetica,sans-serif"},
@@ -56,7 +66,11 @@ export default function PartnerIntegrationAdmin(){
        {busy?"Checking connection…":"Test read-only connection"}
       </button>
     </form>
-    {error&&<p role="alert" style={{marginTop:22,color:"#9c4132",fontSize:13}}>{error}</p>}
+    {error&&<div role="alert" style={{marginTop:22,color:"#9c4132",fontSize:13,lineHeight:1.7}}>
+      <strong>{error}</strong>
+      {check?.error&&guidance[check.error]&&<p style={{margin:"8px 0 0"}}>{guidance[check.error]}</p>}
+      {check?.requestId&&<p style={{margin:"8px 0 0"}}>Partner support request ID: <code>{check.requestId}</code></p>}
+    </div>}
     {check&&<div aria-live="polite" style={{marginTop:24,padding:22,background:"#f4f8f3",borderRadius:6,border:"1px solid #d4e2d1"}}>
       <h2 style={{margin:"0 0 16px",font:"400 25px Georgia,serif"}}>{outcome?"API connection verified":"Connection requires attention"}</h2>
       <dl style={{display:"grid",gridTemplateColumns:"minmax(155px,1fr) auto",rowGap:14,columnGap:20,fontSize:13,lineHeight:1.5,margin:0}}>

@@ -17,9 +17,30 @@ const ALLOWED: ReadonlySet<string> = new Set([
 ]);
 
 export class PartnerReadError extends Error {
-  constructor(public readonly status: number, public readonly code: string) {
+  constructor(
+    public readonly status:number,
+    public readonly code:string,
+    public readonly requestId?:string
+  ) {
     super("Partner service request failed.");
   }
+}
+// Only expose recognised public API error codes from the provider, never
+// user data, API key values or arbitrary upstream response text.
+const KNOWN_ERRORS=new Set([
+  "invalid_api_key","account_action_required","api_not_enabled",
+  "insufficient_scope","validation_failed","rate_limited",
+  "internal_error","not_found"
+]);
+function providerError(body:unknown):string|null{
+  if(!body||typeof body!=="object"||Array.isArray(body))return null;
+  const value=body as Record<string,unknown>;
+  const inner=value.error&&typeof value.error==="object"&&!Array.isArray(value.error)
+    ?value.error as Record<string,unknown>:null;
+  const candidate=typeof value.code==="string"?value.code:
+    typeof value.error==="string"?value.error:
+    typeof inner?.code==="string"?inner.code:null;
+  return candidate&&KNOWN_ERRORS.has(candidate)?candidate:null;
 }
 
 export function partnerKeyConfigured() {
@@ -53,10 +74,16 @@ export async function partnerRead(
     throw new PartnerReadError(503,"partner_unavailable");
   }
   if(!response.ok) {
-    if(response.status===401) throw new PartnerReadError(401,"invalid_partner_key");
-    if(response.status===403) throw new PartnerReadError(403,"partner_permission_or_account");
-    if(response.status===429) throw new PartnerReadError(429,"partner_rate_limited");
-    throw new PartnerReadError(502,"partner_api_error");
+    const requestIdRaw=response.headers.get("x-request-id")||"";
+    const requestId=/^[A-Za-z0-9_-]{3,128}$/.test(requestIdRaw)?requestIdRaw:undefined;
+    let errorCode:string|null=null;
+    if(response.headers.get("content-type")?.includes("application/json")){
+      try{errorCode=providerError(await response.json());}catch{}
+    }
+    const fallback=response.status===401?"invalid_api_key":
+      response.status===403?"partner_permission_or_account":
+      response.status===429?"rate_limited":"partner_api_error";
+    throw new PartnerReadError(response.status,errorCode||fallback,requestId);
   }
   try {return await response.json();}
   catch{throw new PartnerReadError(502,"invalid_partner_response");}

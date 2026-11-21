@@ -12,10 +12,10 @@ function authorised(request:Request):boolean {
   const a=Buffer.from(expected),b=Buffer.from(supplied);
   return a.length===b.length&&timingSafeEqual(a,b);
 }
-function invalidReply(error:string,status=503){
+function invalidReply(error:string,status=503,requestId?:string){
  return NextResponse.json({ok:false,connection:"failed",apiKeyConfigured:true,
   webhookSecretConfigured:Boolean(process.env.FULFILLBOT_WEBHOOK_SECRET?.trim()),
-  writeActionsEnabled:false,error},{status,headers});
+  writeActionsEnabled:false,error,requestId},{status,headers});
 }
 export async function GET(request:Request){
   if(!authorised(request))return NextResponse.json({ok:false,error:"unauthorised"},{status:401,headers});
@@ -50,6 +50,9 @@ export async function GET(request:Request){
       catalogueError,writeActionsEnabled:false
     },{headers});
   }catch(error){
-    return invalidReply(error instanceof PartnerReadError?error.code:"partner_unavailable");
+    return invalidReply(
+      error instanceof PartnerReadError?error.code:"partner_unavailable",
+      503,error instanceof PartnerReadError?error.requestId:undefined
+    );
   }
 }
