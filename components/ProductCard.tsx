@@ -3,13 +3,13 @@ import Link from "next/link";
 import {useEffect,useMemo,useState} from "react";
 import {cleanTitle,productId,productPrice} from "@/lib/catalogue";
 import type {Product} from "@/lib/types";
-export default function ProductCard({product,eager=false}:{product:Product;large?:boolean;eager?:boolean}){
+export default function ProductCard({product,eager=false,titleOverride}:{product:Product;large?:boolean;eager?:boolean;titleOverride?:string}){
  const id=productId(product);
  const images=useMemo(()=>[...new Set([product.imageUrl,...(product.images||[])]
   .filter((url):url is string=>typeof url==="string"&&/^https?:\/\//.test(url)))].slice(0,12),[product.imageUrl,product.images]);
  const [imageIndex,setImageIndex]=useState(0);
  useEffect(()=>setImageIndex(0),[product.doppelProductId,product.imageUrl]);
- const title=cleanTitle(product),price=productPrice(product);
+ const title=titleOverride||cleanTitle(product),price=productPrice(product);
  return <article className="hc-product-card">
   <div className="hc-image-wrap">
    <Link prefetch={false} className="hc-card-photo-link" href={"/product/"+encodeURIComponent(id)} aria-label={"View "+title}>{images[imageIndex]?<img src={images[imageIndex]} alt={title} loading={eager?"eager":"lazy"} fetchPriority={eager?"high":"auto"} decoding="async" referrerPolicy="no-referrer" onError={()=>setImageIndex(current=>current+1)}/>:<div className="hc-image-missing">Product image unavailable<br/>View product details</div>}</Link>

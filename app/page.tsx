@@ -19,7 +19,25 @@ function Arrow({up=false}:{up?:boolean}){
 
 export default async function Home(){
   const products=await prioritizeSavedPartnerProducts(await getProducts());
-  const featured=await attachSavedPartnerImages(selectDiscoveryEditProducts(products));
+  // Two deliberately curated swaps for the homepage Discovery Edit.
+  // Select from actual existing catalogue records; never invent listing data.
+  // Keep the wig and nail entries picked by the existing editorial selection.
+  const featuredDefaults=selectDiscoveryEditProducts(products);
+  const featuredIds:Readonly<Record<number,string>>={
+    1:"4QucBqTfsk76WbDuGGzyBA", // Sculpture bookends replace wedding ornaments
+    3:"zmcFLXhlnDI9AyHB3zO8LA", // Summer lace dress replaces winter slippers
+  };
+  const featuredSelection=featuredDefaults.map((product,index)=>{
+    const replacement=featuredIds[index];
+    return replacement
+      ? products.find(candidate=>candidate.doppelProductId===replacement&&candidate.imageUrl&&candidate.originalMarketplaceUrl)||product
+      : product;
+  });
+  const featured=await attachSavedPartnerImages(featuredSelection);
+  const editorialNames:Readonly<Record<string,string>>={
+    "4QucBqTfsk76WbDuGGzyBA":"Simple Modern Abstract Sculpture Character Bookends",
+    "zmcFLXhlnDI9AyHB3zO8LA":"INS European and American-style 2023 Summer Lace Dress",
+  };
   return <main className="hm-home">
     <Header/>
     <AtelierHero/>
@@ -30,7 +48,7 @@ export default async function Home(){
         <Link className="hm-featured-view-all" href="/search">Explore all products <Arrow up/></Link>
       </div>
       {featured.length>0
-        ? <div className="hm-featured-grid hc-premium-featured-grid">{featured.slice(0,4).map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2}/>)}</div>
+        ? <div className="hm-featured-grid hc-premium-featured-grid">{featured.slice(0,4).map((product,i)=><ProductCard key={product.canonicalId||product.doppelProductId||i} product={product} eager={i<2} titleOverride={editorialNames[product.doppelProductId||""]}/>)}</div>
         : <div className="hm-featured-empty"><p>Our next edit is on its way.</p><Link href="/search">Browse all products <Arrow up/></Link></div>}
     </section>
 
