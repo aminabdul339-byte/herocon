@@ -20,3 +20,12 @@ export function ShopCategoryIcon({category}:{category:string}){
  if(category==="Accessories")return <svg {...shared}><path d="M2 11h2l1-1.5c.5-.8 1.4-1 2.3-1h2.2c1.2 0 2 .6 2.5 1.5.5-.9 1.3-1.5 2.5-1.5h2.2c.9 0 1.8.2 2.3 1l1 1.5h2"/><path d="M4 11c0 4 1.5 5.7 4.8 5.7s4.7-1.7 4.7-5.7M13.5 11c0 4 1.5 5.7 4.7 5.7S23 15 23 11"/><path d="M10.8 10.5h2.4"/></svg>;
  return <svg {...shared}><rect x="3" y="3" width="7" height="7" rx="1.1"/><rect x="14" y="3" width="7" height="7" rx="1.1"/><rect x="3" y="14" width="7" height="7" rx="1.1"/><rect x="14" y="14" width="7" height="7" rx="1.1"/></svg>;
 }
+
+
+/** A bag silhouette for Women's Edit; tailored jacket for Men's Edit. No emoji glyphs. */
+export function ShopAudienceIcon({audience}:{audience:"women"|"men"}){
+ const shape={viewBox:"0 0 24 24",width:23,height:23,stroke:"currentColor",strokeWidth:1.45,fill:"none",strokeLinecap:"round" as const,strokeLinejoin:"round" as const,"aria-hidden":true as const,focusable:"false" as const};
+ return audience==="women"
+  ?<svg {...shape}><path d="M4 9.5h16l-.9 11H4.9L4 9.5Z"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M4.2 12.5h15.6"/></svg>
+  :<svg {...shape}><path d="m8 3-4 2-2 6 4 1 1-3v12h10V9l1 3 4-1-2-6-4-2-4 5-4-5Z"/><path d="M12 8v13M9.5 11.5h1M14 11.5h.5"/></svg>;
+}
