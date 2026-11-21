@@ -7,6 +7,8 @@ type Status={
  total:number;saved:number;attemptedInScope:number;
  attemptsToday:number;eligible:number;remainingDaily:number;
  blockedReason:string|null;apiReady:boolean;dailyMaximum:number;
+ restriction?:{label:string;action:string;category:string}|null;
+ nextUtcReview?:string;
  categories:{name:string;total:number;saved:number;eligible:number}[];
  notice:string;error?:string
 };
@@ -14,7 +16,9 @@ type Run={
  attempted:number;saved:number;existing:number;failed:number;
  remainingDaily:number;stopReason:string|null;
  results:{id:string;category:string;status:string;options?:number;code?:string}[];
- error?:string
+ error?:string;blockedReason?:string;
+ restriction?:{label:string;action:string;category:string}|null;
+ nextUtcReview?:string
 };
 const API="/api/admin/shop-personal-enrichment";
 const box={border:"1px solid #d7e2d5",background:"white",padding:23,borderRadius:8};
@@ -50,7 +54,17 @@ export default function PrivatePersonalEnrichmentPage(){
     body:JSON.stringify({scope,max:amount,acceptBillable:true})
    });
    const run=await response.json() as Run;
-   if(!response.ok)throw Error(run.error||"Supplier import could not start");
+   if(!response.ok){
+    if(response.status===409&&run.blockedReason){
+      setStatus(previous=>previous?{
+       ...previous,blockedReason:run.blockedReason||null,
+       restriction:run.restriction||null,
+       nextUtcReview:run.nextUtcReview||previous.nextUtcReview
+      }:previous);
+      throw Error((run.error||"Supplier restriction active")+" Code: "+run.blockedReason+".");
+    }
+    throw Error(run.error||"Supplier import could not start");
+   }
    setHistory(run);
    setMessage(run.stopReason||"Import complete. New details are stored permanently and will appear on linked product pages.");
   }catch(err){setMessage(err instanceof Error?err.message:"Import unsuccessful");}
@@ -80,10 +94,17 @@ export default function PrivatePersonalEnrichmentPage(){
    </section>
    {message&&<p role="status" style={{fontSize:13,lineHeight:1.7,color:"#526b58"}}>{message}</p>}
    {status&&<>
+    {status.blockedReason&&<section role="alert" style={{...box,margin:"16px 0",borderColor:"#d5b6a9",background:"#fdf7f3"}}>
+     <strong style={{fontSize:15,color:"#8c392f"}}>Supplier protection is active: {status.restriction?.label||status.blockedReason}</strong>
+     <p style={{fontSize:13,lineHeight:1.7,margin:"10px 0 6px"}}>Recorded code: <code>{status.blockedReason}</code>. This is a shared BuckyDrop importer safeguard, not a failure of the Fulfillbot webhook.</p>
+     <p style={{fontSize:13,lineHeight:1.7,margin:"6px 0"}}>{status.restriction?.action||"Investigate the supplier or storage restriction before making another paid request."}</p>
+     {status.nextUtcReview&&<p style={{fontSize:12,lineHeight:1.7,color:"#725c52",margin:"8px 0 0"}}>This daily lock is reconsidered after {new Date(status.nextUtcReview).toLocaleString("en-GB",{timeZone:"UTC",timeZoneName:"short"})}; an unresolved account or storage problem can trigger it again.</p>}
+     <p style={{fontSize:12,lineHeight:1.7,color:"#725c52",margin:"8px 0 0"}}>Existing saved product details remain available. This page has made no new supplier requests today.</p>
+    </section>}
     <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(165px,1fr))",gap:11,margin:"16px 0"}}>
      {([["Shop listings",status.total],["Already enriched",status.saved],["Still eligible",status.eligible],
       ["Attempts today",status.attemptsToday],["Daily calls remaining",status.remainingDaily]] as const).map(([name,count])=>
-      <div key={name} style={{...box,padding:16}}><span style={{fontSize:11,color:"#607d65"}}>{name}</span>
+      <div key={name} style={{...box,padding:16}}><span style={{fontSize:11,color:"#607d65"}}>{name==="Daily calls remaining"&&status.blockedReason?"Daily allowance (paused)":name}</span>
        <div style={{font:"400 31px Georgia,serif",marginTop:8}}>{count.toLocaleString()}</div>
       </div>)}
     </section>
@@ -93,7 +114,7 @@ export default function PrivatePersonalEnrichmentPage(){
       Saving an existing snapshot incurs no new supplier lookup fee. For unsaved listings, each new API lookup may be charged by the provider.
       This tool has a strict limit of {status.dailyMaximum} attempts per UTC day and never retries automatically.
      </p>
-     {status.blockedReason&&<p role="alert" style={{fontSize:13,color:"#a34135"}}>Supplier imports are paused: {status.blockedReason}. No new paid requests can be sent today.</p>}
+
      {!status.apiReady&&<p role="alert" style={{fontSize:13,color:"#a34135"}}>Live supplier lookups are not configured in production. Saved product records can still appear without new requests.</p>}
      <label style={{display:"block",fontWeight:700,fontSize:13,marginTop:15}}>Products in this batch
       <select value={amount} onChange={e=>setAmount(Number(e.target.value))} style={{display:"block",marginTop:8,padding:11,border:"1px solid #b8ccb9",borderRadius:5}}>

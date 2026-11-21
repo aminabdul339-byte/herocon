@@ -31,6 +31,24 @@ const today=()=>new Date().toISOString().slice(0,10);
 const hash=(value:string)=>createHash("sha256").update(value).digest("hex");
 const slug=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]+/g,"-");
 const wait=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
+const RESTRICTIONS:Record<string,{label:string;action:string;category:"supplier"|"storage"}>={
+ "account-funds":{label:"Supplier account balance restriction",action:"Check BuckyDrop developer billing and available API funds. Do not retry paid lookups until the account is funded.",category:"supplier"},
+ "rate-limit":{label:"Supplier rate limit",action:"Leave supplier imports paused. Review supplier rate limits and wait for the permitted reset before any new requests.",category:"supplier"},
+ "access-denied":{label:"Supplier API permission denied",action:"Check that the product-detail API operation is enabled for the BuckyDrop account and contact its support if necessary.",category:"supplier"},
+ "snapshot-save-failed":{label:"Private snapshot could not be saved",action:"Inspect the Vercel Blob store connection and write permissions. A successful lookup could not be kept safely.",category:"storage"},
+ "snapshot-storage-unavailable":{label:"Private storage unavailable",action:"Check the configured private Vercel Blob store before attempting new paid lookups.",category:"storage"},
+ "snapshot-read-failed":{label:"Private snapshot read failure",action:"Check the Vercel Blob store and read permissions before trying to import again.",category:"storage"},
+ "snapshot-invalid":{label:"Stored supplier record needs review",action:"Inspect the existing saved supplier record. Do not make another paid lookup solely to repair a corrupted snapshot.",category:"storage"},
+ "upstream-http-error":{label:"Supplier returned an HTTP error",action:"Inspect supplier service availability and API permissions before retrying.",category:"supplier"},
+ "upstream-unavailable":{label:"Supplier connection unavailable",action:"Check provider availability and network connectivity before requesting more products.",category:"supplier"},
+ "invalid-response":{label:"Supplier response could not be read",action:"Review the supplier response format or contact their support before retrying.",category:"supplier"}
+};
+function explainBlock(reason:string|null){
+ if(!reason)return null;
+ const known=RESTRICTIONS[reason];
+ return known||{label:"A supplier or storage restriction was recorded",action:"Review the recorded code and earlier catalogue importer before making another paid lookup.",category:"supplier" as const};
+}
+const nextUtcDay=()=>new Date(Date.parse(today()+"T00:00:00.000Z")+86400000).toISOString();
 
 function authorized(request:Request):boolean{
  const expected=process.env.HEROCON_CATALOGUE_IMPORT_KEY||"";
@@ -106,6 +124,8 @@ export async function GET(request:Request){
   const s=await state(scope);
   const {items:_,...safe}=s;
   return json({...safe,scope,apiReady:enabled(),dailyMaximum:DAILY_MAX,
+    restriction:explainBlock(s.blockedReason),
+    nextUtcReview:nextUtcDay(),
     notice:"Saved records are reused without supplier charges. A new product lookup may be billable. Only a deliberate button click sends paid requests. No automatic retries."});
  }catch{return json({error:"Unable to read personal catalogue import status"},503);}
 }
@@ -126,7 +146,11 @@ export async function POST(request:Request){
  if(requested<1||requested>MAX_BATCH)return json({error:"Batch limit is 1 to 3 products"},400);
  let s:Awaited<ReturnType<typeof state>>;
  try{s=await state(scope);}catch{return json({error:"Unable to inspect import queue"},503);}
- if(s.blockedReason)return json({error:"Supplier requests paused due to a recorded restriction",blockedReason:s.blockedReason},409);
+ if(s.blockedReason)return json({
+   error:"Shared supplier safeguard is active. No paid requests were sent.",
+   blockedReason:s.blockedReason,restriction:explainBlock(s.blockedReason),
+   nextUtcReview:nextUtcDay()
+ },409);
  const limit=Math.min(requested,s.remainingDaily,s.items.length);
  if(!limit)return json({requested,attempted:0,saved:0,failed:0,remainingDaily:s.remainingDaily,results:[],stopReason:s.remainingDaily===0?"Daily safety limit reached":"No eligible unattempted listings in this scope"});
  const results:{id:string;category:string;status:"saved"|"already_saved"|"failed";code?:string;options?:number}[]=[];
