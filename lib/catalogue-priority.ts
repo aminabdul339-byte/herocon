@@ -56,11 +56,17 @@ export async function prioritizeSavedPartnerProducts(products:Product[]):Promise
  * never call the paid supplier API. The results are cached by source URL.
  */
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
-const cardPhotos=unstable_cache(async(link:string):Promise<string[]>=>{
+type SavedCardDetails={photos:string[];sellerName:string|null;variantCount:number}|null;
+const cardDetails=unstable_cache(async(link:string):Promise<SavedCardDetails>=>{
  const details=await getSavedBuckydropProduct(link);
- return [...new Set([...(details?.images||[]),...(details?.variants||[]).map(x=>x.image).filter((x):x is string=>!!x)])]
-  .filter(url=>/^https:\/\//.test(url)).slice(0,8);
-},["herocon-saved-card-photos-v1"],{revalidate:86400});
+ if(!details)return null;
+ return {
+   photos:[...new Set([...(details.images||[]),...details.variants.map(x=>x.image).filter((x):x is string=>!!x)])]
+     .filter(url=>/^https:\/\//.test(url)).slice(0,12),
+   sellerName:details.sellerName,
+   variantCount:details.variants.length
+ };
+},["herocon-saved-card-detail-v1"],{revalidate:86400});
 
 
 /**
@@ -108,10 +114,17 @@ export async function attachSavedPartnerImages(products:Product[]):Promise<Produ
  return Promise.all(products.map(async product=>{
   if(!product.hasPartnerDetails||!product.originalMarketplaceUrl)return product;
   try{
-   const photos=await cardPhotos(product.originalMarketplaceUrl);
-   if(!photos.length)return product;
+   const details=await cardDetails(product.originalMarketplaceUrl);
+   if(!details)return product;
    const original=[product.imageUrl,...(product.images||[])].filter((x):x is string=>!!x);
-   return {...product,imageUrl:photos[0],images:[...new Set([...photos,...original])].slice(0,12)};
+   const photos=[...new Set([...details.photos,...original])].slice(0,12);
+   return {
+     ...product,
+     imageUrl:details.photos[0]||product.imageUrl,
+     images:photos,
+     sellerName:product.sellerName||details.sellerName,
+     variantCount:product.variantCount??details.variantCount
+   };
   }catch{return product;}
  }));
 }

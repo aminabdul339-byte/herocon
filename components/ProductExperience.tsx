@@ -32,14 +32,14 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [fx,setFx]=useState<ForexRate|null>(initialFx||null);
 
  useEffect(()=>{
-  if(!initialSource||initialFx)return;
+  if((!initialSource&&product.priceCNY==null&&!originalVariants.some(v=>v.priceCNY!=null))||initialFx)return;
   const controller=new AbortController();
   fetch("/api/fx/cny-gbp",{signal:controller.signal})
    .then(async response=>{if(!response.ok)throw Error("Exchange rate unavailable");return response.json();})
    .then(data=>{if(!controller.signal.aborted&&typeof data.rate==="number"&&data.rate>0&&data.rate<0.5&&typeof data.date==="string")setFx({rate:data.rate,date:data.date});})
    .catch(()=>{if(!controller.signal.aborted)setFx(null);});
   return ()=>controller.abort();
- },[buckydropEnabled,initialFx]);
+ },[buckydropEnabled,initialFx,initialSource,product.priceCNY,originalVariants]);
  const dualPrice=(cny:number)=>gbpOnly?(fx?formatGBP(cny*fx.rate):"GBP price unavailable"):formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  // Partner details are merged server-side from permanent storage. Never call a
@@ -67,23 +67,25 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   gbpOnly?(fx?formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"GBP price unavailable"):
   formatCNY(minPrice)+" – "+formatCNY(maxPrice)+(fx?" ≈ "+formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"")):null;
  const cataloguePrice=price&&price!=="View marketplace price"?price:"Price to be confirmed";
+ const recordedVariantPriceCNY=originalMatching?.priceCNY??product.priceCNY;
  const priceLabel=source?(gbpOnly&&!fx?cataloguePrice:source.variants.length>0&&!sourceVariant?"Option unavailable":
   activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
   (priceCNY!=null?dualPrice(priceCNY):cataloguePrice)):
   cataloguePrice;
  const outOfStock=Boolean(source&&(source.available===false||(source.variants.length>0&&!source.variants.some(v=>v.stock===null||v.stock>0))));
- const detailImages=(source?.detailImages||[]).filter((url,i,all)=>all.indexOf(url)===i).slice(0,36);
+ const detailImages=(source?.detailImages?.length?source.detailImages:product.detailImages||[])
+   .filter((url,i,all)=>all.indexOf(url)===i).slice(0,36);
  const skuOptions=new Map<string,Set<string>>();
  for(const variant of source?.variants||[])for(const option of variant.options){
   if(!skuOptions.has(option.name))skuOptions.set(option.name,new Set());
   skuOptions.get(option.name)?.add(option.value);
  }
- const savedProps=source?.productProps||[];
+ const savedProps=source?.productProps?.length?source.productProps:product.sourceSpecs||[];
  const savedNames=new Set(savedProps.map(p=>p.name.toLowerCase()));
  const detailAttributes=[...savedProps,...[...skuOptions]
   .filter(([name])=>!savedNames.has(name.toLowerCase()))
   .map(([name,values])=>({name,value:[...values].slice(0,18).join(", ")}))].slice(0,32);
- const description=source?.descriptionText||"";
+ const description=source?.descriptionText||product.descriptionText||"";
  const updateQuantity=(skuCode:string,delta:number)=>{
   const variant=source?.variants.find(v=>v.skuCode===skuCode);
   if(!variant||source?.available===false)return;
@@ -119,14 +121,15 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   }else{
    if(originalVariants.length&&!originalMatching){setCartMessage("Please choose an available option.");return;}
    const variantName=[colour&&"Colour: "+colour,size&&"Size: "+size,style&&"Style: "+style,originalMatching?.label].filter(Boolean).join(" / ");
-   const fallbackPrice=originalMatching?.price??product.priceGBP??(price.startsWith("£")?Number(price.slice(1).replace(/,/g,"")):null);
+   const fallbackCNY=originalMatching?.priceCNY;
+   const fallbackPrice=fallbackCNY??originalMatching?.price??product.priceGBP??(price.startsWith("£")?Number(price.slice(1).replace(/,/g,"")):null);
    rows=[{
     ...common,
     key:marketplace+"::"+(originalMatching?.id||"standard"),
     variant:variantName,
     quantity:singleQuantity,
     unitPrice:source?(source.offerPrice??source.listPrice):typeof fallbackPrice==="number"&&Number.isFinite(fallbackPrice)?fallbackPrice:null,
-    currency:source?"CNY":"GBP"
+    currency:source||fallbackCNY!=null?"CNY":"GBP"
    }];
   }
   if(!rows.length){setCartMessage("Please choose an available seller option.");return;}
@@ -166,13 +169,14 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <p className="eyebrow">{product.category||"PRODUCT DETAILS"}</p>
     <h1>{title}</h1>
     <div className="hc-seller-row">
-     <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller"}</span>
+     <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller not recorded"}</span>
      {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link <ExternalArrowIcon/></a>}
     </div>
     {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller <ArrowIcon/></Link>}
     <div className="product-price">{priceLabel}</div>
     {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
-    {!source&&<p className="sc-source-subprice" role="note">Previously listed product price. Our sourcing partner's detailed options are being updated behind the scenes. The price is indicative and excludes delivery.</p>}
+    {!source&&<p className="sc-source-subprice" role="note">Previously recorded catalogue price. Details and seller availability may have changed. Delivery is not included.</p>}
+     {!source&&recordedVariantPriceCNY!=null&&<p className="sc-source-subprice">Recorded seller option: {dualPrice(recordedVariantPriceCNY)}. Historical reference, not a live quote.</p>}
     {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
@@ -236,7 +240,8 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       <dt>Marketplace</dt><dd>{marketplace?new URL(marketplace).hostname.replace(/^www\./,""):"Not provided"}</dd>
       {source?.spuCode&&<><dt>Product reference</dt><dd>{source.spuCode}</dd></>}
       {source?.moq!=null&&<><dt>Minimum order</dt><dd>{source.moq} units</dd></>}
-      {source?.variants.length? <><dt>Seller options</dt><dd>{source.variants.length} variants</dd></>:null}
+      {(source?.variants.length||product.variantCount||0)>0&&<><dt>Seller options recorded</dt><dd>{source?.variants.length||product.variantCount} variants</dd></>}
+      {!source&&product.originalTitle&&product.originalTitle!==title&&<><dt>Original listing title</dt><dd>{product.originalTitle}</dd></>}
       {product.weight&&<><dt>Weight</dt><dd>{product.weight}</dd></>}
       {product.dimensions&&<><dt>Dimensions</dt><dd>{product.dimensions}</dd></>}
       {detailAttributes.map(attr=><div className="hc-spec-pair" key={attr.name}><dt>{attr.name}</dt><dd>{attr.value}</dd></div>)}
