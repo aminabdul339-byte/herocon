@@ -4,6 +4,7 @@ The homepage and two primary journeys use **real photographic stock images**, no
 
 | Placement | Photographer | Licensed photo page | In-use CDN |
 |---|---|---|---|
+| Homepage: campaign split-screen hero (brown handbag in neutral wardrobe) | Niki | https://www.pexels.com/photo/elegant-brown-designer-handbag-in-minimalist-closet-32487723/ | https://images.pexels.com/photos/32487723/pexels-photo-32487723.jpeg |
 | Homepage: Shop for Yourself + personal shopping hero | MART PRODUCTION | https://www.pexels.com/photo/brown-jackets-hanging-on-black-steel-rack-7679685/ | https://images.pexels.com/photos/7679685/pexels-photo-7679685.jpeg |
 | Homepage: Start a Business (warehouse cardboard cartons) | Freek Wolsink | https://www.pexels.com/photo/industrial-warehouse-with-stacked-cardboard-boxes-34221998/ | https://images.pexels.com/photos/34221998/pexels-photo-34221998.jpeg |
 | Founder landing: boxes in a minimalist business setting | Hanna Pad | https://www.pexels.com/photo/close-up-shot-of-a-person-holding-a-stack-of-boxes-7552578/ | https://images.pexels.com/photos/7552578/pexels-photo-7552578.jpeg |
@@ -20,3 +21,10 @@ The three Pexels photos are marked **Free to use** at their source pages, subjec
 - Direct photo CDN endpoints were checked for HTTP 200 / image/jpeg in a Vercel sandbox on 20 November 2026.
 - The photos are remotely hosted by `images.pexels.com` and `images.unsplash.com`, with image compression parameters. A future production hardening step can mirror and optimise licensed assets to Herocon-owned hosting to avoid hotlink outages.
 - Verify tablet/mobile visual layout, destination links and image loads in a real browser before merging into production.
+
+## Editorial campaign preview (review only)
+
+- The new homepage split-screen hero uses a licensed stock fashion image, not a particular Herocon product listing.
+- Existing boutique clothing and warehouse photos remain in the secondary journey cards.
+- Do not claim any depicted handbag is available for purchase on Herocon or endorse an identifiable brand based solely on the stock image.
+- The homepage review branch is separate from `main` until explicit approval for production.
