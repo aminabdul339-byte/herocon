@@ -12,7 +12,6 @@ export default function ShopPersonalCard({product,rates,audience}:{product:Perso
  return <article className="hc-self-item hc-personal-item">
    <Link className="hc-self-thumbnail hc-personal-thumbnail" href={path} prefetch={false} aria-label={"View "+product.name}>
      <img className="hc-self-thumb-photo" src={product.imageUrl} alt={product.name} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setImageFailed(true)}/>
-     <span className="hc-self-thumb-label">{product.category}</span>
    </Link>
    <div className="hc-self-item-body">
      <p className="hc-self-item-category">{product.category} <span>·</span> ORIGINAL MARKETPLACE SOURCE</p>
