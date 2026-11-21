@@ -8,8 +8,8 @@ type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
 const PER_PAGE=24;
 const ORDER:Record<Audience,string[]>={
- women:["Bags","Shoes","Sunglasses","Jewellery","Clothing","Accessories","Watches","Sportswear"],
- men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Sportswear","Jewellery"]
+ women:["Bags","Shoes","Sunglasses","Jewellery","Accessories","Watches"],
+ men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]
 };
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}

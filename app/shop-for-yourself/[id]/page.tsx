@@ -4,7 +4,7 @@ import {notFound} from "next/navigation";
 import Header from "@/components/Header";
 import ProductExperience from "@/components/ProductExperience";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
-import {findPersonalProduct,personalShopProducts} from "@/lib/personal-shop";
+import {findPersonalProduct,audienceProducts} from "@/lib/personal-shop";
 import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import type {Product} from "@/lib/types";
@@ -43,7 +43,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
   ...(amount!==null?{priceGBP:amount}:{}),
   price
  };
- const related=personalShopProducts.filter(p=>p.id!==item.id&&p.category===item.category&&(p.gender===audience||p.gender==="unisex")).slice(0,4);
+ const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>

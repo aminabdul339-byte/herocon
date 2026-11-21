@@ -7,7 +7,7 @@ export type PersonalShopProduct={
  originalUrl:string;priceGBP:number|null;priceUSD:number|null;priceCNY:number|null;
  source:string;
 };
-const accepted=new Set(["Bags","Shoes","Sunglasses","Clothing","Accessories","Watches","Jewellery","Sportswear"]);
+const accepted=new Set(["Bags","Shoes","Sunglasses","Clothing","Accessories","Watches","Jewellery"]);
 const parsed=source as PersonalShopProduct[];
 
 const seenLinks=new Set<string>();
@@ -25,7 +25,14 @@ for(const p of parsed){
 export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);
 
-export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>p.gender===audience||p.gender==="unisex");
+/** The Women’s Edit is accessories-led; clothing is a Men’s Edit-only category.
+ * Sportswear is omitted from the personal catalogue completely.
+ * Keep original data untouched so nothing is destructively deleted.
+ */
+export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>
+ (p.gender===audience||p.gender==="unisex") &&
+ (audience!=="women"||p.category!=="Clothing")
+);
 
 export const productPrice=(p:PersonalShopProduct):string=>{
  if(p.priceGBP!==null&&p.priceGBP>0)return "£"+p.priceGBP.toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2});
