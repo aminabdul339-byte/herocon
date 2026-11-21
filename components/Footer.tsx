@@ -4,7 +4,7 @@ import {usePathname} from "next/navigation";
 const SUPPORT="aminabdul339@outlook.com";
 export default function Footer(){
  const pathname=usePathname();
- const showSourcingGuide=pathname==="/shop-for-yourself"||pathname.startsWith("/shop-for-yourself/")||pathname==="/start-a-business";
+ const showSourcingGuide=pathname!=="/";
  return <footer className="sc-footer">
   <div className="sc-footer-top">
    <div className="hc-footer-identity"><Link className="sc-footer-brand" href="/">hero<span>con.</span></Link><p>Explore Chinese marketplaces.<br/>Plan sourcing with Herocon.</p></div>
