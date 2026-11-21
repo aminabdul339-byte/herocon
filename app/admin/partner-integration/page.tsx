@@ -8,14 +8,16 @@ type Check={
  webhookSecretConfigured?:boolean;catalogue?:string;
  productCountFirstPage?:number|null;catalogueError?:string|null;
  writeActionsEnabled?:boolean;error?:string;requestId?:string;
- keyPrefixMatches?:"yes"|"no"|"not_checked";keyFormatValid?:boolean
+ keyPrefixMatches?:"yes"|"no"|"not_checked";keyFormatValid?:boolean;
+ upstreamResponseType?:string;edgeRequestId?:string;upstreamHttpStatus?:number
 };
 const guidance:Record<string,string>={
  "api_not_enabled":"Fulfillbot has not enabled API access for this account. Open Fulfillbot Settings, then API access, check whether an access request or approval is needed, and contact your account manager if it remains disabled.",
  "account_action_required":"Sign in to Fulfillbot and finish any required account step, such as changing a temporary password. Then run this test again.",
  "insufficient_scope":"Your key lacks access to this endpoint. Create a Custom read-only key with View products and inventory and the other viewing permissions, save it to Vercel, redeploy, and retry.",
  "invalid_api_key":"This API key may be incorrect, expired or revoked. Check the production FULFILLBOT_API_KEY value in Vercel without posting the key in chat.",
- "partner_permission_or_account":"Fulfillbot returned a 403 permission response without a recognisable code. Ask their account manager to check API account access; include the request ID below if one is shown.",
+ "partner_permission_or_account":"The upstream service returned a 403 response without a recognised API error code. Check whether account-level API access is approved and ask support to inspect the request using any IDs below.",
+ "upstream_html_forbidden":"The upstream service returned an HTML page instead of a normal JSON API error. This may indicate an edge security block or an access-denied page. Ask partner support to check gateway/security rules for requests from your Vercel deployment.",
  "partner_unavailable":"Herocon could not reach the partner API. Retry after checking the partner service status.",
  "rate_limited":"Too many API requests have been sent. Wait before retrying.",
  "partner_api_error":"The partner API returned an unexpected error. Please contact the partner's support team if this continues."
@@ -82,7 +84,8 @@ export default function PartnerIntegrationAdmin(){
     {error&&<div role="alert" style={{marginTop:22,color:"#9c4132",fontSize:13,lineHeight:1.7}}>
       <strong>{error}</strong>
       {check?.error&&guidance[check.error]&&<p style={{margin:"8px 0 0"}}>{guidance[check.error]}</p>}
-      {check?.requestId&&<p style={{margin:"8px 0 0"}}>Partner support request ID: <code>{check.requestId}</code></p>}
+      {check?.requestId&&<p style={{margin:"8px 0 0"}}>Partner API request ID: <code>{check.requestId}</code></p>}
+      {check?.edgeRequestId&&<p style={{margin:"8px 0 0"}}>Edge request reference: <code>{check.edgeRequestId}</code></p>}
     </div>}
     {check&&<div aria-live="polite" style={{marginTop:24,padding:22,background:"#f4f8f3",borderRadius:6,border:"1px solid #d4e2d1"}}>
       <h2 style={{margin:"0 0 16px",font:"400 25px Georgia,serif"}}>{outcome?"API connection verified":"Connection requires attention"}</h2>
@@ -91,6 +94,8 @@ export default function PartnerIntegrationAdmin(){
        <dt>API key format</dt><dd style={styles.badge}>{check.keyFormatValid?"Looks valid":"Check Vercel key value"}</dd>
        <dt>Displayed key prefix matches Vercel</dt><dd style={styles.badge}>{check.keyPrefixMatches==="yes"?"Yes":check.keyPrefixMatches==="no"?"No - different key":"Not checked"}</dd>
        <dt>API authentication</dt><dd style={styles.badge}>{outcome?"Successful":"Not confirmed"}</dd>
+       {check.upstreamHttpStatus&&<><dt>Upstream HTTP status</dt><dd style={styles.badge}>{check.upstreamHttpStatus}</dd></>}
+       {check.upstreamResponseType&&<><dt>Upstream response format</dt><dd style={styles.badge}>{check.upstreamResponseType.toUpperCase()}</dd></>}
        <dt>Product catalogue read</dt><dd style={styles.badge}>{check.catalogue==="readable"?"Successful":check.catalogueError||"Not confirmed"}</dd>
        <dt>Products on first API page</dt><dd style={styles.badge}>{typeof check.productCountFirstPage==="number"?check.productCountFirstPage:"—"}</dd>
        <dt>Webhook secret configured</dt><dd style={styles.badge}>{check.webhookSecretConfigured?"Yes":"No"}</dd>

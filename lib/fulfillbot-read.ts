@@ -20,7 +20,9 @@ export class PartnerReadError extends Error {
   constructor(
     public readonly status:number,
     public readonly code:string,
-    public readonly requestId?:string
+    public readonly requestId?:string,
+    public readonly upstreamResponseType?:"json"|"html"|"text"|"other",
+    public readonly edgeRequestId?:string
   ) {
     super("Partner service request failed.");
   }
@@ -76,14 +78,21 @@ export async function partnerRead(
   if(!response.ok) {
     const requestIdRaw=response.headers.get("x-request-id")||"";
     const requestId=/^[A-Za-z0-9_-]{3,128}$/.test(requestIdRaw)?requestIdRaw:undefined;
+    const edgeIdRaw=response.headers.get("cf-ray")||"";
+    const edgeRequestId=/^[A-Za-z0-9_-]{4,128}$/.test(edgeIdRaw)?edgeIdRaw:undefined;
+    const contentType=(response.headers.get("content-type")||"").toLowerCase();
+    const upstreamResponseType=contentType.includes("json")?"json" as const:
+      contentType.includes("text/html")?"html" as const:
+      contentType.includes("text/plain")?"text" as const:"other" as const;
     let errorCode:string|null=null;
-    if(response.headers.get("content-type")?.includes("application/json")){
+    if(upstreamResponseType==="json"){
       try{errorCode=providerError(await response.json());}catch{}
     }
     const fallback=response.status===401?"invalid_api_key":
+      response.status===403&&upstreamResponseType==="html"?"upstream_html_forbidden":
       response.status===403?"partner_permission_or_account":
       response.status===429?"rate_limited":"partner_api_error";
-    throw new PartnerReadError(response.status,errorCode||fallback,requestId);
+    throw new PartnerReadError(response.status,errorCode||fallback,requestId,upstreamResponseType,edgeRequestId);
   }
   try {return await response.json();}
   catch{throw new PartnerReadError(502,"invalid_partner_response");}

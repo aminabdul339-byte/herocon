@@ -23,10 +23,14 @@ function inspectKey(request:Request):SafeKeyDiagnostics {
  const b=Buffer.from(entered);
  return {keyPrefixMatches:a.length===b.length&&timingSafeEqual(a,b)?"yes":"no",keyFormatValid};
 }
-function invalidReply(error:string,status=503,requestId?:string,diagnostics?:SafeKeyDiagnostics){
+function invalidReply(
+ error:string,status=503,requestId?:string,diagnostics?:SafeKeyDiagnostics,
+ upstreamResponseType?:string,edgeRequestId?:string,upstreamHttpStatus?:number
+){
  return NextResponse.json({ok:false,connection:"failed",apiKeyConfigured:true,
   webhookSecretConfigured:Boolean(process.env.FULFILLBOT_WEBHOOK_SECRET?.trim()),
-  writeActionsEnabled:false,error,requestId,...diagnostics},{status,headers});
+  writeActionsEnabled:false,error,requestId,upstreamResponseType,edgeRequestId,
+  upstreamHttpStatus,...diagnostics},{status,headers});
 }
 export async function GET(request:Request){
   if(!authorised(request))return NextResponse.json({ok:false,error:"unauthorised"},{status:401,headers});
@@ -64,7 +68,10 @@ export async function GET(request:Request){
   }catch(error){
     return invalidReply(
       error instanceof PartnerReadError?error.code:"partner_unavailable",
-      503,error instanceof PartnerReadError?error.requestId:undefined,diagnostics
+      503,error instanceof PartnerReadError?error.requestId:undefined,diagnostics,
+      error instanceof PartnerReadError?error.upstreamResponseType:undefined,
+      error instanceof PartnerReadError?error.edgeRequestId:undefined,
+      error instanceof PartnerReadError?error.status:undefined
     );
   }
 }
