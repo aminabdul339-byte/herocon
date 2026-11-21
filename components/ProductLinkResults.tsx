@@ -60,9 +60,9 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
    <div className="sc-container hc-link-found-header">
     <div><p className="sc-kicker">PRODUCT FOUND</p><h2>{source.title}</h2>
      <p className="hc-link-connection-status" role="status">
-      {status.cacheStatus==="stored"?"New BuckyDrop API response received and saved. Live product lookup worked for this item.":
-       status.cacheStatus==="hit"?"Previously saved supplier details. This result does not retest the live BuckyDrop connection.":
-       "Product data received. Live connection status was not reported."}
+      {status.cacheStatus==="stored"?"New product details received and saved from our sourcing partner.":
+       status.cacheStatus==="hit"?"Previously saved partner details loaded. No new lookup was needed.":
+       "Product information received from our sourcing partner."}
      </p>
     </div>
    </div>

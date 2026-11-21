@@ -22,7 +22,7 @@ function limited(request:Request){
  record.count++;return record.count>5;
 }
 export async function POST(request:Request){
- if(!liveReady())return error("Live BuckyDrop shipping quotations are not configured.",503);
+ if(!liveReady())return error("Live partner shipping quotations are not configured.",503);
  const origin=request.headers.get("origin");
  try{if(!origin||new URL(origin).origin!==new URL(request.url).origin)return error("Please request quotes from Herocon.",403);}catch{return error("Invalid origin.",403);}
  if(!(request.headers.get("content-type")||"").startsWith("application/json"))return error("Expected a JSON request.",415);
@@ -71,7 +71,7 @@ export async function POST(request:Request){
     risks,notices,taxNote:string(v.isTariffCoverDesc,230)||null
    };
   }).filter(r=>r.serviceCode);
-  return NextResponse.json({source:"BuckyDrop live OpenAPI",rates,returned:rates.length,total:typeof data.total==="number"?data.total:null,currency,fxDate,quotedAt:new Date().toISOString(),currencyWarning:currency==="CNY"?"Shipping prices are provisionally shown in CNY (¥) at the merchant’s request. BuckyDrop has not confirmed the currency of this specific API field. GBP conversions are indicative estimates only, not payable checkout quotes.":"The API does not specify a quote currency. Confirm it with your BuckyDrop account manager before treating the amounts as payable prices.",paymentAvailable:false},{headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+  return NextResponse.json({source:"Partner shipping quote service",rates,returned:rates.length,total:typeof data.total==="number"?data.total:null,currency,fxDate,quotedAt:new Date().toISOString(),currencyWarning:currency==="CNY"?"Shipping prices are provisionally shown in CNY (¥) at the merchant’s request. The delivery partner has not confirmed the currency of this specific quote field. GBP conversions are indicative estimates only, not payable checkout quotes.":"The API does not specify a quote currency. Confirm it with the delivery partner before treating the amounts as payable prices.",paymentAvailable:false},{headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
  }catch(e){
   if(e instanceof BuckydropError)return error(e.message,e.status);
   return error("Live shipping quotes are temporarily unavailable.",502);

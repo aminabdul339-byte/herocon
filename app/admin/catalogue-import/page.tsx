@@ -159,7 +159,7 @@ export default function CatalogueImportPage(){
     <option value="new-makeup">New makeup &amp; beauty catalogue (50 linked items)</option>
     <option value="all">Entire Herocon catalogue</option>
    </select>
-   <p style={{fontSize:12,color:"#58705e",margin:"0 0 20px",lineHeight:1.5}}>Only verified supplier links are eligible. New BuckyDrop requests may incur a fee; previously saved product details are reused and not fetched again by this importer.</p>
+   <p style={{fontSize:12,color:"#58705e",margin:"0 0 20px",lineHeight:1.5}}>Only verified supplier links are eligible. New partner lookups may incur a fee; previously saved product details are reused and not fetched again by this importer.</p>
    <label htmlFor="admin-key" style={{fontWeight:700,display:"block",marginBottom:8}}>Private catalogue import key</label>
    <input id="admin-key" type="password" autoComplete="off" spellCheck={false} value={key} onChange={e=>setKey(e.target.value)}
     placeholder="Paste the private key from your Mac" style={{width:"100%",boxSizing:"border-box",fontSize:14,border:"1px solid #b9cbbb",borderRadius:8,padding:"12px 14px"}}/>

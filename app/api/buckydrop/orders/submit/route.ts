@@ -138,7 +138,7 @@ export async function POST(request:Request){
  try{await updatePaidOrder(record);}catch{
   // The supplier accepted the write even if record update failed.
   // Caller MUST retain original reference and never resend.
-  return NextResponse.json({partnerOrderNo,accessCode,state:"accepted_record_update_pending",message:"BuckyDrop accepted the order. Secure record update needs attention."},{status:202,headers:{"Cache-Control":"no-store"}});
+  return NextResponse.json({partnerOrderNo,accessCode,state:"accepted_record_update_pending",message:"The fulfilment partner accepted the order. Secure record update needs attention."},{status:202,headers:{"Cache-Control":"no-store"}});
  }
- return NextResponse.json({partnerOrderNo,shopOrderNo:record.shopOrderNo,accessCode,state:"accepted",message:"Order accepted by BuckyDrop; this is not proof of purchase, payment or fulfilment."},{headers:{"Cache-Control":"no-store"}});
+ return NextResponse.json({partnerOrderNo,shopOrderNo:record.shopOrderNo,accessCode,state:"accepted",message:"Order accepted by the fulfilment partner; this is not proof of purchase, payment or fulfilment."},{headers:{"Cache-Control":"no-store"}});
 }

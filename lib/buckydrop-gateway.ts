@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {BuckydropError} from "@/lib/buckydrop";
 
 /**
- * BuckyDrop OpenAPI v1.2.6, using Herocon's existing server-only live credentials.
+ * The sourcing partner OpenAPI v1.2.6, using Herocon's existing server-only live credentials.
  * The request JSON is serialized exactly once; body bytes and signature must match.
  * No signed URLs, credentials or upstream customer records are logged or exposed.
  */
@@ -34,24 +34,24 @@ export async function callBucky<T extends Record<string,unknown>>(op:BuckyOperat
  let response:Response;
  try{
   response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",lang:"en"},body:raw,cache:"no-store",signal:AbortSignal.timeout(15000),redirect:"error"});
- }catch{throw new BuckydropError("UPSTREAM_TIMEOUT",502,"BuckyDrop is temporarily unavailable. Please try again later.");}
- if(!response.ok)throw new BuckydropError("UPSTREAM_HTTP",502,"BuckyDrop did not return a successful response.");
+ }catch{throw new BuckydropError("UPSTREAM_TIMEOUT",502,"The sourcing partner is temporarily unavailable. Please try again later.");}
+ if(!response.ok)throw new BuckydropError("UPSTREAM_HTTP",502,"The sourcing partner did not return a successful response.");
  let payload:unknown;
- try{payload=await response.json();}catch{throw new BuckydropError("UPSTREAM_FORMAT",502,"BuckyDrop returned an invalid response.");}
- if(!payload||typeof payload!=="object"||Array.isArray(payload))throw new BuckydropError("UPSTREAM_FORMAT",502,"BuckyDrop returned an invalid response.");
+ try{payload=await response.json();}catch{throw new BuckydropError("UPSTREAM_FORMAT",502,"The sourcing partner returned an invalid response.");}
+ if(!payload||typeof payload!=="object"||Array.isArray(payload))throw new BuckydropError("UPSTREAM_FORMAT",502,"The sourcing partner returned an invalid response.");
  const obj=payload as Record<string,unknown>;
  if(obj.success!==true||obj.code!==0){
   const code=String(obj.code??"UNKNOWN");
-  if(code==="70000014")throw new BuckydropError("PERMISSION_NOT_GRANTED",503,"BuckyDrop has not enabled this operation for Herocon's account.");
+  if(code==="70000014")throw new BuckydropError("PERMISSION_NOT_GRANTED",503,"The sourcing partner has not enabled this operation for Herocon's account.");
   if(["70000015","70000022","70011103"].includes(code))throw new BuckydropError("UPSTREAM_RATE_LIMIT",429,"The shipping provider is temporarily busy. Please try again later.");
   if(code==="70000028")throw new BuckydropError("ACCOUNT_FUNDS",503,"The shipping provider cannot process this request for this account.");
-  throw new BuckydropError("UPSTREAM_ERROR",502,"BuckyDrop could not complete the request.");
+  throw new BuckydropError("UPSTREAM_ERROR",502,"The sourcing partner could not complete the request.");
  }
- // BuckyDrop OpenAPI v1.2.6 (client 0.5.7): Shop Order creation can be
+ // The sourcing partner OpenAPI v1.2.6 (client 0.5.7): Shop Order creation can be
  // accepted (success=true, code=0) without an echoed data object. Preserve
  // acceptance and let the caller reconcile the original partnerOrderNo.
  // Never treat a missing write echo as permission to resubmit the order.
  if(op==="create-shop-order"&&(obj.data===undefined||obj.data===null))return {} as T;
- if(!obj.data||typeof obj.data!=="object"||Array.isArray(obj.data))throw new BuckydropError("UPSTREAM_EMPTY",502,"BuckyDrop did not return the requested details.");
+ if(!obj.data||typeof obj.data!=="object"||Array.isArray(obj.data))throw new BuckydropError("UPSTREAM_EMPTY",502,"The sourcing partner did not return the requested details.");
  return obj.data as T;
 }
