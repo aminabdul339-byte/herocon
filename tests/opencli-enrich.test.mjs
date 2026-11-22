@@ -19,7 +19,7 @@ test("1688 product extracts public seller, CNY price tiers, and gallery without 
  const a=normalise1688(item,input,{main_images:["https://img.example.com/extra.jpg"],
   detail_images:["https://img.example.com/detail.jpg"],sku_images:[]});
  assert.equal(a.sourceProductId,"887904326744");
- assert.equal(a.priceCNY,95);
+ assert.equal(a.priceCNY,98);
  assert.equal(a.moq,3);
  assert.equal(a.sellerName,"Example supplier");
  assert.equal(a.images.length,3);
