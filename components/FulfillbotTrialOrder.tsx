@@ -12,6 +12,7 @@ type Preview={
   requestId?:string;requestNumber?:string;status?:string;
 };
 type Connection={ok:boolean;connected?:boolean;scopes?:string[];trialSubmissionEnabled?:boolean;error?:string};
+type SupplierPreflight={ok:boolean;error?:string;provider?:string;title?:string;sourceVariantCount?:number;minimumQuantity?:number|null;available?:boolean|null;checkedAt?:string;variants?:Array<{skuCode:string;label:string;options:Array<{name:string;value:string}>;priceCNY:number|null;stock:number|null;available:boolean}>;note?:string};
 type Props={
   productId:string;title:string;image?:string;sourceUrl?:string;
   recordedPrice?:string;initialSpecs:string;owner:boolean
@@ -48,6 +49,9 @@ export default function FulfillbotTrialOrder({productId,title,image,sourceUrl,re
   const [requestId,setRequestId]=useState("");
   const [requestStatus,setRequestStatus]=useState("");
   const [trackingBusy,setTrackingBusy]=useState(false);
+  const [supplier,setSupplier]=useState<SupplierPreflight|null>(null);
+  const [supplierBusy,setSupplierBusy]=useState(false);
+
 
   useEffect(()=>{
     if(!owner)return;
@@ -82,6 +86,21 @@ export default function FulfillbotTrialOrder({productId,title,image,sourceUrl,re
       }else throw Error("Fulfillbot did not return a request number.");
     }catch(e){setError(e instanceof Error?e.message:"Unable to process this request.");}
     finally{setSubmitting(false);}
+  }
+  async function checkLiveSupplier(){
+    if(supplierBusy)return;
+    setSupplierBusy(true);setSupplier(null);setError("");
+    try{
+      const response=await fetch("/api/automatic-purchasing/preflight",{
+        method:"POST",credentials:"same-origin",cache:"no-store",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({productId})
+      });
+      const data=await response.json() as SupplierPreflight;
+      if(!response.ok||!data.ok)throw Error(errorLabel(data.error));
+      setSupplier(data);
+    }catch(e){setError(e instanceof Error?e.message:"Supplier details could not be checked.");}
+    finally{setSupplierBusy(false);}
   }
   async function track() {
     if(!requestId)return;
@@ -176,6 +195,34 @@ export default function FulfillbotTrialOrder({productId,title,image,sourceUrl,re
             <p style={subdued}>Review and accept any quote, and pay any purchase order, in the Fulfillbot portal.</p>
             <a href="https://app.fulfillbot.com" target="_blank" rel="noopener noreferrer" style={{color:"#20482f"}}>Open Fulfillbot portal</a>
           </section>}
+
+          <section style={{marginTop:26,borderTop:"1px solid #d8d7c9",paddingTop:23}}>
+            <p style={{fontSize:11,fontWeight:700,letterSpacing:1.5,color:"#667869"}}>AUTOMATIC PURCHASING / LIVE SUPPLIER CHECK</p>
+            <p style={subdued}>Check whether our connected sourcing partner can identify a purchasable SKU, stock, live item price and minimum quantity for this exact marketplace link. No order is submitted.</p>
+            <button type="button" style={{...btnStyle,background:"#e9efe7",color:"#20482f",border:"1px solid #a9bba5",opacity:supplierBusy?0.5:1}}
+              disabled={supplierBusy} onClick={()=>void checkLiveSupplier()}>
+              {supplierBusy?"Checking live supplier…":"Check live supplier SKU"}
+            </button>
+            {supplier?.ok&&<div style={{marginTop:17,padding:16,background:"#f3f5ef",borderRadius:7}}>
+              <p style={{fontWeight:750,margin:"0 0 10px"}}>{supplier.provider} supplier details retrieved</p>
+              <p style={subdued}>Supplier variants: <strong>{supplier.sourceVariantCount??0}</strong> · Minimum quantity: <strong>{supplier.minimumQuantity??"Not specified"}</strong> · Product available: <strong>{supplier.available===true?"Yes":supplier.available===false?"No":"Not confirmed"}</strong></p>
+              {(() => {
+                const normalized=specs.toLowerCase().replace(/[^a-z0-9]+/g,"");
+                const match=normalized?supplier.variants?.filter(v=>
+                  (v.label+" "+v.options.map(o=>o.value).join(" ")).toLowerCase().replace(/[^a-z0-9]+/g,"").includes(normalized)
+                ):[];
+                return <div>
+                  <p style={{...subdued,fontWeight:750}}>{match?.length?"Possible SKU matches for "+specs:"No confirmed SKU match for "+specs}</p>
+                  {(match?.length?match:supplier.variants?.slice(0,8)||[]).slice(0,12).map(v=>
+                    <p key={v.skuCode} style={{...subdued,borderBottom:"1px solid #dce3d8",paddingBottom:9}}>
+                      <strong>{v.label}</strong> · {v.priceCNY!=null?"¥"+v.priceCNY.toFixed(2):"Price unavailable"} · {v.stock!=null?v.stock+" in stock":"Stock unknown"}
+                      <br/>Supplier SKU: <code>{v.skuCode}</code>
+                    </p>)}
+                </div>;
+              })()}
+              <p style={{...subdued,fontSize:12}}>{supplier.note}</p>
+            </div>}
+          </section>
           {error&&<p role="alert" style={{color:"#9b2d27",fontSize:14,marginTop:18}}>{error}</p>}
         </>}
       </div>
