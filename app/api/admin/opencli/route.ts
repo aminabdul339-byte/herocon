@@ -42,7 +42,7 @@ export async function GET(request:Request){
  if(!["all","1688","Taobao"].includes(marketplace))return json({error:"Invalid marketplace."},400);
  try{
   const [products,saved]=await Promise.all([getProducts(),savedHashes()]);
-  const queue:{url:string;marketplace:"1688"|"Taobao";id:string;title:string}[]=[];
+  const queue:{url:string;marketplace:"1688"|"Taobao";id:string;title:string;imageUrl:string|null}[]=[];
   const seen=new Set<string>();let eligible=0,alreadySaved=0,unsupported=0;
   for(const product of products){
    const source=normalizeMarketplaceLink(product.originalMarketplaceUrl);
@@ -54,7 +54,8 @@ export async function GET(request:Request){
    eligible++;
    if(saved.has(hash(source))){alreadySaved++;continue;}
    if(queue.length<limit)queue.push({url:source,marketplace:identity.marketplace as "1688"|"Taobao",
-     id:identity.productId,title:(product.title||"Product").slice(0,120)});
+     id:identity.productId,title:(product.title||"Product").slice(0,120),
+     imageUrl:typeof product.imageUrl==="string"&&product.imageUrl.startsWith("https://")?product.imageUrl:null});
   }
   return json({queue,eligible,alreadySaved,remaining:eligible-alreadySaved,unsupported,
    mode:"read_only_queue",notice:"Queue retrieval does not access marketplaces or use BuckyDrop. Browser worker must run on your own logged-in Chrome."});
