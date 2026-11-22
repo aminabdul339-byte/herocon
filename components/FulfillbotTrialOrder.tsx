@@ -12,7 +12,7 @@ type Preview={
   requestId?:string;requestNumber?:string;status?:string;
 };
 type Connection={ok:boolean;connected?:boolean;scopes?:string[];trialSubmissionEnabled?:boolean;error?:string};
-type SupplierPreflight={ok:boolean;error?:string;provider?:string;title?:string;sourceVariantCount?:number;minimumQuantity?:number|null;available?:boolean|null;checkedAt?:string;variants?:Array<{skuCode:string;label:string;options:Array<{name:string;value:string}>;priceCNY:number|null;stock:number|null;available:boolean}>;note?:string};
+type SupplierPreflight={ok:boolean;error?:string;providerCode?:string;provider?:string;title?:string;sourceVariantCount?:number;minimumQuantity?:number|null;available?:boolean|null;checkedAt?:string;variants?:Array<{skuCode:string;label:string;options:Array<{name:string;value:string}>;priceCNY:number|null;stock:number|null;available:boolean}>;note?:string};
 type Props={
   productId:string;title:string;image?:string;sourceUrl?:string;
   recordedPrice?:string;initialSpecs:string;owner:boolean
@@ -33,7 +33,21 @@ function errorLabel(error?:string) {
     trial_submission_disabled:"Submitting real sourcing requests has not been enabled for this trial.",
     variant_specification_required:"Please enter the exact colour and style option.",
     request_in_progress:"Fulfillbot is already processing this request.",
-    owner_backend_unavailable:"The Herocon owner's secure backend configuration is incomplete."
+    owner_backend_unavailable:"The Herocon owner's secure backend configuration is incomplete.",
+    check_recently_requested:"A supplier check was requested recently. Please wait about 45 seconds before checking again.",
+    NOT_ENABLED:"BuckyDrop live product lookup is switched off in Herocon's server settings.",
+    NOT_CONFIGURED:"BuckyDrop API credentials are missing from Herocon's secure settings.",
+    INVALID_SOURCE:"BuckyDrop cannot check this marketplace URL in the current environment.",
+    RATE_LIMIT:"BuckyDrop is rate-limiting requests. Try again after its cooldown.",
+    ACCESS_DENIED:"BuckyDrop rejected this account's permission to use the product detail API. Check Solution API access.",
+    ACCOUNT_FUNDS:"BuckyDrop has reported insufficient API funds. Check the API Billing Info page before requesting more supplier details.",
+    NOT_FOUND:"BuckyDrop could not find this supplier product. The original 1688 listing may be unavailable.",
+    EMPTY_PRODUCT:"BuckyDrop returned no usable product details for this listing.",
+    UPSTREAM_UNAVAILABLE:"Herocon could not connect to BuckyDrop right now.",
+    INVALID_RESPONSE:"BuckyDrop returned a response that Herocon couldn't parse.",
+    UPSTREAM_HTTP_ERROR:"BuckyDrop's HTTP service rejected this request. Check API activation, account access or provider availability.",
+    PROVIDER_REJECTED:"BuckyDrop rejected the product lookup. Its safe numeric response code is shown below for troubleshooting.",
+    BACKEND_UNEXPECTED:"Herocon encountered an unexpected supplier lookup failure. Check the server diagnostic logs."
   };
   return names[error||""]||"The operation could not be completed. "+(error||"Please try again.");
 }
@@ -97,7 +111,8 @@ export default function FulfillbotTrialOrder({productId,title,image,sourceUrl,re
         body:JSON.stringify({productId})
       });
       const data=await response.json() as SupplierPreflight;
-      if(!response.ok||!data.ok)throw Error(errorLabel(data.error));
+      if(!response.ok||!data.ok)throw Error(errorLabel(data.error)+
+        (data.providerCode?" (BuckyDrop code "+data.providerCode+")":""));
       setSupplier(data);
     }catch(e){setError(e instanceof Error?e.message:"Supplier details could not be checked.");}
     finally{setSupplierBusy(false);}
@@ -221,6 +236,10 @@ export default function FulfillbotTrialOrder({productId,title,image,sourceUrl,re
                 </div>;
               })()}
               <p style={{...subdued,fontSize:12}}>{supplier.note}</p>
+              <p style={{...subdued,fontSize:12,color:"#8a4f25"}}>
+                A supplier SKU lookup does not enable automatic checkout. Supplier write access,
+                purchase-order creation and shipping are still not connected.
+              </p>
             </div>}
           </section>
           {error&&<p role="alert" style={{color:"#9b2d27",fontSize:14,marginTop:18}}>{error}</p>}
