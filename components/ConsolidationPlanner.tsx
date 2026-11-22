@@ -5,7 +5,7 @@ import {useCart} from "@/components/CartProvider";
 import {ArrowIcon} from "@/components/ArrowIcon";
 
 type ParcelRow={id:string;name:string;grams:string};
-const blank=():ParcelRow=>({id:Math.random().toString(36).slice(2),name:"",grams:""});
+const blank=(id="initial"):ParcelRow=>({id,name:"",grams:""});
 const prefix="herocon-consolidation-plan-v1:";
 function validStored(value:unknown):value is ParcelRow[]{
  return Array.isArray(value)&&value.length<=8&&value.every(v=>v&&typeof v==="object"&&
@@ -55,7 +55,7 @@ export default function ConsolidationPlanner(){
       <input id={"hc-wh-grams-"+row.id} type="number" min="1" max="60000" step="1" value={row.grams} onChange={e=>patch(row.id,{grams:e.target.value})} placeholder="e.g. 850"/></div>
      <button type="button" aria-label={"Remove parcel "+(i+1)} disabled={rows.length===1} onClick={()=>setRows(current=>current.filter(v=>v.id!==row.id))}>Remove</button>
     </div>)}
-    <div className="hc-wh-planner-actions"><button type="button" disabled={rows.length>=8} onClick={()=>setRows(current=>[...current,blank()])}>Add another parcel</button><button type="button" className="hc-wh-reset" onClick={reset}>Clear plan</button></div>
+    <div className="hc-wh-planner-actions"><button type="button" disabled={rows.length>=8} onClick={()=>setRows(current=>[...current,blank("row-"+Date.now()+"-"+Math.random().toString(36).slice(2))])}>Add another parcel</button><button type="button" className="hc-wh-reset" onClick={reset}>Clear plan</button></div>
     {notice&&<p role="status" className="hc-wh-muted">{notice}</p>}
     <p className="hc-wh-muted">{account.status==="authenticated"?"Your draft labels and weights are saved in this browser for your account. They are not sent to Herocon or a warehouse.":"This draft stays in this browser session. Sign in to save it on this device."}</p>
    </div>
