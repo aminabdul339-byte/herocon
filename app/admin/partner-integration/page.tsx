@@ -22,6 +22,13 @@ const guidance:Record<string,string>={
  "rate_limited":"Too many API requests have been sent. Wait before retrying.",
  "partner_api_error":"The partner API returned an unexpected error. Please contact the partner's support team if this continues."
 };
+type MarketplaceProbe={
+ ok:boolean;httpStatus?:number|null;compatibility?:string;
+ responseType?:string;requestId?:string|null;edgeRequestId?:string|null;
+ sampleMarketplace?:string;sampleReference?:string;
+ itemCount?:number|null;containsRichFields?:boolean;exactUrlMatched?:boolean;
+ code?:string;error?:string;note?:string
+};
 const styles={
  shell:{maxWidth:780,margin:"60px auto",padding:"0 22px",color:"#263f31",fontFamily:"Arial,Helvetica,sans-serif"},
  panel:{border:"1px solid #cfddd1",background:"#fff",padding:30,borderRadius:8},
@@ -34,6 +41,20 @@ export default function PartnerIntegrationAdmin(){
  const [busy,setBusy]=useState(false);
  const [check,setCheck]=useState<Check|null>(null);
  const [error,setError]=useState("");
+ const [probe,setProbe]=useState<MarketplaceProbe|null>(null);
+ const [probing,setProbing]=useState(false);
+ async function verifyLegacySearch(){
+  if(!privateKey.trim()||probing)return;
+  setProbing(true);setProbe(null);
+  try{
+   const response=await fetch("/api/admin/partner-integration/marketplace-probe",{
+    headers:{"x-herocon-catalogue-admin":privateKey},cache:"no-store"
+   });
+   const data=await response.json() as MarketplaceProbe;
+   setProbe(data);
+  }catch{setProbe({ok:false,code:"probe_unavailable"});}
+  finally{setProbing(false);}
+ }
  async function test(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();
   if(!privateKey||busy)return;
@@ -105,6 +126,24 @@ export default function PartnerIntegrationAdmin(){
       {check.keyPrefixMatches==="yes"&&!outcome&&<p style={{fontSize:13,lineHeight:1.7,color:"#56745c",margin:"14px 0 0"}}>The visible prefix matches the key configured in Vercel. This does not verify the full key or confirm API access; the provider may still require account approval.</p>}
       <p style={{fontSize:12,lineHeight:1.6,margin:"18px 0 0",color:"#5f7662"}}>A successful test confirms the API can be reached and read. A real signed webhook delivery must be checked separately. This tool never returns your customer data or token.</p>
     </div>}
+   </section>
+   <section style={{...styles.panel,marginTop:17}}>
+     <h2 style={{font:"400 27px Georgia,serif",margin:"0 0 12px"}}>Marketplace product-data API</h2>
+     <p style={{fontSize:13,color:"#617765",lineHeight:1.8}}>
+      Fulfillbot's older developer guide advertises product search and detailed SKU responses under a different API route and key format. This read-only diagnostic makes one search using a real Herocon 1688 link; it never imports products or creates any orders. The result tells us whether the legacy search API accepts the configured Herocon key.
+     </p>
+     <button type="button" onClick={verifyLegacySearch} disabled={!privateKey.trim()||probing}
+       style={{background:"#284b36",color:"#fff",border:0,borderRadius:5,padding:"13px 20px",fontSize:13,fontWeight:700,cursor:"pointer",opacity:probing?.7:1}}>
+       {probing?"Testing one source link…":"Test marketplace lookup API (read-only)"}
+     </button>
+     {probe&&<div role="status" style={{marginTop:18,padding:18,background:"#f5f8f3",border:"1px solid #d4dfd4",fontSize:13,lineHeight:1.8}}>
+       <strong>{probe.ok?"Legacy search endpoint responded successfully":"Legacy search API not confirmed"}</strong>
+       <p style={{margin:"8px 0"}}>Result: <code>{probe.code||probe.error||"unknown"}</code>{probe.httpStatus?" · HTTP "+probe.httpStatus:""}</p>
+       {probe.itemCount!==null&&probe.itemCount!==undefined&&<p style={{margin:"8px 0"}}>Products returned for the sample link: {probe.itemCount}. Direct URL match: {probe.exactUrlMatched?"Yes":"Not confirmed"}. Structured image/SKU fields: {probe.containsRichFields?"Present in sample":"Not confirmed"}.</p>}
+       {probe.requestId&&<p style={{margin:"8px 0"}}>Fulfillbot X-Request-Id: <code>{probe.requestId}</code></p>}
+       {probe.edgeRequestId&&<p style={{margin:"8px 0"}}>Cloudflare Ray ID: <code>{probe.edgeRequestId}</code></p>}
+       <p style={{margin:"8px 0 0"}}>{probe.note||"This probe is isolated from the working /v1 API. A successful request alone is not approval for bulk marketplace URL enrichment."}</p>
+     </div>}
    </section>
    <p style={{fontSize:12,lineHeight:1.8,color:"#637b65",marginTop:22}}>Security reminder: the sourcing partner API key should have read-only permissions. Existing keys with ordering or shipping write access should be replaced with restricted keys before enabling further integrations.</p>
   </div>
