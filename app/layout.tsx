@@ -5,6 +5,7 @@ import "./contact-guide.css";
 import "./legal.css";
 import "./shop-journey.css";
 import "./account.css";
+import "./warehouse.css";
 import "./experience.css";
 import "./sourcing-guide.css";
 import "./minimal-home.css";

@@ -3,6 +3,7 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import CartQuoteRequest from "@/components/CartQuoteRequest";
 import {useCart} from "@/components/CartProvider";
 
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
@@ -64,6 +65,7 @@ export default function CartPage(){
      <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
     <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
+    <CartQuoteRequest/>
     </aside></div>}
   </section>
  </main>;

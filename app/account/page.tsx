@@ -109,7 +109,9 @@ function AccountContent(){
      <p className="hc-premium-kicker">ACCOUNT ACTIVE</p>
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
-     <Link className="hc-account-primary-link" href="/cart">View your cart <ArrowIcon direction="right"/></Link>
+     <Link className="hc-account-primary-link" href="/warehouse">Your warehouse centre <ArrowIcon direction="right"/></Link>
+     <Link href="/cart">View your cart <ArrowIcon direction="right"/></Link>
+     <Link href="/orders">Track an order <ArrowIcon direction="right"/></Link>
      <Link href="/membership/activate">Manage membership and billing <ArrowIcon direction="right"/></Link>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
     </>:account.status==="unavailable"?<>
