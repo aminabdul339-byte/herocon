@@ -55,7 +55,7 @@ export async function GET(request:Request){
    if(saved.has(hash(source))){alreadySaved++;continue;}
    if(queue.length<limit)queue.push({url:source,marketplace:identity.marketplace as "1688"|"Taobao",
      id:identity.productId,title:(product.title||"Product").slice(0,120),
-     imageUrl:typeof product.imageUrl==="string"&&product.imageUrl.startsWith("https://")?product.imageUrl:null});
+     imageUrl:[product.imageUrl,...(product.images||[])].find(value=>typeof value==="string"&&value.startsWith("https://"))||null});
   }
   return json({queue,eligible,alreadySaved,remaining:eligible-alreadySaved,unsupported,
    mode:"read_only_queue",notice:"Queue retrieval does not access marketplaces or use BuckyDrop. Browser worker must run on your own logged-in Chrome."});
