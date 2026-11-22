@@ -44,7 +44,7 @@ function normalize(input:unknown,expectedUrl:string):OpenCliSnapshot{
  const unique=(items:unknown,max:number):string[]=>Array.isArray(items)?[...new Set(items.map(image).filter((v):v is string=>v!==null))].slice(0,max):[];
  const images=unique(raw.images,MAX_IMAGES);
  const detailImages=unique(raw.detailImages,24);
- if(images.length===0&&detailImages.length===0)throw new OpenCliSnapshotError(400,"No usable marketplace product images were found.");
+ // A product may still have useful title/price/seller information when its\n // public gallery is unavailable. Never invent missing photos.
  const tiers=Array.isArray(raw.priceTiers)?raw.priceTiers.slice(0,30).map(t=>{
   const entry=obj(t),quantity=number(entry.minQuantity,100000),price=number(entry.priceCNY);
   return quantity!==null&&Number.isInteger(quantity)&&quantity>=1&&price!==null?{minQuantity:quantity,priceCNY:price}:null;
@@ -103,7 +103,7 @@ export function mergeOpenCliProduct(product:Product,snapshot:OpenCliSnapshot|nul
  if(!snapshot||normalizeMarketplaceLink(product.originalMarketplaceUrl)!==snapshot.originalMarketplaceUrl)return product;
  const photos=[...new Set([...(product.images||[]),...snapshot.images])]
   .filter(v=>/^https:\/\//.test(v)).slice(0,36);
- const details=[...new Set([...(product.detailImages||[]),...snapshot.detailImages])].slice(0,30);
+ const details=[...new Set([...(product.detailImages||[]),...snapshot.detailImages])].slice(0,30);\n const additionalSpecs=[...snapshot.sourceSpecs];\n if(snapshot.moq!==null)additionalSpecs.push({name:"Recorded minimum order",value:String(snapshot.moq)+" units"});\n if(snapshot.priceTiers.length)additionalSpecs.push({name:"Recorded quantity pricing",value:snapshot.priceTiers.slice(0,6).map(t=>t.minQuantity+"+ units: ¥"+t.priceCNY.toFixed(2)).join(" / ")});
  return {...product,
   // Catalogue title and GBP reference price retain their existing editorial identity.
   imageUrl:product.imageUrl||snapshot.images[0],
@@ -111,7 +111,7 @@ export function mergeOpenCliProduct(product:Product,snapshot:OpenCliSnapshot|nul
   sellerName:product.sellerName||snapshot.sellerName,
   priceCNY:snapshot.priceCNY??product.priceCNY,
   detailImages:details,
-  sourceSpecs:product.sourceSpecs?.length?product.sourceSpecs:snapshot.sourceSpecs,
+  sourceSpecs:[...new Map([...(product.sourceSpecs||[]),...additionalSpecs].map(row=>[row.name.toLowerCase(),row])).values()].slice(0,50),
   // Product option SKUs are NEVER inferred from prices or images.
   // Genuine marketplace variants remain unchanged until independently verified.
  };
