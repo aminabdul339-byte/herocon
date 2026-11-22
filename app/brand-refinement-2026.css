@@ -1,0 +1,284 @@
+/* HEROCON / 2026 catalogue refinement
+   Keeps the original green con. wordmark, matches Personal Edit cards to the
+   Start a Business catalogue and reduces oversized product-detail headings.
+*/
+.hc-site .sc-wordmark span,
+.hc-site .sc-footer-brand span{color:#90aa92!important}
+.hm-home .ha-edit-brand span{color:#90aa92!important}
+
+/* The product title & price were too dominant relative to supplier options. */
+html body .hc-site .hc-editorial-product-layout .buy-panel h1,
+html body .hc-site .hc-personal-experience .hc-editorial-product-layout .buy-panel h1,
+html body .hc-site .hc-personal-product-page[data-audience] .hc-editorial-product-layout .buy-panel h1{
+ font:500 clamp(20px,1.83vw,26px)/1.33 Arial,Helvetica,sans-serif!important;
+ letter-spacing:.008em!important;
+ margin:0 0 14px!important;
+ max-width:560px;
+ color:var(--hc-brand-deep)!important;
+ text-transform:uppercase;
+ overflow-wrap:anywhere;
+}
+html body .hc-site .hc-editorial-product-layout .product-price,
+html body .hc-site .hc-personal-experience .hc-editorial-product-layout .product-price,
+html body .hc-site .hc-personal-product-page[data-audience] .hc-editorial-product-layout .product-price{
+ font:500 clamp(25px,2.1vw,32px)/1.25 Arial,Helvetica,sans-serif!important;
+ letter-spacing:-.035em!important;
+ margin:13px 0 15px!important;
+ color:var(--hc-brand-deep)!important;
+}
+.hc-site .hc-editorial-product-layout .buy-panel>.eyebrow{
+ margin-bottom:15px;font-size:9px;letter-spacing:.18em
+}
+.hc-site .hc-editorial-product-layout .sc-source-subprice{
+ font-size:11px!important;line-height:1.65!important
+}
+
+/* One exact card implementation in both collections and Start a Business.
+   Keep the same square photo, information hierarchy and bottom link row. */
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid{
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:15px;
+ align-items:stretch;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid>.hc-product-card{
+ display:flex;
+ min-width:0;
+ flex-direction:column;
+ padding:9px 9px 18px;
+ border:1px solid #e5eae2;
+ border-radius:17px;
+ box-shadow:none;
+ background:var(--hc-surface);
+ transition:box-shadow .25s,transform .25s;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid>.hc-product-card:hover{
+ transform:translateY(-3px);
+ box-shadow:0 12px 28px #28452b12;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-image-wrap{
+ position:relative;
+ width:100%;aspect-ratio:1/1;
+ background:#f0f0eb;border-radius:13px;overflow:hidden;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-photo-link{
+ display:block;width:100%;height:100%;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-photo-link img{
+ width:100%;height:100%;object-fit:contain;
+ background:transparent;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-info{
+ flex:1;padding:15px 8px 0;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-info h3{
+ font-size:14px;line-height:1.5;font-weight:750;
+ letter-spacing:-.018em;min-height:42px;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-price{
+ font-size:17px;color:var(--hc-brand-deep);
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-price-note{
+ color:#718375;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-bottom{
+ margin-top:auto;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-bottom a{
+ color:var(--hc-brand);
+}
+
+/* Women's and Men's Edit: editorial but neutral. The older pink/blue
+   selectors are overridden rather than changing marketplace or URL logic. */
+html body .hc-site .hc-self-v2[data-audience]{
+ --ps-accent:#4a614b!important;
+ --ps-accent-hover:#233b2b!important;
+ --ps-accent-soft:#e8ede5!important;
+ --ps-accent-border:#cdd8ca!important;
+ --ps-em:#b93229!important;
+ --ps-muted:#657568!important;
+ --ps-tile:#fffefa!important;
+ --ps-panel:#f5f5f1!important;
+ --ps-shadow:#233b2b12!important;
+ --ps-ink:#233b2b!important;
+ background:var(--hc-chalk)!important;
+ color:var(--hc-brand-deep)!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue{
+ padding-top:clamp(25px,3vw,43px);
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro{
+ align-items:center;gap:24px;
+ margin-bottom:22px;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro h1{
+ font:400 clamp(35px,3.7vw,51px)/1.08 Georgia,serif!important;
+ color:var(--hc-brand-deep)!important;
+ margin:0 0 8px!important;
+ letter-spacing:-.05em!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro h1 em{
+ font-style:italic;color:var(--hc-brand)!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro .hc-self-eyebrow{
+ color:var(--hc-brand);font-size:10px;
+}
+.hc-site .hc-personal-kicker-mark{
+ display:inline-block;margin:0 5px;color:var(--hc-coral-dark);
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ flex:0 0 auto;
+ width:min(350px,100%);
+ min-width:0;
+ padding:5px;gap:5px;
+ background:#e9eee7!important;
+ border:1px solid #d4ded1!important;
+ border-radius:999px!important;
+ box-shadow:none!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a,
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=women"],
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=men"]{
+ display:flex;justify-content:center;align-items:center;
+ gap:4px;min-height:63px;
+ padding:9px 12px;
+ background:transparent!important;
+ border:1px solid transparent!important;
+ border-radius:999px!important;
+ color:#425b46!important;
+ box-shadow:none!important;
+ transform:none!important;
+ transition:background-color .2s,color .2s;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a.is-active,
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a.is-active:hover,
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=women"].is-active,
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a[href*="audience=men"].is-active{
+ color:#fff!important;
+ background:var(--hc-brand)!important;
+ border-color:var(--hc-brand)!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a:not(.is-active):hover{
+ background:#d8e4d6!important;
+ color:var(--hc-brand-deep)!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a small{
+ color:#738873!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a.is-active small{
+ color:#e8f0e3!important;
+}
+.hc-site .hc-personal-audience-title strong{
+ font-size:11.5px;white-space:nowrap;
+}
+.hc-site .hc-personal-category-heading{
+ display:flex;justify-content:space-between;align-items:center;gap:16px;
+ padding:8px 0 12px;
+ color:#667b6b;
+ font:700 10px/1.5 Arial,Helvetica,sans-serif;
+ letter-spacing:.12em;
+}
+.hc-site .hc-personal-category-heading span:last-child{
+ color:#8a998b;letter-spacing:0;font-weight:500;text-transform:none;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-categories{
+ display:flex;
+ flex-wrap:nowrap;gap:8px;
+ margin-bottom:7px;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+ display:flex;flex:0 0 auto;align-items:center;
+ min-height:43px;max-width:none;min-width:0;
+ padding:9px 15px;
+ border-radius:999px!important;
+ border:1px solid #d3ddd2!important;
+ color:#435946!important;
+ background:#fffefa!important;
+ box-shadow:none!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category:hover{
+ color:var(--hc-brand-deep)!important;
+ background:#e9efe5!important;
+ border-color:var(--hc-brand)!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category-active,
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category-active:hover{
+ color:#fff!important;
+ background:var(--hc-brand)!important;
+ border-color:var(--hc-brand)!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-categories .hc-self-category-title{
+ display:flex;align-items:center;gap:7px;
+ white-space:nowrap;
+ color:inherit;
+ font-size:11px;
+ font-weight:700;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-categories .hc-self-category-title small{
+ display:inline;color:inherit;opacity:.68;margin:0;
+ font-size:10px;font-weight:500;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-search{
+ background:#fffefa;
+ border:1px solid var(--hc-border);
+ border-radius:999px!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-search button{
+ background:var(--hc-brand)!important;
+ border-radius:999px!important;
+}
+.hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-search button:hover{
+ background:var(--hc-brand-deep)!important;
+}
+@media(max-width:1080px){
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro{
+  align-items:start;flex-direction:column;gap:16px;
+ }
+}
+@media(max-width:750px){
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid>.hc-product-card{
+  padding:6px 6px 11px;border-radius:12px;
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-info{
+  padding:11px 5px 0;
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-card-info h3{
+  font-size:12px;line-height:1.4;min-height:38px;
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-price{
+  font-size:15px;
+ }
+ .hc-site .hc-self-v2[data-audience] .hc-personal-catalogue-intro h1{
+  font-size:clamp(33px,8vw,44px)!important;
+ }
+ html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience{
+  width:100%;
+  border-radius:21px!important;
+ }
+ html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a{
+  min-height:58px;padding:10px 5px;border-radius:16px!important;
+ }
+ .hc-site .hc-personal-category-heading{
+  flex-wrap:wrap;gap:4px;font-size:9px;
+ }
+ html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-category{
+  padding:9px 13px;min-height:41px;
+ }
+ html body .hc-site .hc-editorial-product-layout .buy-panel h1,
+ html body .hc-site .hc-personal-experience .hc-editorial-product-layout .buy-panel h1,
+ html body .hc-site .hc-personal-product-page[data-audience] .hc-editorial-product-layout .buy-panel h1{
+  font-size:22px!important;line-height:1.35!important;
+ }
+ html body .hc-site .hc-editorial-product-layout .product-price,
+ html body .hc-site .hc-personal-experience .hc-editorial-product-layout .product-price,
+ html body .hc-site .hc-personal-product-page[data-audience] .hc-editorial-product-layout .product-price{
+  font-size:28px!important;line-height:1.3!important;
+ }
+}

@@ -46,13 +46,13 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
  return <section id="browse-finds" className="hc-self-listing hc-self-wrap hc-personal-catalogue" aria-labelledby="hc-self-listing-title">
   <div className="hc-personal-catalogue-intro">
     <div>
-      <p className="hc-self-eyebrow">{audience==="women"?"WOMEN’S COLLECTION":"MEN’S COLLECTION"} / HEROCON</p>
-      <h1 id="hc-self-listing-title">The {audience==="women"?"Women’s":"Men’s"} <em>Collection.</em></h1>
-      <p>{audience==="women"?"Discover handbags, accessories and beautiful everyday finds.":"Explore clothing, shoes and accessories from original marketplace sources."}</p>
+      <p className="hc-self-eyebrow">THE PERSONAL EDIT <span className="hc-personal-kicker-mark">/</span> {audience==="women"?"WOMEN":"MEN"}</p>
+      <h1 id="hc-self-listing-title">Shop for <em>{audience==="women"?"women.":"men."}</em></h1>
+      <p>{audience==="women"?"Handbags, jewellery, shoes and accessories — all with original marketplace links.":"Clothing, footwear and accessories — curated from original marketplace sources."}</p>
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
-        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"Women’s Collection":"Men’s Collection"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
+        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"Shop women":"Shop men"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
       </Link>)}
     </nav>
   </div>
@@ -65,12 +65,13 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
     <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
     <button type="submit">Search <span aria-hidden="true"><ArrowIcon direction="right"/></span></button>
   </form>
+  <div className="hc-personal-category-heading"><span>SHOP BY CATEGORY</span><span>{everything.length.toLocaleString("en-GB")} {audience==="women"?"women’s":"men’s"} finds</span></div>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
-      <span className="hc-self-category-title">All products</span>
+      <span className="hc-self-category-title">All products <small>{everything.length.toLocaleString("en-GB")}</small></span>
     </Link>
     {availableCategories.map(cat=><Link key={cat} className={"hc-self-category"+(category===cat?" hc-self-category-active":"")} href={href({category:cat,page:1})} aria-current={category===cat?"page":undefined}>
-      <span className="hc-self-category-title">{cat}</span>
+      <span className="hc-self-category-title">{cat} <small>{categoryTotals.get(cat)?.toLocaleString("en-GB")}</small></span>
     </Link>)}
   </nav>
   <div className="hc-self-results-caption hc-personal-catalogue-meta">

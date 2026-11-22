@@ -1,33 +1,43 @@
 "use client";
-import {ArrowIcon} from "@/components/ArrowIcon";
-import {useState} from "react";
-import Link from "next/link";
-import {ExternalArrowIcon} from "@/components/ShopIcons";
+import ProductCard from "@/components/ProductCard";
+import type {Product} from "@/lib/types";
 import type {EnrichedPersonalProduct} from "@/lib/personal-shop-enrichment";
 import {shopPrice,priceIsConverted,type ShopFxRates} from "@/lib/shop-price";
 
+/** Both personal edits deliberately reuse the SAME card as Start a Business.
+ * Only the destination, recorded price and marketplace copy differ.
+ */
 export default function ShopPersonalCard({product,rates,audience}:{product:EnrichedPersonalProduct;rates:ShopFxRates;audience:"women"|"men"}){
- const [imageIndex,setImageIndex]=useState(0);
- const photos=[...new Set([product.imageUrl,...(product.savedDetails?.photos||[])])].filter(Boolean);
- if(imageIndex>=photos.length)return null;
- const path="/shop-for-yourself/"+encodeURIComponent(product.id)+"?audience="+audience;
- return <article className="hc-self-item hc-personal-item">
-   <Link className="hc-self-thumbnail hc-personal-thumbnail" href={path} prefetch={false} aria-label={"View "+product.name}>
-     <img className="hc-self-thumb-photo" src={photos[imageIndex]} alt={product.name} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setImageIndex(i=>i+1)}/>
-   </Link>
-   <div className="hc-self-item-body">
-     <p className="hc-self-item-category">{product.category} <span>·</span> ORIGINAL MARKETPLACE SOURCE</p>
-     <h3><Link href={path} prefetch={false}>{product.name}</Link></h3>
-     <div className="hc-self-item-price"><strong>{shopPrice(product,rates)}</strong><span>{priceIsConverted(product)?"approx. GBP*":"reference price*"}</span></div>
-     {product.savedDetails&&<p style={{fontSize:11,lineHeight:1.65,color:"#667b6b",margin:"6px 0 0"}}>
-       {product.savedDetails.sellerName?product.savedDetails.sellerName+" · ":"Saved supplier record · "}
-       {product.savedDetails.variantCount>0?product.savedDetails.variantCount+" recorded options":"Supplier details saved"}
-       {photos.length>1?" · "+photos.length+" photos":""}
-     </p>}
-     <div className="hc-self-item-actions">
-       <Link href={path} prefetch={false} className="hc-self-link-primary">View product <span aria-hidden="true"><ArrowIcon direction="right"/></span></Link>
-       <a href={product.originalUrl} target="_blank" rel="noopener noreferrer nofollow" className="hc-self-link-secondary">Original listing <ExternalArrowIcon/></a>
-     </div>
-   </div>
- </article>;
+ const href="/shop-for-yourself/"+encodeURIComponent(product.id)+"?audience="+audience;
+ const original=product.originalUrl.toLowerCase();
+ const marketplace=original.includes("weidian.com")?"Weidian":
+  original.includes("taobao.com")?"Taobao":
+  original.includes("1688.com")?"1688":
+  original.includes("tmall.com")?"Tmall":"Marketplace";
+ const record:Product={
+  doppelProductId:product.id,
+  title:product.name,
+  category:product.category,
+  imageUrl:product.imageUrl,
+  images:product.savedDetails?.photos||[],
+  sellerName:product.savedDetails?.sellerName||undefined,
+  variantCount:product.savedDetails?.variantCount||0,
+  hasPartnerDetails:Boolean(product.savedDetails),
+  sourceMarketplace:marketplace,
+  originalMarketplaceUrl:product.originalUrl
+ };
+ const count=product.savedDetails?.variantCount||0;
+ const note=count
+  ?count+" recorded "+(count===1?"option":"options")+" · reference price":
+  product.savedDetails?"Saved supplier details · reference price":
+  priceIsConverted(product)?"Approximate GBP reference · shipping separate":
+  "Reference price · delivery not included";
+ return <ProductCard
+   product={record}
+   titleOverride={product.name}
+   hrefOverride={href}
+   priceOverride={shopPrice(product,rates)}
+   priceNoteOverride={note}
+   sourceLabelOverride={"Source: "+marketplace}
+ />;
 }
