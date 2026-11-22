@@ -552,3 +552,88 @@ html body .hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-self-link-pr
 .hc-site main button:not(.sc-sku-qty button):not(.hc-gallery-controls button){
  border-radius:999px;
 }
+
+/* Account, membership, cart, contact, and information journeys retain their
+   existing layouts and working flows, while sharing the same colour system. */
+.hc-site .hc-membership-clean,.hc-site .hc-member-page,
+.hc-site .hc-account-page,.hc-site .hc-contact-page,
+.hc-site .hc-cart-page,.hc-site .hc-link-page{
+ background:var(--hc-chalk);color:var(--hc-brand-deep);
+}
+.hc-site .hc-membership-hero{
+ background:
+ radial-gradient(ellipse 40% 75% at 95% 5%,rgba(236,69,55,.11),transparent 78%),
+ linear-gradient(125deg,#f5f5f1,#e9eee7);
+}
+.hc-site .hc-membership-copy h1 em,.hc-site .hc-membership-process h2 em,
+.hc-site .hc-member-page em,.hc-site .hc-account-intro h1 em,
+.hc-site .hc-contact-intro h1 em{
+ color:var(--hc-coral-dark);
+}
+.hc-site .hc-membership-price,.hc-site .hc-member-price-card{
+ background:
+ radial-gradient(ellipse 75% 56% at 100% 0%,rgba(236,69,55,.23),transparent 80%),
+ linear-gradient(135deg,#233b2b,#4a614b);
+ border-radius:22px;box-shadow:0 19px 50px #253b2b20;
+}
+.hc-site .hc-membership-ctas .hc-premium-button-dark,
+.hc-site .hc-member-page .hc-premium-button-dark{
+ background:var(--hc-brand)!important;border-color:var(--hc-brand)!important;color:#fff!important;
+ border-radius:999px!important;
+}
+.hc-site .hc-member-benefit-grid article,.hc-site .hc-membership-step,
+.hc-site .hc-account-card,.hc-site .hc-member-purchase-card,
+.hc-site .hc-contact-panel,.hc-site .hc-cart-summary{
+ background:#fffefa;border:1px solid var(--hc-border);border-radius:19px;box-shadow:none;
+}
+.hc-site .hc-member-steps{
+ background:
+ radial-gradient(ellipse 48% 100% at 93% 15%,rgba(236,69,55,.16),transparent 77%),
+ linear-gradient(128deg,#203829,#4a614b);
+}
+.hc-site .hc-member-purchase-shell,.hc-site .hc-account-shell{color:var(--hc-brand-deep)}
+.hc-site .hc-account-card form button,
+.hc-site .hc-account-primary-link,
+.hc-site .hc-contact-send{
+ background:var(--hc-brand)!important;color:white!important;
+ border-radius:999px!important;
+}
+.hc-site .hc-account-secondary{
+ color:var(--hc-brand-deep);background:#fffefa;border-color:var(--hc-brand);
+ border-radius:999px!important;
+}
+.hc-site .hc-account-card form input{border-radius:12px;border-color:var(--hc-border)}
+.hc-site .hc-account-tabs button.active{border-color:var(--hc-coral-dark);color:var(--hc-brand-deep)}
+.hc-site .hc-contact-send:hover,.hc-site .hc-account-primary-link:hover{
+ background:var(--hc-brand-deep)!important;
+}
+.hc-site .hc-contact-icon{background:#e8ede5;color:var(--hc-brand)}
+.hc-site .hc-contact-label,.hc-site .hc-premium-kicker span{color:var(--hc-coral-dark)}
+.hc-site .hc-cart-wrap .hc-cart-line{
+ background:#fffefa;border-color:var(--hc-border);border-radius:14px;
+}
+.hc-site .hc-cart-summary a,.hc-site .hc-cart-summary button{
+ border-radius:999px;
+}
+.hc-site .hc-cart-selection-count{color:var(--hc-coral-dark)}
+.hc-site .hc-sourcing-guide{
+ --sg-forest:#4a614b;--sg-ink:#233b2b;--sg-moss:#738975;
+ --sg-cream:#f5f5f1;--sg-paper:#fffefa;--sg-line:#d8dfd4;
+}
+.hc-site .hc-choice-home{
+ --hc-ink:#233b2b;--hc-olive:#4a614b;--hc-cream:#f5f5f1;
+ --hc-muted:#657568;--hc-rule:#d8dfd4;
+}
+.hc-site .hc-choice-path{border-radius:20px}
+.hc-site .hc-choice-sun{background:var(--hc-coral);box-shadow:0 0 0 4px #ec45371f}
+.hc-site .hc-choice-intro h1 em,.hc-site .hc-choice-home h2 em{color:var(--hc-coral-dark)}
+.hc-site .hc-choice-path h2 em{color:#f5f5f1!important}
+.hc-site .hc-choice-search-section{background:#e7ede4}
+.hc-site .hc-choice-search-field button{background:var(--hc-brand);border-radius:100%}
+@media(max-width:740px){
+ .hc-site .hc-membership-price,.hc-site .hc-member-price-card{
+  border-radius:16px
+ }
+ .hc-site .hc-account-card,.hc-site .hc-member-purchase-card,
+ .hc-site .hc-contact-panel{border-radius:15px}
+}
