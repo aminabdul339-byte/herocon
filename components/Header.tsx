@@ -19,7 +19,7 @@ export default function Header(){
 
   const {count,account}=useCart();
   const showSourcingGuide=pathname!=="/";
-  const links=[["Start a business","/start-a-business"],["Shop for yourself","/shop-for-yourself"],...(showSourcingGuide?[["How sourcing works","/how-it-works"]]:[]),["Membership","/membership"]];
+  const links=[["Start a business","/start-a-business"],["Shop for yourself","/shop-for-yourself"],...(showSourcingGuide?[["How sourcing works","/how-it-works"]]:[]),["Warehouse","/warehouse"],["Membership","/membership"]];
   return <>
     <header className="sc-header">
       <div className="sc-nav-inner">
