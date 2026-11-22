@@ -1,12 +1,19 @@
 "use client";
 import {useEffect,useState} from "react";
 import ProductExperience from "@/components/ProductExperience";
+import {cleanTitle,imagesFor,productPrice} from "@/lib/catalogue";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 import type {Product} from "@/lib/types";
-import type {ProductLinkLookupResult} from "@/lib/marketplace-links";
 
-type CatalogSave={status:"added"|"existing"|"unavailable";productId:string|null};
-type Status={phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}|{phase:"ready";product:BuckydropProduct;url:string;save:CatalogSave;cacheStatus:"hit"|"stored"|null};
+type Lookup={
+ product:Product;productLink:string;productId:string;
+ savedPartner:BuckydropProduct|null;
+ sourceKind:"opencli-browser"|"saved-partner"|"catalogue";
+ openCliCapturedAt:string|null;
+};
+type Status=
+ |{phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}
+ |{phase:"ready";result:Lookup};
 
 export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  const [status,setStatus]=useState<Status>({phase:initialUrl?"loading":"idle"});
@@ -14,68 +21,48 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
   if(!initialUrl){setStatus({phase:"idle"});return;}
   const controller=new AbortController();
   setStatus({phase:"loading"});
-  fetch("/api/buckydrop/lookup",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({url:initialUrl}),
-   signal:controller.signal,
-   cache:"no-store"
+  // Public product links use saved snapshots only; this never initiates
+  // a billable BuckyDrop product lookup or live marketplace browser visit.
+  fetch("/api/marketplace/lookup",{
+   method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({url:initialUrl}),signal:controller.signal,cache:"no-store"
   }).then(async response=>{
-   const result:ProductLinkLookupResult&{error?:string;catalogueSave?:CatalogSave;cacheStatus?:"hit"|"stored"}=await response.json();
-   if(!response.ok||!result.product)throw new Error(result.error||"We couldn't retrieve this product.");
-   return result;
+   const value=await response.json();
+   if(!response.ok||!value.product)throw Error(typeof value.error==="string"?value.error:"No saved product details are available.");
+   return value as Lookup;
   }).then(result=>{
-   if(!controller.signal.aborted)setStatus({phase:"ready",product:result.product,url:result.productLink,save:result.catalogueSave||{status:"unavailable",productId:null},cacheStatus:result.cacheStatus||null});
+   if(!controller.signal.aborted)setStatus({phase:"ready",result});
   }).catch(error=>{
-   if(!controller.signal.aborted)setStatus({phase:"error",message:error instanceof Error?error.message:"The product could not be retrieved."});
+   if(!controller.signal.aborted)setStatus({phase:"error",message:error instanceof Error?error.message:"Product details are unavailable."});
   });
   return ()=>controller.abort();
  },[initialUrl]);
-
  if(status.phase==="idle")return null;
-
  if(status.phase==="loading")return <div className="hc-link-loading sc-container" role="status" aria-live="polite">
   <span className="hc-link-loader" aria-hidden="true"/>
-  <div><strong>Looking up the seller's product…</strong><p>Retrieving product details, photographs and available options.</p></div>
+  <div><strong>Checking saved marketplace details…</strong><p>Searching Herocon's existing catalogue without a paid supplier lookup.</p></div>
  </div>;
-
  if(status.phase==="error")return <div className="hc-link-error sc-container" role="alert">
-  <strong>We couldn't load that product</strong>
+  <strong>Product details are not yet available</strong>
   <p>{status.message}</p>
-  <p>Check that the URL is a full 1688, Taobao, Tmall or Weidian product link, rather than a shortened sharing link.</p>
+  <p>Only previously collected products can be shown instantly. New links must be collected through Herocon's local OpenCLI worker. No BuckyDrop lookup fee was incurred.</p>
  </div>;
-
- const source=status.product;
- const product:Product={
-  title:source.title,
-  originalTitle:source.title,
-  originalMarketplaceUrl:status.url,
-  imageUrl:source.images[0],
-  images:source.images,
-  sellerName:source.sellerName,
-  sourceMarketplace:source.marketplace||undefined,
-  category:"Marketplace product"
- };
+ const {product,productLink,productId,savedPartner,sourceKind,openCliCapturedAt}=status.result;
+ const title=cleanTitle(product);
  return <div className="hc-link-product-found">
-   <div className="sc-container hc-link-found-header">
-    <div><p className="sc-kicker">PRODUCT FOUND</p><h2>{source.title}</h2>
-     <p className="hc-link-connection-status" role="status">
-      {status.cacheStatus==="stored"?"New product details received and saved from our sourcing partner.":
-       status.cacheStatus==="hit"?"Previously saved partner details loaded. No new lookup was needed.":
-       "Product information received from our sourcing partner."}
-     </p>
-    </div>
+  <div className="sc-container hc-link-found-header">
+   <div>
+    <p className="sc-kicker">PRODUCT FOUND</p><h2>{title}</h2>
+    <p className="hc-link-connection-status" role="status">
+     {sourceKind==="opencli-browser"?"Previously collected marketplace details loaded from Herocon's free OpenCLI snapshots.":
+      sourceKind==="saved-partner"?"Previously saved supplier details loaded. No new partner request was made.":
+      "This product is in Herocon's catalogue. No live supplier lookup was performed."}
+    </p>
    </div>
-   <ProductExperience
-    key={status.url}
-    product={product}
-    id={status.save.productId||"linked-product"}
-    title={source.title}
-    images={source.images}
-    price="Supplier price"
-    buckydropEnabled
-    initialSource={source}
-   />
-
-  </div>;
+  </div>
+  <ProductExperience key={productLink} product={product} id={productId}
+   title={title} images={imagesFor(product)} price={productPrice(product)}
+   buckydropEnabled={Boolean(savedPartner)} initialSource={savedPartner||undefined}
+   openCliCapturedAt={openCliCapturedAt||undefined}/>
+ </div>;
 }

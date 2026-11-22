@@ -8,6 +8,7 @@ import ProductExperience from "@/components/ProductExperience";
 import {cleanTitle,imagesFor,productId,productPrice,related} from "@/lib/catalogue";
 import {getProducts} from "@/lib/catalogue-server";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
+import {getOpenCliSnapshot,mergeOpenCliProduct} from "@/lib/opencli-snapshots";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import {currentCustomer} from "@/lib/customer-auth";
@@ -50,28 +51,29 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
 
 type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string;fulfillbotPilotOwner:boolean};
 async function EnrichedCatalogueProduct(props:CatalogueProps){
+ // A locally collected OpenCLI snapshot is a non-billable, historical marketplace
+ // observation. It can enrich images, seller, specifications and reference CNY price.
+ const browser=props.product.originalMarketplaceUrl?
+  await getOpenCliSnapshot(props.product.originalMarketplaceUrl):null;
+ const product=mergeOpenCliProduct(props.product,browser);
+ const revised={...props,product,images:imagesFor(product),price:productPrice(product),
+  openCliCapturedAt:browser?.collectedAt};
+
  if(!LIVE_LOOKUP||!props.product.originalMarketplaceUrl){
-  return <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>;
+  return <ProductExperience {...revised} buckydropEnabled={false} sourceLookupFailed={!browser}/>;
  }
- // Product pages read our permanent snapshot ONLY. They never trigger a new
- // billable supplier lookup from automatic rendering or link prefetch.
+ // Read the existing paid-provider snapshot from private storage only.
+ // Do not trigger a live BuckyDrop lookup when someone opens a product page.
  let seller:Awaited<ReturnType<typeof getSavedBuckydropProduct>>=null;
  try{seller=await getSavedBuckydropProduct(props.product.originalMarketplaceUrl);}
  catch(err){
   console.warn("[herocon] Saved supplier details unavailable",{
-   productId:props.id,
-   code:err instanceof BuckydropError?err.code:"UNKNOWN"
+   productId:props.id,code:err instanceof BuckydropError?err.code:"UNKNOWN"
   });
  }
  const fx=seller?await getReferenceCnyGbpRate().catch(()=>undefined):undefined;
- return <ProductExperience
-  key={props.id}
-  {...props}
-  buckydropEnabled
-  sourceLookupFailed={!seller}
-  initialSource={seller||undefined}
-  initialFx={fx}
- />;
+ return <ProductExperience key={props.id} {...revised} buckydropEnabled
+  sourceLookupFailed={!seller&&!browser} initialSource={seller||undefined} initialFx={fx}/>;
 }
 
 function ProductLoadingSkeleton(){

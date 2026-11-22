@@ -14,7 +14,7 @@ type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,openCliCapturedAt,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean;openCliCapturedAt?:string;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean}){
  const router=useRouter();
  const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
@@ -184,6 +184,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      {!source&&recordedVariantPriceCNY!=null&&<p className="sc-source-subprice">Recorded seller option: {dualPrice(recordedVariantPriceCNY)}. Historical reference, not a live quote.</p>}
     {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
+    {openCliCapturedAt&&!source&&<p className="sc-source-subprice" role="note">Marketplace page details collected using OpenCLI on {new Date(openCliCapturedAt).toLocaleDateString("en-GB")}. These are recorded observations, not verified stock, selectable seller SKUs or checkout prices.</p>}
     {description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
