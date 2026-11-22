@@ -94,6 +94,26 @@ variant combinations or use these snapshots as checkout authority.
   Replacing a snapshot requires a future explicit merchant refresh workflow.
 - The flow makes **no new purchase, fulfilment, shipping or payment actions**.
 
+## Public pasted-product links (no new paid lookups)
+
+The **Paste a product link** page now calls
+`POST /api/marketplace/lookup`, not `/api/buckydrop/lookup`. It reads,
+in order, the existing catalogue record, an OpenCLI observation and any
+already-saved BuckyDrop supplier snapshot. It does **not** call
+`queryBuckydropProduct` or perform browser automation.
+
+If an original 1688/Taobao link has not yet been collected, it cannot be
+resolved instantly by Vercel. The customer sees a clear unavailable message
+instead of a surprise paid API request. Existing catalogue-only products
+remain browsable. This is a deliberate initial limitation until a
+fully authorised, reliably hosted marketplace-access workflow exists.
+
+The legacy public BuckyDrop lookup now returns 410 for valid links
+by default. Restoring billable public lookups requires the explicit
+`HEROCON_ALLOW_BILLABLE_PUBLIC_LINK_LOOKUP=true` server setting.
+**Do not configure that setting for the free collector workflow.**
+Existing BuckyDrop checkout and merchant-only import behaviour is unchanged.
+
 ## Cost and operational limits
 
 The OpenCLI software is free and does not charge BuckyDrop API units.
