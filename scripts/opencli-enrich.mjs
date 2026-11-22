@@ -60,7 +60,7 @@ export function normalise1688(item,queue,assets){
   return minQuantity!==null&&Number.isInteger(minQuantity)&&minQuantity>=1&&priceCNY!==null&&v.currency==="CNY"
    ?{minQuantity,priceCNY}:null;
  }).filter(Boolean):[];
- const minimum=prices.length?Math.min(...prices.map(p=>p.priceCNY)):parseCnyPrice(item.price_text);
+ const minimum=prices.length?[...prices].sort((a,b)=>a.minQuantity-b.minQuantity)[0].priceCNY:parseCnyPrice(item.price_text);
  const sourceSpecs=Array.isArray(item.visible_attributes)?item.visible_attributes.slice(0,35).map(v=>({
   name:safeText(v.key,90),value:safeText(v.value,220)
  })).filter(v=>v.name&&v.value):[];
@@ -137,7 +137,7 @@ function options(argv){
  if(url.username||url.password||url.search||url.hash||
   !((url.protocol==="http:"&&["localhost","127.0.0.1"].includes(url.hostname))||
     (url.protocol==="https:"&&(url.hostname==="herocon.store"||
-    url.hostname.endsWith(".vercel.app")))))
+    (url.hostname.startsWith("herocon-")&&url.hostname.endsWith(".vercel.app"))))))
   fail("Site must be Herocon HTTPS, a Herocon Vercel preview, or local development.");
  v.site=url.origin;
  return v;
