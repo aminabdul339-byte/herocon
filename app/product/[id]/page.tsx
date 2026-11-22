@@ -10,6 +10,7 @@ import {getProducts} from "@/lib/catalogue-server";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
+import {currentCustomer} from "@/lib/customer-auth";
 import type {Product} from "@/lib/types";
 
 const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
@@ -23,12 +24,17 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
  const product={...found,originalTitle:found.originalTitle||found.title};
  const more=products.filter(x=>product.sellerId&&x.sellerId===product.sellerId&&productId(x)!==id).slice(0,8);
  const similar=related(products,product,8);
+ const customer=await currentCustomer();
+ const trialOwnerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
+  ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();
+ const fulfillbotPilotOwner=Boolean(customer&&trialOwnerId&&customer.id===trialOwnerId);
  const common={
   product,
   id,
   title:cleanTitle(product),
   images:imagesFor(product),
-  price:productPrice(product)
+  price:productPrice(product),
+  fulfillbotPilotOwner
  };
  return <main>
   <Header/>
@@ -42,7 +48,7 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
  </main>;
 }
 
-type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string};
+type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string;fulfillbotPilotOwner:boolean};
 async function EnrichedCatalogueProduct(props:CatalogueProps){
  if(!LIVE_LOOKUP||!props.product.originalMarketplaceUrl){
   return <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>;
