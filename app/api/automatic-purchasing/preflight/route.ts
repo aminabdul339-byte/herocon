@@ -77,9 +77,32 @@ export async function POST(request:Request){
       note:"This is a live product availability and SKU read, not proof the partner accepts automated order creation. No order or payment has been made."
     });
   }catch(error){
-    const known=error instanceof BuckydropError?error.code:"supplier_unavailable";
-    const allowed=new Set(["NOT_ENABLED","NOT_CONFIGURED","INVALID_SOURCE","RATE_LIMIT","ACCESS_DENIED","UPSTREAM_UNAVAILABLE","INVALID_RESPONSE","UPSTREAM_HTTP_ERROR"]);
-    // Never return an arbitrary upstream message or credential.
-    return reply({ok:false,error:allowed.has(known)?known:"supplier_lookup_failed"},503);
+    // The previous implementation silently replaced BuckyDrop's exact codes
+    // (including ACCOUNT_FUNDS and NOT_FOUND) with "supplier_lookup_failed".
+    // Return safe, actionable categories to the authenticated owner instead.
+    const code=error instanceof BuckydropError?error.code:"BACKEND_UNEXPECTED";
+    const known=new Set([
+      "NOT_ENABLED","NOT_CONFIGURED","INVALID_SOURCE","RATE_LIMIT",
+      "ACCESS_DENIED","ACCOUNT_FUNDS","NOT_FOUND","EMPTY_PRODUCT",
+      "UPSTREAM_UNAVAILABLE","INVALID_RESPONSE","UPSTREAM_HTTP_ERROR"
+    ]);
+    const providerCode=/^UPSTREAM_([0-9]{1,10})$/.exec(code)?.[1];
+    const safeCode=known.has(code)?code:providerCode?"PROVIDER_REJECTED":"BACKEND_UNEXPECTED";
+    const status=error instanceof BuckydropError?
+      (error.status===429?429:error.status===404?404:503):503;
+    // Log only a sanitised category. Never log the signed upstream URL,
+    // auth token, supplier payload, email, exception message or product link.
+    console.warn("[automatic-purchasing/preflight] supplier check failed",{
+      error:safeCode,
+      providerCode:providerCode||undefined,
+      status
+    });
+    return reply({
+      ok:false,
+      error:safeCode,
+      ...(providerCode?{providerCode}:{}),
+      provider:"BuckyDrop",
+      purchaseOrderCreated:false
+    },status);
   }
 }
