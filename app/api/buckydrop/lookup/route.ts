@@ -52,6 +52,11 @@ export async function POST(request:Request){
  if(!productLink){
   return jsonError("Paste a full 1688, Taobao, Tmall or Weidian product URL. Shortened or unrelated links are not supported.",400);
  }
+ // Stop public visitors from initiating billable product-detail requests.
+ // Existing saved snapshots are available via /api/marketplace/lookup.
+ if(process.env.HEROCON_ALLOW_BILLABLE_PUBLIC_LINK_LOOKUP!=="true"){
+  return jsonError("New paid product lookups are disabled. Use Herocon\u0027s free saved marketplace search.",410);
+ }
  const ip=request.headers.get("x-real-ip")||request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
  if(rateLimited(ip))return jsonError("Too many searches. Please try again shortly.",429);
  try {
