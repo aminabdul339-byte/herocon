@@ -111,7 +111,7 @@ export default async function EditorialProductPreview({params}:Params){
      {sourceOptions.length>0&&<p className="erp-source-count">{sourceOptions.length} saved SKU {sourceOptions.length===1?"option":"options"} available in the current product detail page.</p>}
      <div className="erp-actions">
       <span className="erp-disabled" aria-disabled="true">ADD TO CART <em>PREVIEW ONLY</em></span>
-      {sourceLink?<a href={sourceLink} target="_blank" rel="noopener noreferrer nofollow">VIEW ORIGINAL MARKETPLACE <span>↗</span></a>:<span className="erp-disabled">Marketplace link unavailable</span>}
+      {sourceLink?<a href={sourceLink} target="_blank" rel="noopener noreferrer nofollow">VIEW ORIGINAL MARKETPLACE <span></span></a>:<span className="erp-disabled">Marketplace link unavailable</span>}
      </div>
      <p className="erp-help">Real product data, photographs and supplier options only. This design preview cannot place orders or charge your account.</p>
      <div className="erp-facts">
@@ -128,7 +128,7 @@ export default async function EditorialProductPreview({params}:Params){
       <details><summary>SOURCING & DELIVERY <span>+</span></summary><div className="erp-detail">Original marketplace prices are references and may change. Shipping, duties, taxes and service fees are not included. Stock and authenticity are not independently verified by Herocon.</div></details>
      </div>
      <div className="erp-benefits"><span>◇ &nbsp; Original marketplace source</span><span>◇ &nbsp; Pricing and availability subject to confirmation</span></div>
-     <Link className="erp-existing" href={existingPath}>Compare with current product page ↗</Link>
+     <Link className="erp-existing" href={existingPath}>Compare with current product page </Link>
     </aside>
    </div>
    <footer className="erp-under"><strong>Considered details. Clear sourcing.</strong><span>Only actual marketplace photographs and recorded product specifications are used in this preview.</span></footer>
