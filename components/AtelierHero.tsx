@@ -57,8 +57,8 @@ function MarketplaceArtwork() {
         <div className="ha-detail-button">View source on 1688 <ArrowUpRight/></div>
       </div>
       <svg className="ha-connector" viewBox="0 0 620 780" fill="none" focusable="false"><path d="M0 599C116 518 164 640 287 578S515 504 620 469" stroke="#A1B69A" strokeWidth="2.3" strokeDasharray="2 8" strokeLinecap="round"/></svg>
-      <div className="ha-art-signoff">The source behind the find.</div>
     </div>
+    <div className="ha-art-signoff">The source behind the find.</div>
   </div>;
 }
 
@@ -69,8 +69,8 @@ export default function AtelierHero() {
       <h1 id="ha-hero-title"><span>Find more</span><span>than you <em>came for.</em></span></h1>
       <p>An inspired destination for personal discoveries and sourcing ideas — with links to original marketplace listings.</p>
       <div className="ha-actions">
-        <Link href="/shop-for-yourself" className="ha-action ha-action-primary"><span><strong>01 / Shop for yourself</strong><small>The curated edit</small></span><ArrowUpRight/></Link>
-        <Link href="/start-a-business" className="ha-action ha-action-secondary"><span><strong>02 / Start a business</strong><small>Explore sourcing</small></span><ArrowUpRight/></Link>
+        <Link href="/start-a-business" className="ha-action ha-action-primary"><span><strong>01 / Source for your business</strong><small>Explore sourcing</small></span><ArrowUpRight/></Link>
+        <Link href="/shop-for-yourself" className="ha-action ha-action-secondary"><span><strong>02 / Shop for yourself</strong><small>The curated edit</small></span><ArrowUpRight/></Link>
       </div>
     </div>
     <MarketplaceArtwork/>
