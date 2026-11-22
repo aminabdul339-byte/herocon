@@ -248,7 +248,7 @@ body .hc-site{background:var(--hc-chalk);color:var(--hc-brand-deep)}
 .hc-site .hc-editorial-product-layout .gallery-main img,
 .hc-site .hc-personal-experience .hc-editorial-product-layout .gallery-main img{
  display:block;width:100%;height:100%;object-fit:contain;
- background:transparent;mix-blend-mode:multiply;
+ background:transparent;mix-blend-mode:normal;
 }
 .hc-site .hc-editorial-product-layout .gallery-main .gallery-count{display:none}
 .hc-site .hc-gallery-controls{
@@ -496,7 +496,7 @@ body .hc-site{background:var(--hc-chalk);color:var(--hc-brand-deep)}
  .hm-home .ha-action{min-height:57px;padding:0 17px}
  .hm-home .ha-art{min-height:360px}
  .hm-home .ha-artboard{transform:translate(-50%,-50%) scale(.61)}
- ..hm-home .ha-visual-card{border-radius:17px}
+ .hm-home .ha-visual-card{border-radius:17px}
  .hc-site .hc-editorial-product-layout,
  .hc-site .hc-personal-experience .hc-editorial-product-layout{
   padding:4px 17px 38px;gap:27px
@@ -532,4 +532,23 @@ body .hc-site{background:var(--hc-chalk);color:var(--hc-brand-deep)}
 @media(prefers-reduced-motion:reduce){
  .hm-home .ha-copy::before,.hm-home .ha-copy::after,.hm-home .ha-art::before,.hm-home .ha-art::after{transition:none;animation:none}
  .hc-site .hc-editorial-product-layout *{scroll-behavior:auto}
+}
+
+/* Consistent branded colour in either Personal Edit audience, regardless
+   of edition-specific declarations defined in route CSS. */
+html body .hc-site .hc-self-v2[data-audience]{
+ --ps-accent:#4a614b!important;--ps-accent-hover:#233b2b!important;
+ --ps-accent-soft:#e8ede5!important;--ps-accent-border:#cdd8ca!important;
+ --ps-ink:#233b2b!important;--ps-em:#b93229!important;
+ --ps-panel:#f5f5f1!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-audience>a:not(.is-active){
+ color:#425b46!important;
+}
+html body .hc-site .hc-self-v2[data-audience] .hc-personal-grid .hc-self-link-primary:hover{
+ background:#233b2b!important;
+}
+/* Rounded controls on the remaining unmodified functional pages. */
+.hc-site main button:not(.sc-sku-qty button):not(.hc-gallery-controls button){
+ border-radius:999px;
 }
