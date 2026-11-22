@@ -156,17 +156,22 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  }
 
  return <>
-  <section className="product-layout">
-   <div>
+  <section className="product-layout hc-editorial-product-layout">
+   <div className="hc-editorial-gallery">
     <div className="gallery-main">
      {gallery[chosenIndex]?<img src={gallery[chosenIndex]} alt={title} referrerPolicy="no-referrer" onError={()=>{const failed=gallery[chosenIndex];setBadImages(previous=>previous.includes(failed)?previous:[...previous,failed]);}}/>:<div className="hc-image-missing">Product image currently unavailable</div>}
      <span className="gallery-count">{gallery.length?chosenIndex+1:0} / {gallery.length}</span>
+     {gallery.length>1&&<div className="hc-gallery-controls" aria-label="Product image gallery">
+       <button type="button" aria-label="Previous product photograph" onClick={()=>setImage((chosenIndex-1+gallery.length)%gallery.length)}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m15 18-6-6 6-6"/></svg></button>
+       <output aria-live="polite">{String(chosenIndex+1).padStart(2,"0")} / {String(gallery.length).padStart(2,"0")}</output>
+       <button type="button" aria-label="Next product photograph" onClick={()=>setImage((chosenIndex+1)%gallery.length)}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m9 18 6-6-6-6"/></svg></button>
+     </div>}
     </div>
     {gallery.length>1&&<div className="thumbs">{gallery.slice(0,16).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}</div>}
     {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">See seller's product photos and description <ArrowIcon direction="down"/></a>}
    </div>
    <aside className="buy-panel">
-    <p className="eyebrow">{product.category||"PRODUCT DETAILS"}</p>
+    <p className="eyebrow">THE HEROCON EDIT <span className="hc-editorial-eyebrow-divider"> / </span>{product.category||"PRODUCT DETAILS"}</p>
     <h1>{title}</h1>
     <div className="hc-seller-row">
      <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller not recorded"}</span>
@@ -179,6 +184,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      {!source&&recordedVariantPriceCNY!=null&&<p className="sc-source-subprice">Recorded seller option: {dualPrice(recordedVariantPriceCNY)}. Historical reference, not a live quote.</p>}
     {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
+    {description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
       <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length} seller variants · Select quantities</span></div>
@@ -215,6 +221,25 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </div>
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
     <p className="hc-checkout-note">Adding to cart requires a free account. Membership is £9.99/month when you buy. Online checkout is currently unavailable.</p>
+    <div className="hc-editorial-accordions" aria-label="Product information">
+      <details open>
+        <summary>Description</summary>
+        <p>{description||"A detailed description has not yet been provided by the marketplace seller. You can consult the original listing for any additional product information."}</p>
+      </details>
+      <details>
+        <summary>Product details</summary>
+        <dl>
+          <dt>Category</dt><dd>{product.category||"Not recorded"}</dd>
+          <dt>Seller</dt><dd>{sellerName||"Not recorded"}</dd>
+          <dt>Recorded options</dt><dd>{source?.variants.length||product.variants?.length||product.variantCount||"Not recorded"}</dd>
+          {detailAttributes.slice(0,9).map(attribute=><div key={attribute.name} className="hc-editorial-attribute"><dt>{attribute.name}</dt><dd>{attribute.value}</dd></div>)}
+        </dl>
+      </details>
+      <details>
+        <summary>Sourcing &amp; delivery</summary>
+        <p>Pricing is a marketplace reference, not a live checkout quote. International shipping, taxes, duties and service fees are separate. Herocon does not independently verify supplier claims or brand authenticity.</p>
+      </details>
+    </div>
     {source&&<div className="sc-supplier-facts">
       {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
       {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {dualPrice(source.chinaDomesticFreight)}</p>}
