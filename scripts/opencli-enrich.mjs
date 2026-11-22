@@ -73,7 +73,7 @@ export function normalise1688(item,queue,assets){
   images:gallery,detailImages:safeImages(assets?.detail_images,24),
   sourceSpecs,collectedAt:new Date().toISOString()
  };
- if(!title||!record.images.length)fail("1688 item did not provide enough title/image data.");
+ if(!title||(!record.images.length&&record.priceCNY===null&&!record.sellerName))fail("1688 item did not provide enough useful data.");
  return record;
 }
 export function normaliseTaobao(rows,queue){
@@ -93,7 +93,7 @@ export function normaliseTaobao(rows,queue){
  if(!title)fail("Taobao item did not provide a product title.");
  // Taobao's current OpenCLI adapter does not return product photos.
  // Existing Herocon image is retained only as a catalogue fallback.
- if(!record.images.length)fail("No existing Herocon image to accompany Taobao details.");
+ if(!record.images.length&&record.priceCNY===null&&!record.sellerName)fail("No usable Taobao detail fields were found.");
  return record;
 }
 function cli(args,timeoutMs=90000){
