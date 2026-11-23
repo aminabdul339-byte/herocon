@@ -7,6 +7,7 @@ import {getDiscoveredProducts} from "./discovered-products";
 import {normalizeMarketplaceLink} from "./marketplace-links";
 import {marketplaceIdentity} from "./catalogue-identity";
 import {withoutEmoji} from "./emoji-free";
+import {personalShopProducts} from "./personal-shop";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
@@ -103,13 +104,35 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
   return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:classifyProduct(product.title,product.category)}));
 });
 
+/**
+ * Reuse source-matched records already present in Shop for Yourself.
+ * This joins only by the verified marketplace URL, never by image/title.
+ * It does not scrape external pages or make supplier API calls.
+ */
+const personalBySource=new Map(personalShopProducts.map(p=>
+ [normalizeMarketplaceLink(p.originalUrl),p] as const).filter(([link])=>Boolean(link)));
+function reusePersonalMetadata(products:Product[]):Product[]{
+ return products.map(p=>{
+  const source=normalizeMarketplaceLink(p.originalMarketplaceUrl);
+  const match=source?personalBySource.get(source):undefined;
+  if(!match)return p;
+  const photos=[...new Set([p.imageUrl,...(p.images||[]),match.imageUrl]
+   .filter((v):v is string=>typeof v==="string"&&v.startsWith("https://")))].slice(0,36);
+  return {...p,
+   imageUrl:p.imageUrl||match.imageUrl,
+   images:photos,
+   priceCNY:p.priceCNY??(typeof match.priceCNY==="number"?match.priceCNY:undefined)
+  };
+ });
+}
+
 // The original catalogue remains in committed JSON files. Products found through
 // the public link search are durably stored in the private Vercel Blob store and
 // appear in product search, category browsing, saved items, and product pages.
 export const getProducts = cache(async ():Promise<Product[]>=>{
  const staticProducts=await getBaseProducts();
  const discovered=(await getDiscoveredProducts()).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
- if(!discovered.length)return staticProducts;
+ if(!discovered.length)return reusePersonalMetadata(staticProducts);
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));
  // Join by canonical original marketplace link, never by CDN image or title.
@@ -141,5 +164,5 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
   links.add(key);ids.add(p.doppelProductId);
   additions.push(p);
  }
- return [...additions,...enriched];
+ return reusePersonalMetadata([...additions,...enriched]);
 });
