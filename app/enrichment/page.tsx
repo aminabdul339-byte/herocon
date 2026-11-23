@@ -6,8 +6,8 @@ import {getProducts} from "@/lib/catalogue-server";
 import {productId,cleanTitle} from "@/lib/catalogue";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {getSavedMarketplaceSource} from "@/lib/marketplace-source-enrichment";
-import {getAutomaticEnrichmentState,getEnrichmentSavedCount} from "@/lib/automatic-enrichment";
+import {createHash} from "node:crypto";
+import {getAllEnrichedSourceHashes,getBuckydropBulkStatus} from "@/lib/buckydrop-bulk";
 import {currentCustomer} from "@/lib/customer-auth";
 
 export const dynamic="force-dynamic";
@@ -43,10 +43,15 @@ export default async function EnrichmentPage({
  const requested=Number.parseInt(query.page||"1",10);
  const page=Number.isFinite(requested)?Math.max(1,Math.min(pageCount,requested)):1;
  const selected=items.slice((page-1)*12,page*12);
- const [rows,progress,savedUnique]=await Promise.all([
-  Promise.all(selected.map(async p=>({...p,saved:Boolean(await getSavedMarketplaceSource(p.sourceUrl))}))),
-  getAutomaticEnrichmentState(),getEnrichmentSavedCount()
+ const [saved,progress]=await Promise.all([
+  getAllEnrichedSourceHashes(),getBuckydropBulkStatus()
  ]);
+ const rows=selected.map(p=>{
+  const link=normalizeMarketplaceLink(p.sourceUrl);
+  const key=link?createHash("sha256").update(link).digest("hex"):"";
+  return {...p,saved:Boolean(key&&saved.has(key))};
+ });
+ const savedUnique=progress.totalSaved;
  const unique=new Set([
   ...allProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)),
   ...personalShopProducts.map(p=>normalizeMarketplaceLink(p.originalUrl))
@@ -54,7 +59,7 @@ export default async function EnrichmentPage({
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
   <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
-    providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}
+    providerConnected={Boolean(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"&&process.env.BUCKYDROP_APP_CODE&&process.env.BUCKYDROP_APP_SECRET&&process.env.BUCKYDROP_ENV==="live")}
     automationConfigured={Boolean(process.env.CRON_SECRET?.trim()&&process.env.BLOB_READ_WRITE_TOKEN)}
     progress={progress} uniqueSources={unique.size} savedUnique={savedUnique}/>
  </main>;

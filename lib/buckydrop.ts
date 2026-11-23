@@ -64,13 +64,13 @@ function extractDescriptionImages(v:unknown):string[]{
       const url=safeImage(value);
       if(url&&!results.includes(url)){results.push(url);break;}
     }
-    if(results.length>=36)break;
+    // Preserve all supplier description photos; the display paginates them.
   }
   return results;
 }
 export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"live"):BuckydropProduct{
   const d=obj(value);
-  const variants=arr(d.skuList).slice(0,300).map(item=>{
+  const variants=arr(d.skuList).map(item=>{
     const s=obj(item);
     const options=arr(s.props).map(v=>({name:str(obj(v).propName)||"",value:str(obj(v).valueName)||""})).filter(v=>v.name&&v.value);
     return {
@@ -82,8 +82,8 @@ export function normalizeBuckydropProduct(value:unknown,environment:"sandbox"|"l
       image:safeImage(s.imgUrl)
     };
   }).filter(v=>v.skuCode);
-  const images=[...new Set([safeImage(d.picUrl),...arr(d.productImageList).map(v=>safeImage(v)||safeImage(obj(v).imgUrl)||safeImage(obj(v).url)),...variants.map(v=>v.image)].filter((x):x is string=>!!x))].slice(0,40);
-  const productProps=arr(d.productProps).slice(0,80).map(v=>{
+  const images=[...new Set([safeImage(d.picUrl),...arr(d.productImageList).map(v=>safeImage(v)||safeImage(obj(v).imgUrl)||safeImage(obj(v).url)),...variants.map(v=>v.image)].filter((x):x is string=>!!x))];
+  const productProps=arr(d.productProps).map(v=>{
     const p=obj(v);
     const name=str(p.propName)||str(p.name)||str(p.key)||"";
     const value=str(p.valueName)||str(p.propValue)||str(p.value)||"";
