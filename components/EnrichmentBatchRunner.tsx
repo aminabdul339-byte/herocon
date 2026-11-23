@@ -35,7 +35,7 @@ export default function EnrichmentBatchRunner({
    </p>
    <p style={{margin:"0 0 13px",fontSize:14,lineHeight:1.6}}>
     {providerConnected&&automationConfigured
-     ?"The automatic job runs in 24 independent batches spread across the day, starting at 13:00 UTC. Shards record progress and retry unsaved links on the next scheduled run."
+     ?"The automatic job runs in 24 independent batches spread across the day, with the first shard scheduled for 12:40 UTC. Shards record progress and retry unsaved links on the next scheduled run."
      :"BuckyDrop's live API, private storage, or secure Cron authentication is not configured; no paid batch calls can run."}
    </p>
    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:15,marginBottom:16}}>
