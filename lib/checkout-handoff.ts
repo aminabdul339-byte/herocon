@@ -161,6 +161,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   "Quote: "+quote.id,
   "Buyer: "+quote.customerEmail,
   (allIn?"Total received, including all-in shipping allowance: £":"Product-stage amount paid: £")+(quote.totalPence/100).toFixed(2),
+  "Herocon service fee included: £"+((quote.serviceFeePence??0)/100).toFixed(2),
   ...(allIn?[
    "No further freight payment may be collected from this buyer for this order.",
    "Monitor BuckyDrop procurement, auto-settlement and dispatch; the merchant covers any cost overruns."
@@ -178,6 +179,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  const buyerText=[
   "Thank you for your Herocon order.",
   allIn?"We have received your single payment of £"+(quote.totalPence/100).toFixed(2)+", including your approved international shipping allowance and applicable tax.":
+   // Legacy orders without a service fee are still handled using their immutable quote.
    "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
   ...(allIn?[
    "You will not be asked to pay another international shipping fee for this order.",
