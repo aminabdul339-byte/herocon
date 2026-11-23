@@ -22,13 +22,14 @@ export default function ShopPersonalCard({product,rates,audience}:{product:Enric
   images:product.savedDetails?.photos||[],
   sellerName:product.savedDetails?.sellerName||undefined,
   variantCount:product.savedDetails?.variantCount||0,
-  hasPartnerDetails:Boolean(product.savedDetails),
+  hasPartnerDetails:product.savedDetails?.kind==="partner",
   sourceMarketplace:marketplace,
   originalMarketplaceUrl:product.originalUrl
  };
  const count=product.savedDetails?.variantCount||0;
  const note=count
   ?count+" recorded "+(count===1?"option":"options")+" · reference price":
+  product.savedDetails?.kind==="marketplace"?"Recorded marketplace details · reference price":
   product.savedDetails?"Saved supplier details · reference price":
   priceIsConverted(product)?"Approximate GBP reference · shipping separate":
   "Reference price · delivery not included";
