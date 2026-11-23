@@ -5,14 +5,18 @@ import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
+import {cleanSellerDescription} from "@/lib/supplier-description";
 
-const PREFIX="catalogue/source-enrichment/v1/";
+export const ENRICHMENT_PREFIX_V1="catalogue/source-enrichment/v1/";
+export const ENRICHMENT_PREFIX_V2="catalogue/source-enrichment/v2/";
+const MAX_SNAPSHOT_BYTES=16*1024*1024;
 const MAX_BYTES=750_000;
 const ALLOWED_HOSTS=new Set([
  "detail.1688.com","item.taobao.com","detail.tmall.com","weidian.com"
 ]);
 export type SourceEnrichment={
- version:1;sourceUrl:string;provider:"public-page"|"hiobuy";retrievedAt:string;
+ version:1|2;sourceUrl:string;provider:"public-page"|"hiobuy";retrievedAt:string;
+ variantCompleteness?:"complete"|"missing_ids"|"unavailable";minOrderQuantity?:number;
  title?:string;descriptionText?:string;sellerName?:string;
  images:string[];detailImages:string[];variants:Variant[];
  priceCNY?:number;variantCount?:number;sourceSpecs:{name:string;value:string}[];
@@ -63,7 +67,7 @@ function cleanText(v:unknown,max=10000):string{
   .replace(/&amp;/gi,"&").replace(/&quot;/gi,'"')
   .replace(/\s+/g," ").trim().slice(0,max);
 }
-const pathFor=(url:string)=>PREFIX+createHash("sha256").update(url).digest("hex")+".json";
+const pathFor=(url:string,version:1|2=2)=>(version===2?ENRICHMENT_PREFIX_V2:ENRICHMENT_PREFIX_V1)+createHash("sha256").update(url).digest("hex")+".json";
 const canonical=(value:unknown)=>{
  const url=normalizeMarketplaceLink(value);
  if(!url||!ALLOWED_HOSTS.has(new URL(url).hostname))
@@ -72,49 +76,72 @@ const canonical=(value:unknown)=>{
 };
 function attribute(v:unknown):{name:string;value:string}|null{
  const data=obj(v);
- const name=str(data.name||data.original_name||data.key||data.propName||data.attribute_name,120);
- const value=cleanText(data.value||data.original_value||data.valueName||data.label,240);
+ const name=str(data.translated_name||data.name||data.original_name||data.key||data.propName||data.attribute_name,120);
+ const value=cleanText(data.translated_value||data.value||data.original_value||data.valueName||data.label,240);
  return name&&value?{name,value}:null;
 }
 function fromHiobuy(value:unknown,url:string):SourceEnrichment{
  const root=obj(value),p=obj(root.product);
  if(!Object.keys(p).length)throw new SourceEnrichmentError("hiobuy_product_missing",502);
- const variants:Variant[]=list(p.variants).slice(0,200).map(v=>{
-  const row=obj(v);
-  const id=str(row.sku_id,150);
+ // HioBuy detail returns its SKU matrix in one response; no documented SKU paging.
+ const supplierVariants=Array.isArray(p.variants)?p.variants:null;
+ const variants:Variant[]=(supplierVariants||[]).map(v=>{
+  const row=obj(v),id=str(row.sku_id,200);
   if(!id)return null;
   const attrs=list(row.attributes).map(attribute).filter((a):a is {name:string;value:string}=>a!==null);
   const find=(re:RegExp)=>attrs.find(a=>re.test(a.name))?.value;
-  const price=obj(row.price);
+  const price=obj(row.price),shipping=obj(row.shipping);
+  const savedShipping:Record<string,string|number|null>={};
+  for(const [key,val] of Object.entries(shipping)){
+   if((typeof val==="string"&&val.length<=200)||(typeof val==="number"&&Number.isFinite(val))||val===null)
+    savedShipping[key]=val as string|number|null;
+  }
+  const stock=number(row.stock);
   return {
-   id,
-   label:attrs.map(a=>a.value).join(" / ")||id,
-   colour:find(/colou?r|color/i),
-   size:find(/size/i),
-   style:find(/style|model|specification/i),
-   material:find(/material|fabric/i),
+   id,upstreamSkuId:str(row.upstream_sku_id,150)||undefined,
+   label:attrs.map(a=>a.value).join(" / ")||id,attributes:attrs,
+   colour:find(/colou?r|color|颜色|顏色|色号|色號/i),
+   size:find(/size|尺码|尺寸|规格|規格/i),
+   style:find(/style|model|pattern|款式|型号/i),
+   material:find(/material|fabric|材质|材質/i),
    priceCNY:number(price.promotion_amount)??number(price.display_amount),
-   image:img(row.image),
-   available:typeof row.stock==="number"?row.stock>0:undefined
+   image:img(row.image),stock:stock??null,
+   available:stock===undefined?undefined:stock>0,
+   ...(Object.keys(savedShipping).length?{shipping:savedShipping}:{})
   } as Variant;
  }).filter((v):v is Variant=>v!==null);
- const title=obj(p.title),price=obj(p.price),description=p.description;
- const sourceSpecs=list(p.attributes).slice(0,50).map(attribute).filter((a):a is {name:string;value:string}=>a!==null);
- const gallery=photos(p.images,40);
- const variantImages=photos(variants.map(v=>v.image),30);
- const all=[...new Set([...gallery,...variantImages])].slice(0,40);
- const providerRecord:SourceEnrichment={
-  version:1,sourceUrl:url,provider:"hiobuy",retrievedAt:new Date().toISOString(),
+ const totalVariants=supplierVariants?.length??0;
+ const completeness=supplierVariants===null?"unavailable":
+  variants.length===totalVariants?"complete":"missing_ids";
+ const title=obj(p.title),price=obj(p.price),description=p.description,desc=obj(description);
+ const preferredDescription=(typeof desc.translated==="string"&&desc.translated.trim())?desc.translated:
+  (typeof desc.original==="string"&&desc.original.trim())?desc.original:description;
+ const descriptionText=cleanSellerDescription(cleanText(preferredDescription,45000),30000);
+ const sourceSpecs=list(p.attributes).map(attribute).filter((a):a is {name:string;value:string}=>a!==null);
+ const gallery=photos(p.images,Number.MAX_SAFE_INTEGER);
+ const variantImages=photos(variants.map(v=>v.image),Number.MAX_SAFE_INTEGER);
+ const all=[...new Set([...gallery,...variantImages])];
+ const htmlDesc=typeof description==="string"?description:
+  typeof desc.html==="string"?desc.html:
+  typeof desc.original==="string"?desc.original:"";
+ const detailImages:string[]=[];
+ for(const tag of htmlDesc.match(/<img\b[^>]*>/gi)||[]){
+  const found=tag.match(/\b(?:data-original|data-lazy-src|data-src|src)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>]+))/i);
+  const image=img(found&&(found[1]||found[2]||found[3]));
+  if(image&&!detailImages.includes(image))detailImages.push(image);
+ }
+ const result:SourceEnrichment={
+  version:2,sourceUrl:url,provider:"hiobuy",retrievedAt:new Date().toISOString(),
   title:cleanText(title.translated||title.original,300)||undefined,
-  descriptionText:cleanText(description,10000)||undefined,
+  descriptionText:descriptionText||undefined,
   sellerName:str(obj(p.seller).name,140)||undefined,
-  images:all,detailImages:[],variants,
+  images:all,detailImages,variants,
   priceCNY:number(price.promotion_amount)??number(price.display_amount),
-  variantCount:variants.length,
-  sourceSpecs
+  variantCount:totalVariants,variantCompleteness:completeness,
+  minOrderQuantity:number(p.min_order_quantity),sourceSpecs
  };
- if(!providerRecord.title&&!all.length&&!variants.length)throw new SourceEnrichmentError("hiobuy_product_empty",502);
- return providerRecord;
+ if(!result.title&&!all.length&&!variants.length)throw new SourceEnrichmentError("hiobuy_product_empty",502);
+ return result;
 }
 async function hiobuy(url:string):Promise<SourceEnrichment>{
  const token=process.env.HIOBUY_API_KEY?.trim();
@@ -258,26 +285,32 @@ export async function getSavedMarketplaceSource(source:unknown):Promise<SourceEn
  let url:string;
  try{url=canonical(source);}catch{return null;}
  if(!process.env.BLOB_READ_WRITE_TOKEN)return null;
- try{
-  const result=await get(pathFor(url),{access:"private"});
-  if(!result||result.statusCode!==200||!result.stream)return null;
-  const raw=await new Response(result.stream).text();
-  if(raw.length>120000)return null;
-  const item=JSON.parse(raw) as SourceEnrichment;
-  if(item.version!==1||item.sourceUrl!==url||
+ // Prefer complete v2 records, preserving older snapshots until replacement.
+ for(const version of [2,1] as const){
+  try{
+   const result=await get(pathFor(url,version),{access:"private"});
+   if(!result||result.statusCode!==200||!result.stream)continue;
+   const raw=await new Response(result.stream).text();
+   if(Buffer.byteLength(raw,"utf8")>MAX_SNAPSHOT_BYTES)continue;
+   const item=JSON.parse(raw) as SourceEnrichment;
+   if(item.version!==version||item.sourceUrl!==url||
     !Array.isArray(item.images)||!Array.isArray(item.variants)||
-    !Array.isArray(item.sourceSpecs))return null;
-  return item;
- }catch{return null;}
+    !Array.isArray(item.sourceSpecs))continue;
+   return item;
+  }catch{}
+ }
+ return null;
 }
 export async function saveMarketplaceSource(source:SourceEnrichment):Promise<void>{
  const url=canonical(source.sourceUrl);
  if(!process.env.BLOB_READ_WRITE_TOKEN)throw new SourceEnrichmentError("enrichment_storage_unavailable",503);
+ if(source.version!==2)throw new SourceEnrichmentError("outdated_enrichment_schema",422);
  const record={...source,sourceUrl:url};
  const body=JSON.stringify(record);
- if(body.length>120000)throw new SourceEnrichmentError("enrichment_record_too_large",422);
+ if(Buffer.byteLength(body,"utf8")>MAX_SNAPSHOT_BYTES)
+  throw new SourceEnrichmentError("enrichment_record_too_large",422);
  try{
-  await put(pathFor(url),body,{
+  await put(pathFor(url,2),body,{
    access:"private",addRandomSuffix:false,allowOverwrite:true,
    contentType:"application/json"
   });
@@ -286,7 +319,7 @@ export async function saveMarketplaceSource(source:SourceEnrichment):Promise<voi
 export function withMarketplaceSource(product:Product,source:SourceEnrichment|null):Product{
  if(!source)return product;
  const existingImages=[product.imageUrl,...(product.images||[])].filter((s):s is string=>!!s);
- const images=[...new Set([...source.images,...existingImages])].slice(0,40);
+ const images=[...new Set([...source.images,...existingImages])];
  return {
   ...product,
   // Preserve existing editorial names and historical GBP reference prices.
@@ -295,10 +328,10 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
   images,
   descriptionText:source.descriptionText||product.descriptionText,
   sellerName:source.sellerName||product.sellerName,
-  detailImages:[...new Set([...(source.detailImages||[]),...(product.detailImages||[])])].slice(0,30),
+  detailImages:[...new Set([...(source.detailImages||[]),...(product.detailImages||[])])],
   sourceSpecs:source.sourceSpecs.length?source.sourceSpecs:product.sourceSpecs,
   variants:source.variants.length?source.variants:product.variants,
-  variantCount:source.variants.length?source.variants.length:product.variantCount,
+  variantCount:source.variantCount??(source.variants.length?source.variants.length:product.variantCount),
   priceCNY:source.priceCNY??product.priceCNY,
   hasPartnerDetails:source.variants.length>0||source.images.length>1||Boolean(product.hasPartnerDetails)
  };
@@ -311,7 +344,7 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
 export type DisplaySupplierDetails=Omit<BuckydropProduct,"source">&{source:"buckydrop"|"hiobuy"};
 export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierDetails{
  const variants=data.variants.map(v=>{
-  const options=[
+  const options=v.attributes?.length?v.attributes:[
    v.colour?{name:"Colour",value:v.colour}:null,
    v.size?{name:"Size",value:v.size}:null,
    v.style?{name:"Style",value:v.style}:null,
@@ -325,7 +358,7 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
    price:v.priceCNY??null,
    // An explicit out-of-stock flag is conclusive; an "available" boolean
    // alone is not a numeric inventory count.
-   stock:v.available===false?0:null,
+   stock:typeof v.stock==="number"?v.stock:v.available===false?0:null,
    image:v.image||null
   };
  });
@@ -343,7 +376,7 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
   listPrice:data.priceCNY??null,
   offerPrice:data.priceCNY??null,
   chinaDomesticFreight:null,
-  moq:null,
+  moq:data.minOrderQuantity??null,
   available:null,
   images:data.images,
   descriptionText:data.descriptionText||"",
@@ -357,19 +390,21 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
  * whose canonical URL hashes actually have an independent HioBuy snapshot. */
 const savedIndex=unstable_cache(async():Promise<string[]>=>{
  if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
- let cursor:string|undefined;
- const hashes:string[]=[];
- do{
-  const result=await listBlobs({prefix:PREFIX,limit:1000,cursor});
-  for(const entry of result.blobs){
-   const key=entry.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
-   if(/^[a-f0-9]{64}$/.test(key))hashes.push(key);
-  }
-  if(!result.hasMore)break;
-  cursor=result.cursor;
- }while(cursor);
- return hashes;
-},["herocon-marketplace-source-index-v1"],{revalidate:60});
+ const hashes=new Set<string>();
+ for(const prefix of [ENRICHMENT_PREFIX_V2,ENRICHMENT_PREFIX_V1]){
+  let cursor:string|undefined;
+  do{
+   const page=await listBlobs({prefix,limit:1000,cursor});
+   for(const entry of page.blobs){
+    const key=entry.pathname.slice(prefix.length).replace(/\.json$/,"");
+    if(/^[a-f0-9]{64}$/.test(key))hashes.add(key);
+   }
+   if(!page.hasMore)break;
+   cursor=page.cursor;
+  }while(cursor);
+ }
+ return [...hashes];
+},["herocon-marketplace-source-index-v2"],{revalidate:60});
 export async function savedMarketplaceSourceHashes():Promise<ReadonlySet<string>>{
  try{return new Set(await savedIndex());}catch{return new Set();}
 }
