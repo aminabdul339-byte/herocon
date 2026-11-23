@@ -78,7 +78,8 @@ function verifySession(s:StripeSession,q:ApprovedQuote,expectedId:string){
   s.mode==="payment"&&s.currency==="gbp"&&s.payment_status==="paid"&&
   s.amount_total===q.totalPence&&s.metadata?.quoteId===q.id&&
   s.metadata?.purpose==="herocon_live_checkout"&&
-  s.metadata?.paymentStage===stage&&s.metadata?.fulfilment===q.fulfilment&&
+  s.metadata?.paymentStage===stage&&(s.metadata?.fulfilment===q.fulfilment||
+   (stage==="products"&&s.metadata?.fulfilment==="merchant_manual_supplier_payment"))&&
   q.saleCurrency==="gbp"&&
   q.customerEmail.toLowerCase()===(safe(s.customer_details?.email)||safe(s.customer_email)).toLowerCase();
 }
