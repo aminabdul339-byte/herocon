@@ -57,7 +57,7 @@ export async function getAutomaticEnrichmentState():Promise<AutomaticEnrichmentS
   return {
    ...empty(),...json,
    lastHash:typeof json.lastHash==="string"&&/^[a-f0-9]{64}$/.test(json.lastHash)?json.lastHash:"",
-   lastKey:typeof json.lastKey==="string"&&/^[01]:[a-f0-9]{64}$/.test(json.lastKey)?json.lastKey:"",
+   lastKey:typeof json.lastKey==="string"&&/^[012]:[a-f0-9]{64}$/.test(json.lastKey)?json.lastKey:"",
    totalRequests:positive(json.totalRequests),
    totalSaved:positive(json.totalSaved),
    blockedChannels:json.blockedChannels&&typeof json.blockedChannels==="object"?json.blockedChannels:{}
@@ -83,38 +83,47 @@ async function savedHashes():Promise<Set<string>>{
  }while(cursor);
  return hashes;
 }
+async function savedLegacyHashes():Promise<Set<string>>{
+ const keys=new Set<string>();
+ let cursor:string|undefined;
+ do{
+  const page=await list({prefix:ENRICHMENT_PREFIX_V1,limit:1000,cursor});
+  for(const item of page.blobs){
+   const hash=item.pathname.slice(ENRICHMENT_PREFIX_V1.length).replace(/\.json$/,"");
+   if(/^[a-f0-9]{64}$/.test(hash))keys.add(hash);
+  }
+  if(!page.hasMore)break;
+  cursor=page.cursor;
+ }while(cursor);
+ return keys;
+}
 export async function getEnrichmentSavedCount():Promise<number>{
  if(!process.env.BLOB_READ_WRITE_TOKEN)return 0;
  try{
-  const keys=await savedHashes();
-  let cursor:string|undefined;
-  do{
-   const page=await list({prefix:ENRICHMENT_PREFIX_V1,limit:1000,cursor});
-   for(const item of page.blobs){
-    const hash=item.pathname.slice(ENRICHMENT_PREFIX_V1.length).replace(/\.json$/,"");
-    if(/^[a-f0-9]{64}$/.test(hash))keys.add(hash);
-   }
-   if(!page.hasMore)break;
-   cursor=page.cursor;
-  }while(cursor);
-  return keys.size;
+  const [newKeys,oldKeys]=await Promise.all([savedHashes(),savedLegacyHashes()]);
+  for(const key of oldKeys)newKeys.add(key);
+  return newKeys.size;
  }catch{return 0;}
 }
 type CatalogSource={hash:string;key:string;url:string;channel:Channel};
-function catalogSources(products:Awaited<ReturnType<typeof getProducts>>):CatalogSource[]{
- const sources=new Map<string,{url:string;priority:0|1}>();
- // Personal product data receives first priority, not a random place in a
- // large hash-sorted combined queue. Canonical URLs are de-duplicated.
+function catalogSources(
+ products:Awaited<ReturnType<typeof getProducts>>,
+ legacyKeys:ReadonlySet<string>
+):CatalogSource[]{
+ const sources=new Map<string,{url:string;priority:0|1|2}>();
+ // Prioritise Shop for Yourself and refresh legacy (200-SKU-capped) snapshots
+ // immediately. Then advance through the remaining business catalogue.
  for(const p of personalShopProducts){
   const url=normalizeMarketplaceLink(p.originalUrl);
-  if(url)sources.set(url,{url,priority:0});
+  if(url)sources.set(url,{url,priority:1});
  }
  for(const p of products){
   const url=normalizeMarketplaceLink(p.originalMarketplaceUrl);
-  if(url&&!sources.has(url))sources.set(url,{url,priority:1});
+  if(url&&!sources.has(url))sources.set(url,{url,priority:2});
  }
  return [...sources.values()].map(({url,priority})=>{
   const hash=sha(url);
+  if(legacyKeys.has(hash))priority=0;
   return {url,hash,key:priority+":"+hash,channel:channel(url)};
  }).sort((a,b)=>a.key.localeCompare(b.key));
 }
@@ -151,8 +160,10 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
  state.lastRun=new Date().toISOString();
  state.lastIssue=null;
  state.lastRunRequests=0;state.lastRunSaved=0;state.lastRunSkipped=0;state.lastRunErrors=0;
- const existing=await savedHashes();
- const catalog= catalogSources(await getProducts());
+ const [existing,legacy,products]=await Promise.all([
+  savedHashes(),savedLegacyHashes(),getProducts()
+ ]);
+ const catalog=catalogSources(products,legacy);
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
  let start=catalog.findIndex(x=>x.key>(state.lastKey||""));
  if(start<0)start=0;
