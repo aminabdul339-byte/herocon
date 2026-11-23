@@ -144,6 +144,12 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
    state.lastHash=p.hash;
    if(seen.has(p.hash)||existing.has(p.hash))continue;
    seen.add(p.hash);
+   // Taobao requires a separate paid product-data entitlement; don't spend
+   // the trial allowance testing it on every scheduled run.
+   if(p.channel==="taobao"&&process.env.HIOBUY_TAOBAO_ENABLED!=="true"){
+    state.lastRunSkipped++;
+    continue;
+   }
    const blocked=state.blockedChannels[p.channel];
    if(blocked&&typeof blocked.until==="number"&&blocked.until>Date.now()){
     state.lastRunSkipped++;
