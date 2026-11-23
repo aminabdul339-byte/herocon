@@ -1,6 +1,7 @@
 import "server-only";
 import {createHash} from "node:crypto";
 import {get,list,put} from "@vercel/blob";
+import cronConfig from "@/vercel.json";
 import {getProducts} from "@/lib/catalogue-server";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
@@ -20,6 +21,24 @@ const ALL_SAVED=[BUCKYDROP_PREFIX_V1,BUCKYDROP_PREFIX_V2,ENRICHMENT_PREFIX_V1,EN
 const hash=(value:string)=>createHash("sha256").update(value).digest("hex");
 const date=()=>new Date().toISOString().slice(0,10);
 const resultPath=(shard:number)=>PREFIX+"progress/"+shard+".json";
+function upcomingScheduledShard(now=Date.now()):{at:string;shard:number}|null{
+ const result:{at:string;shard:number;ms:number}[]=[];
+ const current=new Date(now);
+ for(const job of cronConfig.crons){
+  const match=/^\/api\/cron\/buckydrop-enrichment\/(\d+)$/.exec(job.path);
+  const time=/^(\d{1,2}) (\d{1,2}) \* \* \*$/.exec(job.schedule);
+  if(!match||!time)continue;
+  const shard=Number(match[1]),minute=Number(time[1]),hour=Number(time[2]);
+  if(shard<0||shard>=BUCKYDROP_BULK_SHARDS||hour>23||minute>59)continue;
+  for(const offset of [0,1]){
+   const ms=Date.UTC(current.getUTCFullYear(),current.getUTCMonth(),
+    current.getUTCDate()+offset,hour,minute);
+   if(ms>now)result.push({at:new Date(ms).toISOString(),shard,ms});
+  }
+ }
+ result.sort((a,b)=>a.ms-b.ms);
+ return result[0]?{at:result[0].at,shard:result[0].shard}:null;
+}
 type Candidate={url:string;hash:string;personal:boolean};
 export type BuckydropBulkProgress={
  shard:number;date:string;startedAt:string;updatedAt:string;
@@ -34,6 +53,7 @@ export type BuckydropBulkStatus={
  pending:number;activeShards:number;pausedShards:number;lastIssue:string|null;
  buckydropSaved:number;hioBuySaved:number;sharedSaved:number;
  cooldownUntil:string|null;cooldownReason:string|null;
+ nextScheduledAt:string|null;nextScheduledShard:number|null;
 };
 async function existingHashes(prefix:string):Promise<Set<string>>{
  const all=new Set<string>();
@@ -141,6 +161,7 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
   if(p.status==="paused"||p.status==="failed"||(p.status==="running"&&!recent))pausedShards++;
   if(!lastRun||p.startedAt>lastRun){lastRun=p.startedAt;lastIssue=p.issue;}
  }
+ const nextRun=upcomingScheduledShard();
  const totalSaved=c.filter(p=>saved.has(p.hash)).length;
  const buckydropSaved=c.filter(p=>buckydrop.has(p.hash)).length;
  const hioBuySaved=c.filter(p=>hioBuy.has(p.hash)).length;
@@ -149,7 +170,9 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
   failed,unavailable,pending:c.length-totalSaved,activeShards,pausedShards,lastIssue,
   buckydropSaved,hioBuySaved,sharedSaved,
   cooldownUntil:block?new Date(block.until).toISOString():null,
-  cooldownReason:block?.code||null};
+  cooldownReason:block?.code||null,
+  nextScheduledAt:nextRun?.at||null,
+  nextScheduledShard:nextRun?.shard??null};
 }
 export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkProgress>{
  if(!Number.isInteger(shard)||shard<0||shard>=BUCKYDROP_BULK_SHARDS)throw Error("invalid_shard");
