@@ -8,11 +8,26 @@ const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"
 export async function GET(){
  const user=await currentCustomer();
  if(!user)return reply({authenticated:false,membershipActive:false},401);
- if(isOwnerPremiumCustomer(user))return reply({authenticated:true,membershipActive:true,
-  complimentaryOwnerPremium:true,ownerBuyAccess:true,testMembershipActive:false,
-  billingReady:false,canSubscribe:false,mode:null,status:"owner_granted",
-  renewalAt:null,cancelAtPeriodEnd:false,hasBillingAccount:false,
-  priceGBP:"0.00",interval:"none"});
+ if(isOwnerPremiumCustomer(user)){
+  // The complimentary entitlement never creates Stripe billing, but preserve
+  // access to the cancellation portal if this owner paid for a subscription earlier.
+  try{
+   const existingMode=await managementMode(user);
+   const existing=existingMode?await getMembershipStatus(user,existingMode):null;
+   return reply({authenticated:true,membershipActive:true,complimentaryOwnerPremium:true,
+    ownerBuyAccess:true,testMembershipActive:existingMode==="test"&&Boolean(existing?.active),
+    billingReady:false,canSubscribe:false,mode:existingMode,
+    status:"owner_granted",renewalAt:existing?.renewalAt||null,
+    cancelAtPeriodEnd:existing?.cancelAtPeriodEnd||false,
+    hasBillingAccount:Boolean(existing?.subscriptionId),paidMembershipActive:existingMode==="live"&&Boolean(existing?.active),
+    priceGBP:"0.00",interval:"none"});
+  }catch{
+   return reply({authenticated:true,membershipActive:true,complimentaryOwnerPremium:true,
+    ownerBuyAccess:true,billingReady:false,canSubscribe:false,mode:null,status:"owner_granted",
+    renewalAt:null,hasBillingAccount:false,billingLookupUnavailable:true,
+    priceGBP:"0.00",interval:"none"});
+  }
+ }
  const mode=await managementMode(user);
  const purchaseMode=enabledMembershipMode();
  if(!mode)return reply({authenticated:true,membershipActive:false,
