@@ -29,3 +29,5 @@ jobs:
         run: node --test tests/buckydrop-integration.test.cjs
       - name: Production BuckyDrop route smoke tests (no orders or paid lookups)
         run: node --test tests/buckydrop-live-smoke.test.cjs
+      - name: Anonymous source-parser checks (offline fixtures)
+        run: node --test tests/public-marketplace-probe.test.mjs
