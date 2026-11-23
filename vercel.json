@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/buckydrop-enrichment/0",
-      "schedule": "0 13 * * *"
+      "schedule": "40 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/1",
