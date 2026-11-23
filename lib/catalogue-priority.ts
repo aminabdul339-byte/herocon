@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {list} from "@vercel/blob";
 import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {savedOpenCliSnapshotHashes,openCliHash,getOpenCliSnapshot,mergeOpenCliProduct} from "@/lib/opencli-snapshots";
 import type {Product} from "@/lib/types";
 
 /**
@@ -115,26 +116,34 @@ export function leadWithShowcaseMix(products:Product[],rounds=4):Product[]{
 }
 
 export async function attachSavedPartnerImages(products:Product[]):Promise<Product[]>{
- if(!products.some(p=>p.hasPartnerDetails))return products;
- // Fetch at most the visible page and do not let a storage error blank images.
+ if(!products.length)return products;
+ // Read one cached index; only visible product cards with saved observations
+ // require an individual private Blob read. There are no marketplace/API requests.
+ const openKeys=await savedOpenCliSnapshotHashes();
+ if(!products.some(p=>p.hasPartnerDetails)&&!openKeys.size)return products;
  return Promise.all(products.map(async product=>{
-  if(!product.hasPartnerDetails||!product.originalMarketplaceUrl)return product;
-  try{
-   const details=await cardDetails(product.originalMarketplaceUrl);
-   if(!details)return product;
-   const original=[product.imageUrl,...(product.images||[])].filter((x):x is string=>!!x);
-   const photos=[...new Set([...details.photos,...original])].slice(0,12);
-   return {
-     ...product,
-     imageUrl:details.photos[0]||product.imageUrl,
-     images:photos,
-     sellerName:product.sellerName||details.sellerName,
-     variantCount:product.variantCount??details.variantCount
-   };
-  }catch{return product;}
+  if(!product.originalMarketplaceUrl)return product;
+  let result=product;
+  if(product.hasPartnerDetails){
+   try{
+    const details=await cardDetails(product.originalMarketplaceUrl);
+    if(details){
+     const original=[product.imageUrl,...(product.images||[])].filter((x):x is string=>!!x);
+     const photos=[...new Set([...details.photos,...original])].slice(0,12);
+     result={...product,imageUrl:details.photos[0]||product.imageUrl,
+      images:photos,sellerName:product.sellerName||details.sellerName,
+      variantCount:product.variantCount??details.variantCount};
+    }
+   }catch{}
+  }
+  const key=openCliHash(product.originalMarketplaceUrl);
+  if(key&&openKeys.has(key)){
+   try{result=mergeOpenCliProduct(result,await getOpenCliSnapshot(product.originalMarketplaceUrl));}
+   catch{}
+  }
+  return result;
  }));
 }
-
 
 /**
  * Editorial four: wig, home décor, nails, shoes.
