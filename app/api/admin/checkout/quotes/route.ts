@@ -7,7 +7,7 @@ const answer=(value:unknown,status=200)=>NextResponse.json(value,{status,headers
 function authenticated(request:Request){return authorizedCheckoutAdmin(request.headers.get("x-herocon-checkout-admin"));}
 export async function GET(request:Request){
  if(!authenticated(request))return answer({error:"Unauthorized"},401);
- return answer({readiness:checkoutLaunchReadiness()});
+ return answer({readiness:checkoutLaunchReadiness(),onePaymentReadiness:checkoutLaunchReadiness("all_in")});
 }
 export async function POST(request:Request){
  if(!authenticated(request))return answer({error:"Unauthorized"},401);
@@ -27,9 +27,10 @@ export async function POST(request:Request){
   const quote=await createApprovedQuote(input);
   return answer({
    id:quote.id,customerEmail:quote.customerEmail,totalGBP:(quote.totalPence/100).toFixed(2),
-   paymentStage:"products",estimatedLaterShippingGBP:((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
+   paymentStage:quote.paymentStage,shippingGBP:(quote.shippingPence/100).toFixed(2),serviceFeeGBP:((quote.serviceFeePence??0)/100).toFixed(2),
+   ...(quote.paymentStage==="products"?{estimatedLaterShippingGBP:((quote.estimatedLaterShippingPence||0)/100).toFixed(2)}:{}),
    expiresAt:quote.expiresAt,checkoutUrl:"https://herocon.store/checkout/"+quote.id,
-   paymentEnabled:checkoutLaunchReadiness().enabled,
+   paymentEnabled:checkoutLaunchReadiness(quote.paymentStage==="all_in"?"all_in":"products").enabled,
    notice:"Share this private link only with the intended buyer. Supplier checks can incur BuckyDrop fees. Live charges remain disabled until all launch requirements are verified."
   },201);
  }catch(e){return answer({error:e instanceof QuoteError?e.message:"Could not create a verified quote."},e instanceof QuoteError?e.status:502);}

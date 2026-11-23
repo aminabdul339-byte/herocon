@@ -5,7 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 
 type Status={
- partnerOrderNo:string;shopOrderNo:string|null;submittedAt:string;localState:string;
+ partnerOrderNo:string;shopOrderNo:string|null;submittedAt:string;localState:string;shippingPrepaid?:boolean;
  message:string|null;salesStatus:string|null;
  purchaseOrders:{reference:string|null;status:string}[];
  parcels:{packageCode:string;parcelStatus:string|null;trackingStatus:string|null;carrier:string|null;trackingNumber:string|null;events:{description:string;location:string}[]}[];
@@ -55,14 +55,14 @@ export default function OrdersPage(){
       {[
        {title:"01 / Purchase",value:status.purchaseOrders.length>0?"Purchase in progress":"Awaiting update"},
        {title:"02 / Warehouse",value:status.warehouse?.arrivalReported?"Received at warehouse":"Awaiting arrival"},
-       {title:"03 / Shipping",value:"Pay separately before dispatch"},
+       {title:"03 / Shipping",value:status.shippingPrepaid?"Included in original payment":"Pay separately before dispatch"},
        {title:"04 / Delivery",value:status.warehouse?.stage==="international_dispatched"?"Dispatched":"Awaiting dispatch"}
       ].map(step=><div key={step.title} style={{padding:14,borderRadius:8,background:"#fff",border:"1px solid #e0e8dd"}}>
        <strong style={{fontSize:13,display:"block",marginBottom:8}}>{step.title}</strong>
        <span style={{fontSize:12,color:"#5d7663",lineHeight:1.5}}>{step.value}</span>
       </div>)}
      </div>
-     <p style={{fontSize:12,color:"#617a66",marginTop:15}}>International shipping is quoted and paid separately. Online shipping payment is currently unavailable.</p>
+     <p style={{fontSize:12,color:"#617a66",marginTop:15}}>{status.shippingPrepaid?"Your approved Herocon payment includes international shipping. No second payment is due for this order.":"International shipping is quoted and paid separately. Online shipping payment is currently unavailable."}</p>
     </section>
     {status.message&&<p>{status.message}</p>}
     {status.purchaseOrders.length>0&&<><h3>Purchase progress</h3>{status.purchaseOrders.map((po,i)=><p key={i}><strong>{po.reference||"Supplier purchase"}</strong>: {po.status}</p>)}</>}

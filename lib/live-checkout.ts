@@ -4,10 +4,10 @@ import "server-only";
  * No flag is switched on by deploying code. Missing merchant attestations
  * intentionally keep customer charges and supplier writes disabled.
  */
-export function checkoutLaunchReadiness(){
+export function checkoutLaunchReadiness(stage:"products"|"all_in"="products"){
  const checks=[
   ["Live checkout explicitly enabled",process.env.HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED==="true"],
-  ["Two-stage product and international shipping billing independently tested",process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
+  ["Checkout payment model fully tested",stage==="all_in"?process.env.HEROCON_ONE_PAYMENT_LIVE_APPROVED==="true"&&process.env.HEROCON_ONE_PAYMENT_PILOT_QUOTES_ENABLED==="true":process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
   ["Fresh rotated Stripe live key attested",process.env.HEROCON_STRIPE_KEY_ROTATED==="true"],
   ["Stripe live secret installed",(process.env.STRIPE_LIVE_SECRET_KEY||"").startsWith("sk_live_")],
   ["Read-only Stripe account verification enabled",process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true"],
@@ -15,7 +15,8 @@ export function checkoutLaunchReadiness(){
   ["Stripe live webhook signing enabled",process.env.HEROCON_STRIPE_LIVE_WEBHOOK_ENABLED==="true"&&(process.env.STRIPE_LIVE_WEBHOOK_SECRET||"").startsWith("whsec_")],
   ["Supplier submission enabled",process.env.HEROCON_ORDER_SUBMISSION_ENABLED==="true"],
   ["Private supplier handoff secret installed",(process.env.HEROCON_INTERNAL_FULFILMENT_KEY||"").length>=32],
-  ["Merchant confirmed BuckyDrop manual-payment account mode",process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED==="true"],
+  ["BuckyDrop account settlement and dispatch mode verified",stage==="all_in"?process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED==="true":process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED==="true"],
+  ["All-inclusive customer freight and import charges approved",stage!=="all_in"||process.env.HEROCON_ALL_IN_DELIVERED_PRICING_APPROVED==="true"],
   ["Shipping currency and seller pricing reviewed",process.env.HEROCON_FREIGHT_CURRENCY_CONFIRMED==="true"],
   ["Legal business, shipping and refund terms approved",process.env.HEROCON_CHECKOUT_POLICIES_APPROVED==="true"],
   ["Merchant checkout key installed",(process.env.HEROCON_CHECKOUT_ADMIN_KEY||"").length>=32],

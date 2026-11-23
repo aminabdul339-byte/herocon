@@ -70,14 +70,17 @@ function shippingCustomer(s:StripeSession){
   contactName,contactPhone,postCode:safe(address?.postal_code),email};
 }
 function verifySession(s:StripeSession,q:ApprovedQuote,expectedId:string){
- return s.id===expectedId&&s.id.startsWith("cs_live_")&&s.livemode===true&&
+ const stage=q.paymentStage==="all_in"?"all_in":"products";
+ const valid=stage==="all_in"?
+  q.shippingPence>0&&q.estimatedLaterShippingPence===undefined&&q.fulfilment==="bucky_prepaid_auto_fulfilment":
+  q.shippingPence===0&&!!q.estimatedLaterShippingPence&&q.fulfilment==="bucky_manual_supplier_payment";
+ return valid&&s.id===expectedId&&s.id.startsWith("cs_live_")&&s.livemode===true&&
   s.mode==="payment"&&s.currency==="gbp"&&s.payment_status==="paid"&&
   s.amount_total===q.totalPence&&s.metadata?.quoteId===q.id&&
   s.metadata?.purpose==="herocon_live_checkout"&&
-  s.metadata?.paymentStage==="products"&&q.paymentStage==="products"&&
-  q.shippingPence===0&&!!q.estimatedLaterShippingPence&&
-  s.metadata?.fulfilment==="merchant_manual_supplier_payment"&&
-  q.saleCurrency==="gbp"&&q.fulfilment==="bucky_manual_supplier_payment"&&
+  s.metadata?.paymentStage===stage&&(s.metadata?.fulfilment===q.fulfilment||
+   (stage==="products"&&s.metadata?.fulfilment==="merchant_manual_supplier_payment"))&&
+  q.saleCurrency==="gbp"&&
   q.customerEmail.toLowerCase()===(safe(s.customer_details?.email)||safe(s.customer_email)).toLowerCase();
 }
 /** Stripe webhooks can be repeated or overlap. Claim quote before supplier request. */
@@ -108,17 +111,21 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   throw Error("Cannot reserve paid-order handling. Stripe must retry.");
  }
  const buyer=shippingCustomer(session);
+ const allIn=quote.paymentStage==="all_in";
  const audit:Audit={version:1,quoteId:quote.id,sessionId,email:quote.customerEmail,totalPence:quote.totalPence,
   state:"paid_review_required",reason:"",recordedAt:new Date().toISOString(),
   partnerOrderNo:null,shopOrderNo:null,accessCode:null,customerEmailSent:false,merchantEmailSent:false};
  if(!buyer)audit.reason="Stripe buyer delivery address, phone or email is missing or invalid.";
  else if(process.env.HEROCON_ORDER_SUBMISSION_ENABLED!=="true"||
   (process.env.HEROCON_INTERNAL_FULFILMENT_KEY||"").length<32||
-  process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true"){
+  (allIn?process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED!=="true"||
+   process.env.HEROCON_ALL_IN_DELIVERED_PRICING_APPROVED!=="true":
+   process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true")){
   audit.reason="Supplier handoff or manual-payment verification is disabled.";
  }else{
   const payload={
    verifiedPaymentReference:session.id,verifiedTotalGBP:quote.totalPence/100,customer:buyer,
+   paymentStage:allIn?"all_in":"products",
    lines:quote.lines.map(x=>({
     marketplaceUrl:x.marketplaceUrl,skuCode:x.skuCode,quantity:x.quantity,
     verifiedSalePriceGBP:x.unitPriceGBP,maxSupplierPriceCNY:Math.round(x.supplierUnitCNY*1.02*100)/100
@@ -140,7 +147,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
     audit.accessCode=safe(v.accessCode);
     audit.state=v.state==="accepted"?"submitted_awaiting_merchant_payment":"submission_uncertain";
     audit.reason=audit.state==="submitted_awaiting_merchant_payment"?
-     "Order sent to BuckyDrop; merchant must review, confirm and pay the supplier before fulfilment.":
+     (allIn?"Order submitted for prepaid automatic fulfilment. Confirm the provider funded procurement and released dispatch; monitor exceptions.":"Order sent to BuckyDrop; merchant must review, confirm and pay the supplier before fulfilment."):
      "Supplier order outcome uncertain. Do not submit a duplicate order; reconcile with BuckyDrop.";
    }
   }catch{audit.reason="Supplier submission outcome uncertain or timed out. Merchant must reconcile using the payment reference before retrying.";}
@@ -149,13 +156,19 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  await write("results/"+sessionId+".json",audit);
  const merchantAddress=process.env.HEROCON_ORDER_ALERT_EMAIL||"";
  const merchantText=[
-  "HEROCON PAID ORDER — MANUAL MERCHANT ACTION",
+  allIn?"HEROCON PAID ORDER — PREPAID AUTO-FULFILMENT MONITOR":"HEROCON PAID ORDER — MANUAL MERCHANT ACTION",
   "Stripe session: "+sessionId,
   "Quote: "+quote.id,
   "Buyer: "+quote.customerEmail,
-  "Product-stage amount paid: £"+(quote.totalPence/100).toFixed(2),
-  "International shipping NOT paid. Indicative freight estimate: £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
-  "After warehouse arrival, confirm the parcel dimensions and quote shipping to the buyer before dispatch.",
+  (allIn?"Total received, including all-in shipping allowance: £":"Product-stage amount paid: £")+(quote.totalPence/100).toFixed(2),
+  "Herocon service fee included: £"+((quote.serviceFeePence??0)/100).toFixed(2),
+  ...(allIn?[
+   "No further freight payment may be collected from this buyer for this order.",
+   "Monitor BuckyDrop procurement, auto-settlement and dispatch; the merchant covers any cost overruns."
+  ]:[
+   "International shipping NOT paid. Indicative freight estimate: £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
+   "After warehouse arrival, confirm the parcel dimensions and quote shipping to the buyer before dispatch."
+  ]),
   "State: "+audit.state,
   "BuckyDrop ref: "+(audit.partnerOrderNo||"Not accepted"),
   "Action: "+audit.reason,
@@ -165,20 +178,28 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  audit.merchantEmailSent=merchantAddress?await sendEmail(merchantAddress,"Herocon paid order requires action — "+quote.id,merchantText):false;
  const buyerText=[
   "Thank you for your Herocon order.",
-  "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
-  "International shipping has NOT been paid. Estimated later freight: about £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2)+", subject to actual packed weight, destination, eligible carrier and fees.",
-  "When your items reach the warehouse, Herocon will send a separate international shipping quote. Shipping is not charged automatically.",
+  allIn?"We have received your single payment of £"+(quote.totalPence/100).toFixed(2)+", including your approved international shipping allowance and applicable tax.":
+   // Legacy orders without a service fee are still handled using their immutable quote.
+   "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
+  ...(allIn?[
+   "You will not be asked to pay another international shipping fee for this order.",
+   "Your order is being prepared for fulfilment, and we will update you as it progresses."
+  ]:[
+   "International shipping has NOT been paid. Estimated later freight: about £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2)+", subject to actual packed weight, destination, eligible carrier and fees.",
+   "When your items reach the warehouse, Herocon will send a separate international shipping quote. Shipping is not charged automatically."
+  ]),
   audit.partnerOrderNo?"Your order reference: "+audit.partnerOrderNo:"Your order is awaiting merchant review before supplier processing.",
   audit.accessCode?"Your private tracking access code: "+audit.accessCode:"",
   audit.accessCode?"Track it at https://herocon.store/orders":"",
-  "Your payment to Herocon is separate from our merchant's supplier payment to BuckyDrop.",
+  "Herocon coordinates purchasing and delivery through its fulfilment partners.",
   "We will arrange fulfilment and contact you if an item becomes unavailable.",
   "Questions or changes? Visit https://herocon.store/contact."
  ].filter(Boolean).join("\n\n");
  audit.customerEmailSent=await sendEmail(quote.customerEmail,"Herocon payment received — "+quote.id,buyerText);
  await write("results/"+sessionId+".json",audit,true);
  return {received:true,paid:true,submitted:audit.state==="submitted_awaiting_merchant_payment",
-  requiresMerchantAction:true,customerNotified:audit.customerEmailSent};
+  requiresMerchantAction:audit.state!=="submitted_awaiting_merchant_payment"||!allIn,
+  customerNotified:audit.customerEmailSent};
 }
 export async function listCheckoutReconciliation(){
  const [results,claims]=await Promise.all([

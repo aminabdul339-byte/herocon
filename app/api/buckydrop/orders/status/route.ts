@@ -40,7 +40,7 @@ export async function POST(request:Request){
  if(!/^HC-[a-f0-9]{25}$/.test(ref)||accessCode.length<24)return error("Order not found or access code incorrect.",404);
  const record=await findPaidOrder(ref);
  if(!record||!accessMatches(record,accessCode))return error("Order not found or access code incorrect.",404);
- const base={partnerOrderNo:record.partnerOrderNo,shopOrderNo:record.shopOrderNo,submittedAt:record.requestedAt,localState:record.state};
+ const base={partnerOrderNo:record.partnerOrderNo,shopOrderNo:record.shopOrderNo,submittedAt:record.requestedAt,localState:record.state,shippingPrepaid:record.paymentStage==="all_in"};
  if(record.state==="sending")return NextResponse.json({...base,message:"Order submission is being reconciled.",salesStatus:null,purchaseOrders:[],parcels:[]},{headers:{"Cache-Control":"no-store"}});
  let order:Record<string,unknown>;
  try{order=await callBucky("order-detail",{partnerOrderNo:record.partnerOrderNo});}
@@ -92,8 +92,8 @@ export async function POST(request:Request){
   finalShippingQuote:"not_available" as const,
   shippingPaymentEnabled:false,
   note:warehouseReceived
-   ?"Warehouse arrival reported. International shipping will be quoted separately."
-   :"Warehouse arrival is not yet confirmed. International shipping cannot be charged yet."
+   ?(record.paymentStage==="all_in"?"Warehouse arrival reported. Herocon has included shipping in the original payment.":"Warehouse arrival reported. International shipping will be quoted separately.")
+   :(record.paymentStage==="all_in"?"Warehouse arrival not yet confirmed. No additional customer shipping payment is due.":"Warehouse arrival is not yet confirmed. International shipping cannot be charged yet.")
  };
  return NextResponse.json({...base,warehouse,salesStatus:code===null?null:salesLabels[code]||"Status "+code,
   purchaseOrders,parcels,message:record.state==="outcome_unknown"?"The order is undergoing verification; any supplier status shown is based on the original reference.":null},{

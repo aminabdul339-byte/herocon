@@ -90,3 +90,27 @@ test('shipping quote sends kilograms and makes no payment',async()=>{
  const result=await res.json();assert.equal(result.rates[0].amount,12.5);
  assert.equal(result.rates[0].currency,null);assert.equal(result.paymentAvailable,false);
 });
+
+test('one-payment checkout stays off until every independent merchant and supplier gate is enabled',()=>{
+ const common={
+  HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED:'true',HEROCON_ONE_PAYMENT_LIVE_APPROVED:'true',
+  HEROCON_ONE_PAYMENT_PILOT_QUOTES_ENABLED:'true',HEROCON_STRIPE_KEY_ROTATED:'true',
+  STRIPE_LIVE_SECRET_KEY:'sk_live_TESTKEY',HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED:'true',
+  HEROCON_STRIPE_LIVE_ADMIN_KEY:'a'.repeat(40),HEROCON_STRIPE_LIVE_WEBHOOK_ENABLED:'true',
+  STRIPE_LIVE_WEBHOOK_SECRET:'whsec_TEST',HEROCON_ORDER_SUBMISSION_ENABLED:'true',
+  HEROCON_INTERNAL_FULFILMENT_KEY:'b'.repeat(40),HEROCON_ALL_IN_DELIVERED_PRICING_APPROVED:'true',
+  HEROCON_FREIGHT_CURRENCY_CONFIRMED:'true',HEROCON_CHECKOUT_POLICIES_APPROVED:'true',
+  HEROCON_CHECKOUT_ADMIN_KEY:'c'.repeat(40),BLOB_READ_WRITE_TOKEN:'fake-private-token',
+  RESEND_API_KEY:'re_fake',HEROCON_ORDER_EMAIL_FROM:'orders@example.test',
+  HEROCON_ORDER_ALERT_EMAIL:'merchant@example.test'
+ };
+ const a=load('lib/live-checkout.ts',{},common);
+ assert.equal(a.checkoutLaunchReadiness('all_in').enabled,false);
+ assert.ok(a.checkoutLaunchReadiness('all_in').missing.some(x=>x.includes('account settlement')));
+ const b=load('lib/live-checkout.ts',{},{
+  ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true'
+ });
+ assert.equal(b.checkoutLaunchReadiness('all_in').enabled,true);
+ // An all-in pilot must not accidentally unlock legacy two-stage purchases.
+ assert.equal(b.checkoutLaunchReadiness('products').enabled,false);
+});
