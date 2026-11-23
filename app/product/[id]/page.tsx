@@ -11,6 +11,8 @@ import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import {currentCustomer} from "@/lib/customer-auth";
+import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
+import {getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
 
 const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
@@ -50,13 +52,29 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
 
 type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string;fulfillbotPilotOwner:boolean};
 async function EnrichedCatalogueProduct(props:CatalogueProps){
- if(!LIVE_LOOKUP||!props.product.originalMarketplaceUrl){
-  return <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>;
+ // Fresh marketplace enrichment is a separate, provider-independent saved
+ // snapshot, shared with the Personal Edit and never fetched on page render.
+ const sourceUrl=props.product.originalMarketplaceUrl;
+ const enriched=sourceUrl?await getSavedMarketplaceSource(sourceUrl):null;
+ const button=props.fulfillbotPilotOwner?
+  <SourceEnrichmentButton productId={props.id} collection="business"/>:null;
+ if(enriched){
+  const product=withMarketplaceSource(props.product,enriched);
+  return <>
+    <ProductExperience {...props} product={product} buckydropEnabled={false}/>
+    {button}
+  </>;
  }
- // Product pages read our permanent snapshot ONLY. They never trigger a new
- // billable supplier lookup from automatic rendering or link prefetch.
+ if(!LIVE_LOOKUP||!sourceUrl){
+  return <>
+    <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>
+    {button}
+  </>;
+ }
+ // Previously saved partner data is an optional legacy fallback only. No
+ // billable supplier calls are made in product-page rendering.
  let seller:Awaited<ReturnType<typeof getSavedBuckydropProduct>>=null;
- try{seller=await getSavedBuckydropProduct(props.product.originalMarketplaceUrl);}
+ try{seller=await getSavedBuckydropProduct(sourceUrl);}
  catch(err){
   console.warn("[herocon] Saved supplier details unavailable",{
    productId:props.id,
@@ -64,14 +82,17 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
   });
  }
  const fx=seller?await getReferenceCnyGbpRate().catch(()=>undefined):undefined;
- return <ProductExperience
-  key={props.id}
-  {...props}
-  buckydropEnabled
-  sourceLookupFailed={!seller}
-  initialSource={seller||undefined}
-  initialFx={fx}
- />;
+ return <>
+  <ProductExperience
+   key={props.id}
+   {...props}
+   buckydropEnabled={Boolean(seller)}
+   sourceLookupFailed={!seller}
+   initialSource={seller||undefined}
+   initialFx={fx}
+  />
+  {button}
+ </>;
 }
 
 function ProductLoadingSkeleton(){

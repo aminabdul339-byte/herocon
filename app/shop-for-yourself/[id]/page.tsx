@@ -9,6 +9,9 @@ import {findPersonalProduct,audienceProducts} from "@/lib/personal-shop";
 import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import {getSavedPersonalSource} from "@/lib/personal-shop-enrichment";
+import {currentCustomer} from "@/lib/customer-auth";
+import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
+import {getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
 import "../shop-for-yourself.css";
 import "../personal-shop-v2.css";
@@ -31,9 +34,13 @@ export default async function ShopProductPage({params,searchParams}:Params){
  const audience=item.gender==="unisex"
   ?(search.audience==="men"?"men":"women")
   :item.gender;
- const [rates,source]=await Promise.all([
-  getPersonalShopRates(),getSavedPersonalSource(item.originalUrl)
+ const [rates,source,enrichment,customer]=await Promise.all([
+  getPersonalShopRates(),getSavedPersonalSource(item.originalUrl),
+  getSavedMarketplaceSource(item.originalUrl),currentCustomer()
  ]);
+ const ownerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
+  ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();
+ const owner=Boolean(ownerId&&customer?.id===ownerId);
  const price=shopPrice(item,rates);
  const amount=priceAmountGbp(item,rates);
  const product:Product={
@@ -49,6 +56,8 @@ export default async function ShopProductPage({params,searchParams}:Params){
   ...(amount!==null?{priceGBP:amount}:{}),
   price
  };
+ const shownProduct=withMarketplaceSource(product,enrichment);
+ const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(source?.images||[])])].slice(0,36);
  const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
@@ -62,19 +71,20 @@ export default async function ShopProductPage({params,searchParams}:Params){
      <div className="hc-personal-experience">
        <ProductExperience
          key={item.id}
-         product={product}
+         product={shownProduct}
          id={item.id}
          title={item.name}
-         images={[...new Set([item.imageUrl,...(source?.images||[])])].slice(0,36)}
+         images={gallery}
          price={price}
          gbpOnly
-         initialSource={source||undefined}
-         initialFx={source?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
-         buckydropEnabled={Boolean(source)}
-         sourceLookupFailed={!source}
+         initialSource={enrichment?undefined:source||undefined}
+         initialFx={source&&!enrichment?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
+         buckydropEnabled={Boolean(source&&!enrichment)}
+         sourceLookupFailed={!source&&!enrichment}
          customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
        />
      </div>
+     {owner&&<SourceEnrichmentButton productId={item.id} collection="personal"/>}
      <aside className="hc-personal-detail-reference" aria-label="Price and marketplace notes">
        <div><strong>{priceIsConverted(item)?"Approximate GBP estimate":"Reference price in GBP"}</strong><p>{ratesDisclosure(rates)} This reference amount is not a live offer. Final prices, delivery, taxes and any agent fees may vary.</p></div>
        <div><strong>Original marketplace only</strong><p>Direct source links open the original Weidian, Taobao or 1688 listing. Herocon cannot independently confirm supplier inventory, brand authenticity or product quality.</p></div>
