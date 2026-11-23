@@ -1,8 +1,100 @@
 {
   "crons": [
     {
-      "path": "/api/cron/product-enrichment",
-      "schedule": "15 12 * * *"
+      "path": "/api/cron/buckydrop-enrichment/0",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/1",
+      "schedule": "30 13 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/2",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/3",
+      "schedule": "30 14 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/4",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/5",
+      "schedule": "30 15 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/6",
+      "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/7",
+      "schedule": "30 16 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/8",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/9",
+      "schedule": "30 17 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/10",
+      "schedule": "0 18 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/11",
+      "schedule": "30 18 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/12",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/13",
+      "schedule": "30 19 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/14",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/15",
+      "schedule": "30 20 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/16",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/17",
+      "schedule": "30 21 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/18",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/19",
+      "schedule": "30 22 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/20",
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/21",
+      "schedule": "30 23 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/22",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/23",
+      "schedule": "30 0 * * *"
     }
   ]
 }
