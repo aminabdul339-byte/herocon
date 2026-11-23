@@ -16,7 +16,7 @@ export type CartItem={
  /** Whether this line is part of the next order. Kept with the cart in localStorage. */
  selected?:boolean;
 };
-export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string};
+export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string;ownerPremium?:boolean};
 export const PENDING_CART_KEY="herocon-pending-add-v1";
 export const cartStorageKey=(userId:string)=>"herocon-user-cart-v2:"+userId;
 type CartContextValue={
@@ -61,7 +61,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
    const data=await res.json();
    let next:AccountStatus;
    if(data.authenticated===true&&typeof data.user?.id==="string"&&typeof data.user?.email==="string")
-    next={status:"authenticated",id:data.user.id,email:data.user.email};
+    next={status:"authenticated",id:data.user.id,email:data.user.email,ownerPremium:data.user.ownerPremium===true};
    else next={status:res.status===503?"unavailable":"guest"};
    setAccount(next);return next;
   }catch{
