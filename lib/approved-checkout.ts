@@ -12,7 +12,7 @@ export type ApprovedLine={
 export type ApprovedQuote={
  version:1;id:string;createdAt:string;expiresAt:string;customerEmail:string;
  deliveryCountry:"GB";lines:ApprovedLine[];productSubtotalPence:number;
- shippingPence:number;taxPence:number;totalPence:number;saleCurrency:"gbp";
+ shippingPence:number;taxPence:number;serviceFeePence?:number;totalPence:number;saleCurrency:"gbp";
  paymentStage?:"products"|"all_in";estimatedLaterShippingPence?:number;
  fulfilment:"bucky_manual_supplier_payment"|"bucky_prepaid_auto_fulfilment";
 };
@@ -74,12 +74,14 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
    variant:sku.title.slice(0,100),unitPriceGBP:unitPence/100,supplierUnitCNY:sku.price});
  }
  const productSubtotalPence=lines.reduce((n,x)=>n+Math.round(x.unitPriceGBP*100)*x.quantity,0);
- const totalPence=productSubtotalPence+shippingPence+taxPence;
+ // Mandatory 99p service fee is explicit in the checkout, Stripe line items and receipts.
+ const serviceFeePence=99;
+ const totalPence=productSubtotalPence+shippingPence+taxPence+serviceFeePence;
  if(totalPence<50||totalPence>500000)throw new QuoteError(400,"Pilot order total must be £0.50–£5,000.");
  const id="hq_"+randomBytes(20).toString("hex");
  const quote:ApprovedQuote={version:1,id,createdAt:new Date().toISOString(),
   expiresAt:new Date(Date.now()+23*60*60*1000).toISOString(),customerEmail:email,
-  deliveryCountry:"GB",lines,productSubtotalPence,shippingPence,taxPence,totalPence,
+  deliveryCountry:"GB",lines,productSubtotalPence,shippingPence,taxPence,serviceFeePence,totalPence,
   saleCurrency:"gbp",paymentStage:allIn?"all_in":"products",estimatedLaterShippingPence,
   fulfilment:allIn?"bucky_prepaid_auto_fulfilment":"bucky_manual_supplier_payment"};
  try{
@@ -101,7 +103,8 @@ export async function getApprovedQuote(id:string):Promise<ApprovedQuote|null>{
    !["bucky_manual_supplier_payment","bucky_prepaid_auto_fulfilment"].includes(q.fulfilment)||q.deliveryCountry!=="GB"||
    !Number.isInteger(q.totalPence)||q.totalPence<50||
    !Array.isArray(q.lines)||q.lines.length<1||q.lines.length>5||
-   q.totalPence!==q.productSubtotalPence+q.shippingPence+q.taxPence)return null;
+   (!Number.isInteger(q.serviceFeePence??0)||![0,99].includes(q.serviceFeePence??0))||
+   q.totalPence!==q.productSubtotalPence+q.shippingPence+q.taxPence+(q.serviceFeePence??0))return null;
   if(q.paymentStage==="all_in"){
    if(q.fulfilment!=="bucky_prepaid_auto_fulfilment"||!Number.isInteger(q.shippingPence)||
     q.shippingPence<=0||q.estimatedLaterShippingPence!==undefined)return null;
