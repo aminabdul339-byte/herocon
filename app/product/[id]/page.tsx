@@ -11,6 +11,7 @@ import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import {currentCustomer} from "@/lib/customer-auth";
+import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
@@ -36,7 +37,8 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
   title:cleanTitle(product),
   images:imagesFor(product),
   price:productPrice(product),
-  fulfillbotPilotOwner
+  fulfillbotPilotOwner,
+  ownerDirectBuy:isOwnerPremiumCustomer(customer)
  };
  return <main>
   <Header/>
@@ -50,7 +52,7 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
  </main>;
 }
 
-type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string;fulfillbotPilotOwner:boolean};
+type CatalogueProps={product:Product;id:string;title:string;images:string[];price:string;fulfillbotPilotOwner:boolean;ownerDirectBuy:boolean};
 async function EnrichedCatalogueProduct(props:CatalogueProps){
  // Fresh marketplace enrichment is a separate, provider-independent saved
  // snapshot, shared with the Personal Edit and never fetched on page render.
