@@ -5,6 +5,7 @@ import {verifyLiveAccount} from "@/lib/stripe-live";
 import {currentCustomer} from "@/lib/customer-auth";
 import {checkActiveMembership} from "@/lib/membership-access";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
+import {checkoutOriginFor} from "@/lib/checkout-origin";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const response=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"no-store"}});
@@ -24,7 +25,8 @@ export async function POST(request:Request){
  if(!await checkActiveMembership(customer))
   return response({error:"An active Herocon membership (£9.99/month) is required only when purchasing products. Membership billing is not available yet."},403);
  const origin=request.headers.get("origin");
- try{if(!origin||new URL(origin).origin!=="https://herocon.store")return response({error:"Checkout must be started from Herocon."},403);}
+ const paymentOrigin=checkoutOriginFor(request.url);
+ try{if(!paymentOrigin||!origin||new URL(origin).origin!==paymentOrigin)return response({error:"Checkout must be started from an approved Herocon domain."},403);}
  catch{return response({error:"Invalid request origin."},403);}
  if(!(request.headers.get("content-type")||"").startsWith("application/json"))return response({error:"JSON required."},415);
  const ip=request.headers.get("x-real-ip")||request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
@@ -57,8 +59,8 @@ export async function POST(request:Request){
   const fields=new URLSearchParams();
   fields.set("mode","payment");
   fields.set("customer_email",quote.customerEmail);
-  fields.set("success_url","https://herocon.store/checkout/complete?session_id={CHECKOUT_SESSION_ID}");
-  fields.set("cancel_url","https://herocon.store/checkout/"+quote.id);
+  fields.set("success_url",paymentOrigin+"/checkout/complete?session_id={CHECKOUT_SESSION_ID}");
+  fields.set("cancel_url",paymentOrigin+"/checkout/"+quote.id);
   fields.set("shipping_address_collection[allowed_countries][0]","GB");
   fields.set("phone_number_collection[enabled]","true");
   fields.set("consent_collection[terms_of_service]","required");
