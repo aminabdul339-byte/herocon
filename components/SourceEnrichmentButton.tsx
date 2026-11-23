@@ -8,6 +8,7 @@ type Result={
  saved?:boolean;priceCNY?:number|null;note?:string
 };
 const explanations:Record<string,string>={
+ product_api_not_connected:"A structured product-data API has not been connected. Public marketplace pages cannot reliably supply the variants. Connect the product API from the owner enrichment dashboard.",
  marketplace_access_restricted:"The marketplace restricts automated access to this listing. We will not bypass its access controls. A licensed product-data API is needed for the full details.",
  marketplace_redirected:"The marketplace redirected the server to another page. Automatic off-site redirects are disabled for safety.",
  marketplace_unreachable:"Herocon couldn't reach this marketplace page.",
@@ -28,13 +29,13 @@ const explanations:Record<string,string>={
  owner_sign_in_required:"Sign in with your Herocon owner account to enrich a product."
 };
 export default function SourceEnrichmentButton({
- productId,collection
-}:{productId:string;collection:"business"|"personal"}){
+ productId,collection,providerConnected
+}:{productId:string;collection:"business"|"personal";providerConnected:boolean}){
  const router=useRouter();
  const [busy,setBusy]=useState(false);
  const [result,setResult]=useState<Result|null>(null);
  async function check(){
-  if(busy)return;
+  if(busy||!providerConnected)return;
   setBusy(true);setResult(null);
   try{
    const res=await fetch("/api/marketplace-enrichment",{
@@ -55,16 +56,21 @@ export default function SourceEnrichmentButton({
   <p style={{letterSpacing:1.5,fontSize:11,fontWeight:800}}>OWNER TOOLS / ORIGINAL MARKETPLACE ENRICHMENT</p>
   <h2 style={{fontSize:19,margin:"8px 0"}}>Get more product details from the supplier link</h2>
   <p style={{fontSize:14,lineHeight:1.6,margin:"0 0 14px"}}>
-   This check uses publicly accessible supplier page metadata, not BuckyDrop.
-   When the optional HioBuy product-data key is connected, it can retrieve full
-   marketplace details and real SKU selections. Results are saved to Herocon.
+   Direct marketplace page extraction failed our initial pilot. This feature now
+   uses the HioBuy Product API (not BuckyDrop) when an authorised key is connected.
+   Results are saved to Herocon with real supplier SKU identifiers.
   </p>
-  <button type="button" disabled={busy} onClick={()=>void check()}
+  {!providerConnected&&<p role="status" style={{fontSize:14,lineHeight:1.6}}>
+    No product-data API connected. <a href="/enrichment" style={{color:"#20482f",textDecoration:"underline"}}>
+      Open the owner setup instructions
+    </a>.
+   </p>}
+  <button type="button" disabled={busy||!providerConnected} onClick={()=>void check()}
    style={{
     background:"#264a32",color:"#fff",fontWeight:700,border:0,borderRadius:5,
-    padding:"12px 16px",cursor:busy?"wait":"pointer",opacity:busy?.6:1
+    padding:"12px 16px",cursor:busy?"wait":"pointer",opacity:busy||!providerConnected?.6:1
    }}>
-    {busy?"Checking original listing…":"Enrich this product"}
+    {busy?"Checking product API…":providerConnected?"Enrich this product":"Connect product API to enrich"}
   </button>
   {result?.ok?<p role="status" style={{fontSize:14,lineHeight:1.6,marginTop:13}}>
    Saved from <strong>{result.provider==="hiobuy"?"HioBuy Product API":"public marketplace metadata"}</strong>.
