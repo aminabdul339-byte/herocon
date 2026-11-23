@@ -142,6 +142,9 @@ export async function getApprovedQuote(id:string):Promise<ApprovedQuote|null>{
 }
 export const quoteIsCurrent=(q:ApprovedQuote)=>Date.parse(q.expiresAt)>Date.now()+30*60*1000;
 export async function verifyApprovedQuoteStock(q:ApprovedQuote):Promise<void>{
+ if(!q.economics||!q.supplierFxGBPperCNY||!q.economics.priceApproved)
+  throw new QuoteError(409,"Legacy or incomplete quote. New verified pricing is required before checkout.");
+ let actualSupplierCny=0;
  const fetched=new Map<string,Awaited<ReturnType<typeof queryBuckydropProduct>>>();
  for(const row of q.lines){
   let supplier=fetched.get(row.marketplaceUrl);
@@ -150,5 +153,16 @@ export async function verifyApprovedQuoteStock(q:ApprovedQuote):Promise<void>{
   if(supplier.environment!=="live"||supplier.available!==true||!supplier.spuCode||
    !sku||sku.price==null||sku.stock==null||sku.stock<row.quantity||
    sku.price>row.supplierUnitCNY*1.02)throw new QuoteError(409,"Supplier stock or costs have changed. Request a new quote.");
+  actualSupplierCny+=sku.price*row.quantity;
  }
+ const newSupplierPence=Math.ceil(actualSupplierCny*q.supplierFxGBPperCNY*100);
+ const updated=assessMerchantCheckout(q.economics.totalPence,{
+  supplierCostPence:newSupplierPence,
+  internationalFreightPence:q.economics.internationalFreightPence,
+  buckydropFeesPence:q.economics.buckydropFeesPence,
+  walletAndFxFeesPence:q.economics.walletAndFxFeesPence,
+  taxAndDutiesPence:q.economics.taxAndDutiesPence,
+  shippingRiskReservePence:q.economics.shippingRiskReservePence
+ });
+ if(!updated.priceApproved)throw new QuoteError(409,"Current supplier pricing would reduce Herocon's margin below the approved reserve. Request a fresh quote.");
 }
