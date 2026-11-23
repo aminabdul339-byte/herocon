@@ -10,6 +10,7 @@ import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import {getSavedPersonalSource} from "@/lib/personal-shop-enrichment";
 import {currentCustomer} from "@/lib/customer-auth";
+import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {getBaseProducts} from "@/lib/catalogue-server";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
@@ -92,6 +93,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
          buckydropEnabled={Boolean(source&&!enrichment)}
          sourceLookupFailed={!source&&!enrichment}
          customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
+         ownerDirectBuy={isOwnerPremiumCustomer(customer)}
        />
      </div>
      {owner&&<SourceEnrichmentButton productId={item.id} collection="personal" providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>}
