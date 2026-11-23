@@ -21,7 +21,7 @@ function reply(value:unknown,status=200){return NextResponse.json(value,{status,
 export async function POST(request:Request){
   if(!accountOriginValid(request))return reply({ok:false,error:"invalid_origin"},403);
   const customer=await currentCustomer();
-  if(!isOwnerPremiumCustomer(customer))
+  if(!customer||!isOwnerPremiumCustomer(customer))
     return reply({ok:false,error:"owner_sign_in_required"},403);
   if(!(request.headers.get("content-type")||"").toLowerCase().startsWith("application/json"))
     return reply({ok:false,error:"json_required"},415);
