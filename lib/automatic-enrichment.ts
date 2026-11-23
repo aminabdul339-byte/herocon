@@ -4,13 +4,17 @@ import {get,list,put} from "@vercel/blob";
 import {getProducts} from "@/lib/catalogue-server";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {readMarketplaceSource,saveMarketplaceSource,SourceEnrichmentError} from "@/lib/marketplace-source-enrichment";
+import {readMarketplaceSource,saveMarketplaceSource,SourceEnrichmentError,ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-source-enrichment";
 
-const PREFIX="catalogue/source-enrichment/v1/";
+// Only v2 proves that the full provider SKU matrix was preserved.
+const PREFIX=ENRICHMENT_PREFIX_V2;
 const STATE_PATH="catalogue/automatic-enrichment/v1/state.json";
 const LOCK_PREFIX="catalogue/automatic-enrichment/v1/runs/";
-const MAX_REQUESTS_PER_DAY=36;
+// The scheduler runs until time or the provider quota is exhausted. No low
+// 36-product cap: owners can raise their HioBuy plan without changing code.
+const MAX_REQUESTS_PER_DAY=500;
 const MAX_CONCURRENT=3;
+const MIN_BATCH_START_INTERVAL_MS=3500; // <= ~52 requests/minute
 const MAX_RUNTIME_MS=210_000;
 const BLOCK_TTL_MS=7*24*60*60*1000;
 
@@ -19,6 +23,7 @@ type Block={code:string;until:number};
 export type AutomaticEnrichmentState={
  version:1;
  lastHash:string;
+ lastKey?:string;
  lastRun:string|null;
  updatedAt:string|null;
  totalRequests:number;
@@ -31,7 +36,7 @@ export type AutomaticEnrichmentState={
  blockedChannels:Partial<Record<Channel,Block>>;
 };
 const empty=():AutomaticEnrichmentState=>({
- version:1,lastHash:"",lastRun:null,updatedAt:null,totalRequests:0,totalSaved:0,
+ version:1,lastHash:"",lastKey:"",lastRun:null,updatedAt:null,totalRequests:0,totalSaved:0,
  lastRunRequests:0,lastRunSaved:0,lastRunSkipped:0,lastRunErrors:0,
  lastIssue:null,blockedChannels:{}
 });
@@ -52,6 +57,7 @@ export async function getAutomaticEnrichmentState():Promise<AutomaticEnrichmentS
   return {
    ...empty(),...json,
    lastHash:typeof json.lastHash==="string"&&/^[a-f0-9]{64}$/.test(json.lastHash)?json.lastHash:"",
+   lastKey:typeof json.lastKey==="string"&&/^[01]:[a-f0-9]{64}$/.test(json.lastKey)?json.lastKey:"",
    totalRequests:positive(json.totalRequests),
    totalSaved:positive(json.totalSaved),
    blockedChannels:json.blockedChannels&&typeof json.blockedChannels==="object"?json.blockedChannels:{}
@@ -79,20 +85,38 @@ async function savedHashes():Promise<Set<string>>{
 }
 export async function getEnrichmentSavedCount():Promise<number>{
  if(!process.env.BLOB_READ_WRITE_TOKEN)return 0;
- try{return (await savedHashes()).size;}catch{return 0;}
+ try{
+  const keys=await savedHashes();
+  let cursor:string|undefined;
+  do{
+   const page=await list({prefix:ENRICHMENT_PREFIX_V1,limit:1000,cursor});
+   for(const item of page.blobs){
+    const hash=item.pathname.slice(ENRICHMENT_PREFIX_V1.length).replace(/\.json$/,"");
+    if(/^[a-f0-9]{64}$/.test(hash))keys.add(hash);
+   }
+   if(!page.hasMore)break;
+   cursor=page.cursor;
+  }while(cursor);
+  return keys.size;
+ }catch{return 0;}
 }
-function catalogSources(products:Awaited<ReturnType<typeof getProducts>>):{hash:string;url:string;channel:Channel}[]{
- const urls=new Set<string>();
- for(const p of products){
-  const url=normalizeMarketplaceLink(p.originalMarketplaceUrl);
-  if(url)urls.add(url);
- }
+type CatalogSource={hash:string;key:string;url:string;channel:Channel};
+function catalogSources(products:Awaited<ReturnType<typeof getProducts>>):CatalogSource[]{
+ const sources=new Map<string,{url:string;priority:0|1}>();
+ // Personal product data receives first priority, not a random place in a
+ // large hash-sorted combined queue. Canonical URLs are de-duplicated.
  for(const p of personalShopProducts){
   const url=normalizeMarketplaceLink(p.originalUrl);
-  if(url)urls.add(url);
+  if(url)sources.set(url,{url,priority:0});
  }
- return [...urls].map(url=>({url,hash:sha(url),channel:channel(url)}))
-  .sort((a,b)=>a.hash.localeCompare(b.hash));
+ for(const p of products){
+  const url=normalizeMarketplaceLink(p.originalMarketplaceUrl);
+  if(url&&!sources.has(url))sources.set(url,{url,priority:1});
+ }
+ return [...sources.values()].map(({url,priority})=>{
+  const hash=sha(url);
+  return {url,hash,key:priority+":"+hash,channel:channel(url)};
+ }).sort((a,b)=>a.key.localeCompare(b.key));
 }
 const subscriptionErrors=new Set(["PAID_SUBSCRIPTION_REQUIRED","CHANNEL_NOT_AUTHORIZED","CHANNEL_CAPABILITY_NOT_SUPPORTED"]);
 const globalErrors=new Set(["INVALID_API_KEY","INSUFFICIENT_SCOPE","QUOTA_EXCEEDED","PLATFORM_QUOTA_EXCEEDED",
@@ -130,9 +154,10 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
  const existing=await savedHashes();
  const catalog= catalogSources(await getProducts());
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
- let start=catalog.findIndex(x=>x.hash>state.lastHash);
+ let start=catalog.findIndex(x=>x.key>(state.lastKey||""));
  if(start<0)start=0;
  let scanned=0,consecutiveFailures=0,stop=false;
+ let lastBatchStarted=0;
  const seen=new Set<string>();
  while(scanned<catalog.length&&state.lastRunRequests<MAX_REQUESTS_PER_DAY
   &&Date.now()-started<MAX_RUNTIME_MS-20_000&&!stop){
@@ -142,6 +167,7 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
    const p=catalog[(start+scanned)%catalog.length];
    scanned++;
    state.lastHash=p.hash;
+   state.lastKey=p.key;
    if(seen.has(p.hash)||existing.has(p.hash))continue;
    seen.add(p.hash);
    // Taobao requires a separate paid product-data entitlement; don't spend
@@ -158,6 +184,11 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
    batch.push(p);
   }
   if(!batch.length)break;
+  // Default HioBuy plan allows 60/minute; avoid overwhelming it even after
+  // increasing the daily cap. Upstream request latency adds natural spacing.
+  const remaining=MIN_BATCH_START_INTERVAL_MS-(Date.now()-lastBatchStarted);
+  if(lastBatchStarted&&remaining>0)await new Promise<void>(resolve=>setTimeout(resolve,remaining));
+  lastBatchStarted=Date.now();
   const completed=await Promise.all(batch.map(async p=>{
    try{
     const result=await readMarketplaceSource(p.url);
