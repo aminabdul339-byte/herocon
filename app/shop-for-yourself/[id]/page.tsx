@@ -13,7 +13,7 @@ import {currentCustomer} from "@/lib/customer-auth";
 import {getBaseProducts} from "@/lib/catalogue-server";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
-import {getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
+import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
 import "../shop-for-yourself.css";
 import "../personal-shop-v2.css";
@@ -87,8 +87,8 @@ export default async function ShopProductPage({params,searchParams}:Params){
          images={gallery}
          price={price}
          gbpOnly
-         initialSource={enrichment?undefined:source||undefined}
-         initialFx={source&&!enrichment?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
+         initialSource={enrichment?toDisplaySupplierDetails(enrichment):source||undefined}
+         initialFx={(enrichment||source)?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
          buckydropEnabled={Boolean(source&&!enrichment)}
          sourceLookupFailed={!source&&!enrichment}
          customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
