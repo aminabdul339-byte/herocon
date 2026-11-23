@@ -202,6 +202,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
       <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length.toLocaleString()} seller variants · Select quantities</span></div>
+      {source.source==="hiobuy"&&source.variantCompleteness&&source.variantCompleteness!=="complete"&&
+       <p role="status" style={{fontSize:13,color:"#92531e"}}>
+        This marketplace did not provide a complete set of purchasable SKU identifiers.
+        Only returned options are displayed; availability may need supplier confirmation.
+       </p>}
       {source.variants.length>16&&<label style={{display:"block",margin:"10px 0 14px",fontSize:13}}>
         <span style={{display:"block",fontWeight:700,marginBottom:5}}>Find a colour, size, style or SKU</span>
         <input type="search" value={skuSearch} placeholder="Search seller options…" onChange={e=>{
