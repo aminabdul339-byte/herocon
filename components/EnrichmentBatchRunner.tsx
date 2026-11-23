@@ -63,9 +63,11 @@ export default function EnrichmentBatchRunner({
     Temporarily restricted channels: {activeBlocks.map(([channel])=>channel).join(", ")}.
    </p>}
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
-    The runner is limited to 36 supplier checks per day to protect API quota.
-    Taobao is excluded until separately authorised. The HioBuy trial or quota may
-    limit how many products can be enriched without a paid plan.
+    Herocon now runs until the provider quota or scheduled job time limit is reached
+    (up to 500 API checks per day). Legacy incomplete records are refreshed first, followed
+    by Shop for Yourself and the remaining Start a Business catalogue.
+    Taobao is excluded until separately authorised. HioBuy account quotas and
+    plan permissions still apply; raising our local cap does not override them.
     Photos, variants and prices are dated supplier data, not guaranteed current inventory.
    </p>
   </section>
