@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {accountOriginValid,currentCustomer} from "@/lib/customer-auth";
+import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {createMembershipCheckout,enabledMembershipMode,MembershipBillingError} from "@/lib/membership-billing";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -20,6 +21,7 @@ export async function POST(request:Request){
   return reply({error:"Please agree to recurring £9.99 monthly billing before continuing."},400);
  const user=await currentCustomer();
  if(!user)return reply({error:"Sign in to your free account first."},401);
+ if(isOwnerPremiumCustomer(user))return reply({error:"Your owner premium membership is complimentary. No £9.99 subscription is required or offered to this account."},409);
  const mode=enabledMembershipMode();
  if(!mode)return reply({error:"Membership payments are not yet enabled."},503);
  try{
