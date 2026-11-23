@@ -63,7 +63,7 @@ export function parsePublicMetadata(html,source){
   description:hasProduct?description:null,
   priceCNY:hasProduct&&fields.includes("priceCNY")?Number(money):null,source};
 }
-async function readJson(path){return JSON.parse(await readFile(resolve(path),"utf8"));}
+async function readJson(path){const data=JSON.parse(await readFile(resolve(path),"utf8"));return Array.isArray(data)?data:Array.isArray(data.products)?data.products:[];}
 async function candidates(){
  const [business,personal]=await Promise.all([
   readJson("public/herocon-current-catalogue.json"),readJson("data/shop-personal-merged.json")
