@@ -7,6 +7,7 @@ import {productId,cleanTitle} from "@/lib/catalogue";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {getSavedMarketplaceSource} from "@/lib/marketplace-source-enrichment";
+import {getAutomaticEnrichmentState,getEnrichmentSavedCount} from "@/lib/automatic-enrichment";
 import {currentCustomer} from "@/lib/customer-auth";
 
 export const dynamic="force-dynamic";
@@ -24,12 +25,13 @@ export default async function EnrichmentPage({
  </section></main>;
  const query=await searchParams;
  const collection=query.collection==="personal"?"personal":"business";
+ const allProducts=await getProducts();
  const originals=collection==="personal"?personalShopProducts.map(p=>({
    id:p.id,title:p.name,sourceUrl:p.originalUrl,
    productPath:"/shop-for-yourself/"+encodeURIComponent(p.id),
    existingImages:p.imageUrl?1:0,existingVariants:0,
    hasDescription:false,hasSeller:false
-  })):(await getProducts()).map(p=>({
+  })):allProducts.map(p=>({
    id:productId(p),title:cleanTitle(p),sourceUrl:p.originalMarketplaceUrl||"",
    productPath:"/product/"+encodeURIComponent(productId(p)),
    existingImages:(p.images?.length||0)+(p.imageUrl?1:0),
@@ -41,12 +43,19 @@ export default async function EnrichmentPage({
  const requested=Number.parseInt(query.page||"1",10);
  const page=Number.isFinite(requested)?Math.max(1,Math.min(pageCount,requested)):1;
  const selected=items.slice((page-1)*12,page*12);
- const rows=await Promise.all(selected.map(async p=>({
-   ...p,saved:Boolean(await getSavedMarketplaceSource(p.sourceUrl))
- })));
+ const [rows,progress,savedUnique]=await Promise.all([
+  Promise.all(selected.map(async p=>({...p,saved:Boolean(await getSavedMarketplaceSource(p.sourceUrl))}))),
+  getAutomaticEnrichmentState(),getEnrichmentSavedCount()
+ ]);
+ const unique=new Set([
+  ...allProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)),
+  ...personalShopProducts.map(p=>normalizeMarketplaceLink(p.originalUrl))
+ ].filter((link):link is string=>Boolean(link)));
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
   <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
-    providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>
+    providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}
+    automationConfigured={Boolean(process.env.CRON_SECRET?.trim()&&process.env.BLOB_READ_WRITE_TOKEN)}
+    progress={progress} uniqueSources={unique.size} savedUnique={savedUnique}/>
  </main>;
 }

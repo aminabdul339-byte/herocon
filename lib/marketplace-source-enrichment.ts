@@ -1,8 +1,10 @@
 import "server-only";
 import {createHash} from "node:crypto";
-import {get,put} from "@vercel/blob";
+import {get,put,list as listBlobs} from "@vercel/blob";
+import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
+import type {BuckydropProduct} from "@/lib/buckydrop";
 
 const PREFIX="catalogue/source-enrichment/v1/";
 const MAX_BYTES=750_000;
@@ -300,4 +302,85 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
   priceCNY:source.priceCNY??product.priceCNY,
   hasPartnerDetails:source.variants.length>0||source.images.length>1||Boolean(product.hasPartnerDetails)
  };
+}
+/**
+ * Adapter for the existing, supplier-agnostic product gallery/options UI.
+ * Preserves the HioBuy provider identity: never impersonate a BuckyDrop result.
+ * Display prices and stock are dated snapshots, never checkout authority.
+ */
+export type DisplaySupplierDetails=Omit<BuckydropProduct,"source">&{source:"buckydrop"|"hiobuy"};
+export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierDetails{
+ const variants=data.variants.map(v=>{
+  const options=[
+   v.colour?{name:"Colour",value:v.colour}:null,
+   v.size?{name:"Size",value:v.size}:null,
+   v.style?{name:"Style",value:v.style}:null,
+   v.material?{name:"Material",value:v.material}:null
+  ].filter((o):o is {name:string;value:string}=>o!==null);
+  if(!options.length&&v.label)options.push({name:"Seller option",value:v.label});
+  return {
+   skuCode:v.id,
+   title:v.label||options.map(o=>o.value).join(" / ")||v.id,
+   options,
+   price:v.priceCNY??null,
+   // An explicit out-of-stock flag is conclusive; an "available" boolean
+   // alone is not a numeric inventory count.
+   stock:v.available===false?0:null,
+   image:v.image||null
+  };
+ });
+ const host=new URL(data.sourceUrl).hostname;
+ return {
+  source:"hiobuy",
+  environment:"live",
+  spuCode:null,
+  title:data.title||"Marketplace product",
+  originalUrl:data.sourceUrl,
+  marketplace:host.includes("1688")?"1688":host.includes("weidian")?"Weidian":"Taobao",
+  currency:"CNY",
+  snapshotSavedAt:data.retrievedAt,
+  productProps:data.sourceSpecs,
+  listPrice:data.priceCNY??null,
+  offerPrice:data.priceCNY??null,
+  chinaDomesticFreight:null,
+  moq:null,
+  available:null,
+  images:data.images,
+  descriptionText:data.descriptionText||"",
+  detailImages:data.detailImages,
+  sellerName:data.sellerName||null,
+  variants
+ };
+}
+
+/** Avoid one Blob GET for every catalogue card. Only hydrate visible links
+ * whose canonical URL hashes actually have an independent HioBuy snapshot. */
+const savedIndex=unstable_cache(async():Promise<string[]>=>{
+ if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
+ let cursor:string|undefined;
+ const hashes:string[]=[];
+ do{
+  const result=await listBlobs({prefix:PREFIX,limit:1000,cursor});
+  for(const entry of result.blobs){
+   const key=entry.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
+   if(/^[a-f0-9]{64}$/.test(key))hashes.push(key);
+  }
+  if(!result.hasMore)break;
+  cursor=result.cursor;
+ }while(cursor);
+ return hashes;
+},["herocon-marketplace-source-index-v1"],{revalidate:60});
+export async function savedMarketplaceSourceHashes():Promise<ReadonlySet<string>>{
+ try{return new Set(await savedIndex());}catch{return new Set();}
+}
+export async function enrichVisibleProductCards(products:Product[]):Promise<Product[]>{
+ if(!products.length)return products;
+ const saved=await savedMarketplaceSourceHashes();
+ if(!saved.size)return products;
+ return Promise.all(products.map(async product=>{
+  const url=normalizeMarketplaceLink(product.originalMarketplaceUrl);
+  if(!url||!saved.has(createHash("sha256").update(url).digest("hex")))return product;
+  const enrichment=await getSavedMarketplaceSource(url);
+  return withMarketplaceSource(product,enrichment);
+ }));
 }

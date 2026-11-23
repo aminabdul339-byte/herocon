@@ -2,6 +2,7 @@ import "server-only";
 import {createHash} from "node:crypto";
 import {savedPartnerSnapshotHashes} from "@/lib/catalogue-priority";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
+import {getSavedMarketplaceSource,savedMarketplaceSourceHashes} from "@/lib/marketplace-source-enrichment";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 import type {PersonalShopProduct} from "@/lib/personal-shop";
@@ -33,14 +34,30 @@ export async function getSavedPersonalSource(url:string):Promise<BuckydropProduc
  * so that listings lacking supplier details generate zero per-product GETs. */
 export async function enrichPersonalCards(products:ReadonlyArray<PersonalShopProduct>):Promise<EnrichedPersonalProduct[]>{
  if(!products.length||!process.env.BLOB_READ_WRITE_TOKEN)return [...products];
- let keys:ReadonlySet<string>;
- try{keys=await savedPartnerSnapshotHashes();}catch{return [...products];}
- if(!keys.size)return [...products];
+ let legacyKeys:ReadonlySet<string>,newKeys:ReadonlySet<string>;
+ try{
+  [legacyKeys,newKeys]=await Promise.all([savedPartnerSnapshotHashes(),savedMarketplaceSourceHashes()]);
+ }catch{return [...products];}
+ if(!legacyKeys.size&&!newKeys.size)return [...products];
  const result:EnrichedPersonalProduct[]=[];
  for(let i=0;i<products.length;i+=6){
   const batch=await Promise.all(products.slice(i,i+6).map(async product=>{
    const link=canonical(product.originalUrl);
-   if(!link||!keys.has(hash(link)))return product;
+   if(!link)return product;
+   const sourceHash=hash(link);
+   if(newKeys.has(sourceHash)){
+    const enriched=await getSavedMarketplaceSource(link);
+    if(enriched){
+     const photos=[...new Set([
+       ...enriched.images,...enriched.variants.map(v=>v.image).filter((u):u is string=>Boolean(u))
+     ])].filter(u=>/^https:\/\//.test(u)).slice(0,12);
+     return {...product,savedDetails:{
+      photos,sellerName:enriched.sellerName||null,variantCount:enriched.variants.length,
+      savedAt:enriched.retrievedAt
+     }};
+    }
+   }
+   if(!legacyKeys.has(sourceHash))return product;
    const source=await getSavedPersonalSource(link);
    if(!source)return product;
    const photos=[...new Set([

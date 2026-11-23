@@ -8,13 +8,13 @@ import {variantsFor} from "@/lib/catalogue";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
-import type {BuckydropProduct} from "@/lib/buckydrop";
+import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 
 type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:BuckydropProduct;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:DisplaySupplierDetails;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean}){
  const router=useRouter();
  const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
