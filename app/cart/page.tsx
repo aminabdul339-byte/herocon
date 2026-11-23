@@ -7,7 +7,7 @@ import {useCart} from "@/components/CartProvider";
 
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
- const {items,count,hydrated,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
+ const {items,count,hydrated,account,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
  const selectedItems=items.filter(item=>item.selected!==false);
@@ -35,7 +35,7 @@ export default function CartPage(){
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">YOUR SHOPPING CART</p>
    <h1>Your <em>cart.</em></h1>
-   <p>Keep track of products you like and compare original marketplace listings. Herocon checkout is not yet available.</p>
+   <p>{account.ownerPremium?"Owner Premium active: select an item below to open your private BuckyDrop Buy Now flow without a £9.99 subscription. Live payment is still gated.":"Keep track of products you like and compare original marketplace listings. Product checkout is currently limited to the owner pilot."}</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
@@ -47,7 +47,7 @@ export default function CartPage(){
       <label className="hc-cart-select-item" title={"Select "+item.title}><input type="checkbox" checked={item.selected!==false} onChange={event=>setItemSelected(item.key,event.target.checked)} aria-label={"Select "+item.title+" to buy"}/></label>
       <Link href={item.productPath} className="hc-cart-image">{item.image?<img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>:<span>Product</span>}</Link>
       <div className="hc-cart-copy"><Link href={item.productPath} className="hc-cart-title">{item.title}</Link>{item.variant&&<p>{item.variant}</p>}
-       <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button></div>
+       <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button>{account.ownerPremium&&<Link href={"/pilot/buckydrop?productId="+encodeURIComponent(item.productId)+(item.skuCode?"&sku="+encodeURIComponent(item.skuCode):"")+"&quantity="+Math.min(99,item.quantity)} style={{display:"inline-flex",alignItems:"center",padding:"10px 12px",background:"#254b34",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,textDecoration:"none"}}>Buy now · owner</Link>}</div>
       </div>
       <strong className="hc-cart-price">{item.unitPrice==null?"Price unavailable":<>
        <span>{money(item.currency,item.unitPrice*item.quantity)}</span>
