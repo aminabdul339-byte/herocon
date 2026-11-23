@@ -34,6 +34,8 @@ export async function POST(request:Request){
  }catch{return reply({ok:false,error:"invalid_json"},400);}
  if(!/^[A-Za-z0-9_-]{5,100}$/.test(id)||!["business","personal"].includes(collection))
    return reply({ok:false,error:"invalid_product_selection"},400);
+ if(!process.env.HIOBUY_API_KEY?.trim())
+   return reply({ok:false,error:"product_api_not_connected"},503);
  const selected=collection==="personal"?findPersonalProduct(id):null;
  const catalogue=collection==="business"?await getProducts():null;
  const source=normalizeMarketplaceLink(
@@ -61,17 +63,17 @@ export async function POST(request:Request){
    variants:result.variants.length,
    descriptionFound:Boolean(result.descriptionText),
    priceCNY:result.priceCNY??null,
-   note:result.provider==="public-page"
-    ?"Public page metadata may be incomplete. SKU and inventory are unverified."
-    :"Verified provider response saved. Prices and stock are snapshots, not future checkout guarantees."
+   note:"Provider details have been saved; prices and stock are snapshots, not a checkout quote."
   });
  }catch(error){
   const code=error instanceof SourceEnrichmentError?error.code:"enrichment_failed";
   const safe=new Set([
-   "hiobuy_not_configured","hiobuy_product_missing","hiobuy_product_empty",
+   "product_api_not_connected","hiobuy_not_configured","hiobuy_product_missing","hiobuy_product_empty",
    "hiobuy_unavailable","hiobuy_rate_limited","hiobuy_failed",
    "CHANNEL_NOT_AUTHORIZED","INVALID_API_KEY","INSUFFICIENT_SCOPE",
    "PAID_SUBSCRIPTION_REQUIRED","QUOTA_EXCEEDED","RATE_LIMITED",
+   "RATE_LIMIT_EXCEEDED","PLATFORM_QUOTA_EXCEEDED","CHANNEL_CAPABILITY_NOT_SUPPORTED",
+   "CHANNEL_UPSTREAM_ERROR","VALIDATION_ERROR",
    "marketplace_unreachable","marketplace_redirected","marketplace_access_restricted",
    "marketplace_unavailable","marketplace_non_html","marketplace_page_too_large",
    "marketplace_empty","public_metadata_unavailable","enrichment_storage_unavailable",

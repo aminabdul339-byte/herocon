@@ -57,7 +57,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  const sourceUrl=props.product.originalMarketplaceUrl;
  const enriched=sourceUrl?await getSavedMarketplaceSource(sourceUrl):null;
  const button=props.fulfillbotPilotOwner?
-  <SourceEnrichmentButton productId={props.id} collection="business"/>:null;
+  <SourceEnrichmentButton productId={props.id} collection="business" providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>:null;
  if(enriched){
   const product=withMarketplaceSource(props.product,enriched);
   return <>

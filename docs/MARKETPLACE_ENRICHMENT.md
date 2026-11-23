@@ -1,39 +1,37 @@
-# Herocon marketplace-link enrichment (without BuckyDrop)
+# Herocon catalogue enrichment without BuckyDrop
 
-Both sourcing collections already have their original marketplace URLs:
+## What happened in the initial pilot
 
-- **Start a Business:** main canonical catalogue from `getProducts()`.
-- **Shop for Yourself:** `personalShopProducts` from the curated personal collection.
+The first two Start a Business 1688 links returned `public_metadata_unavailable`. The first two Shop for Yourself Weidian links returned `marketplace_redirected`. These were real results, not successful supplier lookups. Direct HTML pages do not consistently expose SKU, gallery, price or stock. We should not continue blindly through the remaining pages.
 
-The same normalized 1688, Taobao and Weidian URL identifies the saved enrichment record across both collections.
+## Current workflow
 
-## Pilot workflow
+Both Herocon collections already carry canonical 1688, Taobao and Weidian product links. Herocon preserves imported image, variant and description data, and the Shop for Yourself product page now reuses matching records from Start a Business where the **same** normalized supplier URL appears.
 
-The signed-in owner visits `/enrichment?collection=business` or `/enrichment?collection=personal` and selects **Enrich this page**. Each page checks up to 12 source links sequentially, with a delay and early stop after repeated blocked/no-metadata responses. Already saved links are skipped. An owner-only **Enrich this product** button also appears on product detail pages.
+The owner enrichment tool at `/enrichment` now shows existing data coverage and **pauses further supplier requests until a product-data API is connected**. It does not repeat the failed server-side HTML approach.
 
-The browser sends only a collection identifier and Herocon product ID to `POST /api/marketplace-enrichment`. Server-side lookup resolves the source URL from Herocon's catalogue; the client cannot supply arbitrary URLs. Every new read is an explicit owner action. Product-page rendering only reads stored snapshots.
+The supported HioBuy option is `POST https://api.hiobuy.com/v1/products/detail` with `{channel,url,language:"en",response_format:"standard"}`. HioBuy's documented standard product response can return supplier title, seller, images, structured product attributes, SKU IDs, prices in CNY and stock. Supplier variant attributes `name`/`value`, plus original-language fallbacks, are normalized into Herocon's variant labels. We use the API with a confirmed marketplace URL only and store a provenance-tagged snapshot in private Vercel Blob.
 
-## Data sources
+Public product pages read saved snapshots and existing imported data only, never billable product API calls. Herocon checkout stays disabled until merchant payment and supplier purchasing are independently verified.
 
-1. With no extra API key, the backend tries a bounded GET to the original supplier product page, without cookies, executing scripts, following redirects or bypassing any access controls. It extracts public OG/Twitter metadata and JSON-LD Product data where present. It cannot promise live SKU, stock or price when those are loaded through private marketplace APIs. If the supplier blocks access, the result is an explicit failure; it does not invent details.
-2. Optional HioBuy Product Detail API: configure `HIOBUY_API_KEY` as a **server-side Vercel secret** and enable marketplace channels in HioBuy's developer portal. `POST https://api.hiobuy.com/v1/products/detail` receives `{channel,url,language:"en",response_format:"standard"}`. The API can return translated title, description, images, seller, actual variant SKUs, stock and CNY price. Product access depends on the account's channel permissions, trial and subscription; Taobao requires a paid subscription under current published plans.
+## Connect HioBuy (requires account owner)
 
-For API setup, see https://hiobuy.com/en/api-docs and https://hiobuy.com/en/api-docs/product-detail. Keep API credentials server-side; never paste them into public site fields or commit them to GitHub.
+1. Visit https://developers.hiobuy.com, create a developer account, create an app, and generate an API key.
+2. In HioBuy, confirm that **1688** and **Weidian** product details are authorised for the app. Published free trial: 7 days, 100 shared product API units/day, with 1688 and Weidian; Taobao requires an active paid subscription. Product detail usually consumes 1 unit.
+3. In Vercel > project **herocon-app** > Settings > Environment Variables, set `HIOBUY_API_KEY` to the issued key, **Production** only, secret/sensitive. Never commit the key or post it in chat.
+4. Redeploy the project's current `main` commit (changed environment variables do not retroactively apply to existing running deployments).
+5. Sign in with the owner Herocon account and open `https://herocon.store/enrichment?collection=business`, then test a 12-product page. Also test `collection=personal`. An API key being configured does not prove product access or subscription approval; the provider may return precise auth/quota errors.
+6. Verify one returned variant's SKU, gallery and CNY price against the supplier before bulk import. Quota, cost and source refresh planning are required for ~4,561 catalogue entries (some supplier URLs may be duplicated).
 
-## Storage and rendering
+## Scope, safeguards and future work
 
-Successful provider responses are saved into private Vercel Blob paths under `catalogue/source-enrichment/v1/<sha256-of-canonical-url>.json` with source provenance, retrieval timestamp and sanitized title, gallery, description, specs and optionally SKU/pricing data. Existing catalogue records are left intact. Both product-detail routes load the overlay, use new fields when present and retain saved old data only as fallback. No BuckyDrop API calls are made by this enrichment feature.
+The backend accepts a **Herocon product ID and collection**, resolves the canonical marketplace URL server-side, enforces owner authentication and origin checks, and rate-limits per source. API responses are sanitised, saved privately and overlaid without changing original catalogue records. Never accept arbitrary URLs or expose API credentials to browsers.
 
-**Public display is not a live checkout quote.** Historical marketplace prices, stock and descriptions may change. The site continues to prevent public product checkout until a verified procurement path is connected.
+The current UI is a 12-item owner pilot, not an unattended full-catalogue queue. After a successful live API test, next steps are a durable rate-limited queue, stable SKU provenance, deduplication across collections, per-day API quotas, and safe retry of transient failures.
 
-## Safety and scale
+### Provider sources
 
-- Fixed allowlist of marketplace hosts and canonical URL patterns; no arbitrary URL fetching.
-- No redirects, marketplace cookies, challenge-solving or browser impersonation.
-- Response size cap 750 KB, timeout 9 seconds for public-page reads and 12 seconds for HioBuy.
-- One at a time in owner batch, small delay, 25-second per-link throttle and immediate stop on repeated access blocks.
-- Stop at a pilot scale when source pages reject access. Full-catalogue enrichment requires authorised structured product-data APIs and a rate-limited durable queue, not repeated direct HTML scraping.
-
-## Current limitations
-
-This new adapter is **not** yet a full automated catalogue-wide ingestion service. It enriches selected items and owner-invoked small batches; it doesn't background-crawl the whole supplier catalogue. Direct marketplace pages often omit variants/stock or block server-side reads. Full details need a working, authorised product-data key. No supplier order or payment is created.
+- https://hiobuy.com/en/api-docs
+- https://hiobuy.com/en/api-docs/product-detail
+- https://hiobuy.com/en/api-docs/product-response-models
+- https://hiobuy.com/en/api-docs/authentication

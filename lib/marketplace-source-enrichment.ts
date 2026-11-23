@@ -52,6 +52,8 @@ function cleanText(v:unknown,max=10000):string{
   if(typeof record.translated==="string")raw=record.translated;
   else if(typeof record.original==="string")raw=record.original;
   else if(typeof record.text==="string")raw=record.text;
+  else if(typeof record.html==="string")raw=record.html;
+  else if(typeof record.translated_html==="string")raw=record.translated_html;
  }
  return raw.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi," ")
   .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi," ")
@@ -68,8 +70,8 @@ const canonical=(value:unknown)=>{
 };
 function attribute(v:unknown):{name:string;value:string}|null{
  const data=obj(v);
- const name=str(data.name||data.key||data.propName||data.attribute_name,120);
- const value=cleanText(data.value||data.valueName||data.label,240);
+ const name=str(data.name||data.original_name||data.key||data.propName||data.attribute_name,120);
+ const value=cleanText(data.value||data.original_value||data.valueName||data.label,240);
  return name&&value?{name,value}:null;
 }
 function fromHiobuy(value:unknown,url:string):SourceEnrichment{
@@ -132,7 +134,9 @@ async function hiobuy(url:string):Promise<SourceEnrichment>{
   const body=await response.json().catch(()=>({})) as Record<string,unknown>;
   const code=str(obj(body.error).code||body.code,100);
   const allowed=["CHANNEL_NOT_AUTHORIZED","INVALID_API_KEY","INSUFFICIENT_SCOPE",
-   "PAID_SUBSCRIPTION_REQUIRED","QUOTA_EXCEEDED","RATE_LIMITED"];
+   "PAID_SUBSCRIPTION_REQUIRED","QUOTA_EXCEEDED","RATE_LIMITED",
+   "RATE_LIMIT_EXCEEDED","PLATFORM_QUOTA_EXCEEDED","CHANNEL_CAPABILITY_NOT_SUPPORTED",
+   "CHANNEL_UPSTREAM_ERROR","VALIDATION_ERROR"];
   throw new SourceEnrichmentError(
    allowed.includes(code)?code:response.status===429?"hiobuy_rate_limited":"hiobuy_failed",
    response.status===429?429:503
@@ -241,18 +245,12 @@ async function publicPage(url:string):Promise<SourceEnrichment>{
 }
 export async function readMarketplaceSource(source:unknown):Promise<SourceEnrichment>{
  const url=canonical(source);
- // A licensed API gives richer SKU/stock/description fields where configured.
- // Without it, only inspect public HTML/structured metadata; do not bypass challenges.
- if(process.env.HIOBUY_API_KEY?.trim()){
-  try{return await hiobuy(url);}
-  catch(e){
-   // No silent alternate scraping of an explicitly forbidden/auth-rejected channel.
-   if(e instanceof SourceEnrichmentError&&
-      ["CHANNEL_NOT_AUTHORIZED","INVALID_API_KEY","PAID_SUBSCRIPTION_REQUIRED","INSUFFICIENT_SCOPE"].includes(e.code))
-    throw e;
-  }
- }
- return publicPage(url);
+ // Both production catalogues confirmed that raw HTML did not expose product data
+ // in ordinary server requests. Avoid silently falling back to a useless response
+ // on failed API calls or retrying blocked marketplace URLs in a batch.
+ if(!process.env.HIOBUY_API_KEY?.trim())
+  throw new SourceEnrichmentError("product_api_not_connected",503);
+ return hiobuy(url);
 }
 export async function getSavedMarketplaceSource(source:unknown):Promise<SourceEnrichment|null>{
  let url:string;
