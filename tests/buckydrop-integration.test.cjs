@@ -154,7 +154,8 @@ test('nonowners cannot start live product checkout even if someone has a paid me
   '@/lib/stripe-live':{verifyLiveAccount:async()=>{stripeCalls++;return {chargesEnabled:true,country:'GB'};}},
   '@/lib/customer-auth':{currentCustomer:async()=>({id:'not-owner',email:'member@example.test'})},
   '@/lib/membership-access':{checkActiveMembership:async()=>true},
-  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>false}
+  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>false},
+  '@/lib/checkout-origin':{checkoutOriginFor:()=>null}
  }});
  const res=await POST(new Request('https://herocon.store/api/checkout/start-session',{
   method:'POST',headers:{origin:'https://herocon.store','content-type':'application/json'},body:JSON.stringify({quoteId:'hq_'+'a'.repeat(40)})
