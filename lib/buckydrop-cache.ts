@@ -12,11 +12,12 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
  * Reads and writes consume Vercel storage operations (but no our sourcing partner call on a hit).
  * A new billable our sourcing partner lookup is only invoked from explicit user actions.
  */
-const PREFIX="catalogue/buckydrop-snapshots/v1/";
+export const BUCKYDROP_PREFIX_V1="catalogue/buckydrop-snapshots/v1/";
+export const BUCKYDROP_PREFIX_V2="catalogue/buckydrop-snapshots/v2/";
 const ACCESS="private" as const;
-const MAX_BYTES=1_000_000;
-type Snapshot={version:1;canonicalUrl:string;savedAt:string;product:BuckydropProduct};
-const pathFor=(link:string)=>PREFIX+createHash("sha256").update(link).digest("hex")+".json";
+const MAX_BYTES=16*1024*1024;
+type Snapshot={version:1|2;canonicalUrl:string;savedAt:string;product:BuckydropProduct};
+const pathFor=(link:string,version:1|2=2)=>(version===2?BUCKYDROP_PREFIX_V2:BUCKYDROP_PREFIX_V1)+createHash("sha256").update(link).digest("hex")+".json";
 const available=()=>Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 function normalized(link:string){
  const canonical=normalizeMarketplaceLink(link);
@@ -28,29 +29,54 @@ const missing=(e:unknown)=>e instanceof Error&&/not found|does not exist|404/i.t
 
 export async function getSavedBuckydropProduct(link:string):Promise<BuckydropProduct|null>{
  const canonical=normalized(link);
- let result:Awaited<ReturnType<typeof get>>;
- try{result=await get(pathFor(canonical),{access:ACCESS});}
- catch(e){
-  if(missing(e))return null;
-  throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details are temporarily unavailable.");
+ for(const version of [2,1] as const){
+  let result:Awaited<ReturnType<typeof get>>;
+  try{result=await get(pathFor(canonical,version),{access:ACCESS});}
+  catch(e){
+   if(missing(e))continue;
+   throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details are temporarily unavailable.");
+  }
+  if(!result)continue;
+  if(result.statusCode!==200||!result.stream)
+   throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details could not be read.");
+  try{
+   const raw=await new Response(result.stream).text();
+   if(Buffer.byteLength(raw,"utf8")>MAX_BYTES)throw Error("Too large");
+   const item=JSON.parse(raw) as Snapshot;
+   if(item.version!==version||item.canonicalUrl!==canonical||!item.product||
+     item.product.source!=="buckydrop"||item.product.environment!=="live"||
+     !Array.isArray(item.product.variants)||!Array.isArray(item.product.images)||
+     !/^\d{4}-\d{2}-\d{2}T/.test(item.savedAt))throw Error("Invalid snapshot");
+   return {...item.product,snapshotSavedAt:item.savedAt};
+  }catch{
+   throw new BuckydropError("SNAPSHOT_INVALID",503,"The stored product record needs attention.");
+  }
  }
- if(!result)return null;
- if(result.statusCode!==200||!result.stream)throw new BuckydropError("SNAPSHOT_READ_FAILED",503,"Saved product details could not be read.");
- try{
-  const raw=await new Response(result.stream).text();
-  if(raw.length>MAX_BYTES)throw Error("Too large");
-  const item=JSON.parse(raw) as Snapshot;
-  if(item.version!==1||item.canonicalUrl!==canonical||!item.product||
-    item.product.source!=="buckydrop"||item.product.environment!=="live"||
-    !Array.isArray(item.product.variants)||!Array.isArray(item.product.images)||
-    !/^\d{4}-\d{2}-\d{2}T/.test(item.savedAt))throw Error("Invalid snapshot");
-  return {...item.product,snapshotSavedAt:item.savedAt};
- }catch{
-  // Never make a fresh, billable API request as a side effect of corrupt storage.
-  throw new BuckydropError("SNAPSHOT_INVALID",503,"The stored product record needs attention.");
- }
+ return null;
 }
-
+/** Writes a new, complete supplier snapshot. The import worker checks
+ * all existing provider records before incurring the billable API call.
+ * Fails rather than silently dropping SKU options for oversized products. */
+export async function saveNewBuckydropProduct(link:string,product:BuckydropProduct):Promise<BuckydropProduct>{
+ const canonical=normalized(link);
+ if(product.environment!=="live")throw new BuckydropError("NOT_LIVE",503,"Only live supplier data can be saved.");
+ const saved=await getSavedBuckydropProduct(canonical);
+ if(saved)return saved;
+ const savedAt=new Date().toISOString();
+ const body=JSON.stringify({version:2,canonicalUrl:canonical,savedAt,product} satisfies Snapshot);
+ if(Buffer.byteLength(body,"utf8")>MAX_BYTES)
+  throw new BuckydropError("SNAPSHOT_TOO_LARGE",503,"Supplier data was too large to store without loss.");
+ try{
+  await put(pathFor(canonical,2),body,{
+   access:ACCESS,addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"
+  });
+ }catch{
+  const raced=await getSavedBuckydropProduct(canonical).catch(()=>null);
+  if(raced)return raced;
+  throw new BuckydropError("SNAPSHOT_SAVE_FAILED",503,"Supplier details were retrieved but not saved.");
+ }
+ return {...product,snapshotSavedAt:savedAt};
+}
 /**
  * Called only after a visitor explicitly requests our sourcing partner details, or submits
  * a new original marketplace link. A persisted hit never calls our sourcing partner.
@@ -63,23 +89,6 @@ export async function getOrSaveBuckydropProduct(link:string):Promise<{product:Bu
 
  const product=await queryBuckydropProduct(canonical);
  if(product.environment!=="live")throw new BuckydropError("NOT_LIVE",503,"Only live product details can be saved.");
- const savedAt=new Date().toISOString();
- const payload:Snapshot={version:1,canonicalUrl:canonical,savedAt,product};
- const json=JSON.stringify(payload);
- if(json.length>MAX_BYTES)throw new BuckydropError("SNAPSHOT_TOO_LARGE",503,"This product contains more options than can be stored safely.");
- try{
-  await put(pathFor(canonical),json,{
-   access:ACCESS,addRandomSuffix:false,allowOverwrite:false,
-   contentType:"application/json"
-  });
- }catch{
-  // A simultaneous successful lookup may already have stored the product.
-  // Serve that record if present; never overwrite a saved snapshot.
-  try{
-   const existing=await getSavedBuckydropProduct(canonical);
-   if(existing)return {product:existing,cacheStatus:"hit"};
-  }catch{}
-  throw new BuckydropError("SNAPSHOT_SAVE_FAILED",503,"The provider returned product details but they could not be saved. Please try again later.");
- }
- return {product:{...product,snapshotSavedAt:savedAt},cacheStatus:"stored"};
+ const stored=await saveNewBuckydropProduct(canonical,product);
+ return {product:stored,cacheStatus:"stored"};
 }
