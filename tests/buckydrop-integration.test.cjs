@@ -278,3 +278,22 @@ test('an unverified prepaid wallet never unlocks the all-in Stripe checkout',()=
  assert.equal(result.enabled,false);
  assert.ok(result.missing.some(m=>m.includes('wallet')));
 });
+
+
+test('Stripe checkout return URL cannot point to an arbitrary host or an unapproved preview',()=>{
+ const {checkoutOriginFor:prod}=load('lib/checkout-origin.ts',{},{
+  VERCEL_ENV:'production',
+  VERCEL_URL:'herocon-ecommerce-test.vercel.app',
+  HEROCON_ALLOW_PREVIEW_OWNER_PAYMENT:'false'
+ });
+ assert.equal(prod('https://herocon.store/api/checkout/start-session'),'https://herocon.store');
+ assert.equal(prod('https://herocon-ecommerce-test.vercel.app/api/checkout/start-session'),null);
+ assert.equal(prod('https://evil.example/api/checkout/start-session'),null);
+ const {checkoutOriginFor:preview}=load('lib/checkout-origin.ts',{},{
+  VERCEL_ENV:'preview',VERCEL_URL:'herocon-ecommerce-test.vercel.app',
+  HEROCON_ALLOW_PREVIEW_OWNER_PAYMENT:'true'
+ });
+ assert.equal(preview('https://herocon-ecommerce-test.vercel.app/api/checkout/start-session'),
+  'https://herocon-ecommerce-test.vercel.app');
+ assert.equal(preview('https://other.vercel.app/api/checkout/start-session'),null);
+});
