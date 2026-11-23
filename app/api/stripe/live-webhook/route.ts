@@ -46,7 +46,7 @@ export async function POST(request:Request){
   return response({received:true});
  const checkout=event.data.object;
  if(checkout.metadata?.purpose!=="herocon_live_checkout"||
-  !["bucky_manual_supplier_payment","bucky_prepaid_auto_fulfilment"].includes(checkout.metadata?.fulfilment||"")||
+  !["merchant_manual_supplier_payment","bucky_manual_supplier_payment","bucky_prepaid_auto_fulfilment"].includes(checkout.metadata?.fulfilment||"")||
   checkout.mode!=="payment"||!checkout.id?.startsWith("cs_live_"))
   return response({received:true,ignored:true});
  if(checkout.payment_status!=="paid")
