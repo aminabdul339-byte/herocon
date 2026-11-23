@@ -54,12 +54,12 @@ export default function BuckydropDemo(){
       <div className={styles.price}>{money(PRODUCT_PRICE)} <span>/ piece · sample retail price</span></div>
       <div className={styles.separator}/>
       <p className={styles.detail}>This example uses a real Herocon catalogue product link. Sizes, retail pricing, stock and shipping amounts are <b>illustrative</b>, not verified live supplier quotations.</p>
-      <div className={styles.perks}><span>✓ One clear GBP payment</span><span>✓ Shipping included at checkout</span><span>✓ Order updates on Herocon</span></div>
+      <div className={styles.perks}><span>Included:  One clear GBP payment</span><span>Included:  Shipping included at checkout</span><span>Included:  Order updates on Herocon</span></div>
       {showOwner&&<div className={styles.ownerBox}>
        <div className={styles.ownerBoxTitle}>Merchant-only sourcing data</div>
        <p>Source: 1688 · Catalogue ID: 75hQ5VG5QTLdpDC1MluyLg</p>
        <p>Exact BuckyDrop SKU: <strong>not verified</strong></p>
-       <a href={MARKETPLACE_URL} target="_blank" rel="noreferrer">Open original supplier listing ↗</a>
+       <a href={MARKETPLACE_URL} target="_blank" rel="noreferrer">Open original supplier listing </a>
       </div>}
      </div>
     </section>
@@ -75,7 +75,7 @@ export default function BuckydropDemo(){
       <div className={styles.line}><span>International delivery</span><strong>{money(POSTAGE)}</strong></div>
       <div className={styles.line}><span>Extra shipping later</span><strong>£0.00</strong></div>
       <div className={styles.total}><span>Total today</span><strong>{money(total)}</strong></div>
-      <button className={styles.primary} onClick={()=>setScreen("checkout")}>Continue to secure checkout <span>↗</span></button>
+      <button className={styles.primary} onClick={()=>setScreen("checkout")}>Continue to secure checkout <span></span></button>
       <p className={styles.bottomNote}>No payment is requested in this demonstration.</p>
      </>}
      {screen==="checkout"&&<>
@@ -88,21 +88,21 @@ export default function BuckydropDemo(){
       <div className={styles.total}><span>Pay once, in GBP</span><strong>{money(total)}</strong></div>
       <div className={styles.checkoutNotice}>Illustrative checkout only. Actual shipping, supplier stock, taxes and final costs need verification before a real order can be accepted.</div>
       <label className={styles.accept}><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)}/><span>I understand this is a simulation and no real payment will be processed.</span></label>
-      <button className={styles.primary} disabled={!accepted} onClick={()=>{setScreen("tracking");setDeliveryStep(0);}}>Simulate £{total.toFixed(2)} payment <span>↗</span></button>
-      <button className={styles.secondary} onClick={()=>setScreen("product")}>← Back to product</button>
+      <button className={styles.primary} disabled={!accepted} onClick={()=>{setScreen("tracking");setDeliveryStep(0);}}>Simulate £{total.toFixed(2)} payment <span></span></button>
+      <button className={styles.secondary} onClick={()=>setScreen("product")}> Back to product</button>
      </>}
      {screen==="tracking"&&<>
       <div className={styles.panelKicker}>STEP THREE</div>
-      <div className={styles.checkCircle}>✓</div>
+      <div className={styles.checkCircle}>Included: </div>
       <h3>Order preview<br/><em>confirmed.</em></h3>
       <p className={styles.muted}>Reference <strong>HC-DEMO-001</strong><br/>Total simulated: <strong>{money(total)}</strong></p>
       <div className={styles.timeline}>{stages.map((item,i)=><div key={item.title} className={styles.timelineRow}>
-       <div className={i<=deliveryStep?styles.timelineDotActive:styles.timelineDot}>{i<deliveryStep?"✓":i===deliveryStep?"●":""}</div>
+       <div className={i<=deliveryStep?styles.timelineDotActive:styles.timelineDot}>{i<deliveryStep?"Included: ":i===deliveryStep?"Active":""}</div>
        <div><strong className={i<=deliveryStep?styles.timelineTextActive:styles.timelineText}>{item.title}</strong>{i===deliveryStep&&<p>{item.detail}</p>}</div>
       </div>)}</div>
       {showOwner&&<div className={styles.ownerBox}><div className={styles.ownerBoxTitle}>BuckyDrop merchant event</div><p>{stages[deliveryStep].owner}</p><p>No external API call is made in this demo.</p></div>}
-      {deliveryStep<stages.length-1&&<button className={styles.primary} onClick={()=>setDeliveryStep(Math.min(stages.length-1,deliveryStep+1))}>Simulate next order update <span>→</span></button>}
-      <button className={styles.secondary} onClick={reset}>↺ Restart demo</button>
+      {deliveryStep<stages.length-1&&<button className={styles.primary} onClick={()=>setDeliveryStep(Math.min(stages.length-1,deliveryStep+1))}>Simulate next order update <span></span></button>}
+      <button className={styles.secondary} onClick={reset}> Restart demo</button>
      </>}
     </section>
    </div>
