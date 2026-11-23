@@ -1,4 +1,5 @@
 import Link from "next/link";
+import EnrichmentAutoRefresh from "@/components/EnrichmentAutoRefresh";
 import type {BuckydropBulkStatus} from "@/lib/buckydrop-bulk";
 
 type Row={id:string;title:string;sourceUrl:string;saved:boolean;productPath:string;
@@ -84,6 +85,7 @@ export default function EnrichmentBatchRunner({
    {progress.lastIssue&&<p style={{fontSize:13,color:"#8a5223"}}>
     Historical issue from a previous batch: <strong>{progress.lastIssue}</strong>. This is not proof the next batch is blocked. Saved records remain preserved.
    </p>}
+   <EnrichmentAutoRefresh/>
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
     Following BuckyDrop's rate-limit response to the initial four concurrent lookups,
     batches now send only one product lookup at a time, spaced by at least 7.5 seconds.
