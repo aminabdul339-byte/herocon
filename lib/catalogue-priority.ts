@@ -13,28 +13,30 @@ import type {Product} from "@/lib/types";
  * If Blob access is suspended we preserve original catalogue order and prices.
  * Failed index reads must not be cached as empty successful results.
  */
-const PREFIX="catalogue/buckydrop-snapshots/v1/";
+const PREFIXES=["catalogue/buckydrop-snapshots/v2/","catalogue/buckydrop-snapshots/v1/"];
 const snapshotKey=(link:string)=>createHash("sha256").update(link).digest("hex");
 const savedHashes=unstable_cache(async():Promise<string[]>=>{
  if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
- const values:string[]=[];
+ const values=new Set<string>();
  try{
-  let cursor:string|undefined;
-  do{
-   const result=await list({prefix:PREFIX,limit:1000,cursor});
-   for(const file of result.blobs){
-    const hash=file.pathname.slice(PREFIX.length).replace(/\.json$/,"");
-    if(/^[a-f0-9]{64}$/.test(hash))values.push(hash);
-   }
-   if(!result.hasMore)break;
-   cursor=result.cursor;
-  }while(cursor);
-  return values;
+  for(const prefix of PREFIXES){
+   let cursor:string|undefined;
+   do{
+    const result=await list({prefix,limit:1000,cursor});
+    for(const file of result.blobs){
+     const hash=file.pathname.slice(prefix.length).replace(/\\.json$/,"");
+     if(/^[a-f0-9]{64}$/.test(hash))values.add(hash);
+    }
+    if(!result.hasMore)break;
+    cursor=result.cursor;
+   }while(cursor);
+  }
+  return [...values];
  }catch(error){
-  console.warn("[herocon] Saved partner index currently inaccessible",error instanceof Error?error.name:"UNKNOWN");
+  console.warn("[herocon] Saved supplier index inaccessible",error instanceof Error?error.name:"UNKNOWN");
   return [];
  }
-},["herocon-saved-partner-index-v2"],{revalidate:60,tags:["herocon-saved-partner-index"]});
+},["herocon-saved-partner-index-v3"],{revalidate:60,tags:["herocon-saved-partner-index"]});
 
 /** Indexed hashes allow other collections to reuse snapshots without
  * issuing storage GETs for thousands of products without saved details. */
