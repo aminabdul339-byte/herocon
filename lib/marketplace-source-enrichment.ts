@@ -1,6 +1,7 @@
 import "server-only";
 import {createHash} from "node:crypto";
-import {get,put} from "@vercel/blob";
+import {get,put,list} from "@vercel/blob";
+import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
@@ -350,4 +351,36 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
   sellerName:data.sellerName||null,
   variants
  };
+}
+
+/** Avoid one Blob GET for every catalogue card. Only hydrate visible links
+ * whose canonical URL hashes actually have an independent HioBuy snapshot. */
+const savedIndex=unstable_cache(async():Promise<string[]>=>{
+ if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
+ let cursor:string|undefined;
+ const hashes:string[]=[];
+ do{
+  const result=await list({prefix:PREFIX,limit:1000,cursor});
+  for(const entry of result.blobs){
+   const key=entry.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
+   if(/^[a-f0-9]{64}$/.test(key))hashes.push(key);
+  }
+  if(!result.hasMore)break;
+  cursor=result.cursor;
+ }while(cursor);
+ return hashes;
+},["herocon-marketplace-source-index-v1"],{revalidate:60});
+export async function savedMarketplaceSourceHashes():Promise<ReadonlySet<string>>{
+ try{return new Set(await savedIndex());}catch{return new Set();}
+}
+export async function enrichVisibleProductCards(products:Product[]):Promise<Product[]>{
+ if(!products.length)return products;
+ const saved=await savedMarketplaceSourceHashes();
+ if(!saved.size)return products;
+ return Promise.all(products.map(async product=>{
+  const url=normalizeMarketplaceLink(product.originalMarketplaceUrl);
+  if(!url||!saved.has(createHash("sha256").update(url).digest("hex")))return product;
+  const enrichment=await getSavedMarketplaceSource(url);
+  return withMarketplaceSource(product,enrichment);
+ }));
 }
