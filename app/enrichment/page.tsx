@@ -26,10 +26,15 @@ export default async function EnrichmentPage({
  const collection=query.collection==="personal"?"personal":"business";
  const originals=collection==="personal"?personalShopProducts.map(p=>({
    id:p.id,title:p.name,sourceUrl:p.originalUrl,
-   productPath:"/shop-for-yourself/"+encodeURIComponent(p.id)
+   productPath:"/shop-for-yourself/"+encodeURIComponent(p.id),
+   existingImages:p.imageUrl?1:0,existingVariants:0,
+   hasDescription:false,hasSeller:false
   })):(await getProducts()).map(p=>({
    id:productId(p),title:cleanTitle(p),sourceUrl:p.originalMarketplaceUrl||"",
-   productPath:"/product/"+encodeURIComponent(productId(p))
+   productPath:"/product/"+encodeURIComponent(productId(p)),
+   existingImages:(p.images?.length||0)+(p.imageUrl?1:0),
+   existingVariants:p.variants?.length||0,
+   hasDescription:Boolean(p.descriptionText),hasSeller:Boolean(p.sellerName)
   }));
  const items=originals.filter(p=>/^[A-Za-z0-9_-]{5,100}$/.test(p.id)&&Boolean(normalizeMarketplaceLink(p.sourceUrl)));
  const pageCount=Math.max(1,Math.ceil(items.length/12));
@@ -41,6 +46,7 @@ export default async function EnrichmentPage({
  })));
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
-  <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}/>
+  <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
+    providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>
  </main>;
 }
