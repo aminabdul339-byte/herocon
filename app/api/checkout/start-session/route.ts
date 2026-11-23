@@ -16,7 +16,6 @@ function limit(ip:string){
  return ++found.count>3;
 }
 export async function POST(request:Request){
- if(!checkoutLaunchReadiness().enabled)return response({error:"Live customer payments are not activated."},503);
  const customer=await currentCustomer();
  if(!customer)return response({error:"Sign in to your free Herocon account before purchasing."},401);
  if(!await checkActiveMembership(customer))
@@ -32,16 +31,20 @@ export async function POST(request:Request){
  catch{return response({error:"Invalid request."},400);}
  const id=body&&typeof body==="object"&&!Array.isArray(body)?(body as Record<string,unknown>).quoteId:null;
  if(typeof id!=="string"||!quoteIdOk(id))return response({error:"Invalid quote."},400);
- if(!(body&&typeof body==="object"&&!Array.isArray(body)&&
-   (body as Record<string,unknown>).shippingAcknowledged===true))
-  return response({error:"Please acknowledge that international shipping is paid separately after warehouse arrival."},400);
  const quote=await getApprovedQuote(id);
  if(!quote)return response({error:"Quote not found."},404);
  if(quote.customerEmail.toLowerCase()!==customer.email.toLowerCase())
   return response({error:"Sign in with the email address this private checkout quote was prepared for."},403);
- if(quote.paymentStage!=="products"||quote.shippingPence!==0||
-  !quote.estimatedLaterShippingPence)
-  return response({error:"This quote is not approved for the two-stage product checkout."},409);
+ const stage=quote.paymentStage==="all_in"?"all_in":"products";
+ if(!checkoutLaunchReadiness(stage).enabled)return response({error:"Live customer payments are not activated for this payment model."},503);
+ if(stage==="products"){
+  if(quote.shippingPence!==0||!quote.estimatedLaterShippingPence||
+   (body as Record<string,unknown>).shippingAcknowledged!==true)
+   return response({error:"Please acknowledge that international shipping is paid separately after warehouse arrival."},400);
+ }else if(quote.fulfilment!=="bucky_prepaid_auto_fulfilment"||quote.shippingPence<=0||
+  quote.estimatedLaterShippingPence!==undefined||
+  (body as Record<string,unknown>).allInAcknowledged!==true)
+  return response({error:"Confirm the final delivered GBP total and all-inclusive shipping terms."},400);
  if(!quoteIsCurrent(quote))return response({error:"This quote has expired. Request a new price."},409);
  try{
   // Do not create a charge without checking current seller SKU, stock and cost.
@@ -59,9 +62,9 @@ export async function POST(request:Request){
   fields.set("payment_method_types[0]","card");
   fields.set("expires_at",String(Math.floor(Date.parse(quote.expiresAt)/1000)));
   fields.set("metadata[purpose]","herocon_live_checkout");
-  fields.set("metadata[paymentStage]","products");
+  fields.set("metadata[paymentStage]",stage);
   fields.set("metadata[quoteId]",quote.id);
-  fields.set("metadata[fulfilment]","merchant_manual_supplier_payment");
+  fields.set("metadata[fulfilment]",quote.fulfilment);
   for(const [index,line] of quote.lines.entries()){
    fields.set("line_items["+index+"][price_data][currency]","gbp");
    fields.set("line_items["+index+"][price_data][product_data][name]",line.title.slice(0,120));
