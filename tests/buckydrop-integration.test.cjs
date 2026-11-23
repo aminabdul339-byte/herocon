@@ -114,3 +114,48 @@ test('one-payment checkout stays off until every independent merchant and suppli
  // An all-in pilot must not accidentally unlock legacy two-stage purchases.
  assert.equal(b.checkoutLaunchReadiness('products').enabled,false);
 });
+
+
+test('complimentary owner premium is bound to one verified Supabase user ID, not a browser email',()=>{
+ const id='123e4567-e89b-42d3-a456-426614174000';
+ const {isOwnerPremiumCustomer}=load('lib/owner-premium.ts',{},{
+  HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID:id
+ });
+ assert.equal(isOwnerPremiumCustomer({id,email:'owner@example.test'}),true);
+ assert.equal(isOwnerPremiumCustomer({id:'223e4567-e89b-42d3-a456-426614174000',email:'owner@example.test'}),false);
+ assert.equal(isOwnerPremiumCustomer(null),false);
+ const missing=load('lib/owner-premium.ts',{},{});
+ assert.equal(missing.isOwnerPremiumCustomer({id,email:'owner@example.test'}),false);
+});
+
+test('complimentary owner membership does not require a live Stripe subscription',async()=>{
+ const owner={id:'123e4567-e89b-42d3-a456-426614174000',email:'owner@example.test'};
+ let membershipCalls=0;
+ const {checkActiveMembership}=load('lib/membership-access.ts',{modules:{
+  '@/lib/membership-billing':{hasLiveMembership:async()=>{membershipCalls++;return false;}},
+  '@/lib/owner-premium':{isOwnerPremiumCustomer:c=>c.id===owner.id}
+ }});
+ assert.equal(await checkActiveMembership(owner),true);
+ assert.equal(membershipCalls,0);
+ assert.equal(await checkActiveMembership({id:'different-user',email:'other@example.test'}),false);
+ assert.equal(membershipCalls,1);
+});
+
+test('nonowners cannot start live product checkout even if someone has a paid membership',async()=>{
+ let stripeCalls=0;
+ const {POST}=load('app/api/checkout/start-session/route.ts',{modules:{
+  'next/server':{NextResponse:{json:(body,opts={})=>Response.json(body,{status:opts.status||200,headers:opts.headers})}},
+  '@/lib/approved-checkout':{},
+  '@/lib/live-checkout':{checkoutLaunchReadiness:()=>({enabled:true,missing:[]})},
+  '@/lib/stripe-live':{verifyLiveAccount:async()=>{stripeCalls++;return {chargesEnabled:true,country:'GB'};}},
+  '@/lib/customer-auth':{currentCustomer:async()=>({id:'not-owner',email:'member@example.test'})},
+  '@/lib/membership-access':{checkActiveMembership:async()=>true},
+  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>false}
+ }});
+ const res=await POST(new Request('https://herocon.store/api/checkout/start-session',{
+  method:'POST',headers:{origin:'https://herocon.store','content-type':'application/json'},body:JSON.stringify({quoteId:'hq_'+'a'.repeat(40)})
+ }));
+ assert.equal(res.status,403);
+ assert.match((await res.json()).error,/owner pilot/i);
+ assert.equal(stripeCalls,0);
+});
