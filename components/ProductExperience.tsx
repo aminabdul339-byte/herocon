@@ -15,7 +15,7 @@ type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:DisplaySupplierDetails;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false,ownerDirectBuy=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:DisplaySupplierDetails;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean;ownerDirectBuy?:boolean}){
  const router=useRouter();
  const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
@@ -252,16 +252,12 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </>}
     <div className="hc-buy-actions">
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
-     <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Buy now</button>
+     {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||!marketplace} onClick={()=>router.push("/pilot/buckydrop?productId="+encodeURIComponent(id)+(sourceVariant?.skuCode?"&sku="+encodeURIComponent(sourceVariant.skuCode):"")+"&quantity="+(totalUnits||singleQuantity))}>Buy now · owner access</button>:
+      <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Add and view cart</button>}
     </div>
-    {fulfillbotPilotOwner&&marketplace&&<Link
-      href={"/trial-order?productId="+encodeURIComponent(id)+(id==="JkGxy3I8MBvabwyDsSO7uQ"?"&specs=Black-Alo":"")}
-      style={{display:"block",padding:"14px 18px",marginTop:14,background:"#f4f2e9",
-        border:"1px solid #d0cfbb",borderRadius:6,color:"#264a32",fontWeight:700,textAlign:"center"}}>
-      Request a sourcing quote through Herocon (owner trial)
-    </Link>}
+    {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active: no £9.99 subscription required. Supplier variants and pricing must be verified before payment.</p>}
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
-    <p className="hc-checkout-note">Adding to cart requires a free account. Membership is £9.99/month when you buy. Online checkout is currently unavailable.</p>
+    <p className="hc-checkout-note">Adding to cart requires a free account. {ownerDirectBuy?"Your private buy-now pilot opens the BuckyDrop product and SKU check. Live payments remain gated until fulfilment is verified.":"Product checkout is currently restricted to the owner pilot; browsing and the cart remain free."}</p>
     <div className="hc-editorial-accordions" aria-label="Product information">
       <details>
         <summary>{descriptionOriginalLanguage?"Seller's original Chinese description":"Seller description"}</summary>
