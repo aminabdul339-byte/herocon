@@ -159,3 +159,49 @@ test('nonowners cannot start live product checkout even if someone has a paid me
  assert.match((await res.json()).error,/owner pilot/i);
  assert.equal(stripeCalls,0);
 });
+
+
+test('checkout profit floor counts supplier FX, all BuckyDrop charges, international shipping, Stripe percentage and per-transaction fixed fees',()=>{
+ const {assessMerchantCheckout,calculateMinimumCustomerPrice}=load('lib/order-economics.ts');
+ const costs={
+  supplierCostPence:182,
+  internationalFreightPence:500,
+  buckydropFeesPence:200,
+  walletAndFxFeesPence:75,
+  taxAndDutiesPence:0,
+  shippingRiskReservePence:150
+ };
+ const low=assessMerchantCheckout(182+500+99,costs);
+ assert.equal(low.priceApproved,false);
+ assert.ok(low.projectedProfitPence<low.requiredProfitPence);
+ assert.ok(low.stripeAllowancePence>=Math.ceil(low.totalPence*.06)+30);
+ const floor=calculateMinimumCustomerPrice(costs);
+ const safe=assessMerchantCheckout(floor,costs);
+ assert.equal(safe.priceApproved,true);
+ assert.ok(safe.projectedProfitPence>=200);
+ assert.ok(safe.projectedProfitPence>=Math.ceil(safe.totalPence*.12));
+ assert.equal(assessMerchantCheckout(floor-1,costs).priceApproved,false);
+});
+
+test('extra BuckyDrop, freight or payment FX fees can never improve checkout profitability',()=>{
+ const {assessMerchantCheckout}=load('lib/order-economics.ts');
+ const costs={supplierCostPence:300,internationalFreightPence:500,
+  buckydropFeesPence:100,walletAndFxFeesPence:50,taxAndDutiesPence:100,
+  shippingRiskReservePence:100};
+ const original=assessMerchantCheckout(2000,costs);
+ for(const field of ['supplierCostPence','internationalFreightPence',
+  'buckydropFeesPence','walletAndFxFeesPence','taxAndDutiesPence','shippingRiskReservePence']){
+  const after=assessMerchantCheckout(2000,{...costs,[field]:costs[field]+200});
+  assert.ok(after.projectedProfitPence<original.projectedProfitPence);
+  assert.ok(after.minimumCustomerTotalPence>original.minimumCustomerTotalPence);
+ }
+});
+
+test('merchant pricing rejects missing or negative costs, rather than treating them as free',()=>{
+ const {assessMerchantCheckout}=load('lib/order-economics.ts');
+ const c={supplierCostPence:100,internationalFreightPence:500,buckydropFeesPence:100,
+  walletAndFxFeesPence:20,taxAndDutiesPence:0,shippingRiskReservePence:100};
+ assert.throws(()=>assessMerchantCheckout(1500,{...c,buckydropFeesPence:undefined}),/Invalid/);
+ assert.throws(()=>assessMerchantCheckout(1500,{...c,walletAndFxFeesPence:-1}),/Invalid/);
+ assert.throws(()=>assessMerchantCheckout(1499.5,c),/Invalid/);
+});
