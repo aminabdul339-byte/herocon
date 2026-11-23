@@ -31,3 +31,8 @@ jobs:
         run: node --test tests/buckydrop-live-smoke.test.cjs
       - name: Free OpenCLI adapter normalisation tests (offline fixtures)
         run: node --test tests/opencli-enrich.test.mjs
+      - name: No-login marketplace parser tests (offline fixtures)
+        run: node --test tests/public-marketplace-probe.test.mjs
+      - name: Probe five public marketplace listings without login or paid API
+        if: github.event_name == 'pull_request' && github.event.pull_request.number == 35
+        run: node scripts/probe-public-marketplace.mjs
