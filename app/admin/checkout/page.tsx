@@ -42,7 +42,7 @@ export default function MerchantCheckoutQuotes(){
   <section style={{maxWidth:640,margin:"auto"}}>
    <Link href="/" style={{color:"#345d42"}}>Herocon</Link>
    <h1 style={{font:"normal 42px Georgia,serif",margin:"22px 0 8px"}}>Merchant order quotes</h1>
-   <p style={{lineHeight:1.7}}>Prepare a private, all-inclusive GBP quote for a verified supplier SKU. This page never takes payment or purchases anything from BuckyDrop.</p>
+   <p style={{lineHeight:1.7}}>Prepare a private GBP quote for a verified supplier SKU. Every new quote includes a clearly disclosed 99p Herocon service fee per order. This page never takes payment or purchases anything from BuckyDrop.</p>
    <p style={{fontSize:13,lineHeight:1.65,color:"#7c5630",padding:15,borderRadius:12,background:"#fff3df"}}>
     Merchant-only pilot. You must independently confirm supplier availability, packed-freight allowance, duties and taxes, processing fees, reserve for overruns, legal terms and BuckyDrop prepaid automatic fulfilment. Do not share an unapproved price or activate live payments just because a quote is saved.
    </p>
