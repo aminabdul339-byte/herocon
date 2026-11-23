@@ -70,14 +70,16 @@ function shippingCustomer(s:StripeSession){
   contactName,contactPhone,postCode:safe(address?.postal_code),email};
 }
 function verifySession(s:StripeSession,q:ApprovedQuote,expectedId:string){
- return s.id===expectedId&&s.id.startsWith("cs_live_")&&s.livemode===true&&
+ const stage=q.paymentStage==="all_in"?"all_in":"products";
+ const valid=stage==="all_in"?
+  q.shippingPence>0&&q.estimatedLaterShippingPence===undefined&&q.fulfilment==="bucky_prepaid_auto_fulfilment":
+  q.shippingPence===0&&!!q.estimatedLaterShippingPence&&q.fulfilment==="bucky_manual_supplier_payment";
+ return valid&&s.id===expectedId&&s.id.startsWith("cs_live_")&&s.livemode===true&&
   s.mode==="payment"&&s.currency==="gbp"&&s.payment_status==="paid"&&
   s.amount_total===q.totalPence&&s.metadata?.quoteId===q.id&&
   s.metadata?.purpose==="herocon_live_checkout"&&
-  s.metadata?.paymentStage==="products"&&q.paymentStage==="products"&&
-  q.shippingPence===0&&!!q.estimatedLaterShippingPence&&
-  s.metadata?.fulfilment==="merchant_manual_supplier_payment"&&
-  q.saleCurrency==="gbp"&&q.fulfilment==="bucky_manual_supplier_payment"&&
+  s.metadata?.paymentStage===stage&&s.metadata?.fulfilment===q.fulfilment&&
+  q.saleCurrency==="gbp"&&
   q.customerEmail.toLowerCase()===(safe(s.customer_details?.email)||safe(s.customer_email)).toLowerCase();
 }
 /** Stripe webhooks can be repeated or overlap. Claim quote before supplier request. */
@@ -108,17 +110,21 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   throw Error("Cannot reserve paid-order handling. Stripe must retry.");
  }
  const buyer=shippingCustomer(session);
+ const allIn=quote.paymentStage==="all_in";
  const audit:Audit={version:1,quoteId:quote.id,sessionId,email:quote.customerEmail,totalPence:quote.totalPence,
   state:"paid_review_required",reason:"",recordedAt:new Date().toISOString(),
   partnerOrderNo:null,shopOrderNo:null,accessCode:null,customerEmailSent:false,merchantEmailSent:false};
  if(!buyer)audit.reason="Stripe buyer delivery address, phone or email is missing or invalid.";
  else if(process.env.HEROCON_ORDER_SUBMISSION_ENABLED!=="true"||
   (process.env.HEROCON_INTERNAL_FULFILMENT_KEY||"").length<32||
-  process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true"){
+  (allIn?process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED!=="true"||
+   process.env.HEROCON_ALL_IN_DELIVERED_PRICING_APPROVED!=="true":
+   process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true")){
   audit.reason="Supplier handoff or manual-payment verification is disabled.";
  }else{
   const payload={
    verifiedPaymentReference:session.id,verifiedTotalGBP:quote.totalPence/100,customer:buyer,
+   paymentStage:allIn?"all_in":"products",
    lines:quote.lines.map(x=>({
     marketplaceUrl:x.marketplaceUrl,skuCode:x.skuCode,quantity:x.quantity,
     verifiedSalePriceGBP:x.unitPriceGBP,maxSupplierPriceCNY:Math.round(x.supplierUnitCNY*1.02*100)/100
@@ -140,7 +146,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
     audit.accessCode=safe(v.accessCode);
     audit.state=v.state==="accepted"?"submitted_awaiting_merchant_payment":"submission_uncertain";
     audit.reason=audit.state==="submitted_awaiting_merchant_payment"?
-     "Order sent to BuckyDrop; merchant must review, confirm and pay the supplier before fulfilment.":
+     (allIn?"Order submitted for prepaid automatic fulfilment. Confirm the provider funded procurement and released dispatch; monitor exceptions.":"Order sent to BuckyDrop; merchant must review, confirm and pay the supplier before fulfilment."):
      "Supplier order outcome uncertain. Do not submit a duplicate order; reconcile with BuckyDrop.";
    }
   }catch{audit.reason="Supplier submission outcome uncertain or timed out. Merchant must reconcile using the payment reference before retrying.";}
@@ -171,7 +177,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   audit.partnerOrderNo?"Your order reference: "+audit.partnerOrderNo:"Your order is awaiting merchant review before supplier processing.",
   audit.accessCode?"Your private tracking access code: "+audit.accessCode:"",
   audit.accessCode?"Track it at https://herocon.store/orders":"",
-  "Your payment to Herocon is separate from our merchant's supplier payment to BuckyDrop.",
+  "Herocon coordinates purchasing and delivery through its fulfilment partners.",
   "We will arrange fulfilment and contact you if an item becomes unavailable.",
   "Questions or changes? Visit https://herocon.store/contact."
  ].filter(Boolean).join("\n\n");
