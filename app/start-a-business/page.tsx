@@ -3,6 +3,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
+import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcaseMix} from "@/lib/catalogue-priority";
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
@@ -51,7 +52,7 @@ export default async function StartBusiness({searchParams}:{searchParams:Promise
  const requestedPage=Number.parseInt(params.page||"1",10);
  const page=Number.isFinite(requestedPage)?Math.min(pages,Math.max(1,requestedPage)):1;
  const start=(page-1)*PAGE_SIZE;
- const shown=await attachSavedPartnerImages(catalogue.slice(start,start+PAGE_SIZE));
+ const shown=await enrichVisibleProductCards(await attachSavedPartnerImages(catalogue.slice(start,start+PAGE_SIZE)));
  const categoryCounts=new Map<string,number>();
  for(const product of all)if(product.category)categoryCounts.set(product.category,(categoryCounts.get(product.category)||0)+1);
  const quickCategories=PRIMARY_CATEGORIES.filter(name=>categoryCounts.has(name))
