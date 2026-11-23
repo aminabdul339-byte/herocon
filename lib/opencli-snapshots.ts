@@ -1,6 +1,7 @@
 import "server-only";
 import {createHash} from "node:crypto";
-import {get,put} from "@vercel/blob";
+import {get,put,list} from "@vercel/blob";
+import {unstable_cache} from "next/cache";
 import type {Product} from "@/lib/types";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {marketplaceIdentity} from "@/lib/catalogue-identity";
@@ -71,6 +72,29 @@ export function openCliSnapshotPath(url:string):string|null{
  return PREFIX+createHash("sha256").update(normalized).digest("hex")+".json";
 }
 export const OPENCLI_SNAPSHOT_PREFIX=PREFIX;
+const indexedSnapshotHashes=unstable_cache(async():Promise<string[]>=>{
+ if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
+ const hashes:string[]=[];
+ let cursor:string|undefined;
+ do{
+  const page=await list({prefix:PREFIX,limit:1000,...(cursor?{cursor}:{})});
+  for(const blob of page.blobs){
+   const name=blob.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
+   if(/^[a-f0-9]{64}$/.test(name))hashes.push(name);
+  }
+  cursor=page.hasMore?page.cursor:undefined;
+ }while(cursor);
+ return hashes;
+},["herocon-free-opencli-index-v1"],{revalidate:120});
+export async function savedOpenCliSnapshotHashes():Promise<ReadonlySet<string>>{
+ try{return new Set(await indexedSnapshotHashes());}
+ catch{return new Set();}
+}
+export function openCliHash(url:string):string|null{
+ const source=normalizeMarketplaceLink(url);
+ return openCliSnapshotPath(url)&&source?createHash("sha256").update(source).digest("hex"):null;
+}
+
 export async function getOpenCliSnapshot(url:string):Promise<OpenCliSnapshot|null>{
  const path=openCliSnapshotPath(url);
  if(!path||!process.env.BLOB_READ_WRITE_TOKEN)return null;
