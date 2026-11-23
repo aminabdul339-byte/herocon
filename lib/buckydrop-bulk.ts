@@ -32,6 +32,8 @@ export type BuckydropBulkStatus={
  totalSaved:number;totalKnown:number;lastRun:string|null;
  checked:number;saved:number;failed:number;unavailable:number;
  pending:number;activeShards:number;pausedShards:number;lastIssue:string|null;
+ buckydropSaved:number;hioBuySaved:number;sharedSaved:number;
+ cooldownUntil:string|null;cooldownReason:string|null;
 };
 async function existingHashes(prefix:string):Promise<Set<string>>{
  const all=new Set<string>();
@@ -119,23 +121,35 @@ async function permanentReject(sourceHash:string,code:string){
  }catch{}
 }
 export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
- const [saved,all,progress]=await Promise.all([
-  getAllEnrichedSourceHashes(),getProducts(),
-  Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i))))
+ const [prefixSets,all,progress,block]=await Promise.all([
+  Promise.all(ALL_SAVED.map(existingHashes)),getProducts(),
+  Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i)))),
+  getGlobalBlock()
  ]);
+ const buckydrop=new Set([...prefixSets[0],...prefixSets[1]]);
+ const hioBuy=new Set([...prefixSets[2],...prefixSets[3]]);
+ const saved=new Set([...buckydrop,...hioBuy]);
  const c=candidates(all);
  let checked=0,added=0,failed=0,unavailable=0,activeShards=0,pausedShards=0;
  let lastRun:string|null=null,lastIssue:string|null=null;
  for(const p of progress){
   if(!p)continue;
   checked+=p.checked;added+=p.saved;failed+=p.failed;unavailable+=p.unavailable;
-  if(p.status==="running")activeShards++;
-  if(p.status==="paused"||p.status==="failed")pausedShards++;
+  // A function that exited abnormally must not be shown as still running forever.
+  const recent=Date.now()-Date.parse(p.updatedAt)<10*60_000;
+  if(p.status==="running"&&recent)activeShards++;
+  if(p.status==="paused"||p.status==="failed"||(p.status==="running"&&!recent))pausedShards++;
   if(!lastRun||p.startedAt>lastRun){lastRun=p.startedAt;lastIssue=p.issue;}
  }
  const totalSaved=c.filter(p=>saved.has(p.hash)).length;
+ const buckydropSaved=c.filter(p=>buckydrop.has(p.hash)).length;
+ const hioBuySaved=c.filter(p=>hioBuy.has(p.hash)).length;
+ const sharedSaved=c.filter(p=>buckydrop.has(p.hash)&&hioBuy.has(p.hash)).length;
  return {totalSaved,totalKnown:c.length,lastRun,checked,saved:added,
-  failed,unavailable,pending:c.length-totalSaved,activeShards,pausedShards,lastIssue};
+  failed,unavailable,pending:c.length-totalSaved,activeShards,pausedShards,lastIssue,
+  buckydropSaved,hioBuySaved,sharedSaved,
+  cooldownUntil:block?new Date(block.until).toISOString():null,
+  cooldownReason:block?.code||null};
 }
 export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkProgress>{
  if(!Number.isInteger(shard)||shard<0||shard>=BUCKYDROP_BULK_SHARDS)throw Error("invalid_shard");
