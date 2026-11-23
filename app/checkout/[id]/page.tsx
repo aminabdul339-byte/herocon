@@ -33,6 +33,7 @@ export default async function CheckoutQuote({params}:{params:Promise<{id:string}
      <p style={{display:"flex",justifyContent:"space-between"}}><span>International shipping charged now</span><strong>{allIn?money(quote.shippingPence):"£0.00 — paid later"}</strong></p>
      {!allIn&&<p style={{display:"flex",justifyContent:"space-between",color:"#86633e"}}><span>Indicative shipping estimate (not charged)</span><strong>≈ {money(quote.estimatedLaterShippingPence||0)}</strong></p>}
      <p style={{display:"flex",justifyContent:"space-between"}}><span>{allIn?"Applicable tax charged now":"Product-stage tax charged now"}</span><strong>{money(quote.taxPence)}</strong></p>
+     <p style={{display:"flex",justifyContent:"space-between"}}><span>Herocon service fee · per order</span><strong>{money(quote.serviceFeePence??0)}</strong></p>
      <p style={{display:"flex",justifyContent:"space-between",paddingTop:18,borderTop:"1px solid #bdcfbd",fontSize:21}}><strong>{allIn?"Total due — no second freight payment":"Pay now (products)"}</strong><strong>{money(quote.totalPence)}</strong></p>
     </div>
     <p style={{fontSize:12,color:"#708472"}}>This quote expires on {new Date(quote.expiresAt).toLocaleString("en-GB",{timeZone:"Europe/London"})} (UK time). An expired quote must be approved again.</p>
