@@ -94,13 +94,13 @@ function AccountContent(){
   <Header/>
   <section className="hc-account-shell">
    <div className="hc-account-intro">
-    <p className="hc-premium-kicker">YOUR HEROCON / FREE ACCOUNT</p>
+    <p className="hc-premium-kicker">{account.ownerPremium?"YOUR HEROCON / OWNER PREMIUM":"YOUR HEROCON / FREE ACCOUNT"}</p>
     <h1>Your account.<br/><em>Your cart.</em></h1>
-    <p>Create an account to save products in your cart and explore original marketplace listings. <strong>Registration is free.</strong> Paid membership is optional while product ordering is being developed.</p>
+    <p>{account.ownerPremium?<>Your account has <strong>complimentary Owner Premium</strong> access. No £9.99 monthly membership is required. Live product purchasing is still in a protected trial while BuckyDrop fulfilment is verified.</>:<>Create an account to save products in your cart and explore original marketplace listings. <strong>Registration is free.</strong> Paid membership is optional while product ordering is being developed.</>}</p>
     <div className="hc-account-perks">
      <p><strong>01 / SIGN UP</strong> Create your free account.</p>
      <p><strong>02 / YOUR CART</strong> Keep your selected products together.</p>
-     <p><strong>03 / MEMBERSHIP</strong> Optional £9.99/month early access. Product orders are not yet available.</p>
+     <p><strong>03 / MEMBERSHIP</strong> {account.ownerPremium?"Owner Premium included at £0/month. Buy Now is reserved for your account.":"Optional £9.99/month early access. Product orders are not yet available."}</p>
     </div>
     {pending&&<p className="hc-account-pending">Your selected product will be added after sign-in.</p>}
    </div>
@@ -109,6 +109,7 @@ function AccountContent(){
      <p className="hc-premium-kicker">ACCOUNT ACTIVE</p>
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
+     {account.ownerPremium&&<><p role="status" style={{background:"#ecf4e9",color:"#215b37",padding:14,borderRadius:12,fontWeight:800}}>Owner Premium active · Complimentary · No new subscription charge</p><Link className="hc-account-primary-link" href="/pilot/buckydrop">Shop with owner-only Buy Now <ArrowIcon direction="right"/></Link></>}
      <Link className="hc-account-primary-link" href="/cart">View your cart <ArrowIcon direction="right"/></Link>
      <Link href="/membership/activate">Manage membership and billing <ArrowIcon direction="right"/></Link>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
