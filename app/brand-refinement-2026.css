@@ -282,3 +282,58 @@ html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-c
   font-size:28px!important;line-height:1.3!important;
  }
 }
+
+
+/* Membership "How it works": inset content inside rounded step cards.
+   The original stepper gave its first card 0px left padding, and its mobile
+   nth-child resets removed padding again after the cards became rounded.
+   Keep all four cards readable without changing the content or checkout. */
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-steps{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:clamp(12px,1.2vw,20px);
+ align-items:stretch;
+ border:0;
+}
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step,
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step:not(:first-child),
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step:nth-child(3){
+ box-sizing:border-box;
+ min-width:0;
+ min-height:235px;
+ padding:clamp(24px,1.9vw,34px);
+ border:1px solid var(--hc-border,#d8e1d6);
+ border-radius:23px;
+ background:#fffefa;
+ overflow-wrap:break-word;
+}
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-step h3{
+ font-size:clamp(21px,1.55vw,27px);
+ line-height:1.2;
+ margin:24px 0 12px;
+}
+.hc-site .hc-member-page.hc-membership-clean .hc-membership-step p{
+ max-width:100%;
+ line-height:1.65;
+}
+@media(max-width:1100px){
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-steps{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+}
+@media(max-width:620px){
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-steps{
+  grid-template-columns:minmax(0,1fr);
+  gap:12px;
+ }
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step,
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step:not(:first-child),
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-steps>.hc-membership-step:nth-child(3){
+  min-height:auto;
+  padding:25px 24px 28px;
+ }
+ .hc-site .hc-member-page.hc-membership-clean .hc-membership-process-heading{
+  align-items:flex-start;
+  gap:14px;
+ }
+}
