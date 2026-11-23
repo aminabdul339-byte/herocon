@@ -80,3 +80,10 @@
 .footer{display:flex;justify-content:space-between;gap:20px;color:#a0aca0;font-size:10px;font-weight:650;letter-spacing:.04em;line-height:1.7;padding-top:25px}
 @media(max-width:1050px){.layout{grid-template-columns:1fr}.productCard{grid-template-columns:1fr 1fr}.photoBox{min-height:420px}.actionPanel{min-height:0}.intro{align-items:start;flex-direction:column}.main{padding:36px 22px}.header{padding:18px 22px}}
 @media(max-width:650px){.nav,.tag{display:none}.header{padding:15px 18px}.main{padding:28px 15px}.intro h1{font-size:40px}.productCard{grid-template-columns:1fr}.photoBox{min-height:390px}.productInfo{padding:27px}.actionPanel{padding:27px}.stepPills{gap:5px}.stepPill,.stepActive{padding:9px 11px;font-size:10px}.footer{flex-direction:column}.logo{font-size:23px}.ownerSwitch{padding:9px 12px;font-size:11px}}
+
+.shippingReview{background:#f3f7ef;border:1px solid #dce8d7;border-radius:16px;padding:17px;margin-bottom:17px}
+.shippingReview .muted{margin:11px 0;font-size:12px}
+.shippingSelect{display:block;width:100%;padding:12px;border-radius:10px;border:1px solid #bbcdb8;background:white;color:#294d34;font-size:12px;cursor:pointer;margin-bottom:16px}
+.adjustmentTotal{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;padding:13px 0 17px;border-top:1px solid #c8d7c3;margin-top:12px;font-weight:800;color:#315b3d}
+.adjustmentTotal strong{font-size:21px}
+.shippingSuccess{font-size:12px;color:#245c38;background:#e2efe0;border-radius:10px;padding:13px;line-height:1.5}
