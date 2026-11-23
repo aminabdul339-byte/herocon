@@ -88,6 +88,7 @@ export default function BuckydropPilotPreflight({productId,title,imageUrl,record
     <button type="button" disabled={!chosen} onClick={copy} style={{marginTop:15,padding:"13px 17px",border:"1px solid #b8ceb7",background:"#f4f8f2",borderRadius:12,color:"#244b34",fontSize:12,fontWeight:800,cursor:"pointer"}}>
      {copied?"SKU details copied":"Copy SKU for private quote"}
     </button>
+    {chosen&&<p><Link href={"/admin/checkout?source="+encodeURIComponent(result?.sourceMarketplaceUrl||sourceUrl)+"&sku="+encodeURIComponent(chosen.skuCode)} style={{display:"inline-block",padding:"13px 17px",borderRadius:12,background:"#244b34",color:"#fff",fontSize:12,fontWeight:800,textDecoration:"none"}}>Continue to approved merchant quote</Link></p>}
     <p style={{fontSize:11,lineHeight:1.65,color:"#8c956f",marginTop:14}}>A successful lookup is not proof BuckyDrop has purchased this item, settled freight, or agreed to hold its parcel. The real sale remains blocked until payment and fulfilment approvals are complete.</p>
    </div>}
   </article>
