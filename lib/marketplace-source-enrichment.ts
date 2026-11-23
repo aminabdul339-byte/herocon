@@ -341,7 +341,10 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
  * Preserves the HioBuy provider identity: never impersonate a BuckyDrop result.
  * Display prices and stock are dated snapshots, never checkout authority.
  */
-export type DisplaySupplierDetails=Omit<BuckydropProduct,"source">&{source:"buckydrop"|"hiobuy"};
+export type DisplaySupplierDetails=Omit<BuckydropProduct,"source">&{
+ source:"buckydrop"|"hiobuy";variantCompleteness?:SourceEnrichment["variantCompleteness"];
+ sourceVariantCount?:number
+};
 export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierDetails{
  const variants=data.variants.map(v=>{
   const options=v.attributes?.length?v.attributes:[
@@ -365,6 +368,8 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
  const host=new URL(data.sourceUrl).hostname;
  return {
   source:"hiobuy",
+  variantCompleteness:data.variantCompleteness,
+  sourceVariantCount:data.variantCount,
   environment:"live",
   spuCode:null,
   title:data.title||"Marketplace product",
@@ -416,6 +421,15 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
   const url=normalizeMarketplaceLink(product.originalMarketplaceUrl);
   if(!url||!saved.has(createHash("sha256").update(url).digest("hex")))return product;
   const enrichment=await getSavedMarketplaceSource(url);
-  return withMarketplaceSource(product,enrichment);
+  if(!enrichment)return product;
+  // Grid cards only need a thumbnail and option count. Do not serialize the
+  // entire 1000+ SKU matrix on every 24-card catalogue page.
+  return {...product,
+   imageUrl:enrichment.images[0]||product.imageUrl,
+   images:[...new Set([...enrichment.images.slice(0,12),...(product.images||[])])].slice(0,12),
+   sellerName:enrichment.sellerName||product.sellerName,
+   variantCount:enrichment.variantCount??enrichment.variants.length,
+   hasPartnerDetails:true
+  };
  }));
 }
