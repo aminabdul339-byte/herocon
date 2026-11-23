@@ -72,7 +72,7 @@ export async function POST(request:Request){
    fields.set("line_items["+index+"][quantity]",String(line.quantity));
   }
   let index=quote.lines.length;
-  for(const [title,pence] of [["Shipping",quote.shippingPence],["Applicable taxes and duties",quote.taxPence]] as const){
+  for(const [title,pence] of [["Shipping",quote.shippingPence],["Applicable taxes and duties",quote.taxPence],["Herocon service fee",quote.serviceFeePence??0]] as const){
    if(pence===0)continue;
    fields.set("line_items["+index+"][price_data][currency]","gbp");
    fields.set("line_items["+index+"][price_data][product_data][name]",title);
