@@ -2,6 +2,8 @@ import {NextResponse} from "next/server";
 import {currentCustomer,accountOriginValid} from "@/lib/customer-auth";
 import {getProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
+import {findPersonalProduct} from "@/lib/personal-shop";
+import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {BuckydropError,queryBuckydropProduct} from "@/lib/buckydrop";
 
@@ -19,9 +21,7 @@ function reply(value:unknown,status=200){return NextResponse.json(value,{status,
 export async function POST(request:Request){
   if(!accountOriginValid(request))return reply({ok:false,error:"invalid_origin"},403);
   const customer=await currentCustomer();
-  const ownerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
-    ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();
-  if(!customer||!ownerId||customer.id!==ownerId)
+  if(!isOwnerPremiumCustomer(customer))
     return reply({ok:false,error:"owner_sign_in_required"},403);
   if(!(request.headers.get("content-type")||"").toLowerCase().startsWith("application/json"))
     return reply({ok:false,error:"json_required"},415);
@@ -45,13 +45,15 @@ export async function POST(request:Request){
     return reply({ok:false,error:"check_recently_requested"},429);
   const catalogue=await getProducts();
   const product=catalogue.find(item=>productId(item)===id||item.canonicalId===id);
-  if(!product)return reply({ok:false,error:"product_not_found"},404);
-  const source=normalizeMarketplaceLink(product.originalMarketplaceUrl);
+  // Personal Edit entries do not all exist in the committed general catalogue.
+  const personal=product?null:findPersonalProduct(id);
+  if(!product&&!personal)return reply({ok:false,error:"product_not_found"},404);
+  const source=normalizeMarketplaceLink(product?.originalMarketplaceUrl||personal?.originalUrl);
   if(!source)return reply({ok:false,error:"verified_marketplace_link_missing"},422);
   recent.set(key,now);
   try{
     const live=await queryBuckydropProduct(source);
-    const variants=live.variants.slice(0,160).map(v=>({
+    const variants=live.variants.slice(0,500).map(v=>({
       skuCode:v.skuCode,
       label:v.title,
       options:v.options,
