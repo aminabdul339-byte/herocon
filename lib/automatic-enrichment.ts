@@ -237,6 +237,9 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
     if(consecutiveFailures>=3){stop=true;state.lastIssue="repeated_provider_failures";}
    }
   }
+  // On shared-quota or account-wide stops, retry unresolved sources at the
+  // next daily run instead of hiding them behind the advancing cursor.
+  if(stop)state.lastKey="";
   await saveState(state);
  }
  const result:AutomaticEnrichmentResult={
