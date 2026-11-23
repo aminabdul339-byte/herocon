@@ -12,7 +12,7 @@ import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 import {currentCustomer} from "@/lib/customer-auth";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
-import {getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
+import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
 
 const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
@@ -60,8 +60,17 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
   <SourceEnrichmentButton productId={props.id} collection="business" providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>:null;
  if(enriched){
   const product=withMarketplaceSource(props.product,enriched);
+  // Pass the enriched gallery and SKU-identified supplier model, rather than
+  // the catalogue props saved before HioBuy returned the new photographs.
   return <>
-    <ProductExperience {...props} product={product} buckydropEnabled={false}/>
+    <ProductExperience
+      {...props}
+      key={props.id}
+      product={product}
+      images={imagesFor(product)}
+      initialSource={toDisplaySupplierDetails(enriched)}
+      buckydropEnabled={false}
+    />
     {button}
   </>;
  }
