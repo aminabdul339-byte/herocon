@@ -190,7 +190,13 @@ function metadata(html:string,url:string):SourceEnrichment{
  const description=cleanText(product.description||meta.get("og:description")||meta.get("description"));
  // Only preserve a monetary value when the source explicitly labelled it CNY.
  const priceCNY=currency==="CNY"?amount:undefined;
- if(!cleanTitle&&!images.length&&!description)
+ const obviousBlock=/just a moment|access denied|captcha|robot check|security check|verify you are human|403 forbidden|安全验证|访问受限|请登录/i;
+ if(obviousBlock.test(cleanTitle)||obviousBlock.test(meta.get("description")||""))
+  throw new SourceEnrichmentError("marketplace_access_restricted",422);
+ const hasProductStructure=elements.length>0||
+  /^(?:product|og:product)$/i.test(meta.get("og:type")||"");
+ // Reject generic search/home/login pages, even when they have an OG title.
+ if(!hasProductStructure&&!(images.length>0&&cleanTitle.length>=12&&description.length>=20))
   throw new SourceEnrichmentError("public_metadata_unavailable",422);
  return {
   version:1,sourceUrl:url,provider:"public-page",retrievedAt:new Date().toISOString(),
