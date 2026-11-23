@@ -2,7 +2,7 @@
 import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
 
-type Result={error?:string;checkoutUrl?:string;totalGBP?:string;paymentEnabled?:boolean;id?:string};
+type Result={error?:string;checkoutUrl?:string;totalGBP?:string;paymentEnabled?:boolean;id?:string;merchantPricingForecast?:{projectedProfitGBP:string;stripeFeeReserveGBP:string;minRequiredProfitGBP:string;minCustomerTotalGBP:string}|null};
 export default function MerchantCheckoutQuotes(){
  const [secret,setSecret]=useState("");
  const [email,setEmail]=useState("");
@@ -93,6 +93,7 @@ export default function MerchantCheckoutQuotes(){
     </button>
     {message&&<p role="status" style={{lineHeight:1.6}}>{message}</p>}
     {result?.checkoutUrl&&<p><a href={result.checkoutUrl} style={{color:"#245d41",overflowWrap:"anywhere"}}>{result.checkoutUrl}</a><br/>Total: £{result.totalGBP} · Live payment {result.paymentEnabled?"enabled":"disabled"}</p>}
+    {result?.merchantPricingForecast&&<div role="status" style={{background:"#eef5eb",padding:17,borderRadius:12,marginTop:16,fontSize:13,lineHeight:1.8}}><strong>Internal order economics (estimates only)</strong><p>Stripe processing reserve: £{result.merchantPricingForecast.stripeFeeReserveGBP}<br/>Minimum acceptable full customer total: £{result.merchantPricingForecast.minCustomerTotalGBP}<br/>Minimum profit requirement: £{result.merchantPricingForecast.minRequiredProfitGBP}<br/><strong>Projected Herocon profit after stated costs: £{result.merchantPricingForecast.projectedProfitGBP}</strong></p><small>Reconcile with actual Stripe balance fees and BuckyDrop wallet and carrier charges after fulfilment. These estimates cannot guarantee profit.</small></div>}
    </form>
   </section>
  </main>;
