@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {get,put} from "@vercel/blob";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
+import type {BuckydropProduct} from "@/lib/buckydrop";
 
 const PREFIX="catalogue/source-enrichment/v1/";
 const MAX_BYTES=750_000;
@@ -299,5 +300,54 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
   variantCount:source.variants.length?source.variants.length:product.variantCount,
   priceCNY:source.priceCNY??product.priceCNY,
   hasPartnerDetails:source.variants.length>0||source.images.length>1||Boolean(product.hasPartnerDetails)
+ };
+}
+/**
+ * Adapter for the existing, supplier-agnostic product gallery/options UI.
+ * Preserves the HioBuy provider identity: never impersonate a BuckyDrop result.
+ * Display prices and stock are dated snapshots, never checkout authority.
+ */
+export type DisplaySupplierDetails=Omit<BuckydropProduct,"source">&{source:"buckydrop"|"hiobuy"};
+export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierDetails{
+ const variants=data.variants.map(v=>{
+  const options=[
+   v.colour?{name:"Colour",value:v.colour}:null,
+   v.size?{name:"Size",value:v.size}:null,
+   v.style?{name:"Style",value:v.style}:null,
+   v.material?{name:"Material",value:v.material}:null
+  ].filter((o):o is {name:string;value:string}=>o!==null);
+  if(!options.length&&v.label)options.push({name:"Seller option",value:v.label});
+  return {
+   skuCode:v.id,
+   title:v.label||options.map(o=>o.value).join(" / ")||v.id,
+   options,
+   price:v.priceCNY??null,
+   // An explicit out-of-stock flag is conclusive; an "available" boolean
+   // alone is not a numeric inventory count.
+   stock:v.available===false?0:null,
+   image:v.image||null
+  };
+ });
+ const host=new URL(data.sourceUrl).hostname;
+ return {
+  source:"hiobuy",
+  environment:"live",
+  spuCode:null,
+  title:data.title||"Marketplace product",
+  originalUrl:data.sourceUrl,
+  marketplace:host.includes("1688")?"1688":host.includes("weidian")?"Weidian":"Taobao",
+  currency:"CNY",
+  snapshotSavedAt:data.retrievedAt,
+  productProps:data.sourceSpecs,
+  listPrice:data.priceCNY??null,
+  offerPrice:data.priceCNY??null,
+  chinaDomesticFreight:null,
+  moq:null,
+  available:null,
+  images:data.images,
+  descriptionText:data.descriptionText||"",
+  detailImages:data.detailImages,
+  sellerName:data.sellerName||null,
+  variants
  };
 }
