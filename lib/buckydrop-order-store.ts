@@ -13,6 +13,7 @@ export type PaidOrderRecord={
  updatedAt:string;
  state:"sending"|"accepted"|"rejected"|"outcome_unknown";
  shopOrderNo:string|null;
+ paymentStage?:"products"|"all_in";
  // Retained privately for same-order reconciliation. Never return this object to a browser.
  originalRequest:Record<string,unknown>;
 };
