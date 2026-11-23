@@ -20,6 +20,7 @@ export function checkoutLaunchReadiness(stage:"products"|"all_in"="products"){
   ["Shipping currency and seller pricing reviewed",process.env.HEROCON_FREIGHT_CURRENCY_CONFIRMED==="true"],
   ["Legal business, shipping and refund terms approved",process.env.HEROCON_CHECKOUT_POLICIES_APPROVED==="true"],
   ["Merchant checkout key installed",(process.env.HEROCON_CHECKOUT_ADMIN_KEY||"").length>=32],
+  ["Funded BuckyDrop wallet, Stripe payout and manual order-release process confirmed",process.env.HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED==="true"],
   ["Private order storage installed",!!process.env.BLOB_READ_WRITE_TOKEN],
   ["BuckyDrop live configured",process.env.BUCKYDROP_ENV==="live"&&!!process.env.BUCKYDROP_APP_CODE&&!!process.env.BUCKYDROP_APP_SECRET],
   ["Transactional order email configured",(process.env.RESEND_API_KEY||"").startsWith("re_")&&
