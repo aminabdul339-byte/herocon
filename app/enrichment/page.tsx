@@ -2,7 +2,6 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import EnrichmentBatchRunner from "@/components/EnrichmentBatchRunner";
-import EnrichmentAutoRefresh from "@/components/EnrichmentAutoRefresh";
 import {getProducts} from "@/lib/catalogue-server";
 import {productId,cleanTitle} from "@/lib/catalogue";
 import {personalShopProducts} from "@/lib/personal-shop";
@@ -75,7 +74,6 @@ export default async function EnrichmentPage({
  ].filter((link):link is string=>Boolean(link)));
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
-  <EnrichmentAutoRefresh/>
   <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
     providerConnected={Boolean(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"&&process.env.BUCKYDROP_APP_CODE&&process.env.BUCKYDROP_APP_SECRET&&process.env.BUCKYDROP_ENV==="live")}
     automationConfigured={Boolean(process.env.CRON_SECRET?.trim()&&process.env.BLOB_READ_WRITE_TOKEN)}
