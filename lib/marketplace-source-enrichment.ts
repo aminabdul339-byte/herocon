@@ -1,6 +1,7 @@
 import "server-only";
 import {createHash} from "node:crypto";
-import {get,put} from "@vercel/blob";
+import {get,put,list} from "@vercel/blob";
+import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
 
@@ -62,6 +63,30 @@ function cleanText(v:unknown,max=10000):string{
   .replace(/\s+/g," ").trim().slice(0,max);
 }
 const pathFor=(url:string)=>PREFIX+createHash("sha256").update(url).digest("hex")+".json";
+/** One read-only cached index for both storefronts. No supplier API calls. */
+const indexedSourceHashes=unstable_cache(async():Promise<string[]>=>{
+ if(!process.env.BLOB_READ_WRITE_TOKEN)return [];
+ const keys:string[]=[];let cursor:string|undefined;
+ do{
+  const page=await list({prefix:PREFIX,limit:1000,...(cursor?{cursor}:{})});
+  for(const blob of page.blobs){
+   const key=blob.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
+   if(/^[a-f0-9]{64}$/.test(key))keys.push(key);
+  }
+  cursor=page.hasMore?page.cursor:undefined;
+ }while(cursor);
+ return keys;
+},["herocon-saved-source-index-v1"],{revalidate:120});
+export async function savedMarketplaceSourceHashes():Promise<ReadonlySet<string>>{
+ try{return new Set(await indexedSourceHashes());}
+ catch{return new Set();}
+}
+export function marketplaceSourceHash(value:unknown):string|null{
+ const url=normalizeMarketplaceLink(value);
+ return url&&ALLOWED_HOSTS.has(new URL(url).hostname)?
+  createHash("sha256").update(url).digest("hex"):null;
+}
+
 const canonical=(value:unknown)=>{
  const url=normalizeMarketplaceLink(value);
  if(!url||!ALLOWED_HOSTS.has(new URL(url).hostname))
