@@ -4,6 +4,7 @@ import {checkoutLaunchReadiness} from "@/lib/live-checkout";
 import {verifyLiveAccount} from "@/lib/stripe-live";
 import {currentCustomer} from "@/lib/customer-auth";
 import {checkActiveMembership} from "@/lib/membership-access";
+import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const response=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"no-store"}});
@@ -18,6 +19,8 @@ function limit(ip:string){
 export async function POST(request:Request){
  const customer=await currentCustomer();
  if(!customer)return response({error:"Sign in to your free Herocon account before purchasing."},401);
+ // Private sample-order stage: even paid subscribers cannot start product payment.
+ if(!isOwnerPremiumCustomer(customer))return response({error:"Herocon purchasing is currently limited to its designated owner pilot account."},403);
  if(!await checkActiveMembership(customer))
   return response({error:"An active Herocon membership (£9.99/month) is required only when purchasing products. Membership billing is not available yet."},403);
  const origin=request.headers.get("origin");
