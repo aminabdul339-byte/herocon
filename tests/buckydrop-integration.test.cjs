@@ -108,7 +108,8 @@ test('one-payment checkout stays off until every independent merchant and suppli
  assert.equal(a.checkoutLaunchReadiness('all_in').enabled,false);
  assert.ok(a.checkoutLaunchReadiness('all_in').missing.some(x=>x.includes('account settlement')));
  const b=load('lib/live-checkout.ts',{},{
-  ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true'
+  ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',
+  HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true'
  });
  assert.equal(b.checkoutLaunchReadiness('all_in').enabled,true);
  // An all-in pilot must not accidentally unlock legacy two-stage purchases.
