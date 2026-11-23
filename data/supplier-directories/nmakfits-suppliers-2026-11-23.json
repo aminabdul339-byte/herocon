@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "description": "Reference directory of supplier links preserved from the SUPPLIERS tab. Direct marketplace URLs are separated from intermediary agent URLs. No item was purchased or queried through a paid API.",
+  "source": {
+    "spreadsheetId": "1SWL3fCwNa8cRcQHXOdircIGVRQVwunAT8USqx8nxxl8",
+    "title": "NMAKFITS SPREADSHEET",
+    "sheet": "SUPPLIERS",
+    "sheetId": 1857175074,
+    "providedUrl": "https://docs.google.com/spreadsheets/d/1SWL3fCwNa8cRcQHXOdircIGVRQVwunAT8USqx8nxxl8/edit#gid=429614574",
+    "inspectedRows": "1-2666",
+    "snapshotDate": "2026-11-23"
+  },
+  "counts": {
+    "scannedRows": 2664,
+    "rowsWithSupplierName": 2663,
+    "nonemptyLinkCells": 3328,
+    "uniqueOriginalLinks": 11,
+    "uniqueDirectMarketplaceLinks": 5
+  },
+  "directMarketplaceLinks": [
+    "https://weidian.com/item.html?itemID=6583566332",
+    "https://shop264203543.taobao.com/",
+    "https://shop593134696.taobao.com/",
+    "https://weidian.com/?userid=1622399072",
+    "https://weidian.com/?userid=706980371"
+  ],
+  "links": [
+    {
+      "originalLink": "https://www.hagobuy.com/item/details?url=https%3A%2F%2Fweidian.com%2Fitem.html%3FitemID%3D6583566332&affcode=2jvbc",
+      "kind": "intermediary_product_wrapper",
+      "marketplaceLink": "https://weidian.com/item.html?itemID=6583566332",
+      "marketplaceLinkMethod": "decoded_agent_wrapper",
+      "labels": [
+        {
+          "name": "Zara Women's Store",
+          "occurrences": 1
+        },
+        {
+          "name": "Zara Store Women's",
+          "occurrences": 664
+        }
+      ],
+      "sourceColumns": [
+        "B"
+      ],
+      "firstSourceRow": 1,
+      "repeatedCellCount": 665
+    },
+    {
+      "originalLink": "https://usfans.com/shop-home?channel=2&shopId=513204063&shopName=ZABA%E6%AC%A7%E7%BE%8E%E5%A4%96%E8%B4%B8%E5%BA%97&goodsId=1017753872069",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Zara Women's Store",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 1,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://usfans.com/shop-home?channel=2&shopId=286767100&shopName=%E7%94%B7%E8%A3%85%E6%AD%A3%E5%93%81%E6%8A%98%E6%89%A3%E5%BA%977&goodsId=998924261299",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Zara Men's Store",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 2,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://shop264203543.taobao.com/?spm=pc_detail.30350276.shop_block.dshopinfo.9ef728dftPt6ZV",
+      "kind": "direct_marketplace",
+      "marketplaceLink": "https://shop264203543.taobao.com/",
+      "marketplaceLinkMethod": "direct",
+      "labels": [
+        {
+          "name": "Uniqlo Store",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 3,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://shop593134696.taobao.com/?spm=pc_detail.29232929.shop_block.dentershop.76e27dd6t24VSJ",
+      "kind": "direct_marketplace",
+      "marketplaceLink": "https://shop593134696.taobao.com/",
+      "marketplaceLinkMethod": "direct",
+      "labels": [
+        {
+          "name": "Authentic Nike Outlet Store",
+          "occurrences": 1
+        },
+        {
+          "name": "Authentic Nike Store",
+          "occurrences": 664
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 4,
+      "repeatedCellCount": 665
+    },
+    {
+      "originalLink": "https://www.usfans.com/product/2/jH3IYDdXC1K31Z1WTl7r3ZjGtRHMAugSbEDLi641jQrAj2qgL9xutA/?ref=JTRQTY",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Aloyoga",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 5,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://weidian.com/?userid=1622399072",
+      "kind": "direct_marketplace",
+      "marketplaceLink": "https://weidian.com/?userid=1622399072",
+      "marketplaceLinkMethod": "direct",
+      "labels": [
+        {
+          "name": "Kid's Designer Store",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 6,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://weidian.com/?userid=706980371&spider_token=b23d",
+      "kind": "direct_marketplace",
+      "marketplaceLink": "https://weidian.com/?userid=706980371",
+      "marketplaceLinkMethod": "direct",
+      "labels": [
+        {
+          "name": "Nike & Adidas Store",
+          "occurrences": 1
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 7,
+      "repeatedCellCount": 1
+    },
+    {
+      "originalLink": "https://joyagoo.com/shop?spm=fxg_1325870.all_page.0.0.31ac4e69Bzwtmg&id=513204063&platform=TAOBAO",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Zara Store Women's",
+          "occurrences": 664
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 9,
+      "repeatedCellCount": 664
+    },
+    {
+      "originalLink": "https://m.joyagoo.com/shops/?shop_type=taobao&num=1&sort=default&shop_id=525790634",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Zara Store Men's",
+          "occurrences": 664
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 10,
+      "repeatedCellCount": 664
+    },
+    {
+      "originalLink": "https://joyagoo.com/shop?spm=fxg_1325870.all_page.0.0.43bc4e69YyEckT&id=264203543&platform=TAOBAO",
+      "kind": "intermediary_link",
+      "marketplaceLink": null,
+      "marketplaceLinkMethod": null,
+      "labels": [
+        {
+          "name": "Uniqlo Store",
+          "occurrences": 664
+        }
+      ],
+      "sourceColumns": [
+        "C"
+      ],
+      "firstSourceRow": 11,
+      "repeatedCellCount": 664
+    }
+  ],
+  "caution": "Supplier names and brand/authenticity claims originate from the sheet and have NOT been independently verified. Marketplaces and intermediary URLs may change. Preserve source provenance and do not treat these store links as purchasable product SKUs."
+}
