@@ -52,6 +52,12 @@ export default function EnrichmentBatchRunner({
     <div style={{height:"100%",width:pct+"%",background:"#3e7251"}}/>
    </div>
    <p style={{fontSize:13,lineHeight:1.7,margin:"15px 0 0"}}>
+    Provider breakdown: <strong>{progress.buckydropSaved.toLocaleString("en-GB")}</strong> saved BuckyDrop sources
+    {" · "}<strong>{progress.hioBuySaved.toLocaleString("en-GB")}</strong> saved HioBuy sources
+    {" · "}<strong>{progress.sharedSaved.toLocaleString("en-GB")}</strong> appear in both.
+    These are existing saved supplier snapshots, not the count of new paid requests.
+   </p>
+   <p style={{fontSize:13,lineHeight:1.7,margin:"10px 0 0"}}>
     {lastRun?"Latest BuckyDrop batch started "+lastRun+".":"No BuckyDrop batch has executed yet."}
     {lastRun?" Latest per-shard status totals: "+progress.checked+
       " supplier checks, "+progress.saved+" new saved records, "+
@@ -62,11 +68,19 @@ export default function EnrichmentBatchRunner({
     {progress.activeShards>0?" "+progress.activeShards+" batch(es) currently reporting as active.":""}
     {progress.pausedShards>0?" "+progress.pausedShards+" paused/failed batch(es).":""}
    </p>
+   {progress.cooldownUntil&&<p role="status" style={{fontSize:13,color:"#8a5223",fontWeight:650}}>
+    Supplier cooldown: {progress.cooldownReason}. API calls are paused until
+    {" "}{new Date(progress.cooldownUntil).toLocaleString("en-GB",{
+     dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
+    })}. Scheduled batches automatically respect this limit; topping up credit does not remove a provider rate limit.
+   </p>}
    {progress.lastIssue&&<p style={{fontSize:13,color:"#8a5223"}}>
     Last recorded supplier issue: <strong>{progress.lastIssue}</strong>. Saved records have been preserved.
    </p>}
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
-    Batches stop or pause on insufficient balance, access restrictions or API rate limits.
+    Following BuckyDrop's rate-limit response to the initial four concurrent lookups,
+    batches now send only one product lookup at a time, spaced by at least 7.5 seconds.
+    Additional throttling errors extend the cooldown instead of forcing more requests.
     Each supplier link is attempted no more than once per batch day, and
     existing records across either source are never intentionally recharged.
     Some listings may be unavailable or unsupported by BuckyDrop.
