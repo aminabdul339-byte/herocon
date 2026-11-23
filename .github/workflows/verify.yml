@@ -31,6 +31,3 @@ jobs:
         run: node --test tests/buckydrop-live-smoke.test.cjs
       - name: Anonymous source-parser checks (offline fixtures)
         run: node --test tests/public-marketplace-probe.test.mjs
-      - name: One-time no-login marketplace access sample (five URLs, read-only)
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'feature/no-login-catalogue-enrichment-20261123'
-        run: node scripts/probe-public-marketplace.mjs
