@@ -155,13 +155,18 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  await write("results/"+sessionId+".json",audit);
  const merchantAddress=process.env.HEROCON_ORDER_ALERT_EMAIL||"";
  const merchantText=[
-  "HEROCON PAID ORDER — MANUAL MERCHANT ACTION",
+  allIn?"HEROCON PAID ORDER — PREPAID AUTO-FULFILMENT MONITOR":"HEROCON PAID ORDER — MANUAL MERCHANT ACTION",
   "Stripe session: "+sessionId,
   "Quote: "+quote.id,
   "Buyer: "+quote.customerEmail,
-  "Product-stage amount paid: £"+(quote.totalPence/100).toFixed(2),
-  "International shipping NOT paid. Indicative freight estimate: £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
-  "After warehouse arrival, confirm the parcel dimensions and quote shipping to the buyer before dispatch.",
+  (allIn?"Total received, including all-in shipping allowance: £":"Product-stage amount paid: £")+(quote.totalPence/100).toFixed(2),
+  ...(allIn?[
+   "No further freight payment may be collected from this buyer for this order.",
+   "Monitor BuckyDrop procurement, auto-settlement and dispatch; the merchant covers any cost overruns."
+  ]:[
+   "International shipping NOT paid. Indicative freight estimate: £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2),
+   "After warehouse arrival, confirm the parcel dimensions and quote shipping to the buyer before dispatch."
+  ]),
   "State: "+audit.state,
   "BuckyDrop ref: "+(audit.partnerOrderNo||"Not accepted"),
   "Action: "+audit.reason,
@@ -171,9 +176,15 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  audit.merchantEmailSent=merchantAddress?await sendEmail(merchantAddress,"Herocon paid order requires action — "+quote.id,merchantText):false;
  const buyerText=[
   "Thank you for your Herocon order.",
-  "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
-  "International shipping has NOT been paid. Estimated later freight: about £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2)+", subject to actual packed weight, destination, eligible carrier and fees.",
-  "When your items reach the warehouse, Herocon will send a separate international shipping quote. Shipping is not charged automatically.",
+  allIn?"We have received your single payment of £"+(quote.totalPence/100).toFixed(2)+", including your approved international shipping allowance and applicable tax.":
+   "We've verified your first-stage product payment of £"+(quote.totalPence/100).toFixed(2)+".",
+  ...(allIn?[
+   "You will not be asked to pay another international shipping fee for this order.",
+   "Your order is being prepared for fulfilment, and we will update you as it progresses."
+  ]:[
+   "International shipping has NOT been paid. Estimated later freight: about £"+((quote.estimatedLaterShippingPence||0)/100).toFixed(2)+", subject to actual packed weight, destination, eligible carrier and fees.",
+   "When your items reach the warehouse, Herocon will send a separate international shipping quote. Shipping is not charged automatically."
+  ]),
   audit.partnerOrderNo?"Your order reference: "+audit.partnerOrderNo:"Your order is awaiting merchant review before supplier processing.",
   audit.accessCode?"Your private tracking access code: "+audit.accessCode:"",
   audit.accessCode?"Track it at https://herocon.store/orders":"",
@@ -184,7 +195,8 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
  audit.customerEmailSent=await sendEmail(quote.customerEmail,"Herocon payment received — "+quote.id,buyerText);
  await write("results/"+sessionId+".json",audit,true);
  return {received:true,paid:true,submitted:audit.state==="submitted_awaiting_merchant_payment",
-  requiresMerchantAction:true,customerNotified:audit.customerEmailSent};
+  requiresMerchantAction:audit.state!=="submitted_awaiting_merchant_payment"||!allIn,
+  customerNotified:audit.customerEmailSent};
 }
 export async function listCheckoutReconciliation(){
  const [results,claims]=await Promise.all([
