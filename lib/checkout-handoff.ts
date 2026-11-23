@@ -134,6 +134,7 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   const payload={
    verifiedPaymentReference:session.id,verifiedTotalGBP:quote.totalPence/100,customer:buyer,
    paymentStage:allIn?"all_in":"products",
+   snapshotOnly:quote.pricingOrigin==="owner_auto_saved_snapshot",
    lines:quote.lines.map(x=>({
     marketplaceUrl:x.marketplaceUrl,skuCode:x.skuCode,quantity:x.quantity,
     verifiedSalePriceGBP:x.unitPriceGBP,maxSupplierPriceCNY:Math.round(x.supplierUnitCNY*1.02*100)/100
