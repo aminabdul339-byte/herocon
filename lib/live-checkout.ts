@@ -7,7 +7,7 @@ import "server-only";
 export function checkoutLaunchReadiness(stage:"products"|"all_in"="products"){
  const checks=[
   ["Live checkout explicitly enabled",process.env.HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED==="true"],
-  ["Checkout payment model fully tested",stage==="all_in"?process.env.HEROCON_ONE_PAYMENT_LIVE_APPROVED==="true"&&process.env.HEROCON_ONE_PAYMENT_PILOT_QUOTES_ENABLED==="true":process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
+  ["Checkout payment model fully tested",stage==="all_in"?process.env.HEROCON_ONE_PAYMENT_LIVE_APPROVED==="true"&&(process.env.HEROCON_ONE_PAYMENT_PILOT_QUOTES_ENABLED==="true"||process.env.HEROCON_OWNER_AUTOBUY_PRICING_APPROVED==="true"):process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
   ["Fresh rotated Stripe live key attested",process.env.HEROCON_STRIPE_KEY_ROTATED==="true"],
   ["Stripe live secret installed",(process.env.STRIPE_LIVE_SECRET_KEY||"").startsWith("sk_live_")],
   ["Read-only Stripe account verification enabled",process.env.HEROCON_STRIPE_LIVE_CONNECTIVITY_ENABLED==="true"],
@@ -20,7 +20,10 @@ export function checkoutLaunchReadiness(stage:"products"|"all_in"="products"){
   ["Shipping currency and seller pricing reviewed",process.env.HEROCON_FREIGHT_CURRENCY_CONFIRMED==="true"],
   ["Legal business, shipping and refund terms approved",process.env.HEROCON_CHECKOUT_POLICIES_APPROVED==="true"],
   ["Merchant checkout key installed",(process.env.HEROCON_CHECKOUT_ADMIN_KEY||"").length>=32],
-  ["Funded BuckyDrop wallet, Stripe payout and manual order-release process confirmed",process.env.HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED==="true"],
+  ["Funded BuckyDrop wallet and cashflow process confirmed",stage==="all_in"?
+    process.env.HEROCON_BUCKYDROP_PREPAID_WALLET_CONFIRMED==="true":
+    process.env.HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED==="true"],
+  ["Prepaid auto-submit explicitly authorized",stage!=="all_in"||process.env.HEROCON_ALLOW_PREFUNDED_AUTO_SUPPLIER_RELEASE==="true"],
   ["Private order storage installed",!!process.env.BLOB_READ_WRITE_TOKEN],
   ["BuckyDrop live configured",process.env.BUCKYDROP_ENV==="live"&&!!process.env.BUCKYDROP_APP_CODE&&!!process.env.BUCKYDROP_APP_SECRET],
   ["Transactional order email configured",(process.env.RESEND_API_KEY||"").startsWith("re_")&&
