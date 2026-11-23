@@ -12,6 +12,11 @@ export default function MerchantCheckoutQuotes(){
  const [retail,setRetail]=useState("");
  const [freight,setFreight]=useState("");
  const [tax,setTax]=useState("0");
+ const [fxRate,setFxRate]=useState("");
+ const [buckyFees,setBuckyFees]=useState("");
+ const [walletFees,setWalletFees]=useState("");
+ const [shippingBuffer,setShippingBuffer]=useState("");
+ const [fxApproved,setFxApproved]=useState(false);
  const [approved,setApproved]=useState(false);
  const [busy,setBusy]=useState(false);
  const [message,setMessage]=useState("");
@@ -26,6 +31,8 @@ export default function MerchantCheckoutQuotes(){
     body:JSON.stringify({
      customerEmail:email,deliveryCountry:"GB",paymentStage:"all_in",
      manualPricingApproved:approved,allInCostApproved:approved,
+     supplierFxGBPperCNY:Number(fxRate),supplierFxReviewed:fxApproved,
+     buckydropFeesGBP:Number(buckyFees),walletAndFxFeesGBP:Number(walletFees),shippingRiskReserveGBP:Number(shippingBuffer),
      shippingGBP:Number(freight),taxGBP:Number(tax),
      lines:[{marketplaceUrl:url,skuCode:sku,quantity:Number(qty),unitPriceGBP:Number(retail)}]
     }),cache:"no-store"
@@ -43,7 +50,7 @@ export default function MerchantCheckoutQuotes(){
   <section style={{maxWidth:640,margin:"auto"}}>
    <Link href="/" style={{color:"#345d42"}}>Herocon</Link>
    <h1 style={{font:"normal 42px Georgia,serif",margin:"22px 0 8px"}}>Merchant order quotes</h1>
-   <p style={{lineHeight:1.7}}>Prepare a private GBP quote for a verified supplier SKU. Every new quote includes a clearly disclosed 99p Herocon service fee per order. This page never takes payment or purchases anything from BuckyDrop.</p>
+   <p style={{lineHeight:1.7}}>Prepare a private GBP quote for a verified supplier SKU. Every new quote includes a clearly disclosed 99p Herocon service fee per order, plus internal safeguards covering supplier purchase, international shipping, BuckyDrop, wallet/FX costs, Stripe and a profit reserve. This page never takes payment or purchases anything from BuckyDrop.</p>
    <p style={{fontSize:13,lineHeight:1.65,color:"#7c5630",padding:15,borderRadius:12,background:"#fff3df"}}>
     Merchant-only pilot. You must independently confirm supplier availability, packed-freight allowance, duties and taxes, processing fees, reserve for overruns, legal terms and BuckyDrop prepaid automatic fulfilment. Do not share an unapproved price or activate live payments just because a quote is saved.
    </p>
@@ -62,13 +69,26 @@ export default function MerchantCheckoutQuotes(){
     <input id="quote-retail" style={inputStyle} type="number" min="0.01" max="1000" step="0.01" required value={retail} onChange={e=>setRetail(e.target.value)}/>
     <label style={labelStyle} htmlFor="quote-freight">Included international shipping allowance (£)</label>
     <input id="quote-freight" style={inputStyle} type="number" min="0.01" max="1000" step="0.01" required value={freight} onChange={e=>setFreight(e.target.value)}/>
+    <label style={labelStyle} htmlFor="quote-fx">Approved effective purchasing FX rate (GBP paid per 1 CNY)</label>
+    <input id="quote-fx" style={inputStyle} type="number" min="0.01" max="0.75" step="0.000001" required placeholder="Enter verified BuckyDrop wallet settlement rate" value={fxRate} onChange={e=>setFxRate(e.target.value)}/>
+    <label style={labelStyle} htmlFor="quote-bucky">BuckyDrop procurement, domestic freight, packing &amp; fulfilment allowance (£)</label>
+    <input id="quote-bucky" style={inputStyle} type="number" min="0.01" max="1000" step="0.01" required value={buckyFees} onChange={e=>setBuckyFees(e.target.value)}/>
+    <label style={labelStyle} htmlFor="quote-wallet">Wallet top-up, conversion &amp; bank charges (£)</label>
+    <input id="quote-wallet" style={inputStyle} type="number" min="0.01" max="1000" step="0.01" required value={walletFees} onChange={e=>setWalletFees(e.target.value)}/>
+    <label style={labelStyle} htmlFor="quote-buffer">Parcel reweighing and shipping contingency (£)</label>
+    <input id="quote-buffer" style={inputStyle} type="number" min="0.50" max="1000" step="0.01" required value={shippingBuffer} onChange={e=>setShippingBuffer(e.target.value)}/>
+    <p style={{fontSize:12,lineHeight:1.6,color:"#687b68",background:"#eef4ed",padding:12,borderRadius:9}}>The server automatically budgets 6% + 30p for Stripe processing and requires an additional profit allowance of at least £2 or 12% of the full customer payment (whichever is higher). These are conservative <strong>planning allowances</strong>, not confirmed charges; refunds, disputes and changed costs can still cause losses.</p>
+    <label style={{display:"flex",gap:12,lineHeight:1.55,fontSize:13,marginBottom:18}}>
+     <input type="checkbox" checked={fxApproved} onChange={e=>setFxApproved(e.target.checked)}/>
+     <span>I checked the BuckyDrop funding and FX arrangement, supplier domestic charges and international delivery route. This amount includes the complete expected BuckyDrop wallet / handling / bank cost, without double-counting exchange charges.</span>
+    </label>
     <label style={labelStyle} htmlFor="quote-tax">Applicable tax/duties amount included (£)</label>
     <input id="quote-tax" style={inputStyle} type="number" min="0" max="1000" step="0.01" required value={tax} onChange={e=>setTax(e.target.value)}/>
     <label style={{display:"flex",gap:12,lineHeight:1.55,fontSize:13,marginBottom:18}}>
      <input type="checkbox" checked={approved} onChange={e=>setApproved(e.target.checked)}/>
      <span>I have independently reviewed the final delivered GBP total, included duties/taxes and all supplier and logistics costs. Herocon will absorb any extra freight charge and will not send a second freight invoice.</span>
     </label>
-    <button type="submit" disabled={busy||!approved} style={{background:"#234830",color:"#fff",padding:"14px 22px",border:0,borderRadius:12,fontWeight:700,opacity:busy||!approved?.55:1}}>
+    <button type="submit" disabled={busy||!approved||!fxApproved} style={{background:"#234830",color:"#fff",padding:"14px 22px",border:0,borderRadius:12,fontWeight:700,opacity:busy||!approved||!fxApproved?.55:1}}>
      {busy?"Checking supplier and saving quote…":"Create private all-inclusive quote"}
     </button>
     {message&&<p role="status" style={{lineHeight:1.6}}>{message}</p>}
