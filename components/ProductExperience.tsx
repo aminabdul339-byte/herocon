@@ -253,7 +253,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <div className="hc-buy-actions">
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
      {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||!marketplace} onClick={()=>router.push("/pilot/buckydrop?productId="+encodeURIComponent(id)+(sourceVariant?.skuCode?"&sku="+encodeURIComponent(sourceVariant.skuCode):"")+"&quantity="+(totalUnits||singleQuantity))}>Buy now · owner access</button>:
-      <button type="button" className="hc-buy-now-button" onClick={()=>handleCart(true)} disabled={outOfStock}>Add and view cart</button>}
+      <Link className="hc-buy-now-button" href="/cart" style={{display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}>View cart</Link>}
     </div>
     {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active: no £9.99 subscription required. Supplier variants and pricing must be verified before payment.</p>}
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
