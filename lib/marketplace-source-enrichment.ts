@@ -45,9 +45,14 @@ function photos(v:unknown,max=40):string[]{
  return result;
 }
 function cleanText(v:unknown,max=10000):string{
- const raw=typeof v==="string"?v:typeof obj(v).translated==="string"?obj(v).translated:
-  typeof obj(v).original==="string"?obj(v).original:
-  typeof obj(v).text==="string"?obj(v).text:"";
+ let raw="";
+ if(typeof v==="string")raw=v;
+ else {
+  const record=obj(v);
+  if(typeof record.translated==="string")raw=record.translated;
+  else if(typeof record.original==="string")raw=record.original;
+  else if(typeof record.text==="string")raw=record.text;
+ }
  return raw.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi," ")
   .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi," ")
   .replace(/<[^>]*>/g," ").replace(/&nbsp;/gi," ")
