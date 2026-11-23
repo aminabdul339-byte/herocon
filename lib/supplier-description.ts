@@ -37,3 +37,34 @@ export function cleanSellerDescription(value:string,max=30000):string{
  }
  return s.replace(/\s+/g," ").trim().slice(0,max);
 }
+
+/**
+ * A concise *English-language* overview assembled only from supplier
+ * specifications that are already presented in English. It is not a
+ * machine translation of the seller's Chinese marketing description.
+ */
+export function sellerSpecificationOverview(
+ props:ReadonlyArray<{name:string;value:string}>,
+ category?:string
+):string{
+ const labels=new Map<string,string>([
+  ["product category","Product"],["category","Product"],
+  ["material","Material"],["ear needle material","Ear needle"],
+  ["purity","Purity"],["color","Colour"],["colour","Colour"],
+  ["style","Style"],["design","Design"],
+  ["processing technology","Finish"],
+  ["year/season of release","Season"],["size","Size"]
+ ]);
+ const found=new Map<string,Set<string>>();
+ for(const {name,value} of props){
+  const label=labels.get(name.trim().toLowerCase());
+  if(!label||!value.trim()||/[\u3400-\u9fff]/.test(value))continue;
+  const values=found.get(label)||new Set<string>();
+  for(const piece of value.split(",").map(v=>v.trim()).filter(Boolean))values.add(piece);
+  found.set(label,values);
+ }
+ if(category&&!found.has("Product"))found.set("Product",new Set([category]));
+ return [...found].slice(0,8).map(([key,values])=>
+  key+": "+[...values].slice(0,8).join(", ")
+ ).join(" · ");
+}
