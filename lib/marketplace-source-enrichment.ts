@@ -155,7 +155,7 @@ async function hiobuy(url:string):Promise<SourceEnrichment>{
     "Authorization":"Bearer "+token,"Content-Type":"application/json","Accept":"application/json"
    },
    body:JSON.stringify({channel,url,language:"en",response_format:"standard"}),
-   redirect:"error",cache:"no-store",signal:AbortSignal.timeout(12000)
+   redirect:"error",cache:"no-store",signal:AbortSignal.timeout(20000)
   });
  }catch{throw new SourceEnrichmentError("hiobuy_unavailable",503);}
  if(!response.ok){
@@ -368,7 +368,7 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
  const host=new URL(data.sourceUrl).hostname;
  return {
   source:"hiobuy",
-  variantCompleteness:data.variantCompleteness,
+  variantCompleteness:data.version===1?"unavailable":data.variantCompleteness,
   sourceVariantCount:data.variantCount,
   environment:"live",
   spuCode:null,
