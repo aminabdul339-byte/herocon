@@ -27,7 +27,7 @@ export async function POST(request:Request){
   const quote=await createApprovedQuote(input);
   return answer({
    id:quote.id,customerEmail:quote.customerEmail,totalGBP:(quote.totalPence/100).toFixed(2),
-   paymentStage:quote.paymentStage,shippingGBP:(quote.shippingPence/100).toFixed(2),
+   paymentStage:quote.paymentStage,shippingGBP:(quote.shippingPence/100).toFixed(2),serviceFeeGBP:((quote.serviceFeePence??0)/100).toFixed(2),
    ...(quote.paymentStage==="products"?{estimatedLaterShippingGBP:((quote.estimatedLaterShippingPence||0)/100).toFixed(2)}:{}),
    expiresAt:quote.expiresAt,checkoutUrl:"https://herocon.store/checkout/"+quote.id,
    paymentEnabled:checkoutLaunchReadiness(quote.paymentStage==="all_in"?"all_in":"products").enabled,
