@@ -116,6 +116,14 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   state:"paid_review_required",reason:"",recordedAt:new Date().toISOString(),
   partnerOrderNo:null,shopOrderNo:null,accessCode:null,customerEmailSent:false,merchantEmailSent:false};
  if(!buyer)audit.reason="Stripe buyer delivery address, phone or email is missing or invalid.";
+ else if(process.env.HEROCON_ALLOW_PREFUNDED_AUTO_SUPPLIER_RELEASE!=="true"){
+  // Herocon is the merchant of record and first receives the Stripe payment.
+  // No BuckyDrop order is created from the webhook by default. Funds can still
+  // be pending at Stripe, then must reach Herocon's bank. A merchant must top
+  // up and verify the separate BuckyDrop wallet and approve this exact order
+  // through a future authenticated release/reconciliation workflow.
+  audit.reason="Payment received by Herocon. WAIT: check Stripe settlement and bank payout, top up the BuckyDrop wallet, verify procurement and shipping costs, then approve this exact supplier order. Automatic handoff is disabled.";
+ }
  else if(process.env.HEROCON_ORDER_SUBMISSION_ENABLED!=="true"||
   (process.env.HEROCON_INTERNAL_FULFILMENT_KEY||"").length<32||
   (allIn?process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED!=="true"||
@@ -162,6 +170,14 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   "Buyer: "+quote.customerEmail,
   (allIn?"Total received, including all-in shipping allowance: £":"Product-stage amount paid: £")+(quote.totalPence/100).toFixed(2),
   "Herocon service fee included: £"+((quote.serviceFeePence??0)/100).toFixed(2),
+  ...(quote.economics?[
+   "Projected non-Stripe supplier, freight, BuckyDrop, FX, tax and contingency costs: £"+(
+    (quote.economics.totalExpectedCostPence-quote.economics.stripeAllowancePence)/100
+   ).toFixed(2)+" (internal estimate; see approved quote)",
+   "Stripe budget: £"+(quote.economics.stripeAllowancePence/100).toFixed(2),
+   "Minimum planned merchant profit: £"+(quote.economics.requiredProfitPence/100).toFixed(2),
+   "Projected merchant profit before realised refunds, disputes, FX and freight: £"+(quote.economics.projectedProfitPence/100).toFixed(2)
+  ]:[]),
   ...(allIn?[
    "No further freight payment may be collected from this buyer for this order.",
    "Monitor BuckyDrop procurement, auto-settlement and dispatch; the merchant covers any cost overruns."
