@@ -2,12 +2,15 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import EnrichmentBatchRunner from "@/components/EnrichmentBatchRunner";
+import EnrichmentAutoRefresh from "@/components/EnrichmentAutoRefresh";
 import {getProducts} from "@/lib/catalogue-server";
 import {productId,cleanTitle} from "@/lib/catalogue";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {createHash} from "node:crypto";
 import {getAllEnrichedSourceHashes,getBuckydropBulkStatus} from "@/lib/buckydrop-bulk";
+import {getSavedMarketplaceSource} from "@/lib/marketplace-source-enrichment";
+import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {currentCustomer} from "@/lib/customer-auth";
 
 export const dynamic="force-dynamic";
@@ -46,11 +49,25 @@ export default async function EnrichmentPage({
  const [saved,progress]=await Promise.all([
   getAllEnrichedSourceHashes(),getBuckydropBulkStatus()
  ]);
- const rows=selected.map(p=>{
+ const rows=await Promise.all(selected.map(async p=>{
   const link=normalizeMarketplaceLink(p.sourceUrl);
   const key=link?createHash("sha256").update(link).digest("hex"):"";
-  return {...p,saved:Boolean(key&&saved.has(key))};
- });
+  const hasSaved=Boolean(key&&saved.has(key));
+  if(!hasSaved||!link)return {...p,saved:false};
+  // Display actual saved supplier counts, not the sparse imported catalogue
+  // record. Reading private Blob snapshots never incurs a paid supplier call.
+  const [bucky,hiobuy]=await Promise.all([
+   getSavedBuckydropProduct(link).catch(()=>null),
+   getSavedMarketplaceSource(link).catch(()=>null)
+  ]);
+  const imageCount=Math.max(p.existingImages,bucky?.images.length||0,hiobuy?.images.length||0);
+  const optionsCount=Math.max(p.existingVariants,bucky?.variants.length||0,hiobuy?.variants.length||0);
+  return {
+   ...p,saved:true,existingImages:imageCount,existingVariants:optionsCount,
+   hasDescription:Boolean(p.hasDescription||bucky?.descriptionText||hiobuy?.descriptionText),
+   hasSeller:Boolean(p.hasSeller||bucky?.sellerName||hiobuy?.sellerName)
+  };
+ }));
  const savedUnique=progress.totalSaved;
  const unique=new Set([
   ...allProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)),
@@ -58,6 +75,7 @@ export default async function EnrichmentPage({
  ].filter((link):link is string=>Boolean(link)));
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
+  <EnrichmentAutoRefresh/>
   <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
     providerConnected={Boolean(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"&&process.env.BUCKYDROP_APP_CODE&&process.env.BUCKYDROP_APP_SECRET&&process.env.BUCKYDROP_ENV==="live")}
     automationConfigured={Boolean(process.env.CRON_SECRET?.trim()&&process.env.BLOB_READ_WRITE_TOKEN)}
