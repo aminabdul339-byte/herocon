@@ -9,7 +9,7 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
 import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
-import {cleanSellerDescription} from "@/lib/supplier-description";
+import {cleanSellerDescription,sellerSpecificationOverview} from "@/lib/supplier-description";
 
 type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
@@ -100,6 +100,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  }));
  const description=cleanSellerDescription(source?.descriptionText||product.descriptionText||"");
  const descriptionOriginalLanguage=/[\u3400-\u9fff]/.test(description);
+ const sellerOverview=sellerSpecificationOverview(detailAttributes,product.category);
  const updateQuantity=(skuCode:string,delta:number)=>{
   const variant=source?.variants.find(v=>v.skuCode===skuCode);
   if(!variant||source?.available===false)return;
@@ -198,11 +199,16 @@ export default function ProductExperience({product,id,title,images,price,buckydr
      {!source&&recordedVariantPriceCNY!=null&&<p className="sc-source-subprice">Recorded seller option: {dualPrice(recordedVariantPriceCNY)}. Historical reference, not a live quote.</p>}
     {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
     {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
-    {description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
+    {descriptionOriginalLanguage
+      ?<p className="hc-editorial-lead">
+        {sellerOverview||"Seller specifications and photographs are available below; an English description has not been provided."}
+        <span style={{display:"block",fontSize:12,marginTop:6}}>Based on seller-listed specifications, not independently verified.</span>
+       </p>
+      :description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
       <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length.toLocaleString()} seller variants · Select quantities</span></div>
-      {source.source==="hiobuy"&&source.variantCompleteness&&source.variantCompleteness!=="complete"&&
+      {source.source==="hiobuy"&&source.variantCompleteness==="missing_ids"&&
        <p role="status" style={{fontSize:13,color:"#92531e"}}>
         This marketplace did not provide a complete set of purchasable SKU identifiers.
         Only returned options are displayed; availability may need supplier confirmation.
@@ -257,8 +263,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
     <p className="hc-checkout-note">Adding to cart requires a free account. Membership is £9.99/month when you buy. Online checkout is currently unavailable.</p>
     <div className="hc-editorial-accordions" aria-label="Product information">
-      <details open>
-        <summary>Description</summary>
+      <details>
+        <summary>{descriptionOriginalLanguage?"Seller's original Chinese description":"Seller description"}</summary>
+        {descriptionOriginalLanguage&&<p style={{fontSize:12,color:"#6c7268"}}>Original supplier text, not an English translation.</p>}
         <p>{description||"A detailed description has not yet been provided by the marketplace seller. You can consult the original listing for any additional product information."}</p>
       </details>
       <details>
@@ -288,9 +295,19 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    <div className="hc-product-detail-title"><p className="eyebrow">ABOUT THIS PRODUCT</p><h2>Product details</h2><p>Product information and images supplied by the marketplace seller, where available.</p></div>
    <div className="hc-product-detail-grid">
     <div className="hc-seller-description">
-     <h3>Seller description{descriptionOriginalLanguage?" (original language)":""}</h3>
-     {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
-      <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing <ArrowIcon/></a></>}</p>}
+     {descriptionOriginalLanguage?<>
+      <h3>Product overview</h3>
+      <p className="hc-description-text">{sellerOverview||"This product has supplier-listed specifications, but no English description was supplied."}</p>
+      <p style={{fontSize:12,color:"#6c7268"}}>Overview based on marketplace specifications, not a translation or independent verification.</p>
+      <details style={{marginTop:16}}>
+       <summary style={{cursor:"pointer",fontWeight:700}}>Read original Chinese seller description</summary>
+       <p className="hc-description-text" lang="zh" style={{marginTop:12}}>{description}</p>
+      </details>
+     </>:<>
+      <h3>Seller description</h3>
+      {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
+       <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing <ArrowIcon/></a></>}</p>}
+     </>}
      {detailImages.length>0&&<div className="hc-detail-photos"><h3>Seller's detailed photos</h3>{detailImages.map((src,index)=><img key={src} src={src} alt={"Seller product detail "+(index+1)} loading="lazy" referrerPolicy="no-referrer"/>)}</div>}
     </div>
     <aside className="hc-product-specs">
