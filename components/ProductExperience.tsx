@@ -9,6 +9,7 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
 import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
+import {cleanSellerDescription} from "@/lib/supplier-description";
 
 type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
@@ -25,7 +26,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
  const [activeSku,setActiveSku]=useState("");
  const [quantities,setQuantities]=useState<Record<string,number>>({});
- const [showAllSkus,setShowAllSkus]=useState(false);
+ const [visibleSkuCount,setVisibleSkuCount]=useState(24);
+ const [skuSearch,setSkuSearch]=useState("");
+ const [showAllPhotos,setShowAllPhotos]=useState(false);
  const [singleQuantity,setSingleQuantity]=useState(1);
  const [cartMessage,setCartMessage]=useState("");
  const [showFullDescription,setShowFullDescription]=useState(false);
@@ -54,7 +57,9 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const subtotal=selectedRows.reduce((sum,v)=>sum+(v.price||0)*(quantities[v.skuCode]||0),0);
  const hasUnknownPrice=selectedRows.some(v=>v.price==null);
  const minOrder=Math.max(1,source?.moq||1);
- const visibleSkus=showAllSkus?source?.variants||[]:source?.variants.slice(0,8)||[];
+ const matchingSkus=source?.variants.filter(v=>!skuSearch.trim()||
+   (v.title+" "+v.skuCode+" "+v.options.map(o=>o.name+" "+o.value).join(" ")).toLocaleLowerCase().includes(skuSearch.trim().toLocaleLowerCase()))||[];
+ const visibleSkus=matchingSkus.slice(0,visibleSkuCount);
  const originalMatching=originalVariants.find(v=>(!colour||!v.colour||v.colour===colour)&&(!size||!v.size||v.size===size)&&(!style||!v.style||v.style===style)&&v.available!==false);
  const sellerImages=source?.images.length?source.images:images;
  const gallery=[...new Set([source?sourceVariant?.image:originalMatching?.image,...sellerImages,...images].filter((x):x is string=>!!x))].filter(x=>!badImages.includes(x));
@@ -74,18 +79,27 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   cataloguePrice;
  const outOfStock=Boolean(source&&(source.available===false||(source.variants.length>0&&!source.variants.some(v=>v.stock===null||v.stock>0))));
  const detailImages=(source?.detailImages?.length?source.detailImages:product.detailImages||[])
-   .filter((url,i,all)=>all.indexOf(url)===i).slice(0,36);
+   .filter((url,i,all)=>all.indexOf(url)===i);
  const skuOptions=new Map<string,Set<string>>();
  for(const variant of source?.variants||[])for(const option of variant.options){
   if(!skuOptions.has(option.name))skuOptions.set(option.name,new Set());
   skuOptions.get(option.name)?.add(option.value);
  }
  const savedProps=source?.productProps?.length?source.productProps:product.sourceSpecs||[];
- const savedNames=new Set(savedProps.map(p=>p.name.toLowerCase()));
- const detailAttributes=[...savedProps,...[...skuOptions]
-  .filter(([name])=>!savedNames.has(name.toLowerCase()))
-  .map(([name,values])=>({name,value:[...values].slice(0,18).join(", ")}))].slice(0,32);
- const description=source?.descriptionText||product.descriptionText||"";
+ const attributes=new Map<string,{name:string;values:Set<string>}>();
+ const addAttribute=(name:string,value:string)=>{
+  if(!name.trim()||!value.trim())return;
+  const key=name.trim().toLocaleLowerCase();
+  if(!attributes.has(key))attributes.set(key,{name:name.trim(),values:new Set()});
+  attributes.get(key)?.values.add(value.trim());
+ };
+ for(const p of savedProps)addAttribute(p.name,p.value);
+ for(const [name,values] of skuOptions)for(const value of values)addAttribute(name,value);
+ const detailAttributes=[...attributes.values()].map(({name,values})=>({
+  name,value:[...values].join(", ")
+ }));
+ const description=cleanSellerDescription(source?.descriptionText||product.descriptionText||"");
+ const descriptionOriginalLanguage=/[\u3400-\u9fff]/.test(description);
  const updateQuantity=(skuCode:string,delta:number)=>{
   const variant=source?.variants.find(v=>v.skuCode===skuCode);
   if(!variant||source?.available===false)return;
@@ -167,7 +181,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
        <button type="button" aria-label="Next product photograph" onClick={()=>setImage((chosenIndex+1)%gallery.length)}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m9 18 6-6-6-6"/></svg></button>
      </div>}
     </div>
-    {gallery.length>1&&<div className="thumbs">{gallery.slice(0,16).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}</div>}
+    {gallery.length>1&&<div className="thumbs">{gallery.slice(0,showAllPhotos?gallery.length:18).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}{gallery.length>18&&<button type="button" onClick={()=>setShowAllPhotos(v=>!v)} style={{padding:9,fontWeight:700}}>{showAllPhotos?"Show fewer photos":"View all "+gallery.length+" photos"}</button>}</div>}
     {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">See seller's product photos and description <ArrowIcon direction="down"/></a>}
    </div>
    <aside className="buy-panel">
@@ -187,7 +201,18 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     {description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
     {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
-      <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length} seller variants · Select quantities</span></div>
+      <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length.toLocaleString()} seller variants · Select quantities</span></div>
+      {source.source==="hiobuy"&&source.variantCompleteness&&source.variantCompleteness!=="complete"&&
+       <p role="status" style={{fontSize:13,color:"#92531e"}}>
+        This marketplace did not provide a complete set of purchasable SKU identifiers.
+        Only returned options are displayed; availability may need supplier confirmation.
+       </p>}
+      {source.variants.length>16&&<label style={{display:"block",margin:"10px 0 14px",fontSize:13}}>
+        <span style={{display:"block",fontWeight:700,marginBottom:5}}>Find a colour, size, style or SKU</span>
+        <input type="search" value={skuSearch} placeholder="Search seller options…" onChange={e=>{
+          setSkuSearch(e.currentTarget.value);setVisibleSkuCount(24);
+        }} style={{width:"100%",padding:"11px 12px",border:"1px solid #c6ccbe",borderRadius:5}}/>
+      </label>}
       <div className="sc-sku-list">
        {visibleSkus.map(v=>{
         const quantity=quantities[v.skuCode]||0;
@@ -207,7 +232,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
         </div>;
        })}
       </div>
-      {source.variants.length>8&&<button type="button" className="sc-sku-show-more" onClick={()=>setShowAllSkus(value=>!value)}>{showAllSkus?"Show fewer options":"Show all "+source.variants.length+" options"} <ArrowIcon direction={showAllSkus?"up":"down"}/></button>}
+      {matchingSkus.length===0&&<p style={{fontSize:14}}>No seller options match your search.</p>}
+      {matchingSkus.length>visibleSkuCount&&<button type="button" className="sc-sku-show-more"
+       onClick={()=>setVisibleSkuCount(n=>n+40)}>
+       Show next {Math.min(40,matchingSkus.length-visibleSkuCount)} of {matchingSkus.length.toLocaleString()} options <ArrowIcon direction="down"/>
+      </button>}
       {selectedRows.length>0&&<div className="sc-sku-summary"><div><strong>{totalUnits} selected</strong><span>{totalUnits<minOrder?"Seller minimum: "+minOrder+" units":"Seller minimum met"}</span></div><div><strong>{hasUnknownPrice?"Price on request":dualPrice(subtotal)}</strong><span>Product subtotal</span></div></div>}
     </div>:<>
       <Selector label="COLOUR" value={colour} items={colours} set={value=>{setColour(value);setCartMessage("");}}/>
@@ -259,7 +288,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    <div className="hc-product-detail-title"><p className="eyebrow">ABOUT THIS PRODUCT</p><h2>Product details</h2><p>Product information and images supplied by the marketplace seller, where available.</p></div>
    <div className="hc-product-detail-grid">
     <div className="hc-seller-description">
-     <h3>Seller description</h3>
+     <h3>Seller description{descriptionOriginalLanguage?" (original language)":""}</h3>
      {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
       <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing <ArrowIcon/></a></>}</p>}
      {detailImages.length>0&&<div className="hc-detail-photos"><h3>Seller's detailed photos</h3>{detailImages.map((src,index)=><img key={src} src={src} alt={"Seller product detail "+(index+1)} loading="lazy" referrerPolicy="no-referrer"/>)}</div>}
