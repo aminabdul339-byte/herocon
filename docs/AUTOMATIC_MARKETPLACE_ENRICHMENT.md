@@ -4,7 +4,7 @@
 
 ## Production scheduling
 
-- The Vercel Cron configuration in `vercel.json` schedules GET `/api/cron/product-enrichment` at **05:15 UTC daily**. Vercel may start the job anywhere within the scheduled hour on Hobby plans.
+- The Vercel Cron configuration in `vercel.json` schedules GET `/api/cron/product-enrichment` at **12:15 UTC daily**. Vercel may start the job anywhere within the scheduled hour on Hobby plans.
 - Vercel supplies `Authorization: Bearer <CRON_SECRET>`. The server rejects requests without a matching strong, Production-only secret and does not expose it. The secret is a sensitive Vercel environment variable, never committed.
 - `maxDuration=240` seconds, in-process runtime guard 210 seconds. Work occurs in batches of up to **3 concurrent HioBuy Product Details calls**; local allowance is up to **500 source URLs/day**, limited in practice by the function runtime, the default 60 requests/minute API limit (paced to approximately 50/minute), and HioBuy's actual channel subscription and billable-unit quota. The local limit does not override HioBuy quotas.
 - The worker gets the original links from both `getProducts()` and `personalShopProducts`, normalizes, deduplicates and sorts them by SHA-256. Both collections share one saved source record for matching links.
