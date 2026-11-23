@@ -57,6 +57,7 @@ function adapters(extra={}){
   'next/server':{NextResponse:{json:(body,opts={})=>Response.json(body,{status:opts.status||200,headers:opts.headers})}},
   '@/lib/buckydrop-gateway':{liveReady:()=>true,callBucky:async()=>{calls++;return {records:[]};}},
   '@/lib/buckydrop':{queryBuckydropProduct:async()=>{calls++;return {};},BuckydropError:class extends Error{}},
+  '@/lib/buckydrop-cache':{getSavedBuckydropProduct:async()=>{calls++;return null;}},
   '@/lib/marketplace-links':{normalizeMarketplaceLink:()=>null},
   '@/lib/buckydrop-order-store':{storageAvailable:()=>true},
   '@/lib/fx-reference':{getReferenceCnyGbpRate:async()=>({rate:0.11,date:'2026-11-19'})},
