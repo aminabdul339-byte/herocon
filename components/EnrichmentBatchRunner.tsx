@@ -57,7 +57,7 @@ export default function EnrichmentBatchRunner({
  async function run(){
   if(running||!providerConnected)return;
   setRunning(true);setProcessed(0);setResults({});setRunSummary("");
-  let saved=0, skipped=0, failed=0, checked=0;
+  let saved=0, skipped=0, failed=0, checked=0, consecutiveNetworkFailures=0;
   let stopReason="";
   // A subscription/auth failure is restricted to its actual marketplace.
   // Cache the restriction only in this browser session, to avoid wasting
@@ -94,6 +94,8 @@ export default function EnrichmentBatchRunner({
     checked++;
     setProcessed(checked);
     if(result.ok)saved++;else failed++;
+    consecutiveNetworkFailures=["hiobuy_unavailable","network_error"].includes(result.error||"")?
+      consecutiveNetworkFailures+1:0;
 
     // Only this channel needs a paid plan / channel authorisation.
     if(channel!=="other"&&["PAID_SUBSCRIPTION_REQUIRED","CHANNEL_NOT_AUTHORIZED"].includes(result.error||"")){
@@ -112,7 +114,7 @@ export default function EnrichmentBatchRunner({
      break;
     }
     // Do not repeatedly hammer the same provider after transient outages.
-    if(["hiobuy_unavailable","network_error"].includes(result.error||"")&&failed>=3){
+    if(consecutiveNetworkFailures>=3){
      stopReason="Repeated provider/network failures";
      break;
     }
