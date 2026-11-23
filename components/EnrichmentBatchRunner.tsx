@@ -35,7 +35,7 @@ export default function EnrichmentBatchRunner({
    </p>
    <p style={{margin:"0 0 13px",fontSize:14,lineHeight:1.6}}>
     {providerConnected&&automationConfigured
-     ?"The scheduled runner checks supplier data daily at approximately 05:15 UTC. No button clicks are required."
+     ?"The scheduled runner checks supplier data daily at approximately 12:15 UTC. No button clicks are required."
      :"A provider API key, secure cron secret or private storage setting is missing. Scheduled enrichment cannot run until all are connected."}
    </p>
    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:15,marginBottom:16}}>
