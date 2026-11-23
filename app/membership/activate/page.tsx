@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
 
 type State={
- complimentaryOwnerPremium?:boolean;ownerBuyAccess?:boolean;
+ complimentaryOwnerPremium?:boolean;ownerBuyAccess?:boolean;paidMembershipActive?:boolean;billingLookupUnavailable?:boolean;
  membershipActive?:boolean;testMembershipActive?:boolean;billingReady?:boolean;
  canSubscribe?:boolean;ownerLiveTest?:boolean;mode?:"test"|"live";status?:string;renewalAt?:string|null;
  cancelAtPeriodEnd?:boolean;hasBillingAccount?:boolean;
@@ -68,6 +68,9 @@ function MembershipGate(){
      </>:membership.complimentaryOwnerPremium?<>
       <p><strong>Owner Premium — complimentary lifetime access while your owner account is authorised.</strong> No £9.99 monthly subscription or recurring billing is required.</p>
       <p>Only your verified owner account can use the private BuckyDrop product-purchasing pilot. Real payment remains locked until fulfilment and shipping are validated.</p>
+      {membership.paidMembershipActive&&<p style={{color:"#8b4c2d"}}>An existing paid subscription may still renew until cancelled separately.</p>}
+      {membership.billingLookupUnavailable&&<p style={{color:"#8b4c2d"}}>Previous subscription status could not be verified. Check Stripe if you have ever paid for membership.</p>}
+      {membership.hasBillingAccount&&<button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage existing Stripe billing and cancellation</button>}
       <Link className="hc-account-primary-link" href="/pilot/buckydrop">Open owner-only purchasing <ArrowIcon direction="right"/></Link>
      </>:active?<>
       <p><strong>{isTest?"Test membership active":"Membership active"}</strong>{through?" · Paid through "+through:""}{membership.cancelAtPeriodEnd?" · Cancels at period end.":""}</p>
