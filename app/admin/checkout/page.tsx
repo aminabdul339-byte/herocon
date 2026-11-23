@@ -1,5 +1,5 @@
 "use client";
-import {useState,type FormEvent} from "react";
+import {useEffect,useState,type FormEvent} from "react";
 import Link from "next/link";
 
 type Result={error?:string;checkoutUrl?:string;totalGBP?:string;paymentEnabled?:boolean;id?:string};
@@ -16,6 +16,7 @@ export default function MerchantCheckoutQuotes(){
  const [busy,setBusy]=useState(false);
  const [message,setMessage]=useState("");
  const [result,setResult]=useState<Result|null>(null);
+ useEffect(()=>{const query=new URLSearchParams(window.location.search);const source=query.get("source"),prefillSku=query.get("sku");if(source&&/^https:\/\//i.test(source))setUrl(source.slice(0,500));if(prefillSku&&/^[A-Za-z0-9_-]{1,40}$/.test(prefillSku))setSku(prefillSku);},[]);
  async function submit(e:FormEvent<HTMLFormElement>){
   e.preventDefault();if(busy)return;
   setBusy(true);setMessage("");setResult(null);
