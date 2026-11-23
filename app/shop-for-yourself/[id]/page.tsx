@@ -84,7 +84,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
          customProductPath={"/shop-for-yourself/"+encodeURIComponent(item.id)+"?audience="+audience}
        />
      </div>
-     {owner&&<SourceEnrichmentButton productId={item.id} collection="personal"/>}
+     {owner&&<SourceEnrichmentButton productId={item.id} collection="personal" providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>}
      <aside className="hc-personal-detail-reference" aria-label="Price and marketplace notes">
        <div><strong>{priceIsConverted(item)?"Approximate GBP estimate":"Reference price in GBP"}</strong><p>{ratesDisclosure(rates)} This reference amount is not a live offer. Final prices, delivery, taxes and any agent fees may vary.</p></div>
        <div><strong>Original marketplace only</strong><p>Direct source links open the original Weidian, Taobao or 1688 listing. Herocon cannot independently confirm supplier inventory, brand authenticity or product quality.</p></div>
