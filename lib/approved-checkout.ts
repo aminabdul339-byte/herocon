@@ -4,6 +4,8 @@ import {get,put} from "@vercel/blob";
 import {queryBuckydropProduct} from "@/lib/buckydrop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {assessMerchantCheckout,type PricingAssessment} from "@/lib/order-economics";
+import {computeOwnerAutoPrice,type OwnerAutoSelection} from "@/lib/owner-auto-price";
+import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 
 const PREFIX="checkout/approved/v1/";
 export type ApprovedLine={
@@ -16,6 +18,7 @@ export type ApprovedQuote={
  shippingPence:number;taxPence:number;serviceFeePence?:number;totalPence:number;saleCurrency:"gbp";
  paymentStage?:"products"|"all_in";estimatedLaterShippingPence?:number;
  economics?:PricingAssessment;supplierFxGBPperCNY?:number;
+ pricingOrigin?:"owner_auto_saved_snapshot";snapshotSavedAt?:string;
  fulfilment:"bucky_manual_supplier_payment"|"bucky_prepaid_auto_fulfilment";
 };
 export class QuoteError extends Error{constructor(public status:number,message:string){super(message);}}
@@ -116,6 +119,40 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
  }catch{throw new QuoteError(503,"Unable to save the approved quote.");}
  return quote;
 }
+/**
+ * No operator quote form: an owner-only API checks one saved BuckyDrop variant
+ * and calculates an exact immutable GBP checkout with all fees and margin.
+ * This intentionally makes NO paid partner product-data calls.
+ */
+export async function createAutomaticOwnerQuote(selection:OwnerAutoSelection,email:string):Promise<ApprovedQuote>{
+ if(!process.env.BLOB_READ_WRITE_TOKEN)throw new QuoteError(503,"Private order storage is unavailable.");
+ const buyerEmail=email.trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail))
+  throw new QuoteError(400,"The owner must be signed in with an email address.");
+ let computed:Awaited<ReturnType<typeof computeOwnerAutoPrice>>;
+ try{computed=await computeOwnerAutoPrice(selection);}
+ catch(e){throw new QuoteError(e&&typeof e==="object"&&"status" in e&&typeof e.status==="number"?e.status:503,
+  e instanceof Error?e.message:"Automatic order pricing could not be completed.");}
+ const id="hq_"+randomBytes(20).toString("hex");
+ const quote:ApprovedQuote={
+  version:1,id,createdAt:new Date().toISOString(),
+  expiresAt:new Date(Date.now()+2*60*60*1000).toISOString(),
+  customerEmail:buyerEmail,deliveryCountry:"GB",saleCurrency:"gbp",
+  lines:[{marketplaceUrl:computed.sourceUrl,skuCode:computed.skuCode,
+   quantity:computed.quantity,title:computed.title,variant:computed.variant,
+   unitPriceGBP:computed.unitPriceGBP,supplierUnitCNY:computed.supplierPriceCNY}],
+  productSubtotalPence:computed.productSubtotalPence,
+  shippingPence:computed.shippingPence,taxPence:computed.taxPence,
+  serviceFeePence:99,totalPence:computed.totalPence,
+  paymentStage:"all_in",fulfilment:"bucky_prepaid_auto_fulfilment",
+  economics:computed.economics,supplierFxGBPperCNY:computed.effectiveFX,
+  pricingOrigin:"owner_auto_saved_snapshot",snapshotSavedAt:computed.snapshotSavedAt
+ };
+ await put(PREFIX+id+".json",JSON.stringify(quote),{
+  access:"private",addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"
+ });
+ return quote;
+}
 export async function getApprovedQuote(id:string):Promise<ApprovedQuote|null>{
  if(!quoteIdOk(id)||!process.env.BLOB_READ_WRITE_TOKEN)return null;
  try{
@@ -137,6 +174,11 @@ export async function getApprovedQuote(id:string):Promise<ApprovedQuote|null>{
    if(q.fulfilment!=="bucky_manual_supplier_payment"||q.shippingPence!==0||
     !Number.isInteger(q.estimatedLaterShippingPence)||(q.estimatedLaterShippingPence||0)<=0)return null;
   }else return null;
+  if(q.pricingOrigin==="owner_auto_saved_snapshot"){
+   if(!q.economics?.priceApproved||!q.snapshotSavedAt||
+     !q.supplierFxGBPperCNY||q.paymentStage!=="all_in"||
+     q.lines.length!==1||q.totalPence>10000)return null;
+  }
   return q;
  }catch{return null;}
 }
@@ -145,6 +187,25 @@ export async function verifyApprovedQuoteStock(q:ApprovedQuote):Promise<void>{
  if(!q.economics||!q.supplierFxGBPperCNY||!q.economics.priceApproved)
   throw new QuoteError(409,"Legacy or incomplete quote. New verified pricing is required before checkout.");
  let actualSupplierCny=0;
+ if(q.pricingOrigin==="owner_auto_saved_snapshot"){
+  // Never incur a new paid BuckyDrop lookup for an already saved product.
+  // Reject snapshots older than 14d or changed since the quote was issued.
+  for(const row of q.lines){
+   const snap=await getSavedBuckydropProduct(row.marketplaceUrl);
+   if(!snap||!snap.snapshotSavedAt||
+    snap.snapshotSavedAt!==q.snapshotSavedAt||
+    Date.now()-Date.parse(snap.snapshotSavedAt)>14*86400000||
+    snap.environment!=="live"||!snap.spuCode||snap.available!==true)
+    throw new QuoteError(409,"Saved supplier information is missing or outdated; no charge is possible.");
+   const variant=snap.variants.find(v=>v.skuCode===row.skuCode);
+   if(!variant||variant.price==null||variant.price<=0||
+    variant.stock==null||variant.stock<row.quantity||
+    variant.price>row.supplierUnitCNY*1.02||
+    row.quantity<(snap.moq||1))
+    throw new QuoteError(409,"Saved supplier variant no longer matches the prepared order.");
+   actualSupplierCny+=variant.price*row.quantity;
+  }
+ }else{
  const fetched=new Map<string,Awaited<ReturnType<typeof queryBuckydropProduct>>>();
  for(const row of q.lines){
   let supplier=fetched.get(row.marketplaceUrl);
@@ -154,6 +215,7 @@ export async function verifyApprovedQuoteStock(q:ApprovedQuote):Promise<void>{
    !sku||sku.price==null||sku.stock==null||sku.stock<row.quantity||
    sku.price>row.supplierUnitCNY*1.02)throw new QuoteError(409,"Supplier stock or costs have changed. Request a new quote.");
   actualSupplierCny+=sku.price*row.quantity;
+ }
  }
  const newSupplierPence=Math.ceil(actualSupplierCny*q.supplierFxGBPperCNY*100);
  const updated=assessMerchantCheckout(q.economics.totalPence,{
