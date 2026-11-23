@@ -10,6 +10,8 @@ import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import {getSavedPersonalSource} from "@/lib/personal-shop-enrichment";
 import {currentCustomer} from "@/lib/customer-auth";
+import {getBaseProducts} from "@/lib/catalogue-server";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
@@ -34,10 +36,14 @@ export default async function ShopProductPage({params,searchParams}:Params){
  const audience=item.gender==="unisex"
   ?(search.audience==="men"?"men":"women")
   :item.gender;
- const [rates,source,enrichment,customer]=await Promise.all([
+ const [rates,source,enrichment,customer,baseProducts]=await Promise.all([
   getPersonalShopRates(),getSavedPersonalSource(item.originalUrl),
-  getSavedMarketplaceSource(item.originalUrl),currentCustomer()
+  getSavedMarketplaceSource(item.originalUrl),currentCustomer(),getBaseProducts()
  ]);
+ // Reuse previously imported catalogue metadata for the exact same supplier
+ // URL instead of making an unnecessary marketplace request.
+ const canonical=normalizeMarketplaceLink(item.originalUrl);
+ const saved=canonical?baseProducts.find(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)===canonical):undefined;
  const ownerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
   ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();
  const owner=Boolean(ownerId&&customer?.id===ownerId);
@@ -48,16 +54,20 @@ export default async function ShopProductPage({params,searchParams}:Params){
   title:item.name,displayTitle:item.name,originalTitle:item.name,
   category:item.category,
   imageUrl:item.imageUrl,
-  images:[...new Set([item.imageUrl,...(source?.images||[])])].slice(0,36),
-  sellerName:source?.sellerName||undefined,
-  variantCount:source?.variants.length,
+  images:[...new Set([item.imageUrl,...(saved?.images||[]),...(source?.images||[])])].slice(0,36),
+  sellerName:source?.sellerName||saved?.sellerName||undefined,
+  variantCount:source?.variants.length||saved?.variantCount,
+  variants:saved?.variants,
+  descriptionText:saved?.descriptionText,
+  detailImages:saved?.detailImages,
+  sourceSpecs:saved?.sourceSpecs,
   originalMarketplaceUrl:item.originalUrl,
   sourceMarketplace:item.originalUrl.includes("1688.com")?"1688":item.originalUrl.includes("taobao.com")?"Taobao":"Weidian",
   ...(amount!==null?{priceGBP:amount}:{}),
   price
  };
  const shownProduct=withMarketplaceSource(product,enrichment);
- const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(source?.images||[])])].slice(0,36);
+ const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
  const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
