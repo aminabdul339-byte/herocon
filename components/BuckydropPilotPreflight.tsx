@@ -15,21 +15,22 @@ type Preflight={
 };
 type Props={
  productId:string;title:string;imageUrl?:string;recordedPrice?:number;
- sourceUrl:string;
+ sourceUrl:string;initialSku?:string;initialQuantity?:number;
 };
 
 const baseInput:React.CSSProperties={boxSizing:"border-box",width:"100%",padding:"13px",borderRadius:12,border:"1px solid #cbd9c7",background:"#fff",color:"#284a31",fontSize:13};
 const money=(n:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(n);
 
-export default function BuckydropPilotPreflight({productId,title,imageUrl,recordedPrice,sourceUrl}:Props){
+export default function BuckydropPilotPreflight({productId,title,imageUrl,recordedPrice,sourceUrl,initialSku="",initialQuantity=1}:Props){
  const [loading,setLoading]=useState(false);
  const [result,setResult]=useState<Preflight|null>(null);
  const [variant,setVariant]=useState("");
- const [copied,setCopied]=useState(false);
+ const [quantity,setQuantity]=useState(initialQuantity);
+ const [reviewing,setReviewing]=useState(false);
  const chosen=result?.variants?.find(x=>x.skuCode===variant);
  async function check(){
   if(loading)return;
-  setLoading(true);setResult(null);setVariant("");setCopied(false);
+  setLoading(true);setResult(null);setVariant("");setReviewing(false);
   try{
    const response=await fetch("/api/automatic-purchasing/preflight",{
     method:"POST",credentials:"same-origin",cache:"no-store",
@@ -40,16 +41,11 @@ export default function BuckydropPilotPreflight({productId,title,imageUrl,record
    if(!response.ok||!data.ok)throw new Error(data.error||"Supplier lookup failed.");
    setResult(data);
    const usable=(data.variants||[]).find(v=>v.available&&v.stock!=null&&v.stock>0&&v.priceCNY!=null);
-   setVariant(usable?.skuCode||"");
+   const preferred=(data.variants||[]).find(v=>v.skuCode===initialSku&&v.available&&v.priceCNY!=null&&v.stock!=null&&v.stock>0);
+   setVariant(preferred?.skuCode||usable?.skuCode||"");
+   setQuantity(q=>Math.max(q,data.minimumQuantity||1));
   }catch(e){setResult({ok:false,error:e instanceof Error?e.message:"Supplier not available."});}
   finally{setLoading(false);}
- }
- async function copy(){
-  if(!chosen)return;
-  try{
-   await navigator.clipboard.writeText("Marketplace: "+(result?.sourceMarketplaceUrl||sourceUrl)+"\nSKU: "+chosen.skuCode+"\nVariant: "+chosen.label+"\nSupplier price (CNY): "+chosen.priceCNY);
-   setCopied(true);
-  }catch{setCopied(false);}
  }
  return <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:20,marginTop:25}}>
   <article style={{background:"#fff",border:"1px solid #d9e6d5",borderRadius:23,padding:24,minWidth:0}}>
@@ -74,7 +70,7 @@ export default function BuckydropPilotPreflight({productId,title,imageUrl,record
     <p style={{fontSize:12,color:"#3e6446",fontWeight:800}}>BuckyDrop lookup succeeded</p>
     <p style={{fontSize:12,color:"#768779",lineHeight:1.6}}>Product: {result.title}<br/>MOQ: {result.minimumQuantity??"Not specified"}<br/>Variants: {result.sourceVariantCount??result.variants?.length??0}<br/>Supplier price currency: CNY</p>
     <label htmlFor="sample-sku" style={{fontSize:12,fontWeight:800,display:"block",marginBottom:8}}>Select one variant to test</label>
-    <select id="sample-sku" style={baseInput} value={variant} onChange={e=>{setVariant(e.target.value);setCopied(false);}}>
+    <select id="sample-sku" style={baseInput} value={variant} onChange={e=>{setVariant(e.target.value);setReviewing(false);}}>
      <option value="">Choose SKU</option>
      {(result.variants||[]).map(x=><option key={x.skuCode} value={x.skuCode} disabled={!x.available||x.priceCNY==null}>{x.label} · {x.priceCNY==null?"No price":x.priceCNY.toFixed(2)+" CNY"} · {x.stock??"Unknown"} available</option>)}
     </select>
@@ -83,12 +79,22 @@ export default function BuckydropPilotPreflight({productId,title,imageUrl,record
      <div style={{overflowWrap:"anywhere"}}>{chosen.skuCode}</div>
      <div>Supplier cost: {chosen.priceCNY?.toFixed(2)??"Unconfirmed"} CNY</div>
      <div>Supplier stock: {chosen.stock??"Unconfirmed"}</div>
-     <div>Quantity for initial trial: 1 (subject to MOQ)</div>
+     <div>Minimum quantity: {result.minimumQuantity??1}</div>
     </div>}
-    <button type="button" disabled={!chosen} onClick={copy} style={{marginTop:15,padding:"13px 17px",border:"1px solid #b8ceb7",background:"#f4f8f2",borderRadius:12,color:"#244b34",fontSize:12,fontWeight:800,cursor:"pointer"}}>
-     {copied?"SKU details copied":"Copy SKU for private quote"}
-    </button>
-    {chosen&&<p><Link href={"/admin/checkout?source="+encodeURIComponent(result?.sourceMarketplaceUrl||sourceUrl)+"&sku="+encodeURIComponent(chosen.skuCode)} style={{display:"inline-block",padding:"13px 17px",borderRadius:12,background:"#244b34",color:"#fff",fontSize:12,fontWeight:800,textDecoration:"none"}}>Continue to approved merchant quote</Link></p>}
+    {chosen&&<>
+     <label htmlFor="owner-buy-quantity" style={{fontSize:12,fontWeight:800,display:"block",margin:"15px 0 8px"}}>Quantity</label>
+     <input id="owner-buy-quantity" style={baseInput} type="number" min={Math.max(1,result.minimumQuantity||1)} max={Math.min(99,chosen.stock??99)} step="1" value={quantity} onChange={e=>{setQuantity(Number(e.target.value));setReviewing(false);}}/>
+     <button type="button" disabled={!Number.isInteger(quantity)||quantity<(result.minimumQuantity||1)||quantity>Math.min(99,chosen.stock??99)} onClick={()=>setReviewing(true)} style={{marginTop:17,padding:"14px 18px",width:"100%",border:"none",background:"#244b34",color:"#fff",borderRadius:12,fontSize:13,fontWeight:800,cursor:"pointer"}}>Continue to owner checkout</button>
+    </>}
+    {reviewing&&chosen&&<div style={{background:"#f7f8f1",border:"1px solid #cbddc6",padding:19,borderRadius:14,marginTop:18}}>
+     <h3 style={{font:"400 26px Georgia,serif",margin:"0 0 16px"}}>Your direct purchase</h3>
+     <p style={{fontSize:12,lineHeight:1.6}}>Selected: {chosen.label} · Quantity {quantity}</p>
+     <div style={{display:"flex",justifyContent:"space-between",gap:12,fontSize:13,margin:"12px 0"}}><span>Verified supplier subtotal</span><strong>{chosen.priceCNY!=null?(chosen.priceCNY*quantity).toFixed(2)+" CNY":"Unavailable"}</strong></div>
+     <div style={{display:"flex",justifyContent:"space-between",gap:12,fontSize:13,margin:"12px 0"}}><span>Herocon service fee</span><strong>£0.99</strong></div>
+     <div style={{display:"flex",justifyContent:"space-between",gap:12,fontSize:13,margin:"12px 0"}}><span>Delivery, duties and final GBP price</span><strong>Not confirmed</strong></div>
+     <p style={{fontSize:12,lineHeight:1.7,color:"#745c3c",background:"#fff1dd",borderRadius:10,padding:12}}>The complete GBP price and BuckyDrop shipping / parcel hold arrangements are not verified. We cannot safely charge you or issue a supplier purchase yet. This checkout is restricted to your owner account and does not require the £9.99 membership.</p>
+     <button type="button" disabled style={{background:"#9aab9e",color:"#fff",border:0,borderRadius:12,padding:"14px 16px",width:"100%",fontWeight:800}}>Pay now — awaiting provider setup</button>
+    </div>}
     <p style={{fontSize:11,lineHeight:1.65,color:"#8c956f",marginTop:14}}>A successful lookup is not proof BuckyDrop has purchased this item, settled freight, or agreed to hold its parcel. The real sale remains blocked until payment and fulfilment approvals are complete.</p>
    </div>}
   </article>
