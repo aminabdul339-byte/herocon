@@ -1,6 +1,6 @@
 import "server-only";
 import {createHash} from "node:crypto";
-import {get,put,list} from "@vercel/blob";
+import {get,put,list as listBlobs} from "@vercel/blob";
 import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
@@ -360,7 +360,7 @@ const savedIndex=unstable_cache(async():Promise<string[]>=>{
  let cursor:string|undefined;
  const hashes:string[]=[];
  do{
-  const result=await list({prefix:PREFIX,limit:1000,cursor});
+  const result=await listBlobs({prefix:PREFIX,limit:1000,cursor});
   for(const entry of result.blobs){
    const key=entry.pathname.slice(PREFIX.length).replace(/\\.json$/,"");
    if(/^[a-f0-9]{64}$/.test(key))hashes.push(key);
