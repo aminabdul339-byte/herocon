@@ -2,6 +2,7 @@ import "server-only";
 import {get,head,put,list} from "@vercel/blob";
 import {getApprovedQuote,type ApprovedQuote} from "@/lib/approved-checkout";
 import {partnerRefFromPayment} from "@/lib/buckydrop-order-store";
+import {checkoutOriginFor} from "@/lib/checkout-origin";
 
 const BASE="checkout/payments/v1/";
 const ACCESS="private" as const;
@@ -134,13 +135,15 @@ export async function handlePaidCheckout(sessionId:string,expectedQuoteId:string
   const payload={
    verifiedPaymentReference:session.id,verifiedTotalGBP:quote.totalPence/100,customer:buyer,
    paymentStage:allIn?"all_in":"products",
+   snapshotOnly:quote.pricingOrigin==="owner_auto_saved_snapshot",
    lines:quote.lines.map(x=>({
     marketplaceUrl:x.marketplaceUrl,skuCode:x.skuCode,quantity:x.quantity,
     verifiedSalePriceGBP:x.unitPriceGBP,maxSupplierPriceCNY:Math.round(x.supplierUnitCNY*1.02*100)/100
    }))
   };
   try{
-   const res=await fetch("https://herocon.store/api/buckydrop/orders/submit",{
+   const trustedInternalOrigin=checkoutOriginFor("https://"+(process.env.VERCEL_URL||""))||"https://herocon.store";
+   const res=await fetch(trustedInternalOrigin+"/api/buckydrop/orders/submit",{
     method:"POST",headers:{"Content-Type":"application/json",
      "x-herocon-internal-fulfilment-key":process.env.HEROCON_INTERNAL_FULFILMENT_KEY!},
     body:JSON.stringify(payload),cache:"no-store",redirect:"error",

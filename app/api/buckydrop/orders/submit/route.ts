@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {timingSafeEqual} from "node:crypto";
 import {callBucky,liveReady} from "@/lib/buckydrop-gateway";
 import {queryBuckydropProduct} from "@/lib/buckydrop";
+import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {partnerRefFromPayment,issueAccessCode,codeHash,reservePaidOrder,updatePaidOrder,storageAvailable,type PaidOrderRecord} from "@/lib/buckydrop-order-store";
 
@@ -57,6 +58,7 @@ export async function POST(request:Request){
  try{const raw=await request.text();if(raw.length>12000)return error("Payload too large.",413);input=object(JSON.parse(raw));}
  catch{return error("Invalid order payload.",400);}
  const paymentStage=input.paymentStage==="all_in"?"all_in":"products";
+ const savedOwnerSnapshot=input.snapshotOnly===true;
  if(paymentStage==="all_in"&&process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED!=="true")return error("Prepaid automatic provider fulfilment is not confirmed.",503);
  if(paymentStage==="products"&&process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true")return error("Manual supplier payment mode is not confirmed.",503);
  // Payment reference must be a *verified* provider event/order identifier from a trusted backend,
@@ -92,11 +94,23 @@ export async function POST(request:Request){
  try{
   for(const line of lines){
    let seller=knownProducts.get(line.link);
-   if(!seller){seller=await queryBuckydropProduct(line.link);knownProducts.set(line.link,seller);}
+   if(!seller){
+    if(savedOwnerSnapshot){
+     const stored=await getSavedBuckydropProduct(line.link);
+     if(!stored||!stored.snapshotSavedAt||!Number.isFinite(Date.parse(stored.snapshotSavedAt))||
+       Date.now()-Date.parse(stored.snapshotSavedAt)>14*86400000)
+      throw Error("Saved supplier data is missing or too old. No order was submitted.");
+     seller=stored;
+    }else seller=await queryBuckydropProduct(line.link);
+    knownProducts.set(line.link,seller);
+   }
    if(seller.environment!=="live"||!seller.spuCode||seller.available!==true)throw Error("Seller product is no longer confirmed as available.");
    const sku=seller.variants.find(v=>v.skuCode===line.sku);
    if(!sku||sku.price==null||sku.price<=0||sku.stock==null||sku.stock<line.quantity)throw Error("SKU or stock is not available. Refresh the product before checkout.");
    if(sku.price>line.maxSupplierPriceCNY+0.00001)throw Error("Supplier price increased beyond the approved maximum. Merchant review or refund is needed.");
+   // BuckyDrop's procurement engine may still discover a supplier change or
+   // charge against the funded wallet. The downstream provider outcome must
+   // always be monitored; a saved snapshot is never a live stock guarantee.
    if(seller.moq!=null&&line.quantity<seller.moq)throw Error("Quantity does not meet the seller minimum order.");
    const platform=platformFor(line.link);
    if(!platform)throw Error("Marketplace is not supported for live orders.");

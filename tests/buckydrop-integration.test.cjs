@@ -57,6 +57,7 @@ function adapters(extra={}){
   'next/server':{NextResponse:{json:(body,opts={})=>Response.json(body,{status:opts.status||200,headers:opts.headers})}},
   '@/lib/buckydrop-gateway':{liveReady:()=>true,callBucky:async()=>{calls++;return {records:[]};}},
   '@/lib/buckydrop':{queryBuckydropProduct:async()=>{calls++;return {};},BuckydropError:class extends Error{}},
+  '@/lib/buckydrop-cache':{getSavedBuckydropProduct:async()=>{calls++;return null;}},
   '@/lib/marketplace-links':{normalizeMarketplaceLink:()=>null},
   '@/lib/buckydrop-order-store':{storageAvailable:()=>true},
   '@/lib/fx-reference':{getReferenceCnyGbpRate:async()=>({rate:0.11,date:'2026-11-19'})},
@@ -109,6 +110,8 @@ test('one-payment checkout stays off until every independent merchant and suppli
  assert.ok(a.checkoutLaunchReadiness('all_in').missing.some(x=>x.includes('account settlement')));
  const b=load('lib/live-checkout.ts',{},{
   ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',
+  HEROCON_BUCKYDROP_PREPAID_WALLET_CONFIRMED:'true',
+  HEROCON_ALLOW_PREFUNDED_AUTO_SUPPLIER_RELEASE:'true',
   HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true'
  });
  assert.equal(b.checkoutLaunchReadiness('all_in').enabled,true);
@@ -151,7 +154,8 @@ test('nonowners cannot start live product checkout even if someone has a paid me
   '@/lib/stripe-live':{verifyLiveAccount:async()=>{stripeCalls++;return {chargesEnabled:true,country:'GB'};}},
   '@/lib/customer-auth':{currentCustomer:async()=>({id:'not-owner',email:'member@example.test'})},
   '@/lib/membership-access':{checkActiveMembership:async()=>true},
-  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>false}
+  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>false},
+  '@/lib/checkout-origin':{checkoutOriginFor:()=>null}
  }});
  const res=await POST(new Request('https://herocon.store/api/checkout/start-session',{
   method:'POST',headers:{origin:'https://herocon.store','content-type':'application/json'},body:JSON.stringify({quoteId:'hq_'+'a'.repeat(40)})
@@ -205,4 +209,92 @@ test('merchant pricing rejects missing or negative costs, rather than treating t
  assert.throws(()=>assessMerchantCheckout(1500,{...c,buckydropFeesPence:undefined}),/Invalid/);
  assert.throws(()=>assessMerchantCheckout(1500,{...c,walletAndFxFeesPence:-1}),/Invalid/);
  assert.throws(()=>assessMerchantCheckout(1499.5,c),/Invalid/);
+});
+
+
+test('owner automatic checkout uses a saved BuckyDrop SKU without a new paid product lookup',async()=>{
+ const economics=load('lib/order-economics.ts');
+ let reads=0;
+ const {computeOwnerAutoPrice}=load('lib/owner-auto-price.ts',{modules:{
+  '@/lib/catalogue-server':{getProducts:async()=>[{doppelProductId:'example123',originalMarketplaceUrl:'https://detail.1688.com/offer/123456.html'}]},
+  '@/lib/catalogue':{productId:p=>p.doppelProductId},
+  '@/lib/personal-shop':{findPersonalProduct:()=>null},
+  '@/lib/buckydrop-cache':{getSavedBuckydropProduct:async()=>{reads++;return {
+   environment:'live',spuCode:'spu123',available:true,moq:1,
+   snapshotSavedAt:new Date().toISOString(),
+   title:'Test SKU',variants:[{skuCode:'skuA',title:'Gold',price:15.2,stock:20}]
+  };}},
+  '@/lib/marketplace-links':{normalizeMarketplaceLink:x=>x},
+  '@/lib/order-economics':economics
+ }},{
+  BLOB_READ_WRITE_TOKEN:'token',
+  HEROCON_OWNER_AUTOBUY_PRICING_APPROVED:'true',
+  HEROCON_OWNER_PILOT_SHIPPING_BUDGET_APPROVED:'true',
+  HEROCON_OWNER_PILOT_FX_GBP_PER_CNY:'0.13',
+  HEROCON_OWNER_PILOT_SHIPPING_GBP:'6.50',
+  HEROCON_OWNER_PILOT_BUCKYDROP_FEES_GBP:'1.50',
+  HEROCON_OWNER_PILOT_WALLET_FEES_GBP:'0.30',
+  HEROCON_OWNER_PILOT_SHIPPING_BUFFER_GBP:'2.00',
+  HEROCON_OWNER_PILOT_TAX_DUTIES_GBP:'0.00'
+ });
+ const out=await computeOwnerAutoPrice({productId:'example123',skuCode:'skuA',quantity:1});
+ assert.equal(reads,1);
+ assert.equal(out.supplierPriceCNY,15.2);
+ assert.equal(out.shippingPence,650);
+ assert.equal(out.serviceFeePence,99);
+ assert.equal(out.economics.priceApproved,true);
+ assert.ok(out.economics.projectedProfitPence>=200);
+ assert.equal(out.productSubtotalPence+out.shippingPence+out.taxPence+99,out.totalPence);
+ assert.equal(out.totalPence<=10000,true);
+});
+
+test('owner automatic checkout fails closed when wallet/shipping budgets are missing',async()=>{
+ const economic=load('lib/order-economics.ts');
+ let reads=0;
+ const {computeOwnerAutoPrice}=load('lib/owner-auto-price.ts',{modules:{
+  '@/lib/catalogue-server':{getProducts:async()=>{reads++;return [];}},
+  '@/lib/catalogue':{productId:()=>''},
+  '@/lib/personal-shop':{findPersonalProduct:()=>null},
+  '@/lib/buckydrop-cache':{getSavedBuckydropProduct:async()=>null},
+  '@/lib/marketplace-links':{normalizeMarketplaceLink:x=>x},
+  '@/lib/order-economics':economic
+ }},{
+  BLOB_READ_WRITE_TOKEN:'token',
+  HEROCON_OWNER_AUTOBUY_PRICING_APPROVED:''
+ });
+ await assert.rejects(computeOwnerAutoPrice({productId:'example123',skuCode:'skuA',quantity:1}),{status:503});
+ assert.equal(reads,0);
+});
+
+test('an unverified prepaid wallet never unlocks the all-in Stripe checkout',()=>{
+ const {checkoutLaunchReadiness}=load('lib/live-checkout.ts',{},{
+  HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED:'true',
+  HEROCON_ONE_PAYMENT_LIVE_APPROVED:'true',
+  HEROCON_OWNER_AUTOBUY_PRICING_APPROVED:'true',
+  HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',
+  HEROCON_ALLOW_PREFUNDED_AUTO_SUPPLIER_RELEASE:'true',
+  HEROCON_BUCKYDROP_PREPAID_WALLET_CONFIRMED:'false'
+ });
+ const result=checkoutLaunchReadiness('all_in');
+ assert.equal(result.enabled,false);
+ assert.ok(result.missing.some(m=>m.includes('wallet')));
+});
+
+
+test('Stripe checkout return URL cannot point to an arbitrary host or an unapproved preview',()=>{
+ const {checkoutOriginFor:prod}=load('lib/checkout-origin.ts',{},{
+  VERCEL_ENV:'production',
+  VERCEL_URL:'herocon-ecommerce-test.vercel.app',
+  HEROCON_ALLOW_PREVIEW_OWNER_PAYMENT:'false'
+ });
+ assert.equal(prod('https://herocon.store/api/checkout/start-session'),'https://herocon.store');
+ assert.equal(prod('https://herocon-ecommerce-test.vercel.app/api/checkout/start-session'),null);
+ assert.equal(prod('https://evil.example/api/checkout/start-session'),null);
+ const {checkoutOriginFor:preview}=load('lib/checkout-origin.ts',{},{
+  VERCEL_ENV:'preview',VERCEL_URL:'herocon-ecommerce-test.vercel.app',
+  HEROCON_ALLOW_PREVIEW_OWNER_PAYMENT:'true'
+ });
+ assert.equal(preview('https://herocon-ecommerce-test.vercel.app/api/checkout/start-session'),
+  'https://herocon-ecommerce-test.vercel.app');
+ assert.equal(preview('https://other.vercel.app/api/checkout/start-session'),null);
 });
