@@ -2,6 +2,28 @@
 
 **Status: code prepared behind independent OFF-by-default merchant gates. No customer charge, supplier purchase, or dispatch was made.** This is a proposal for a manually approved first pilot, not unrestricted auto-checkout. The current two-stage checkout remains untouched when `paymentStage=products`.
 
+## New preferred commercial policy — 23 November 2026 (not yet a live billing workflow)
+
+The merchant now prefers **estimated international freight at checkout + £0.99 mandatory Herocon service fee per order + a later customer-approved shipping difference**, rather than Herocon always absorbing excess shipping. The updated interactive route `/demo/buckydrop` demonstrates that model. Its prices and adjustments are simulated.
+
+**CRITICAL: This is a proposed replacement for new adjustable-shipping contracts, not a change to existing all-inclusive quotes.** The already-written `all_in` quote continues to promise NO second freight payment and Herocon must honour that. Never silently convert existing all-inclusive paid orders to a variable freight contract. Before launching the new model:
+
+1. Create a distinct `adjustable_shipping` quote type with clear pre-contract estimate, fixed 99p fee, total payable now, precise adjustment calculation and (recommended) agreed surcharge cap; the buyer must see that binding price and disclosures on product pages, basket and checkout, not only after selecting Pay.
+2. Obtain appropriately reviewed, affirmative upfront agreement for how later shipping is calculated, **and fresh explicit consent to the exact revised amount** before charging; never auto-debit the customer's card. Check with a UK consumer-law adviser whether this proposed variable-price structure and any adjustment caps are fair and enforceable for the products offered.
+3. After BuckyDrop warehouse receipt, retrieve actual confirmed packed freight and permitted surcharges. Compute `topUp = max(0, verified freight - amount already charged for shipping)` using verified matching currency/FX and original order terms, and `refund = max(0, original shipping charge - verified freight)` where the contract calls for returning overpayments.
+4. If a top-up is needed, **do not dispatch yet**. Issue a customer-facing statement, deadline, single-use Stripe payment session and signed webhook. Dispatch is permitted only after actual receipt of funds, confirmed provider shipping-release controls and idempotent reconciliation.
+5. Provide a merchant-assisted path for customers who decline to pay, become unreachable, or encounter a price higher than the agreed cap: explain options and honour statutory refunds/cancellations. Holding already-purchased goods at a warehouse can still create losses; a 99p fee and top-up request do not mathematically guarantee positive margins.
+6. Consider validating a freight quote **before** supplier purchase where possible, or setting a slightly higher upfront shipping allowance / capped customer adjustment to keep costs controlled and avoid surprise bills.
+7. Show the **mandatory 99p Herocon fee** in the advertised total wherever price transparency rules require, including product and basket pages, not only on final Stripe checkout. New pilot approved quotes now include the fee in their frozen GBP amount, Stripe line items and visible customer quote; legacy approved quotes without a fee remain unchanged.
+
+**Current implementation status:** 99p fee in newly approved quotes and a full simulated shipping-adjustment demo. The actual variable-postage charge, invoice, payment approval, warehouse dispatch hold, refund system and pre-contract disclosure across all storefront pages remain **unimplemented and disabled**. Do not enable a public live checkout on the basis of the demo.
+
+Official legal/pricing information:
+- https://www.gov.uk/government/publications/price-transparency-cma209/providing-clear-and-accurate-information-about-prices-summary
+- https://www.gov.uk/government/publications/online-retailers-including-mandatory-delivery-fees-in-the-total-price/open-letter-to-online-retailers-including-mandatory-delivery-fees-in-the-total-price
+- https://www.legislation.gov.uk/uksi/2013/3134/regulation/40/made
+- https://www.buckydrop.com/en/services/pricing/
+
 ## Merchant flow
 
 1. Confirm written permission and pricing with BuckyDrop for the Solution API application, especially `shop-order/create`, automatic procurement and warehouse shipping, prepaid wallet balance, freight settlement, account spending limits, permitted marketplaces, and whether the automatically created parcels are dispatched without a second merchant payment/approval. No publicly documented API call is assumed to pay a BuckyDrop supplier invoice.
