@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import {useCart} from "@/components/CartProvider";
 
 type State={
+ complimentaryOwnerPremium?:boolean;ownerBuyAccess?:boolean;
  membershipActive?:boolean;testMembershipActive?:boolean;billingReady?:boolean;
  canSubscribe?:boolean;ownerLiveTest?:boolean;mode?:"test"|"live";status?:string;renewalAt?:string|null;
  cancelAtPeriodEnd?:boolean;hasBillingAccount?:boolean;
@@ -64,6 +65,10 @@ function MembershipGate(){
      account.status!=="authenticated"?<>
       <p>Create a free account or sign in to continue.</p>
       <Link className="hc-account-primary-link" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Sign in / Create an account <ArrowIcon direction="right"/></Link>
+     </>:membership.complimentaryOwnerPremium?<>
+      <p><strong>Owner Premium — complimentary lifetime access while your owner account is authorised.</strong> No £9.99 monthly subscription or recurring billing is required.</p>
+      <p>Only your verified owner account can use the private BuckyDrop product-purchasing pilot. Real payment remains locked until fulfilment and shipping are validated.</p>
+      <Link className="hc-account-primary-link" href="/pilot/buckydrop">Open owner-only purchasing <ArrowIcon direction="right"/></Link>
      </>:active?<>
       <p><strong>{isTest?"Test membership active":"Membership active"}</strong>{through?" · Paid through "+through:""}{membership.cancelAtPeriodEnd?" · Cancels at period end.":""}</p>
       {isTest?<p>Stripe test mode. No real payment has been made, and product purchases remain locked.</p>:
