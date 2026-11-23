@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {timingSafeEqual,createHash} from "node:crypto";
 import {list} from "@vercel/blob";
 import {getProducts} from "@/lib/catalogue-server";
+import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {marketplaceIdentity} from "@/lib/catalogue-identity";
 import {OPENCLI_SNAPSHOT_PREFIX,saveOpenCliSnapshot,OpenCliSnapshotError} from "@/lib/opencli-snapshots";
@@ -39,13 +40,17 @@ export async function GET(request:Request){
  const requested=Number(url.searchParams.get("limit")||"20");
  const limit=Number.isInteger(requested)?Math.min(20,Math.max(1,requested)):20;
  const marketplace=url.searchParams.get("marketplace")||"all";
+ const collection=url.searchParams.get("collection")||"all";
+ if(!["all","business","personal"].includes(collection))return json({error:"Invalid collection."},400);
  if(!["all","1688","Taobao"].includes(marketplace))return json({error:"Invalid marketplace."},400);
  try{
   const [products,saved]=await Promise.all([getProducts(),savedHashes()]);
-  const queue:{url:string;marketplace:"1688"|"Taobao";id:string;title:string;imageUrl:string|null}[]=[];
+  const sources=[...(collection==="personal"?[]:products.map(p=>({link:p.originalMarketplaceUrl,title:p.title,imageUrl:p.imageUrl,collection:"business"}))),
+   ...(collection==="business"?[]:personalShopProducts.map(p=>({link:p.originalUrl,title:p.name,imageUrl:p.imageUrl,collection:"personal"})))];
+  const queue:{url:string;marketplace:"1688"|"Taobao";id:string;title:string;imageUrl:string|null;collection:string}[]=[];
   const seen=new Set<string>();let eligible=0,alreadySaved=0,unsupported=0;
-  for(const product of products){
-   const source=normalizeMarketplaceLink(product.originalMarketplaceUrl);
+  for(const product of sources){
+   const source=normalizeMarketplaceLink(product.link);
    const identity=marketplaceIdentity(source);
    if(!source||!identity||!["1688","Taobao"].includes(identity.marketplace)){unsupported++;continue;}
    if(marketplace!=="all"&&identity.marketplace!==marketplace)continue;
@@ -55,9 +60,10 @@ export async function GET(request:Request){
    if(saved.has(hash(source))){alreadySaved++;continue;}
    if(queue.length<limit)queue.push({url:source,marketplace:identity.marketplace as "1688"|"Taobao",
      id:identity.productId,title:(product.title||"Product").slice(0,120),
-     imageUrl:[product.imageUrl,...(product.images||[])].find(value=>typeof value==="string"&&value.startsWith("https://"))||null});
+     imageUrl:typeof product.imageUrl==="string"&&product.imageUrl.startsWith("https://")?product.imageUrl:null,
+     collection:product.collection});
   }
-  return json({queue,eligible,alreadySaved,remaining:eligible-alreadySaved,unsupported,
+  return json({queue,collection,eligible,alreadySaved,remaining:eligible-alreadySaved,unsupported,
    mode:"read_only_queue",notice:"Queue retrieval does not access marketplaces or use BuckyDrop. Browser worker must run on your own logged-in Chrome."});
  }catch{return json({error:"Unable to load the OpenCLI collection queue."},503);}
 }
@@ -79,7 +85,8 @@ export async function POST(request:Request){
  // arbitrary public listings or change purchasing and checkout states.
  try{
   const products=await getProducts();
-  const known=products.some(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)===source);
+  const known=products.some(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)===source)||
+   personalShopProducts.some(p=>normalizeMarketplaceLink(p.originalUrl)===source);
   if(!known)return json({error:"Link is not present in the Herocon catalogue."},404);
   const result=await saveOpenCliSnapshot(source,payload.record);
   return json({result,sourceUrl:source,provider:"opencli-browser",
