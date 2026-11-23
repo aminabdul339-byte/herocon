@@ -3,6 +3,7 @@ import {randomBytes,timingSafeEqual} from "node:crypto";
 import {get,put} from "@vercel/blob";
 import {queryBuckydropProduct} from "@/lib/buckydrop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {assessMerchantCheckout,type PricingAssessment} from "@/lib/order-economics";
 
 const PREFIX="checkout/approved/v1/";
 export type ApprovedLine={
@@ -14,6 +15,7 @@ export type ApprovedQuote={
  deliveryCountry:"GB";lines:ApprovedLine[];productSubtotalPence:number;
  shippingPence:number;taxPence:number;serviceFeePence?:number;totalPence:number;saleCurrency:"gbp";
  paymentStage?:"products"|"all_in";estimatedLaterShippingPence?:number;
+ economics?:PricingAssessment;supplierFxGBPperCNY?:number;
  fulfilment:"bucky_manual_supplier_payment"|"bucky_prepaid_auto_fulfilment";
 };
 export class QuoteError extends Error{constructor(public status:number,message:string){super(message);}}
@@ -50,6 +52,17 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
  const shippingPence=allIn?declaredShippingPence:0;
  const estimatedLaterShippingPence=allIn?undefined:declaredShippingPence;
  const taxPence=asPence(d.taxGBP,100000);
+ // All merchant costs are mandatory, approved accounting inputs. Never accept
+ // a price based on an unverified live freight currency or guessed provider fees.
+ const supplierFxGBPperCNY=d.supplierFxGBPperCNY;
+ if(d.supplierFxReviewed!==true||typeof supplierFxGBPperCNY!=="number"||
+  !Number.isFinite(supplierFxGBPperCNY)||supplierFxGBPperCNY<0.01||supplierFxGBPperCNY>0.75)
+  throw new QuoteError(400,"Enter and approve an effective supplier CNY-to-GBP purchasing rate including BuckyDrop wallet FX.");
+ const buckydropFeesPence=asPence(d.buckydropFeesGBP,100000);
+ const walletAndFxFeesPence=asPence(d.walletAndFxFeesGBP,100000);
+ const shippingRiskReservePence=asPence(d.shippingRiskReserveGBP,100000);
+ if(buckydropFeesPence<1||walletAndFxFeesPence<1||shippingRiskReservePence<50)
+  throw new QuoteError(400,"Enter positive BuckyDrop and wallet/FX fee allowances, plus at least £0.50 shipping contingency. An absent fee is not free.");
  const seen=new Set<string>(),lines:ApprovedLine[]=[];
  const sources=new Map<string,Awaited<ReturnType<typeof queryBuckydropProduct>>>();
  for(const raw of d.lines){
@@ -77,12 +90,24 @@ export async function createApprovedQuote(input:unknown):Promise<ApprovedQuote>{
  // Mandatory 99p service fee is explicit in the checkout, Stripe line items and receipts.
  const serviceFeePence=99;
  const totalPence=productSubtotalPence+shippingPence+taxPence+serviceFeePence;
+ const projectedLifetimeTotalPence=totalPence+(estimatedLaterShippingPence||0);
+ const supplierCostPence=Math.ceil(lines.reduce((sum,line)=>
+  sum+line.supplierUnitCNY*line.quantity,0)*supplierFxGBPperCNY*100);
+ const economics=assessMerchantCheckout(projectedLifetimeTotalPence,{
+  supplierCostPence,
+  internationalFreightPence:declaredShippingPence,
+  buckydropFeesPence,walletAndFxFeesPence,taxAndDutiesPence:taxPence,
+  shippingRiskReservePence
+ });
+ if(!economics.priceApproved)
+  throw new QuoteError(409,"This order would miss Herocon's profit reserve after BuckyDrop, Stripe and shipping costs. Raise the product price: the minimum projected customer total is £"+(economics.minimumCustomerTotalPence/100).toFixed(2)+". No checkout was created.");
  if(totalPence<50||totalPence>500000)throw new QuoteError(400,"Pilot order total must be £0.50–£5,000.");
  const id="hq_"+randomBytes(20).toString("hex");
  const quote:ApprovedQuote={version:1,id,createdAt:new Date().toISOString(),
   expiresAt:new Date(Date.now()+23*60*60*1000).toISOString(),customerEmail:email,
   deliveryCountry:"GB",lines,productSubtotalPence,shippingPence,taxPence,serviceFeePence,totalPence,
   saleCurrency:"gbp",paymentStage:allIn?"all_in":"products",estimatedLaterShippingPence,
+  economics,supplierFxGBPperCNY,
   fulfilment:allIn?"bucky_prepaid_auto_fulfilment":"bucky_manual_supplier_payment"};
  try{
   await put(PREFIX+id+".json",JSON.stringify(quote),{
