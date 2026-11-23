@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {list} from "@vercel/blob";
 import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {savedMarketplaceSourceHashes,marketplaceSourceHash,getSavedMarketplaceSource,withMarketplaceSource} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
 
 /**
@@ -115,26 +116,34 @@ export function leadWithShowcaseMix(products:Product[],rounds=4):Product[]{
 }
 
 export async function attachSavedPartnerImages(products:Product[]):Promise<Product[]>{
- if(!products.some(p=>p.hasPartnerDetails))return products;
- // Fetch at most the visible page and do not let a storage error blank images.
+ if(!products.length)return products;
+ const savedSourceKeys=await savedMarketplaceSourceHashes();
+ if(!products.some(p=>p.hasPartnerDetails)&&!savedSourceKeys.size)return products;
  return Promise.all(products.map(async product=>{
-  if(!product.hasPartnerDetails||!product.originalMarketplaceUrl)return product;
-  try{
-   const details=await cardDetails(product.originalMarketplaceUrl);
-   if(!details)return product;
-   const original=[product.imageUrl,...(product.images||[])].filter((x):x is string=>!!x);
-   const photos=[...new Set([...details.photos,...original])].slice(0,12);
-   return {
-     ...product,
-     imageUrl:details.photos[0]||product.imageUrl,
-     images:photos,
-     sellerName:product.sellerName||details.sellerName,
-     variantCount:product.variantCount??details.variantCount
-   };
-  }catch{return product;}
+  if(!product.originalMarketplaceUrl)return product;
+  let found=product;
+  if(product.hasPartnerDetails){
+   try{
+    const details=await cardDetails(product.originalMarketplaceUrl);
+    if(details){
+     const previous=[product.imageUrl,...(product.images||[])].filter((v):v is string=>!!v);
+     const photos=[...new Set([...details.photos,...previous])].slice(0,12);
+     found={...found,imageUrl:details.photos[0]||found.imageUrl,
+      images:photos,sellerName:found.sellerName||details.sellerName,
+      variantCount:found.variantCount??details.variantCount};
+    }
+   }catch{}
+  }
+  const sourceKey=marketplaceSourceHash(product.originalMarketplaceUrl);
+  if(sourceKey&&savedSourceKeys.has(sourceKey)){
+   try{
+    const source=await getSavedMarketplaceSource(product.originalMarketplaceUrl);
+    if(source)found=withMarketplaceSource(found,source);
+   }catch{}
+  }
+  return found;
  }));
 }
-
 
 /**
  * Editorial four: wig, home décor, nails, shoes.
