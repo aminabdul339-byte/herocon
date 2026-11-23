@@ -56,6 +56,9 @@ export async function POST(request:Request){
  let input:Record<string,unknown>;
  try{const raw=await request.text();if(raw.length>12000)return error("Payload too large.",413);input=object(JSON.parse(raw));}
  catch{return error("Invalid order payload.",400);}
+ const paymentStage=input.paymentStage==="all_in"?"all_in":"products";
+ if(paymentStage==="all_in"&&process.env.HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED!=="true")return error("Prepaid automatic provider fulfilment is not confirmed.",503);
+ if(paymentStage==="products"&&process.env.HEROCON_BUCKYDROP_MANUAL_PAYMENT_CONFIRMED!=="true")return error("Manual supplier payment mode is not confirmed.",503);
  // Payment reference must be a *verified* provider event/order identifier from a trusted backend,
  // NEVER customer-entered data. The flag+secret protect against public/client invocation.
  const paymentRef=text(input.verifiedPaymentReference,180);
@@ -113,7 +116,7 @@ export async function POST(request:Request){
  const record:PaidOrderRecord={
   version:1,partnerOrderNo,paymentReferenceHash:codeHash(paymentRef),customerAccessHash:codeHash(accessCode),
   state:"sending",requestedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
-  shopOrderNo:null,originalRequest:shopRequest
+  shopOrderNo:null,paymentStage,originalRequest:shopRequest
  };
  try{
   await reservePaidOrder(record);
