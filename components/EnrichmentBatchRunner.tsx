@@ -13,6 +13,9 @@ export default function EnrichmentBatchRunner({
  const pageCount=Math.max(1,Math.ceil(total/12));
  const href=(n:number)=>"/enrichment?collection="+collection+"&page="+n;
  const pct=uniqueSources>0?Math.min(100,Math.floor(100*savedUnique/uniqueSources)):0;
+ const nextScheduled=progress.nextScheduledAt?new Date(progress.nextScheduledAt).toLocaleString("en-GB",{
+  dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
+ }):null;
  const lastRun=progress.lastRun?new Date(progress.lastRun).toLocaleString("en-GB",{
   dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
  }):null;
@@ -35,7 +38,7 @@ export default function EnrichmentBatchRunner({
    </p>
    <p style={{margin:"0 0 13px",fontSize:14,lineHeight:1.6}}>
     {providerConnected&&automationConfigured
-     ?"The automatic job runs in 24 independent batches spread across the day, with the first shard scheduled for 12:40 UTC. Shards record progress and retry unsaved links on the next scheduled run."
+     ?"The automatic job has 24 scheduled batches. They run independently and skip all supplier links with existing snapshots. Vercel controls the exact start time; an older paused batch does not stop future scheduled batches."
      :"BuckyDrop's live API, private storage, or secure Cron authentication is not configured; no paid batch calls can run."}
    </p>
    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:15,marginBottom:16}}>
@@ -51,6 +54,10 @@ export default function EnrichmentBatchRunner({
     style={{height:9,background:"#d4ded1",borderRadius:20,overflow:"hidden"}}>
     <div style={{height:"100%",width:pct+"%",background:"#3e7251"}}/>
    </div>
+   {nextScheduled&&<p role="status" style={{fontSize:14,lineHeight:1.65,margin:"15px 0 0",fontWeight:700}}>
+    Next scheduled batch: {nextScheduled} (UTC/London) · Shard {progress.nextScheduledShard}.
+    {progress.cooldownUntil?" The supplier cooldown must expire before requests resume.":" No active provider cooldown is recorded."}
+   </p>}
    <p style={{fontSize:13,lineHeight:1.7,margin:"15px 0 0"}}>
     Provider breakdown: <strong>{progress.buckydropSaved.toLocaleString("en-GB")}</strong> saved BuckyDrop sources
     {" · "}<strong>{progress.hioBuySaved.toLocaleString("en-GB")}</strong> saved HioBuy sources
@@ -66,7 +73,7 @@ export default function EnrichmentBatchRunner({
    <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>
     <strong>{progress.pending.toLocaleString("en-GB")}</strong> supplier URLs still lack saved details.
     {progress.activeShards>0?" "+progress.activeShards+" batch(es) currently reporting as active.":""}
-    {progress.pausedShards>0?" "+progress.pausedShards+" paused/failed batch(es).":""}
+    {progress.pausedShards>0?" "+progress.pausedShards+" earlier batch(es) ended paused or failed (historical).":""}
    </p>
    {progress.cooldownUntil&&<p role="status" style={{fontSize:13,color:"#8a5223",fontWeight:650}}>
     Supplier cooldown: {progress.cooldownReason}. API calls are paused until
@@ -75,7 +82,7 @@ export default function EnrichmentBatchRunner({
     })}. Scheduled batches automatically respect this limit; topping up credit does not remove a provider rate limit.
    </p>}
    {progress.lastIssue&&<p style={{fontSize:13,color:"#8a5223"}}>
-    Last recorded supplier issue: <strong>{progress.lastIssue}</strong>. Saved records have been preserved.
+    Historical issue from a previous batch: <strong>{progress.lastIssue}</strong>. This is not proof the next batch is blocked. Saved records remain preserved.
    </p>}
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
     Following BuckyDrop's rate-limit response to the initial four concurrent lookups,
@@ -94,7 +101,7 @@ export default function EnrichmentBatchRunner({
   <p style={{marginBottom:8}}>Page {page} of {pageCount} · {total.toLocaleString("en-GB")} listings</p>
   <p style={{fontSize:13,color:"#6d7068",lineHeight:1.6}}>
    Saved supplier records on this page: <strong>{rows.filter(r=>r.saved).length}</strong>.
-   Existing catalogue images and names remain available while the import runs.
+   The photo and option counts below are taken from saved supplier snapshots where available, rather than just the original import.
   </p>
   <div style={{marginTop:20,display:"grid",gap:10}}>
    {rows.map(row=><article key={row.id} style={{
@@ -103,8 +110,8 @@ export default function EnrichmentBatchRunner({
      <Link href={row.productPath} style={{fontWeight:700,color:"#264a32"}}>{row.title.slice(0,120)}</Link>
      <div style={{fontSize:12,marginTop:7,color:row.saved?"#275839":"#617263"}}>
       {row.saved?"Supplier details saved":"Not yet enriched / supplier lookup pending"}
-      {" · "}Existing catalogue photos: {row.existingImages}
-      {" · "}Recorded options: {row.existingVariants}
+      {" · "}{row.saved?"Supplier photos recorded: ":"Catalogue photos: "}{row.existingImages}
+      {" · "}Saved or imported options: {row.existingVariants}
       {row.hasDescription?" · Description recorded":""}
      </div>
     </article>)}
