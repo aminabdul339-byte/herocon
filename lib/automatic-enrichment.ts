@@ -147,6 +147,8 @@ export type AutomaticEnrichmentResult={
  */
 export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult>{
  const today=new Date().toISOString().slice(0,10);
+ // Owner requested a bounded 100-lookup HioBuy import on 24 November.
+ const requestLimit=today==="2026-11-24"?100:MAX_REQUESTS_PER_DAY;
  const zero={runDate:today,checked:0,added:0,skipped:0,failed:0,savedUnique:0,catalogueUnique:0,lastIssue:null};
  if(!process.env.HIOBUY_API_KEY||!process.env.BLOB_READ_WRITE_TOKEN)
   return {status:"not_configured",...zero};
@@ -172,11 +174,11 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
  let scanned=0,consecutiveFailures=0,stop=false;
  let lastBatchStarted=0;
  const seen=new Set<string>();
- while(scanned<catalog.length&&state.lastRunRequests<MAX_REQUESTS_PER_DAY
+ while(scanned<catalog.length&&state.lastRunRequests<requestLimit
   &&Date.now()-started<MAX_RUNTIME_MS-20_000&&!stop){
   const batch:typeof catalog=[];
   while(scanned<catalog.length&&batch.length<MAX_CONCURRENT
-     &&state.lastRunRequests+batch.length<MAX_REQUESTS_PER_DAY){
+     &&state.lastRunRequests+batch.length<requestLimit){
    const p=catalog[(start+scanned)%catalog.length];
    scanned++;
    state.lastHash=p.hash;
