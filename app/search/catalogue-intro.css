@@ -92,3 +92,41 @@
  .hc-site .sc-catalogue-page .sc-searchbar-page button{width:100%}
  .hc-site .sc-catalogue-page .sc-results-heading form{margin-top:12px}
 }
+
+/* Single automatic sort control, no secondary Apply action. */
+.hc-site .sc-catalogue-page .sc-sort-control{
+ display:flex;align-items:center;gap:10px;
+ flex-wrap:wrap;max-width:100%;
+}
+.hc-site .sc-catalogue-page .sc-sort-control label{
+ font-size:12px;color:#647568;white-space:nowrap;
+}
+.hc-site .sc-catalogue-page .sc-sort-select{
+ position:relative;display:flex;align-items:center;
+ flex:0 1 auto;min-width:0;max-width:100%;
+}
+.hc-site .sc-catalogue-page .sc-sort-select select{
+ appearance:none;-webkit-appearance:none;
+ box-sizing:border-box;
+ width:190px;max-width:100%;min-height:42px;
+ padding:10px 34px 10px 15px;
+ border:1px solid #d0ddcf;border-radius:999px;
+ background:#fff;color:#354f3b;font-size:13px;
+ cursor:pointer;
+}
+.hc-site .sc-catalogue-page .sc-sort-select select:focus-visible{
+ outline:2px solid #67886c;outline-offset:2px;
+}
+.hc-site .sc-catalogue-page .sc-sort-select select:disabled{
+ cursor:progress;opacity:.75;
+}
+.hc-site .sc-catalogue-page .sc-sort-select svg{
+ pointer-events:none;position:absolute;right:12px;color:#54715b;
+}
+.hc-site .sc-catalogue-page .sc-sort-status{
+ position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+ white-space:nowrap;
+}
+@media(max-width:800px){
+ .hc-site .sc-catalogue-page .sc-sort-control{margin-top:12px}
+}
