@@ -4,7 +4,7 @@ import {runBuckydropBulkShard,BUCKYDROP_BULK_SHARDS} from "@/lib/buckydrop-bulk"
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-export const maxDuration=300;
+export const maxDuration=420;
 function authorized(value:string|null,secret:string|undefined){
  if(!secret||secret.length<32||!value?.startsWith("Bearer "))return false;
  const supplied=Buffer.from(value.slice(7));
