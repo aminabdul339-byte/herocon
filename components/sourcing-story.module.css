@@ -240,3 +240,24 @@
 @media(max-width:760px){.wheelCenter{width:50%;padding:14px}.centerIcon{width:clamp(38px,9vw,60px);height:clamp(38px,9vw,60px)}.centerDescription{font-size:clamp(10px,2.6vw,13px);max-width:160px}.centerTitle{font-size:clamp(16px,4.2vw,23px)}.centerContent{gap:5px}.nodeDisc{width:clamp(47px,12vw,76px)}.nodeLabel{font-size:12px}}
 @media(max-width:390px){.wheelCenter{width:50%;padding:9px}.centerContent{gap:4px}.centerTitle{font-size:16px}.centerIcon{width:32px;height:32px}.centerCounter,.centerPlanned{font-size:9px}.centerDescription{font-size:10px;line-height:1.3}.nodeDisc{width:47px}.nodeLabel{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.wheelNode:hover .nodeDisc,.wheelNode[aria-pressed=true] .nodeDisc{transform:none}}
+
+/* Let the wheel tell the story: no separate slogan or duplicated step panel. */
+.wheelHero{padding:clamp(32px,4vw,54px) 0 34px}
+.wheelLayout{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wheelIntro{width:100%;max-width:720px;text-align:center;align-self:center}
+.wheelIntro h1{font-size:clamp(36px,4.4vw,57px);line-height:1.1;max-width:none}
+.wheelIntro .intro{margin:14px auto 4px;font-size:15px;max-width:620px}
+.wheelArea{width:100%;max-width:650px}
+.wheelBoard{max-width:650px}
+.wheelCaptionRow{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:-7px}
+.wheelCaptionRow .wheelCaption{margin:0}
+.wheelCaptionRow .wheelAutoPause{width:32px;height:32px;flex:none}
+.wheelCaptionRow .wheelAutoPause svg{width:14px;height:14px}
+@media(max-width:760px){
+ .wheelHero{padding:34px 0 25px}
+ .wheelLayout{gap:14px}
+ .wheelIntro h1{font-size:clamp(33px,7vw,44px)}
+ .wheelIntro .intro{font-size:14px;margin:12px auto 0}
+ .wheelBoard{max-width:530px}
+ .wheelCaptionRow{margin-top:2px}
+}
