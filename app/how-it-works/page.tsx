@@ -3,8 +3,8 @@ import SourcingGuide from "@/components/SourcingGuide";
 import type {Metadata} from "next";
 
 export const metadata:Metadata={
- title:"How Sourcing Works — Your Interactive Herocon Guide",
- description:"Explore how Herocon product discovery, supplier links, cart and planned sourcing fulfilment work. Use an interactive four-stage guide and sourcing checklist."
+ title:"How Sourcing Works — Discover, Compare and Source",
+ description:"See how Herocon brings Chinese marketplace products together, helps you compare supplier details and save a shortlist, and understand the planned purchasing and delivery journey."
 };
 
 export default function HowItWorks(){
