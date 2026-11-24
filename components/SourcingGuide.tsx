@@ -90,7 +90,7 @@ export default function SourcingGuide(){
  const [visible,setVisible]=useState(true);
  const [popup,setPopup]=useState(false);
  const dialogRef=useRef<HTMLDialogElement>(null);
- const triggerRef=useRef<HTMLButtonElement>(null);
+ const triggerRef=useRef<HTMLButtonElement|null>(null);
  const stage=stages[active];
 
  useEffect(()=>{
@@ -114,19 +114,13 @@ export default function SourcingGuide(){
   if(popup&&!dialog.open)dialog.showModal();
   else if(!popup&&dialog.open)dialog.close();
  },[popup]);
- function choose(index:number){setActive((index+stages.length)%stages.length);}
- function openDetails(){setPopup(true);}
+ function openDetails(index:number,trigger:HTMLButtonElement){triggerRef.current=trigger;setActive(index);setPopup(true);}
  return <div className={styles.guide}>
   <section className={styles.wheelHero} aria-labelledby="sourcing-story-heading" onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)} onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node|null))setFocused(false);}}>
    <div className={styles.wrap+" "+styles.wheelLayout}>
     <div className={styles.wheelIntro}>
-     <p className={styles.overline}>How sourcing works</p>
-     <h1 id="sourcing-story-heading">Find the source.<br/><em>Make it yours.</em></h1>
-     <p className={styles.intro}>Choose the products you love. We'll take care of sourcing them from China and getting them to you once our integrated purchasing service launches.</p>
-     <div className={styles.actions}>
-      <Link href="/search" className={styles.primary}>Explore products <ArrowIcon direction="right"/></Link>
-      <Link href="/find-product" className={styles.secondary}>Bring your own link <ArrowIcon direction="up-right"/></Link>
-     </div>
+     <h1 id="sourcing-story-heading">How sourcing works</h1>
+     <p className={styles.intro}>Choose a product, add it to your cart and let Herocon arrange the rest when our purchasing service launches.</p>
     </div>
 
     <div className={styles.wheelArea}>
@@ -136,7 +130,7 @@ export default function SourcingGuide(){
        <circle className={styles.wheelInnerTrack} cx="300" cy="300" r="184"/>
        <circle className={styles.wheelProgress} cx="300" cy="300" r="222" pathLength="100" strokeDasharray={(active*20+4)+" 100"}/>
       </svg>
-      <div className={styles.wheelCenter} aria-hidden="true">
+      <div id="wheel-step-description" className={styles.wheelCenter} aria-live={autoRunning?"off":"polite"} aria-atomic="true">
        <div className={styles.centerContent} key={active}>
         <div className={styles.centerCounter}>STEP 0{active+1} / 05</div>
         <JourneyIcon kind={stage.icon} className={styles.centerIcon}/>
@@ -147,28 +141,17 @@ export default function SourcingGuide(){
       {stages.map((step,i)=><button key={step.icon} type="button" className={styles.wheelNode}
        style={{left:positions[i].x+"%",top:positions[i].y+"%"}}
        aria-pressed={active===i} aria-label={"Step "+(i+1)+": "+step.label} aria-controls="wheel-step-description"
-       onClick={()=>choose(i)}>
+       onClick={e=>openDetails(i,e.currentTarget)}>
        <span className={styles.nodeDisc}><JourneyIcon kind={step.icon}/></span>
        <span className={styles.nodeLabel}>{step.label}</span>
       </button>)}
      </div>
-     <p className={styles.wheelCaption}>Select any step to explore the journey.</p>
-    </div>
-
-    <div className={styles.wheelDetail}>
-     <div id="wheel-step-description" key={active} className={styles.stepChange} aria-live={autoRunning?"off":"polite"} aria-atomic="true">
-      <p className={styles.stepCount}>STEP 0{active+1} OF 05</p>
-      <h2>{stage.title}</h2>
-      <p className={styles.stepBody}>{stage.body}</p>
-     </div>
-     <button ref={triggerRef} type="button" className={styles.wheelMore} onClick={openDetails}>See how it works <ArrowIcon direction="up-right"/></button>
-     <div className={styles.wheelControls}>
-      <button type="button" className={styles.wheelControl} aria-label="Previous step" onClick={()=>choose(active-1)}><ArrowIcon direction="left"/></button>
-      <button type="button" className={styles.wheelControl} aria-label="Next step" onClick={()=>choose(active+1)}><ArrowIcon direction="right"/></button>
+     <div className={styles.wheelCaptionRow}>
+      <p className={styles.wheelCaption}>Select a step for details.</p>
       {!reducedMotion&&<button type="button" className={styles.wheelAutoPause} aria-label={paused?"Resume automatic rotation":"Pause automatic rotation"} title={paused?"Resume automatic rotation":"Pause automatic rotation"} onClick={()=>setPaused(p=>!p)}><PauseGlyph paused={paused}/></button>}
      </div>
-     <p className={styles.wheelFootnote}><strong>Available now:</strong> discover products and build your cart for free. Herocon-managed payment and delivery are in development.</p>
     </div>
+
    </div>
    <dialog ref={dialogRef} className={styles.wheelModal} aria-labelledby="wheel-popup-title"
     onClose={()=>{setPopup(false);triggerRef.current?.focus();}} onCancel={()=>setPopup(false)}
