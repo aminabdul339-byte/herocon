@@ -214,3 +214,29 @@
  .wheelControl{padding:9px 10px}
 }
 @media(prefers-reduced-motion:reduce){.wheelIntro,.wheelArea,.stepChange,.centerContent,.wheelModal[open]{animation:none}.nodeDisc,.wheelProgress{transition:none}}
+
+/* Dimensional illustrations and a useful centre, with automatic progression. */
+.wheelCenter{width:49%;padding:clamp(14px,2vw,24px);background:radial-gradient(circle at 36% 24%,#fffefa 0%,#fafbf3 63%,#edf2e8 100%);box-shadow:0 17px 35px #24432e12,inset 0 0 0 5px #fffefa;border:1px solid #c5d5c1}
+.centerContent{gap:clamp(5px,.8vw,10px)}
+.centerIcon{width:clamp(42px,6.8vw,84px);height:clamp(42px,6.8vw,84px);flex:none;filter:drop-shadow(0 3px 2px #34513a17)}
+.centerTitle{font-size:clamp(19px,2.25vw,30px);font-weight:400;line-height:1.08;letter-spacing:-.04em}
+.centerDescription{font-size:clamp(11px,1.1vw,14px);line-height:1.45;color:#4e6753;max-width:195px}
+.centerPlanned{font-size:10px;font-weight:700;color:#607d65;line-height:1.3}
+.centerCounter{font-size:10px;font-weight:700;letter-spacing:.1em;color:#68856a}
+.nodeDisc{width:clamp(54px,7.4vw,92px);background:linear-gradient(145deg,#fffefa,#dce7d7);border:1px solid #aebfac;box-shadow:0 5px 0 #bbcbb8,0 9px 16px #294a3513,inset 0 2px 1px #ffffffc9}
+.nodeDisc svg{width:79%;height:79%;filter:drop-shadow(0 2px 1px #294a3514)}
+.wheelNode[aria-pressed=true] .nodeDisc{background:linear-gradient(145deg,#eaf1e4,#afc7ac);border-color:#6a8b6e;box-shadow:0 5px 0 #739578,0 0 0 6px #d2e1ce,0 12px 18px #294a3520;transform:scale(1.05)}
+.wheelNode:hover .nodeDisc{transform:translateY(-3px) scale(1.05)}
+.wheelNode[aria-pressed=true] .nodeLabel{font-weight:800;color:#244730}
+.wheelTrack{stroke:#becfba;stroke-width:2}
+.wheelProgress{stroke:#5c8563;stroke-width:5}
+.wheelControls{gap:7px}
+.wheelAutoPause{border:0;background:transparent;color:#59765d;display:grid;place-items:center;width:43px;height:43px;border-radius:8px;cursor:pointer}
+.wheelAutoPause svg{width:17px;height:17px}
+.wheelAutoPause:hover{background:#e3ebde}
+.wheelAutoPause:focus-visible{outline:3px solid #789c7c;outline-offset:3px}
+.modalArt{width:100px;height:100px;padding:9px;background:linear-gradient(145deg,#fbfcf7,#dce9d8);box-shadow:0 5px 0 #c3d5bf}
+@media(max-width:1000px) and (min-width:761px){.centerIcon{width:55px;height:55px}.centerTitle{font-size:21px}.centerDescription{font-size:12px}.centerContent{gap:6px}.wheelCenter{padding:12px}}
+@media(max-width:760px){.wheelCenter{width:50%;padding:14px}.centerIcon{width:clamp(38px,9vw,60px);height:clamp(38px,9vw,60px)}.centerDescription{font-size:clamp(10px,2.6vw,13px);max-width:160px}.centerTitle{font-size:clamp(16px,4.2vw,23px)}.centerContent{gap:5px}.nodeDisc{width:clamp(47px,12vw,76px)}.nodeLabel{font-size:12px}}
+@media(max-width:390px){.wheelCenter{width:50%;padding:9px}.centerContent{gap:4px}.centerTitle{font-size:16px}.centerIcon{width:32px;height:32px}.centerCounter,.centerPlanned{font-size:9px}.centerDescription{font-size:10px;line-height:1.3}.nodeDisc{width:47px}.nodeLabel{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.wheelNode:hover .nodeDisc,.wheelNode[aria-pressed=true] .nodeDisc{transform:none}}
