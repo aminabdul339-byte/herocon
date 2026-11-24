@@ -10,7 +10,7 @@ type ShippingRate={
 };
 type QuoteResponse={rates:ShippingRate[];total:number|null;returned:number;quotedAt:string;currencyWarning:string|null;fxDate:string|null};
 const CURRENCY=new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"});
-export default function ShippingEstimator(){
+export default function ShippingEstimator({compact=false}:{compact?:boolean}={}){
  const [country,setCountry]=useState("GB");
  const [kind,setKind]=useState<ParcelKind>("clothing");
  const [grams,setGrams]=useState("1400");
@@ -46,9 +46,14 @@ export default function ShippingEstimator(){
  const resetForm=()=>{reset();setCountry("GB");setKind("clothing");setGrams("1400");setLength("30");setWidth("30");setHeight("30");setPostCode("");};
  return <section className="hc-shipping-estimator" aria-labelledby="hc-shipping-title">
   <div className="hc-shipping-heading">
-   <div><p className="sc-kicker">SHIPPING FEE ESTIMATION</p><h2 id="hc-shipping-title">Compare <em>shipping options.</em></h2>
-    <p>Check available delivery routes and indicative shipping prices with our fulfilment partner in China. Enter your parcel details to request a quotation.</p></div>
-   <span className="hc-shipping-reference-label">Partner delivery estimates</span>
+   {compact?<div>
+    <h1 id="hc-shipping-title">Shipping estimates</h1>
+    <p>Enter your parcel details to compare delivery costs and estimated transit times from China.</p>
+   </div>:<>
+    <div><p className="sc-kicker">SHIPPING FEE ESTIMATION</p><h2 id="hc-shipping-title">Compare <em>shipping options.</em></h2>
+     <p>Check available delivery routes and indicative shipping prices with our fulfilment partner in China. Enter your parcel details to request a quotation.</p></div>
+    <span className="hc-shipping-reference-label">Partner delivery estimates</span>
+   </>}
   </div>
   <div className="hc-shipping-inputs">
    <div className="hc-shipping-field hc-shipping-country"><label htmlFor="hc-shipping-country">Deliver to</label>

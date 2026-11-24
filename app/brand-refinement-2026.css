@@ -459,3 +459,42 @@ html body .hc-site .hc-self-v2[data-audience] .hc-personal-categories>.hc-self-c
  .hc-site .hc-cart-wrap .hc-cart-controls{gap:9px 11px}
  .hc-site .hc-cart-wrap .hc-cart-summary{padding:22px 20px;border-radius:18px}
 }
+
+
+/* Compact, page-scoped shipping calculator. No oversized or duplicate hero. */
+.hc-site .hc-landed-cost-page{background:#f4f5ef;min-height:70vh}
+.hc-site .hc-landed-cost-shell{width:min(1060px,calc(100% - 48px));margin:0 auto;padding:clamp(24px,3.5vw,44px) 0 44px;box-sizing:border-box}
+.hc-site .hc-landed-cost-page .hc-shipping-estimator{box-sizing:border-box;min-width:0;padding:clamp(23px,3vw,36px);border:1px solid #d4dfd0;border-radius:24px;background:#fffefa;box-shadow:0 8px 28px #294a3508}
+.hc-site .hc-landed-cost-page .hc-shipping-heading{margin:0 0 22px;gap:0}
+.hc-site .hc-landed-cost-page .hc-shipping-heading h1{font:400 clamp(32px,3.4vw,46px)/1.12 Georgia,"Times New Roman",serif;letter-spacing:-.035em;color:#294433;margin:0 0 9px}
+.hc-site .hc-landed-cost-page .hc-shipping-heading p{font-size:14px;line-height:1.65;color:#5d7261;margin:0;max-width:650px}
+.hc-site .hc-landed-cost-page .hc-shipping-inputs{box-sizing:border-box;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 14px;padding:20px;border:1px solid #dce6d8;border-radius:16px;background:#f2f5ee}
+.hc-site .hc-landed-cost-page .hc-shipping-field{min-width:0}
+.hc-site .hc-landed-cost-page .hc-shipping-field label{font-size:12px;line-height:1.4;margin-bottom:7px;font-weight:700;color:#38543f}
+.hc-site .hc-landed-cost-page .hc-shipping-field :is(input,select){box-sizing:border-box;min-height:45px;height:45px;border:1px solid #c8d6c5;border-radius:10px;padding:10px 12px;background:#fffefa;color:#294433;font-size:14px}
+.hc-site .hc-landed-cost-page .hc-shipping-submit{grid-column:span 2;align-self:end;gap:9px;min-width:0;flex-wrap:wrap}
+.hc-site .hc-landed-cost-page .hc-shipping-submit>.sc-button{width:auto;min-width:0;min-height:45px;padding:11px 15px;border-radius:10px;font-size:13px;line-height:1.4;white-space:normal;display:inline-flex;align-items:center;justify-content:center;gap:9px;flex:1 1 auto}
+.hc-site .hc-landed-cost-page .hc-shipping-submit>.sc-button svg{width:15px;height:15px;flex:none}
+.hc-site .hc-landed-cost-page .hc-shipping-example{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 8px;margin:0;min-height:44px;white-space:normal}
+.hc-site .hc-landed-cost-page .hc-shipping-footnote{margin:15px 0 0;font-size:12px;line-height:1.65;color:#617465}
+.hc-site .hc-landed-cost-page .hc-shipping-route{border-radius:15px;background:#fffefa}
+.hc-site .hc-landed-cost-page .hc-route-main{padding:16px;min-width:0}
+.hc-site .hc-landed-cost-page .hc-route-identity h4{overflow-wrap:anywhere}
+.hc-site .hc-landed-cost-page .hc-route-price{min-width:0;overflow-wrap:anywhere}
+.hc-site .hc-landed-cost-page .hc-shipping-error,.hc-site .hc-landed-cost-page .hc-shipping-currency-alert{border-radius:12px}
+.hc-site .hc-landed-cost-page .hc-landed-cost-note{padding:0 7px;margin:15px 0 0;font-size:12px;color:#5d7261;line-height:1.7}
+.hc-site .hc-landed-cost-page .hc-landed-cost-note a{color:#315e40;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:760px){
+ .hc-site .hc-landed-cost-shell{width:calc(100% - 32px);padding:24px 0 30px}
+ .hc-site .hc-landed-cost-page .hc-shipping-estimator{padding:21px;border-radius:20px}
+ .hc-site .hc-landed-cost-page .hc-shipping-inputs{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px;gap:13px 10px}
+ .hc-site .hc-landed-cost-page .hc-shipping-country,.hc-site .hc-landed-cost-page .hc-shipping-kind,.hc-site .hc-landed-cost-page .hc-shipping-postcode,.hc-site .hc-landed-cost-page .hc-shipping-submit{grid-column:span 2}
+ .hc-site .hc-landed-cost-page .hc-shipping-submit>.sc-button{flex:1 1 100%}
+ .hc-site .hc-landed-cost-page .hc-shipping-example{min-height:36px}
+ .hc-site .hc-landed-cost-page .hc-shipping-field :is(input,select){font-size:16px}
+}
+@media(max-width:380px){
+ .hc-site .hc-landed-cost-shell{width:calc(100% - 24px)}
+ .hc-site .hc-landed-cost-page .hc-shipping-estimator{padding:17px}
+ .hc-site .hc-landed-cost-page .hc-shipping-inputs{padding:12px}
+}
