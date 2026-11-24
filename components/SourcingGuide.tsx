@@ -5,15 +5,52 @@ import {useEffect,useState} from "react";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import styles from "./sourcing-story.module.css";
 
-function Outline({kind}:{kind:"shop"|"warehouse"|"truck"|"home"|"search"|"bag"}){
- const compact=kind==="search"||kind==="bag";
- return <svg viewBox={compact?"0 0 24 24":"0 0 96 76"} fill="none" stroke="currentColor" strokeWidth={compact?1.6:1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-  {kind==="search"?<><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></>:
-   kind==="bag"?<><path d="M4 9h16l-1 12H5L4 9Z"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/></>:
-   kind==="shop"?<><path d="M17 31v36h62V31M12 29 22 10h52l10 19"/><path d="M12 29c0 9 12 12 18 3 6 8 12 8 18 0 6 8 12 8 18 0 6 9 18 6 18-3M29 10l-3 19m22-19v19m19-19 3 19M28 45h19v12H28zM57 67V45h13v22M10 67h76"/></>:
-   kind==="warehouse"?<><path d="M9 28 48 8l39 20v39H9V28ZM9 28h78M23 67V39h50v28M23 48h50M23 57h50"/><path d="M41 39v28M57 39v28M5 67h86"/></>:
-   kind==="truck"?<><path d="M9 18h49v40H9V18ZM58 30h16l14 16v12H58M62 33h10l10 13H62zM7 58h10M31 58h37M82 58h8"/><circle cx="24" cy="59" r="7" fill="#e9ede3"/><circle cx="75" cy="59" r="7" fill="#e9ede3"/><path d="M2 28h13M3 38h12M35 27h13m-13 8h13"/></>:
-   <><path d="m9 35 39-28 39 28M18 29v38h60V29M38 67V44h20v23M25 39h8v10h-8zM63 39h8v10h-8zM8 67h80"/></>}
+// Match the wheel's dimensional, illustrated objects without changing the delivery copy.
+function Outline({kind}:{kind:"shop"|"warehouse"|"truck"|"home"}){
+ const ink="#284b36",green="#789a7a",sage="#c3d6bb",cream="#fff9e9",gold="#c8aa73",shade="#52765a";
+ return <svg viewBox="0 0 96 86" fill="none" stroke={ink} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+  <ellipse cx="48" cy="77" rx="35" ry="4.5" fill={ink} opacity=".12" stroke="none"/>
+  {kind==="shop"?<>
+   <path d="m14 29 12-12 43 3 12 9v42l-13 6-54-7Z" fill={shade}/>
+   <path d="M14 29h54v48l-54-7Z" fill={cream}/>
+   <path d="m68 29 13-8v50l-13 6Z" fill={green}/>
+   <path d="m10 29 12-18 51 4 12 14-14 10-61-3Z" fill={sage}/>
+   <path d="m10 29 12-18 11 1-7 18Zm31-16 10 1 4 17-15-1Zm21 2 11 0 12 14-15 3Z" fill={green}/>
+   <path d="M10 29v7q0 9 8 9 7 0 9-8 6 9 14 1 8 9 15 0 8 10 15 1v-7Z" fill={cream}/>
+   <path d="m10 29 17 1v8q-3 10-12 6-5-2-5-8Zm30 1 16 1v7q-8 9-16-1Z" fill={green}/>
+   <rect x="21" y="48" width="23" height="14" rx="2" fill={sage}/><path d="M32 49v12" stroke={green}/>
+   <path d="M50 74V48h12v27Z" fill={gold}/><path d="M57 62h2" stroke={ink}/>
+  </>:kind==="warehouse"?<>
+   <path d="m10 31 32-18 42 19v40l-42 7-32-10Z" fill={shade}/>
+   <path d="m10 31 32-18 30 20v43l-30 3-32-10Z" fill={cream}/>
+   <path d="m72 33 12-1v40l-12 4Z" fill={green}/>
+   <path d="m7 32 35-23 45 21-15 9-30-17-29 18Z" fill={green}/>
+   <path d="M42 9 87 30l-15 9-30-17Z" fill={sage}/>
+   <path d="M20 70V44h43v32Z" fill={sage}/><path d="M21 51h41m-41 8h41m-41 8h41" stroke={green}/>
+   <path d="m27 60 11-4 9 4-11 5Z" fill={cream}/><path d="M27 60v11l9 3v-9Z" fill={gold}/><path d="m36 65 11-5v11l-11 3Z" fill={green}/>
+   <path d="m48 62 10-4 9 4-10 4Z" fill={cream}/><path d="M48 62v11l9 3V66Z" fill={gold}/><path d="m57 66 10-4v11l-10 3Z" fill={green}/>
+  </>:kind==="truck"?<>
+   <path d="M8 24 20 14l42 4 9 10-12 9-51-3Z" fill={sage}/>
+   <path d="M8 24h51v40H8Z" fill={cream}/>
+   <path d="m59 24 12-6v36l-12 10Z" fill={green}/>
+   <path d="M59 36h17l13 15v13H59Z" fill={sage}/>
+   <path d="m76 36 8-5 10 14v15l-5 4V51Z" fill={shade}/>
+   <path d="M64 41h10l9 11H64Z" fill={cream}/>
+   <path d="M16 36h29m-29 8h21" stroke={green} strokeWidth="3"/>
+   <path d="m21 52 7-4 8 4-8 4Z" fill={gold}/><path d="M21 52v8l7 4v-8Zm7 4 8-4v8l-8 4Z" fill={gold}/>
+   <circle cx="24" cy="66" r="9" fill={ink}/><circle cx="24" cy="66" r="3.5" fill={cream} stroke="none"/>
+   <circle cx="76" cy="66" r="9" fill={ink}/><circle cx="76" cy="66" r="3.5" fill={cream} stroke="none"/>
+   <path d="M3 39h9M3 48h6" stroke={green} strokeWidth="3"/>
+  </>:<>
+   <path d="m15 32 33-19 33 19v38l-33 9-33-11Z" fill={green}/>
+   <path d="M15 32 48 48v31L15 68Z" fill={sage}/><path d="m48 48 33-16v38l-33 9Z" fill={green}/>
+   <path d="M8 33 46 6l42 25-7 10L46 18 15 43Z" fill={ink}/><path d="m46 6 42 25-7 10-35-23Z" fill={shade}/>
+   <path d="m16 42 30-24 2 30Z" fill={cream} stroke="none"/>
+   <path d="m25 47 12 5v10l-12-5Z" fill={cream}/><path d="M31 50v10" stroke={green}/>
+   <path d="m53 76 13-5V50l-13 6Z" fill={gold}/><path d="m60 63 2-1" stroke={ink}/>
+   <path d="m69 45 7-4v10l-7 4Z" fill={cream}/>
+   <path d="m73 66 10-5 10 5-10 6Z" fill={cream}/><path d="M73 66v10l10 6V72Z" fill={gold}/><path d="m83 72 10-6v10l-10 6Z" fill={sage}/>
+  </>}
  </svg>;
 }
 const questions=[
@@ -150,13 +187,13 @@ export default function SourcingGuide(){
      <p>We're building integrated Herocon purchasing and delivery. The intended journey is a partner purchasing from the seller, receiving the goods in China and arranging international shipping to you.</p>
     </div>
     <div className={styles.deliveryFlow} aria-label="Planned delivery journey: marketplace supplier, warehouse in China, international shipping, delivery to your door">
-     <div className={styles.node}><Outline kind="shop"/><strong>Marketplace supplier</strong></div>
+     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="shop"/></span><strong>Marketplace supplier</strong></div>
      <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><Outline kind="warehouse"/><strong>Warehouse in China</strong></div>
+     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="warehouse"/></span><strong>Warehouse in China</strong></div>
      <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><Outline kind="truck"/><strong>International shipping</strong></div>
+     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="truck"/></span><strong>International shipping</strong></div>
      <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><Outline kind="home"/><strong>Your doorstep</strong></div>
+     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="home"/></span><strong>Your doorstep</strong></div>
     </div>
     <div className={styles.status}><p><strong>Not available yet:</strong> Herocon does not currently accept product or delivery payments. External sellers and buying agents handle their own transactions. Budget for shipping, agent fees, VAT and duties separately from the listed product price.</p><Link href="/landed-cost" className={styles.textLink}>Explore shipping estimates <ArrowIcon direction="right"/></Link></div>
    </div>
