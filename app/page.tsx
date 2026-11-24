@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
 import type {Metadata} from "next";
+import "./discovery-studio.css";
 
 export const dynamic="force-dynamic";
 
@@ -40,7 +41,7 @@ export default async function Home(){
   };
   return <main className="hm-home">
     <Header/>
-    <AtelierHero/>
+    <AtelierHero products={products}/>
 
     <section className="hm-featured hm-shell" aria-labelledby="hm-featured-title">
       <div className="hm-featured-heading">
