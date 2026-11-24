@@ -16,7 +16,8 @@ const LOCK_PREFIX="catalogue/automatic-enrichment/v1/runs/";
 const MAX_REQUESTS_PER_DAY=500;
 const MAX_CONCURRENT=3;
 const MIN_BATCH_START_INTERVAL_MS=3500; // <= ~52 requests/minute
-const MAX_RUNTIME_MS=210_000;
+// Keep the existing provider rate and daily request cap; allow a longer batch.
+const MAX_RUNTIME_MS=350_000;
 const BLOCK_TTL_MS=7*24*60*60*1000;
 
 type Channel="1688"|"weidian"|"taobao";
