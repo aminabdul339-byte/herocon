@@ -7,9 +7,8 @@ export default function DiscoveryMotion({cards}:{cards:Card[]}){
  return <div className="hd-scene" data-paused={paused}>
   <div className="hd-orbit" aria-hidden="true"/>
   {cards.map(card=><Link key={card.id} prefetch={false} href={"/product/"+encodeURIComponent(card.id)} className={"hd-float hd-float-"+card.position} aria-label={"Explore "+card.title+" on Herocon"}>
-    <img src={card.image} alt={card.title} width={360} height={320} loading={card.position<3?"eager":"lazy"} decoding="async" referrerPolicy="no-referrer"/>
-    <div className="hd-card-meta"><span>{card.title}</span><b>{card.price}</b></div>
-    <small>{card.marketplace} · reference price</small>
+    <div className="hd-card-photo"><img src={card.image} alt={card.title} width={360} height={280} loading={card.position<3?"eager":"lazy"} decoding="async" referrerPolicy="no-referrer"/></div>
+    <div className="hd-card-meta"><span>{card.title}</span><div className="hd-card-price"><b>{card.price}</b><small>{card.marketplace} · reference price</small></div></div>
   </Link>)}
   <Link href="/search" className="hd-source-pill"><i aria-hidden="true"/>Discover the original source</Link>
   <button type="button" className="hd-motion-toggle" aria-label={paused?"Resume card animation":"Pause card animation"} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>
