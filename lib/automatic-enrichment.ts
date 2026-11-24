@@ -13,7 +13,7 @@ const STATE_PATH="catalogue/automatic-enrichment/v1/state.json";
 const LOCK_PREFIX="catalogue/automatic-enrichment/v1/runs/";
 // The scheduler runs until time or the provider quota is exhausted. No low
 // 36-product cap: owners can raise their HioBuy plan without changing code.
-const MAX_REQUESTS_PER_DAY=500;
+const MAX_REQUESTS_PER_DAY=100; // HioBuy trial's displayed daily allowance
 const MAX_CONCURRENT=3;
 const MIN_BATCH_START_INTERVAL_MS=3500; // <= ~52 requests/minute
 // Keep the existing provider rate and daily request cap; allow a longer batch.
@@ -145,16 +145,26 @@ export type AutomaticEnrichmentResult={
  * after each small batch; the next day continues after the last link hash.
  * Public storefront requests never call this worker.
  */
-export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult>{
+export async function runAutomaticEnrichment(continuation=false):Promise<AutomaticEnrichmentResult>{
  const today=new Date().toISOString().slice(0,10);
  // Owner requested a bounded 100-lookup HioBuy import on 24 November.
- const requestLimit=today==="2026-11-24"?100:MAX_REQUESTS_PER_DAY;
+ const requestLimit=continuation?55:MAX_REQUESTS_PER_DAY;
  const zero={runDate:today,checked:0,added:0,skipped:0,failed:0,savedUnique:0,catalogueUnique:0,lastIssue:null};
  if(!process.env.HIOBUY_API_KEY||!process.env.BLOB_READ_WRITE_TOKEN)
   return {status:"not_configured",...zero};
- // Acquire a per-UTC-day durable lock before any billable supplier requests.
+ // One-time continuation authorised by the owner after HioBuy displayed 55
+ // remaining quota units. Never run this on another day or without a
+ // completed initial batch and no unresolved account-wide issue.
+ if(continuation){
+  if(today!=="2026-11-24")return {status:"already_executed",...zero};
+  const previous=await getAutomaticEnrichmentState();
+  if(!previous.lastRun?.startsWith(today)||previous.lastRunRequests!==100||
+    previous.lastIssue||!previous.lastKey)
+   return {status:"already_executed",...zero,lastIssue:"continuation_preconditions_not_met"};
+ }
+ // Acquire a durable lock before any billable supplier requests.
  try{
-  await put(LOCK_PREFIX+today+".json",JSON.stringify({date:today,createdAt:new Date().toISOString()}),{
+  await put(LOCK_PREFIX+today+(continuation?"-remaining-55":"")+".json",JSON.stringify({date:today,createdAt:new Date().toISOString()}),{
    access:"private",addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"
   });
  }catch{return {status:"already_executed",...zero};}
@@ -170,14 +180,16 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
  const catalog=catalogSources(products,legacy);
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
  let start=catalog.findIndex(x=>x.key>(state.lastKey||""));
- if(start<0)start=0;
+ if(start<0)start=continuation?catalog.length:0;
+ // Do not wrap the cursor on this continuation: avoid retrying the first
+ // batch\'s unsuccessful requests, whose hashes were not persisted.
  let scanned=0,consecutiveFailures=0,stop=false;
  let lastBatchStarted=0;
  const seen=new Set<string>();
- while(scanned<catalog.length&&state.lastRunRequests<requestLimit
+ while(scanned<(continuation?catalog.length-start:catalog.length)&&state.lastRunRequests<requestLimit
   &&Date.now()-started<MAX_RUNTIME_MS-20_000&&!stop){
   const batch:typeof catalog=[];
-  while(scanned<catalog.length&&batch.length<MAX_CONCURRENT
+  while(scanned<(continuation?catalog.length-start:catalog.length)&&batch.length<MAX_CONCURRENT
      &&state.lastRunRequests+batch.length<requestLimit){
    const p=catalog[(start+scanned)%catalog.length];
    scanned++;
