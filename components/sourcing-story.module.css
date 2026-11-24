@@ -121,73 +121,96 @@
 @media(max-width:370px){.step{grid-template-columns:32px minmax(0,1fr);gap:8px}.detailGrid{grid-template-columns:minmax(0,1fr)}.detailGrid img{aspect-ratio:1.6}.primary,.secondary{width:100%}.cartLine{grid-template-columns:35px minmax(0,1fr) auto}.cartLine img{width:35px;height:35px}}
 @media(prefers-reduced-motion:reduce){.faqList summary svg{transition:none}}
 
-/* Interactive upper story only. The delivery, FAQ and closing sections are unchanged. */
-.interactiveHero{position:relative;background:#e5ebe0;padding:clamp(20px,3vw,34px);border-radius:22px;margin:0;min-width:0}
-.marketButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.marketButton{font:700 14px/1.4 Arial,sans-serif;color:#34523d;background:transparent;border:1px solid transparent;border-radius:8px;padding:10px 4px;cursor:pointer;min-width:0;transition:background .2s,border-color .2s}
-.marketButton[aria-pressed=true]{background:#f9faf4;border-color:#b4c8b2}
-.marketButton:hover{background:#f0f4ed}
-.marketExplanation{font-size:12px;color:#4e6754;line-height:1.55!important;min-height:42px;margin:10px 0 0;text-align:center}
-.demoWindow{background:#fffefa;border:1px solid #cad7c7;border-radius:14px;padding:16px;box-shadow:0 10px 26px #2843320b;min-width:0}
-.demoHead{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#647c66;border-bottom:1px solid #e0e7dc;padding:0 0 12px;margin-bottom:12px}
-.demoBrand{font-family:Georgia,serif;font-size:26px;letter-spacing:-.06em;color:#294733;line-height:1}
-.previewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.previewCard{position:relative;display:block;width:100%;min-width:0;text-align:left;font:inherit;color:#2d4935;background:transparent;border:0;padding:0;cursor:pointer;border-radius:8px}
-.previewImage{display:block;position:relative;overflow:hidden;aspect-ratio:1.13;background:#f1eee8;border-radius:8px}
-.previewImage img{display:block;width:100%;height:100%;object-fit:contain;transition:transform .45s cubic-bezier(.2,.65,.3,1)}
-.previewCard:hover img,.previewCard:focus-visible img{transform:scale(1.055)}
-.previewIcon{position:absolute;right:8px;bottom:8px;width:31px;height:31px;border:1px solid #dbe5d8;border-radius:50%;background:#fffefa;display:grid;place-items:center;color:#31553c}
-.previewIcon svg{width:15px;height:15px}
-.previewName{display:block;font-size:12px;font-weight:700;line-height:1.45;margin:9px 0 0}
-.previewHint{display:block;font-size:11px;line-height:1.45;color:#677b69;margin-top:3px}
-.heroCaption{font-size:12px;line-height:1.5;color:#59725d;margin:15px 0 0;text-align:center}
-.startDemo{display:inline-flex;align-items:center;gap:8px;color:#466e4e!important;font-size:13px;font-weight:700;text-decoration:none!important;padding:12px 0}
-.startDemo svg{width:17px;height:17px}
-.storySteps{scroll-margin-top:95px}
-.stepVisual{background:#e9ede3;border-radius:15px;padding:clamp(13px,2vw,22px);min-width:0}
-.interactiveHero button:focus-visible,.stepVisual button:focus-visible,.modal button:focus-visible{outline:3px solid #7c9d7d;outline-offset:3px}
-.searchRow{display:flex;align-items:center;gap:8px;border:1px solid #cddacc;border-radius:8px;padding:8px 11px;margin-bottom:13px;background:#f8faf5;color:#648168}
-.searchRow svg{width:16px;height:16px;flex:none}
-.searchRow input{min-width:0;width:100%;border:0;background:transparent;color:#294733;outline:none;font:inherit;font-size:13px}
-.searchRow:focus-within{outline:2px solid #86a287}
-.emptyDemo{font-size:13px;color:#617563;padding:18px 0;line-height:1.6}
-.choiceRow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
-.choice{font:700 11px/1.4 Arial,sans-serif;color:#3d5b44;background:#fffefa;border:1px solid #cbd9c9;border-radius:7px;padding:8px 10px;text-align:left;cursor:pointer}
-.choice[aria-pressed=true]{border-color:#587d61;background:#e8f0e5}
-.demoAction{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:41px;padding:10px 12px;border:1px solid #294a35;border-radius:8px;background:#294a35;color:#fff;font:700 12px/1.45 Arial,sans-serif;cursor:pointer;white-space:normal}
-.demoAction:hover{background:#1f3c2a}
-.demoAction svg{width:16px;height:16px;flex:none}
-.demoNote{display:block;color:#647965;font-size:11px;line-height:1.55;margin:10px 0 0}
-.demoCartRow{display:grid;grid-template-columns:45px minmax(0,1fr) auto;gap:10px;align-items:center;border-bottom:1px solid #e1e7dd;padding:10px 0;font-size:12px;color:#3e5944}
-.demoCartRow img{width:45px;height:45px;object-fit:contain;background:#f2efe8;border-radius:5px}
-.demoCartRow span{min-width:0;overflow-wrap:anywhere;line-height:1.5}
-.removeDemo{display:grid;place-items:center;width:30px;height:30px;border:1px solid #d8e3d5;border-radius:7px;background:transparent;color:#527057;cursor:pointer}
-.removeDemo svg{width:15px;height:15px}
-.demoFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;color:#607761;font-size:12px}
-.demoFooter button{font:inherit;background:transparent;color:#315b3d;border:0;text-decoration:underline;cursor:pointer;padding:5px 0}
-.modal{width:min(680px,calc(100% - 28px));max-height:calc(100dvh - 40px);padding:0;border:1px solid #cbd9c8;border-radius:19px;color:#263f30;background:#fffefa;box-shadow:0 22px 70px #243b2b35;overflow:auto}
-.modal::backdrop{background:#192e23a3;backdrop-filter:blur(3px)}
-.modal[open]{animation:quickViewIn .25s cubic-bezier(.2,.75,.3,1) both}
-@keyframes quickViewIn{from{opacity:0;transform:translateY(13px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-.modalHeader{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #dce5d8;font-size:12px;color:#607660;font-weight:700;gap:12px}
-.closeModal{display:grid;place-items:center;width:36px;height:36px;border:1px solid #d5e0d1;border-radius:50%;color:#294a35;background:#f5f7f0;cursor:pointer;flex:none}
-.closeModal svg{width:18px;height:18px}
-.modalBody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding:24px}
-.modalPhoto{min-width:0;aspect-ratio:1;background:#f1eee8;border-radius:12px;overflow:hidden}
-.modalPhoto img{width:100%;height:100%;object-fit:contain}
-.modalCopy{min-width:0;align-self:center}
-.modalCopy h3{font-size:29px;line-height:1.15}
-.modalCopy p{font-size:13px;line-height:1.65;color:#617463;margin:12px 0}
-.modalCopy .primary{width:100%;margin-top:9px;font-size:12px!important}
-.modalCopy .textLink{margin-top:8px}
-@media(max-width:650px){
- .interactiveHero{padding:16px}
- .demoWindow{padding:12px}
- .marketButton{font-size:12px}
- .stepVisual{grid-column:2;padding:11px}
- .modalBody{grid-template-columns:minmax(0,1fr);gap:16px;padding:18px}
- .modalPhoto{aspect-ratio:1.65}
- .modalHeader{padding:13px 18px}
- .previewGrid{gap:8px}
+
+/* One editorial circular journey. Scoped to the upper guide only. */
+.wheelHero{padding:clamp(48px,5.5vw,90px) 0;background:#f3f4ed;border-bottom:1px solid var(--line)}
+.wheelLayout{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);grid-template-areas:"intro wheel" "detail wheel";column-gap:clamp(28px,4vw,62px);row-gap:26px;align-items:center}
+.wheelIntro{grid-area:intro;align-self:end;min-width:0;animation:wheelEnter .65s ease-out both}
+.wheelIntro h1{font-size:clamp(43px,5.1vw,73px);line-height:1.06}
+.wheelIntro .intro{font-size:16px;margin:19px 0 22px}
+.wheelIntro .actions{gap:9px}
+.wheelIntro .primary,.wheelIntro .secondary{padding:12px 16px!important;min-height:46px;font-size:13px!important}
+.wheelDetail{grid-area:detail;align-self:start;min-width:0;border-top:1px solid #c9d7c7;padding-top:22px}
+.wheelDetail h2{font-size:clamp(26px,3vw,40px);line-height:1.13}
+.stepCount{font-size:11px;letter-spacing:.12em;font-weight:700;color:#607e65;margin:0 0 9px}
+.stepBody{font-size:15px!important;line-height:1.65!important;color:#4d6351;margin:12px 0 9px;max-width:480px;min-height:74px}
+.stepChange{animation:wheelEnter .35s ease-out both}
+@keyframes wheelEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.wheelMore{font:700 13px/1.4 Arial,sans-serif;background:none;border:0;padding:8px 0;color:#315b3d;display:inline-flex;gap:8px;align-items:center;cursor:pointer;text-align:left}
+.wheelMore:hover{text-decoration:underline}
+.wheelMore svg{width:16px;height:16px;flex:none}
+.wheelControls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:15px}
+.wheelControl{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #b7c9b5;border-radius:9px;background:#fafbf6;color:#294a35;min-height:43px;padding:10px 12px;font:700 12px/1.35 Arial,sans-serif;cursor:pointer}
+.wheelControl svg{width:17px;height:17px;flex:none}
+.wheelControl:disabled{opacity:.4;cursor:default}
+.wheelControl:hover:not(:disabled){background:#e7eee2}
+.wheelPlay{background:#294a35;color:#fff;border-color:#294a35}
+.wheelPlay:hover:not(:disabled){background:#1e3828}
+.wheelFootnote{font-size:12px!important;line-height:1.55!important;color:#5c715f;margin:15px 0 0;max-width:440px}
+.wheelArea{grid-area:wheel;min-width:0;align-self:center;animation:wheelEnter .7s .08s ease-out both}
+.wheelBoard{position:relative;width:100%;max-width:660px;aspect-ratio:1/1;margin:auto;isolation:isolate}
+.wheelTracks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+.wheelTrack{fill:none;stroke:#bdcdbb;stroke-width:1.5}
+.wheelInnerTrack{fill:none;stroke:#dbe5d7;stroke-width:1;stroke-dasharray:2 8}
+.wheelProgress{fill:none;stroke:#5b8663;stroke-width:3;stroke-linecap:round;transform:rotate(-90deg);transform-origin:300px 300px;transition:stroke-dasharray .65s cubic-bezier(.2,.7,.2,1)}
+.wheelCenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:43%;aspect-ratio:1;border:1px solid #d0decd;background:#fffefa;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;padding:15px;box-shadow:0 12px 38px #2b49330b}
+.centerContent{width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;animation:wheelEnter .35s ease-out both}
+.centerBrand{font:700 clamp(17px,2.2vw,30px)/1 Georgia,serif;letter-spacing:-.06em;color:#294a35}
+.centerBrand em{font-style:normal;color:#87a18a}
+.centerIcon{width:clamp(32px,5.6vw,66px);height:clamp(32px,5.6vw,66px);color:#4d7556}
+.centerTitle{font:400 clamp(15px,2.15vw,29px)/1.13 Georgia,serif;letter-spacing:-.045em;color:#263f30;max-width:100%}
+.centerCounter{font:700 10px/1.3 Arial,sans-serif;letter-spacing:.13em;color:#607e65}
+.wheelNode{position:absolute;transform:translate(-50%,-50%);width:24%;max-width:143px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;border:0;background:transparent;color:#42634b;padding:0;font:inherit;cursor:pointer}
+.nodeDisc{display:grid;place-items:center;width:clamp(45px,6.4vw,78px);aspect-ratio:1;border-radius:50%;border:1px solid #b8cbb6;background:#f7f9f2;color:#35593e;box-shadow:0 3px 12px #294a3509;transition:background .3s,color .3s,transform .3s,border-color .3s}
+.nodeDisc svg{width:51%;height:51%}
+.nodeLabel{font-size:clamp(11px,1.08vw,14px);font-weight:700;line-height:1.3;text-align:center;color:#3b5542;background:#f3f4ed;padding:3px 5px;max-width:100%;overflow-wrap:break-word}
+.wheelNode[aria-pressed=true] .nodeDisc{background:#294a35;color:#fff;border-color:#294a35;transform:scale(1.08);box-shadow:0 0 0 6px #c9d9c6}
+.wheelNode[aria-pressed=true] .nodeLabel{color:#243e2d}
+.wheelNode:hover .nodeDisc{transform:scale(1.08);border-color:#65876a}
+.wheelNode:focus-visible,.wheelControl:focus-visible,.wheelMore:focus-visible,.wheelClose:focus-visible{outline:3px solid #789c7c;outline-offset:5px}
+.wheelCaption{text-align:center;font-size:12px!important;line-height:1.5!important;color:#647b66;margin:-5px 0 0}
+.wheelModal{width:min(540px,calc(100% - 28px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #c6d5c4;border-radius:18px;background:#fffefa;color:#263f30;overflow:auto;box-shadow:0 25px 70px #223b2b30}
+.wheelModal::backdrop{background:#192f23a0;backdrop-filter:blur(3px)}
+.wheelModal[open]{animation:wheelEnter .25s ease-out both}
+.wheelModalHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid #dbe5d7;color:#607b65;font:700 11px/1.4 Arial,sans-serif;letter-spacing:.12em}
+.wheelClose{width:36px;height:36px;display:grid;place-items:center;border:1px solid #d1dfcf;background:#f5f7f0;border-radius:50%;color:#294a35;cursor:pointer;flex:none}
+.wheelClose svg{width:18px;height:18px}
+.wheelModalBody{padding:clamp(20px,4vw,32px)}
+.wheelModalBody h2{font-size:32px;line-height:1.13}
+.wheelModalBody p{font-size:15px;line-height:1.7;color:#536c58;margin:14px 0 20px}
+.modalArt{width:68px;height:68px;padding:13px;color:#355c40;border-radius:50%;background:#eaf0e5;margin-bottom:17px}
+.modalLinks{display:flex;gap:9px;flex-wrap:wrap}
+.modalLinks a{font-size:13px!important}
+.modalStatus{font-size:12px!important;color:#5e725f!important;margin:16px 0 0!important}
+@media(max-width:1000px){
+ .wheelLayout{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);gap:22px}
+ .wheelIntro h1{font-size:clamp(42px,5.5vw,59px)}
+ .wheelDetail .stepBody{min-height:0}
 }
-@media(prefers-reduced-motion:reduce){.previewImage img,.marketButton{transition:none}.modal[open]{animation:none}.previewCard:hover img,.previewCard:focus-visible img{transform:none}}
+@media(max-width:760px){
+ .wheelLayout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "wheel" "detail";gap:24px}
+ .wheelIntro h1{font-size:clamp(44px,9vw,66px)}
+ .wheelIntro .intro{font-size:15px}
+ .wheelBoard{max-width:510px}
+ .nodeDisc{width:clamp(43px,11vw,66px)}
+ .nodeLabel{font-size:12px}
+ .centerTitle{font-size:clamp(16px,4.2vw,25px)}
+ .centerBrand{font-size:clamp(19px,4.5vw,27px)}
+ .centerIcon{width:clamp(33px,8vw,54px);height:clamp(33px,8vw,54px)}
+ .centerContent{gap:5px}
+ .wheelDetail{padding-top:19px}
+ .wheelCaption{margin-top:2px}
+}
+@media(max-width:390px){
+ .wheelNode{width:26%}
+ .nodeLabel{font-size:10px;padding:2px 3px}
+ .nodeDisc{width:43px}
+ .wheelCenter{padding:9px;width:42%}
+ .centerBrand{font-size:17px}
+ .centerTitle{font-size:15px}
+ .centerIcon{width:29px;height:29px}
+ .centerCounter{font-size:9px}
+ .wheelControls{gap:6px}
+ .wheelControl{padding:9px 10px}
+}
+@media(prefers-reduced-motion:reduce){.wheelIntro,.wheelArea,.stepChange,.centerContent,.wheelModal[open]{animation:none}.nodeDisc,.wheelProgress{transition:none}}
