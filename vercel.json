@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/buckydrop-enrichment/1",
-      "schedule": "51 11 * * *"
+      "schedule": "55 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/2",
@@ -99,6 +99,10 @@
     {
       "path": "/api/cron/buckydrop-enrichment/23",
       "schedule": "47 14 * * *"
+    },
+    {
+      "path": "/api/cron/product-enrichment/continuation",
+      "schedule": "51 11 24 11 *"
     }
   ]
 }
