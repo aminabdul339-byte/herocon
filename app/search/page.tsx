@@ -4,7 +4,8 @@ import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import {getProducts} from "@/lib/catalogue-server";
 import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
-import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,leadWithShowcaseMix} from "@/lib/catalogue-priority";
+import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
+import {leadWithBusinessEdit,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
 export const dynamic="force-dynamic";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -29,11 +30,14 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  products=await prioritizeSavedPartnerProducts(products);
  // Only the unfiltered Relevant view receives a mixed editorial lead.
  // Search terms, category browsing, newest and price ordering stay unchanged.
- if(!query&&!cat&&!collection&&sort==="recommended")products=leadWithShowcaseMix(products);
+ const isDefaultEdit=!query&&!cat&&!collection&&sort==="recommended";
+ if(isDefaultEdit)products=leadWithBusinessEdit(products);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
  const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),pages=Math.max(1,Math.ceil(products.length/PAGE_SIZE)),page=Math.min(requestedPage,pages);
- const shown=await enrichVisibleProductCards(await attachSavedPartnerImages(products.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE)));
+ const visible=products.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
+ const enriched=await enrichVisibleProductCards(await attachSavedPartnerImages(visible));
+ const shown=isDefaultEdit?restoreBusinessEditThumbnails(enriched,visible):enriched;
  const categoryHref=(category:string)=>"/category/"+encodeURIComponent(category);
  const link=(change:Record<string,string|null>)=>{const params=new URLSearchParams();if(query)params.set("q",query);if(cat)params.set("category",cat);if(collection)params.set("collection",collection);if(sort!=="recommended")params.set("sort",sort);for(const[k,v]of Object.entries(change)){if(v)params.set(k,v);else params.delete(k)}const qs=params.toString();return "/search"+(qs?"?"+qs:"");};
  return <main className="sc-catalogue-page"><Header/><section className="sc-page-hero sc-catalogue-intro sc-container"><p className="sc-kicker">THE SOURCING CATALOGUE</p><h1>Find your next <em>product.</em></h1><p>Explore products with recorded links to original Chinese marketplaces. Listed prices are starting references, not delivered costs.</p><form className="sc-searchbar sc-searchbar-page" action="/search"><span className="sc-search-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></span><input name="q" defaultValue={query} placeholder="Search all products, suppliers or categories…" aria-label="Search all products"/><button type="submit">Search</button></form></section>

@@ -69,7 +69,7 @@ export default function AtelierHero() {
       <h1 id="ha-hero-title"><span>Find more</span><span>than you <em>came for.</em></span></h1>
       <p>An inspired destination for personal discoveries and sourcing ideas — with links to original marketplace listings.</p>
       <div className="ha-actions">
-        <Link href="/start-a-business" className="ha-action ha-action-primary"><span><strong>01 / Source for your business</strong><small>Explore sourcing</small></span><ArrowUpRight/></Link>
+        <Link href="/search" className="ha-action ha-action-primary"><span><strong>01 / Source for your business</strong><small>Explore sourcing</small></span><ArrowUpRight/></Link>
         <Link href="/shop-for-yourself" className="ha-action ha-action-secondary"><span><strong>02 / Shop for yourself</strong><small>The curated edit</small></span><ArrowUpRight/></Link>
       </div>
     </div>

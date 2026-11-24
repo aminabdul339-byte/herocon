@@ -19,13 +19,13 @@ export default function Header(){
 
   const {count,account}=useCart();
   const showSourcingGuide=pathname!=="/";
-  const links=[["Start a business","/start-a-business"],["Shop for yourself","/shop-for-yourself"],...(showSourcingGuide?[["How sourcing works","/how-it-works"]]:[]),["Membership","/membership"]];
+  const links=[["Start a business","/search"],["Shop for yourself","/shop-for-yourself"],...(showSourcingGuide?[["How sourcing works","/how-it-works"]]:[]),["Membership","/membership"]];
   return <>
     <header className="sc-header">
       <div className="sc-nav-inner">
         <Link href="/" className="sc-wordmark" aria-label="Herocon homepage">hero<span>con.</span></Link>
         <nav className="sc-desktop-links" aria-label="Main navigation">
-          {links.map(([label,url])=><Link key={url} href={url} aria-current={pathname===url?"page":undefined}>{label}</Link>)}
+          {links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined}>{label}</Link>)}
         </nav>
         <div className="sc-nav-actions">
           <Link className="hc-cart-nav-link hc-mobile-account-link" href="/account" aria-label={account.status==="authenticated"?"My account":"Sign in or create an account"}>
@@ -42,7 +42,7 @@ export default function Header(){
           </button>
         </div>
       </div>
-      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={pathname===url?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
     </header>
   </>;
 }
