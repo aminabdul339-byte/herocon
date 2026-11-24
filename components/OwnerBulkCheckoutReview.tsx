@@ -29,7 +29,8 @@ export default function OwnerBulkCheckoutReview(){
  const count=selected.reduce((n,item)=>n+item.quantity,0);
  const missingSku=selected.filter(item=>!item.skuCode);
  const invalidQuantity=selected.filter(item=>!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>99);
- const canVerify=selected.length>0&&selected.length<=MAX_OPTIONS&&missingSku.length===0&&invalidQuantity.length===0;
+ const hasHio=selected.some(item=>item.source==="hiobuy"||item.productId.startsWith("hiobuy:"));
+ const canVerify=!hasHio&&selected.length>0&&selected.length<=MAX_OPTIONS&&missingSku.length===0&&invalidQuantity.length===0;
  const key=selected.map(item=>[item.key,item.skuCode||"",item.quantity,item.selected].join("::")).join("|");
  const [working,setWorking]=useState(false);
  const [error,setError]=useState("");
@@ -104,7 +105,7 @@ export default function OwnerBulkCheckoutReview(){
          <span>Quantity <strong>{item.quantity}</strong></span>
          <span>Recorded item total <strong>{item.unitPrice==null?"Unpriced":money(item.currency,item.unitPrice*item.quantity)}</strong></span>
         </div>
-        {!item.skuCode?<p className={styles.warning}>Exact BuckyDrop SKU not saved. <Link href={"/pilot/buckydrop?productId="+encodeURIComponent(item.productId)+"&quantity="+Math.min(99,item.quantity)}>Choose supplier variant</Link> before live verification.</p>:
+        {(item.source==="hiobuy"||item.productId.startsWith("hiobuy:"))?<p className={styles.warning}>HIOBuy checkout pending.</p>:!item.skuCode?<p className={styles.warning}>Exact BuckyDrop SKU not saved. <Link href={"/pilot/buckydrop?productId="+encodeURIComponent(item.productId)+"&quantity="+Math.min(99,item.quantity)}>Choose supplier variant</Link> before live verification.</p>:
          <p className={styles.sku}>Supplier SKU: {item.skuCode}</p>}
         {item.quantity>99&&<p className={styles.warning}>For this trial, reduce this item to 99 units or fewer in the cart.</p>}
         {check&&<div className={check.status==="confirmed"?styles.verified:styles.warning}>
@@ -127,6 +128,7 @@ export default function OwnerBulkCheckoutReview(){
      <div className={styles.line}><span>Estimated international delivery</span><strong>To confirm</strong></div>
      <div className={styles.line}><span>Applicable taxes and duties</span><strong>To confirm</strong></div>
      <div className={styles.total}><span>Final GBP payable</span><strong>Not yet available</strong></div>
+     {hasHio&&<p className={styles.warning}>HIOBuy items cannot be verified through BuckyDrop. Return to your cart and deselect them.</p>}
      {selected.length>MAX_OPTIONS&&<p className={styles.warning}>The first pilot supports up to {MAX_OPTIONS} options at a time. Return to your cart and deselect some options to check a smaller group.</p>}
      {missingSku.length>0&&<p className={styles.warning}>{missingSku.length} option(s) need their exact BuckyDrop SKU selected. Use the links beside those items.</p>}
      <button className={styles.verifyButton} type="button" onClick={verifySelected} disabled={!canVerify||working}>

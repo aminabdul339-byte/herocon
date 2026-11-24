@@ -12,6 +12,7 @@ export default function CartPage(){
  const [fxUnavailable,setFxUnavailable]=useState(false);
  const selectedItems=items.filter(item=>item.selected!==false);
  const selectedLines=selectedItems.length;
+ const hasHio=selectedItems.some(item=>item.source==="hiobuy"||item.productId.startsWith("hiobuy:"));
  const selectedUnits=selectedItems.reduce((sum,item)=>sum+item.quantity,0);
  const allSelected=items.length>0&&selectedLines===items.length;
  useEffect(()=>{
@@ -47,7 +48,7 @@ export default function CartPage(){
       <label className="hc-cart-select-item" title={"Select "+item.title}><input type="checkbox" checked={item.selected!==false} onChange={event=>setItemSelected(item.key,event.target.checked)} aria-label={"Select "+item.title+" to buy"}/></label>
       <Link href={item.productPath} className="hc-cart-image">{item.image?<img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>:<span>Product</span>}</Link>
       <div className="hc-cart-copy"><Link href={item.productPath} className="hc-cart-title">{item.title}</Link>{item.variant&&<p>{item.variant}</p>}
-       <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button>{account.ownerPremium&&<Link href={"/pilot/buckydrop?productId="+encodeURIComponent(item.productId)+(item.skuCode?"&sku="+encodeURIComponent(item.skuCode):"")+"&quantity="+Math.min(99,item.quantity)} className="hc-cart-owner-buy-link">Buy now · owner</Link>}</div>
+       <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button>{(item.source==="hiobuy"||item.productId.startsWith("hiobuy:"))?<small>HIOBuy · checkout pending</small>:account.ownerPremium&&<Link href={"/pilot/buckydrop?productId="+encodeURIComponent(item.productId)+(item.skuCode?"&sku="+encodeURIComponent(item.skuCode):"")+"&quantity="+Math.min(99,item.quantity)} className="hc-cart-owner-buy-link">Buy now · owner</Link>}</div>
       </div>
       <strong className="hc-cart-price">{item.unitPrice==null?"Price unavailable":<>
        <span>{money(item.currency,item.unitPrice*item.quantity)}</span>
@@ -64,12 +65,12 @@ export default function CartPage(){
      <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
     {account.ownerPremium&&<>
-     {selectedLines>0?
+     {hasHio?<button className="hc-cart-bulk-buy" type="button" disabled>HIOBuy checkout not enabled</button>:selectedLines>0?
       <Link className="hc-cart-bulk-buy" href="/pilot/buckydrop/bulk" aria-label={"Buy "+selectedLines+" selected product "+(selectedLines===1?"option":"options")+" with owner access"}>
        Buy selected items ({selectedUnits}) <ArrowIcon direction="right"/>
       </Link>:
       <button className="hc-cart-bulk-buy" type="button" disabled>Select products to buy</button>}
-     <p className="hc-cart-bulk-note">Owner Premium only. Includes your checked items and their quantities, not the entire cart. No £9.99 membership charge. Actual payment is still disabled until supplier and shipping setup is verified.</p>
+     <p className="hc-cart-bulk-note">{hasHio?"Your HIOBuy products are saved in the cart. Deselect them to review BuckyDrop products separately. HIOBuy checkout is not enabled.":"Owner Premium only. Includes your checked items and their quantities, not the entire cart. No £9.99 membership charge. Actual payment is still disabled until supplier and shipping setup is verified."}</p>
     </>}
     <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}

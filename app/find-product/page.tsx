@@ -11,10 +11,10 @@ export const metadata:Metadata={
  title:"Find a product by link",
  description:"Paste an original Taobao, 1688, Tmall or Weidian link to view seller product details on Herocon."
 };
-export default async function FindProductPage({searchParams}:{searchParams:Promise<{url?:string}>}){
+export default async function FindProductPage({searchParams}:{searchParams:Promise<{url?:string;hioId?:string;hioChannel?:string}>}){
  const params=await searchParams;
  const initialUrl=typeof params.url==="string"?params.url.slice(0,1000):"";
- if(isOwnerPremiumCustomer(await currentCustomer()))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery initialUrl={initialUrl}/></main>;
+ if(isOwnerPremiumCustomer(await currentCustomer()))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery initialUrl={initialUrl} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
  return <main className="hc-link-page hc-link-minimal" data-has-url={Boolean(initialUrl)}><Header/>
   <section className="hc-link-intro" aria-labelledby="hc-link-title">
    <div className="hc-link-intro-inner">

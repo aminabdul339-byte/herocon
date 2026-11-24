@@ -10,6 +10,7 @@ export type CartItem={
  marketplaceUrl:string;
  variant:string;
  skuCode?:string;
+ source?: "hiobuy";
  quantity:number;
  unitPrice:number|null;
  currency:"CNY"|"GBP";
@@ -48,7 +49,8 @@ function validItem(v:unknown):v is CartItem{
  return (item.currency==="CNY"||item.currency==="GBP")
   &&typeof item.quantity==="number"&&Number.isFinite(item.quantity)&&item.quantity>=1
   &&(item.unitPrice===null||(typeof item.unitPrice==="number"&&Number.isFinite(item.unitPrice)&&item.unitPrice>=0))
-  &&(item.selected===undefined||typeof item.selected==="boolean");
+  &&(item.selected===undefined||typeof item.selected==="boolean")
+  &&(item.source===undefined||item.source==="hiobuy");
 }
 export function CartProvider({children}:{children:React.ReactNode}){
  const [items,setItems]=useState<CartItem[]>([]);
