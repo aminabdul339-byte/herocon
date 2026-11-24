@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useState} from "react";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import styles from "./sourcing-story.module.css";
 
@@ -70,14 +70,13 @@ function JourneyIcon({kind,className}:{kind:JourneyIcon;className?:string}){
 function PauseGlyph({paused}:{paused:boolean}){
  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paused?<path d="m8 5 12 7-12 7V5Z"/>:<><path d="M9 5v14M15 5v14"/></>}</svg>;
 }
-type Action={label:string;href:string};
-type Stage={label:string;title:string;short:string;center:string;body:string;details:string;icon:JourneyIcon;actions:Action[]};
+type Stage={label:string;short:string;center:string;icon:JourneyIcon};
 const stages:Stage[]=[
- {label:"Find a product",title:"Find what you love.",short:"Find a product",center:"Browse our catalogue or paste your own product link.",body:"Pick a product from Herocon's catalogue or bring your own link from a supported Chinese marketplace.",details:"Explore Herocon's catalogue of original marketplace listings, or paste a supported 1688, Taobao or Weidian product link. Compare the available options before choosing what you want.",icon:"find",actions:[{label:"Explore the catalogue",href:"/search"},{label:"Paste your own link",href:"/find-product"}]},
- {label:"Add to cart",title:"Make it yours.",short:"Add to cart",center:"Select your colour, size and quantity.",body:"Choose your size, colour and quantity, then add everything you want to your Herocon cart.",details:"Select the available product variants and quantities and save them in one cart with a free account. You can review or change your selection before purchasing.",icon:"cart",actions:[{label:"Open your cart",href:"/cart"}]},
- {label:"Pay Herocon",title:"Pay in one place.",short:"Pay Herocon",center:"One checkout. Pay us, not the supplier.",body:"When checkout launches, pay Herocon directly for your order. You won't need a separate buying-agent account.",details:"Our planned checkout will show the product cost, applicable fees and delivery pricing before you approve payment. Herocon will receive your payment and arrange fulfilment through our sourcing partner. Direct checkout is not available yet.",icon:"pay",actions:[]},
- {label:"We source it",title:"Leave the sourcing to us.",short:"We source it",center:"Our agent buys your items in China.",body:"Our sourcing partner will purchase your items from the original suppliers and receive them at its warehouse in China.",details:"After a confirmed order, our sourcing partner will handle the supplier purchase and warehouse processing. This is the planned Herocon fulfilment service, subject to availability and order checks.",icon:"source",actions:[]},
- {label:"Delivered to you",title:"From China to your door.",short:"Delivered to you",center:"Our partner ships your parcel to your door.",body:"Our partner will arrange international shipping so your products can be delivered to your address.",details:"The partner will prepare your parcel and arrange international delivery. Shipping charges, applicable taxes and duties will be explained before the relevant payment is approved. Integrated delivery is in development.",icon:"deliver",actions:[{label:"Explore shipping estimates",href:"/landed-cost"}]}
+ {label:"Find a product",short:"Find a product",center:"Browse our catalogue or paste your own product link.",icon:"find"},
+ {label:"Add to cart",short:"Add to cart",center:"Select your colour, size and quantity.",icon:"cart"},
+ {label:"Pay Herocon",short:"Pay Herocon",center:"One checkout. Pay us, not the supplier.",icon:"pay"},
+ {label:"We source it",short:"We source it",center:"Our agent buys your items in China.",icon:"source"},
+ {label:"Delivered to you",short:"Delivered to you",center:"Our partner ships your parcel to your door.",icon:"deliver"}
 ];
 const positions=[{x:50,y:13},{x:85.19,y:38.57},{x:71.75,y:79.93},{x:28.25,y:79.93},{x:14.81,y:38.57}];
 
@@ -88,9 +87,6 @@ export default function SourcingGuide(){
  const [focused,setFocused]=useState(false);
  const [reducedMotion,setReducedMotion]=useState(false);
  const [visible,setVisible]=useState(true);
- const [popup,setPopup]=useState(false);
- const dialogRef=useRef<HTMLDialogElement>(null);
- const triggerRef=useRef<HTMLButtonElement|null>(null);
  const stage=stages[active];
 
  useEffect(()=>{
@@ -102,19 +98,12 @@ export default function SourcingGuide(){
   document.addEventListener("visibilitychange",visibility);
   return()=>{motion.removeEventListener("change",update);document.removeEventListener("visibilitychange",visibility);};
  },[]);
- const autoRunning=!paused&&!hovered&&!focused&&!reducedMotion&&!popup&&visible;
+ const autoRunning=!paused&&!hovered&&!focused&&!reducedMotion&&visible;
  useEffect(()=>{
   if(!autoRunning)return;
   const timer=window.setTimeout(()=>setActive(index=>(index+1)%stages.length),3000);
   return()=>window.clearTimeout(timer);
  },[active,autoRunning]);
- useEffect(()=>{
-  const dialog=dialogRef.current;
-  if(!dialog)return;
-  if(popup&&!dialog.open)dialog.showModal();
-  else if(!popup&&dialog.open)dialog.close();
- },[popup]);
- function openDetails(index:number,trigger:HTMLButtonElement){triggerRef.current=trigger;setActive(index);setPopup(true);}
  return <div className={styles.guide}>
   <section className={styles.wheelHero} aria-labelledby="sourcing-story-heading" onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)} onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node|null))setFocused(false);}}>
    <div className={styles.wrap+" "+styles.wheelLayout}>
@@ -141,30 +130,18 @@ export default function SourcingGuide(){
       {stages.map((step,i)=><button key={step.icon} type="button" className={styles.wheelNode}
        style={{left:positions[i].x+"%",top:positions[i].y+"%"}}
        aria-pressed={active===i} aria-label={"Step "+(i+1)+": "+step.label} aria-controls="wheel-step-description"
-       onClick={e=>openDetails(i,e.currentTarget)}>
+       onClick={()=>setActive(i)}>
        <span className={styles.nodeDisc}><JourneyIcon kind={step.icon}/></span>
        <span className={styles.nodeLabel}>{step.label}</span>
       </button>)}
      </div>
      <div className={styles.wheelCaptionRow}>
-      <p className={styles.wheelCaption}>Select a step for details.</p>
+      <p className={styles.wheelCaption}>Select a step to explore.</p>
       {!reducedMotion&&<button type="button" className={styles.wheelAutoPause} aria-label={paused?"Resume automatic rotation":"Pause automatic rotation"} title={paused?"Resume automatic rotation":"Pause automatic rotation"} onClick={()=>setPaused(p=>!p)}><PauseGlyph paused={paused}/></button>}
      </div>
     </div>
 
    </div>
-   <dialog ref={dialogRef} className={styles.wheelModal} aria-labelledby="wheel-popup-title"
-    onClose={()=>{setPopup(false);triggerRef.current?.focus();}} onCancel={()=>setPopup(false)}
-    onClick={e=>{if(e.target===e.currentTarget)setPopup(false);}}>
-    <div className={styles.wheelModalHeader}><span>STEP 0{active+1} / {stage.label.toUpperCase()}</span><button type="button" className={styles.wheelClose} aria-label="Close step details" onClick={()=>setPopup(false)}><ArrowIcon direction="close"/></button></div>
-    <div className={styles.wheelModalBody}>
-     <JourneyIcon kind={stage.icon} className={styles.modalArt}/>
-     <h2 id="wheel-popup-title">{stage.title}</h2>
-     <p>{stage.details}</p>
-     <div className={styles.modalLinks}>{stage.actions.map((action,i)=><Link key={action.href} href={action.href} className={i===0?styles.primary:styles.secondary}>{action.label}<ArrowIcon direction="right"/></Link>)}</div>
-     {active>=2&&<p className={styles.modalStatus}>Planned service. No product or shipping payment is taken through this guide.</p>}
-    </div>
-   </dialog>
   </section>
   <section className={styles.delivery} aria-labelledby="delivery-story-heading">
    <div className={styles.wrap}>
