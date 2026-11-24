@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import {useEffect,useRef,useState} from "react";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import styles from "./sourcing-story.module.css";
 
@@ -28,11 +31,79 @@ const questions=[
  ["Who handles my order if I buy through an agent?","The external marketplace or independent buying agent handles that transaction, including its payment, delivery and buyer-protection terms. Herocon does not manage those external orders."]
 ] as const;
 
+type ProductKind="earrings"|"shirt";
+type DemoItem={kind:ProductKind;option:string};
+const products:Record<ProductKind,{name:string;path:string;description:string}>={
+ earrings:{name:"Minimalist earrings",path:"/product/link-5a62bac31c63b6ef21f40b21c186",description:"Compare the recorded gold-tone and silver-tone options, then visit the original product page for supplier details."},
+ shirt:{name:"Cotton T-shirt",path:"/product/75hQ5VG5QTLdpDC1MluyLg",description:"Explore the product photos and available supplier options on the full catalogue listing."}
+};
+const marketInfo={
+ "1688":"Explore wholesale listings and products for your business.",
+ "Taobao":"Discover individual products, fashion and everyday finds.",
+ "Weidian":"Explore products from independent marketplace sellers."
+};
+const kinds:ProductKind[]=["shirt","earrings"];
+const earringOptions=["Yellow gold / 925 silver","White gold / 925 silver"];
+function PreviewCard({kind,onOpen,lazy=true}:{kind:ProductKind;onOpen:(kind:ProductKind)=>void;lazy?:boolean}){
+ return <button type="button" className={styles.previewCard} onClick={()=>onOpen(kind)} aria-label={"Quick view: "+products[kind].name}>
+  <span className={styles.previewImage}><ProductPhoto kind={kind} lazy={lazy}/><span className={styles.previewIcon}><ArrowIcon direction="up-right"/></span></span>
+  <span className={styles.previewName}>{products[kind].name}</span><span className={styles.previewHint}>Quick view</span>
+ </button>;
+}
 export default function SourcingGuide(){
+ const upperRef=useRef<HTMLDivElement>(null);
+ const dialogRef=useRef<HTMLDialogElement>(null);
+ const triggerRef=useRef<HTMLElement|null>(null);
+ const [market,setMarket]=useState<keyof typeof marketInfo>("1688");
+ const [search,setSearch]=useState("");
+ const [quickProduct,setQuickProduct]=useState<ProductKind>("earrings");
+ const [option,setOption]=useState(earringOptions[0]);
+ const [shortlist,setShortlist]=useState<DemoItem[]>([]);
+ const [notice,setNotice]=useState("");
+ const [dialogOpen,setDialogOpen]=useState(false);
+ const matching=kinds.filter(kind=>products[kind].name.toLowerCase().includes(search.trim().toLowerCase()));
+ const chosen=products[quickProduct];
+
+ useEffect(()=>{
+  const root=upperRef.current;
+  if(!root||!window.IntersectionObserver||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const observer=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{
+    if(!entry.isIntersecting)return;
+    // Progressive enhancement: content is always readable before JS loads.
+    if(typeof entry.target.animate==="function")entry.target.animate(
+     [{opacity:.18,transform:"translateY(20px)"},{opacity:1,transform:"translateY(0)"}],
+     {duration:580,easing:"cubic-bezier(.2,.72,.25,1)"}
+    );
+    observer.unobserve(entry.target);
+   });
+  },{threshold:.12});
+  root.querySelectorAll("[data-story-reveal]").forEach(el=>observer.observe(el));
+  return()=>observer.disconnect();
+ },[]);
+ function openPreview(kind:ProductKind){
+  triggerRef.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  setQuickProduct(kind);
+  setDialogOpen(true);
+ }
+ useEffect(()=>{
+  const dialog=dialogRef.current;
+  if(!dialog)return;
+  if(dialogOpen&&!dialog.open)dialog.showModal();
+  else if(!dialogOpen&&dialog.open)dialog.close();
+ },[dialogOpen]);
+ function closePreview(){setDialogOpen(false);}
+ function saveExample(kind:ProductKind){
+  const selectedOption=kind==="earrings"?option:"Explore available options";
+  setShortlist(prev=>prev.some(item=>item.kind===kind&&item.option===selectedOption)?prev:[...prev,{kind,option:selectedOption}]);
+  setNotice(products[kind].name+" added to your example shortlist.");
+  setDialogOpen(false);
+ }
  return <div className={styles.guide}>
+  <div ref={upperRef}>
   <section className={styles.hero} aria-labelledby="sourcing-story-heading">
    <div className={styles.wrap+" "+styles.heroGrid}>
-    <div>
+    <div data-story-reveal>
      <p className={styles.overline}>How Herocon works</p>
      <h1 id="sourcing-story-heading">Discover products.<br/><em>Find their source.</em></h1>
      <p className={styles.intro}>Herocon brings products from Chinese marketplaces into one place, so you can discover what to buy, compare suppliers and find the original listing.</p>
@@ -41,76 +112,96 @@ export default function SourcingGuide(){
       <Link className={styles.secondary} href="/find-product">Paste a product link <ArrowIcon direction="up-right"/></Link>
      </div>
      <p className={styles.freeNote}>Free to browse. No paid membership required.</p>
+     <a className={styles.startDemo} href="#sourcing-demo">Try the interactive guide <ArrowIcon direction="down"/></a>
     </div>
-    <figure className={styles.heroArt} aria-label="Products from 1688, Taobao and Weidian brought together in the Herocon catalogue">
-     <div className={styles.marketRow}><span>1688</span><span>Taobao</span><span>Weidian</span></div>
+    <div className={styles.interactiveHero} data-story-reveal>
+     <div className={styles.marketButtons} role="group" aria-label="Explore marketplace types">
+      {(Object.keys(marketInfo) as Array<keyof typeof marketInfo>).map(name=><button key={name} type="button" className={styles.marketButton} aria-pressed={market===name} onClick={()=>setMarket(name)}>{name}</button>)}
+     </div>
+     <p className={styles.marketExplanation} aria-live="polite">{marketInfo[market]}</p>
      <div className={styles.artArrow}><ArrowIcon direction="down"/></div>
-     <div className={styles.artBrand}>herocon.</div>
-     <div className={styles.photos}><div className={styles.photo}><ProductPhoto kind="shirt" lazy={false}/></div><div className={styles.photo}><ProductPhoto kind="earrings" lazy={false}/></div></div>
-     <figcaption>Original marketplace products, easier to explore.</figcaption>
-    </figure>
+     <div className={styles.demoWindow}>
+      <div className={styles.demoHead}><span className={styles.demoBrand}>herocon.</span><span>Explore an example</span></div>
+      <div className={styles.previewGrid}>{kinds.map(kind=><PreviewCard key={kind} kind={kind} lazy={false} onOpen={openPreview}/>)}</div>
+     </div>
+     <p className={styles.heroCaption}>Select a product to see how Herocon makes the source easier to explore.</p>
+    </div>
    </div>
   </section>
-  <section className={styles.section} aria-labelledby="three-steps-heading">
+  <section id="sourcing-demo" className={styles.section+" "+styles.storySteps} aria-labelledby="three-steps-heading">
    <div className={styles.wrap}>
-    <div className={styles.sectionIntro}>
+    <div className={styles.sectionIntro} data-story-reveal>
      <h2 id="three-steps-heading">From a find to a <em>shortlist.</em></h2>
-     <p>Three simple steps you can use right now, whether you're shopping for yourself or researching a business idea.</p>
+     <p>Try these three steps yourself. The examples are interactive, but won't change your real cart or place an order.</p>
     </div>
     <div className={styles.steps}>
-     <article className={styles.step}>
+     <article className={styles.step} data-story-reveal>
       <span className={styles.number} aria-hidden="true">01</span>
       <div className={styles.stepCopy}>
        <h3>Find something you like.</h3>
-       <p>Browse the catalogue or paste an original marketplace link. Explore clothing, accessories, homeware and more without searching each marketplace separately.</p>
-       <Link href="/search" className={styles.textLink}>Browse the catalogue <ArrowIcon direction="right"/></Link>
+       <p>Search for products or paste an original marketplace link. Try searching for earrings or a T-shirt in this little catalogue.</p>
+       <Link href="/search" className={styles.textLink}>Browse the full catalogue <ArrowIcon direction="right"/></Link>
       </div>
-      <div className={styles.visual} role="img" aria-label="Illustration of the product catalogue with clothing and jewellery search results">
-       <div className={styles.browser}>
-        <div className={styles.browserHead}><span>Explore products</span><Outline kind="search"/></div>
-        <div className={styles.productGrid}>
-         <div><ProductPhoto kind="shirt"/><span>Cotton T-shirt</span></div>
-         <div><ProductPhoto kind="earrings"/><span>Gold-tone earrings</span></div>
-        </div>
+      <div className={styles.stepVisual}>
+       <div className={styles.demoWindow}>
+        <div className={styles.demoHead}><strong>Explore products</strong><span>Example catalogue</span></div>
+        <label className={styles.searchRow}><Outline kind="search"/><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Try earrings or T-shirt" aria-label="Search example catalogue"/></label>
+        {matching.length>0?<div className={styles.previewGrid}>{matching.map(kind=><PreviewCard key={kind} kind={kind} onOpen={openPreview}/>)}</div>:<p className={styles.emptyDemo}>No matching examples. Clear the search or explore the full catalogue.</p>}
        </div>
       </div>
      </article>
-     <article className={styles.step}>
+     <article className={styles.step} data-story-reveal>
       <span className={styles.number} aria-hidden="true">02</span>
       <div className={styles.stepCopy}>
        <h3>Know what you're buying.</h3>
-       <p>Open a product to see its available photos, colours, sizes, reference prices and source link. Check current availability, seller terms and minimum orders before committing.</p>
-       <Link href="/product/link-5a62bac31c63b6ef21f40b21c186" className={styles.textLink}>Explore an example product <ArrowIcon direction="right"/></Link>
+       <p>Compare product photos, sizes, colours and supplier information. Choose a recorded colour option and save this example to see how your shortlist works.</p>
+       <Link href={products.earrings.path} className={styles.textLink}>Explore the actual product <ArrowIcon direction="right"/></Link>
       </div>
-      <div className={styles.visual} role="img" aria-label="Example product details for earrings showing two recorded colour options and original marketplace link">
-       <div className={styles.browser}>
-        <div className={styles.browserHead}><span>Product details</span></div>
+      <div className={styles.stepVisual}>
+       <div className={styles.demoWindow}>
+        <div className={styles.demoHead}><strong>Product details</strong><span>Example selection</span></div>
         <div className={styles.detailGrid}>
          <ProductPhoto kind="earrings"/>
-         <div className={styles.detailText}><strong>Minimalist earrings</strong><span>Colour options</span><span className={styles.option}>Yellow gold / 925 silver</span><span className={styles.option}>White gold / 925 silver</span><span className={styles.source}>Original source link available</span></div>
+         <div className={styles.detailText}><strong>Minimalist earrings</strong><span>Choose a colour</span><div className={styles.choiceRow} role="group" aria-label="Example earring colour">{earringOptions.map(value=><button key={value} type="button" className={styles.choice} aria-pressed={option===value} onClick={()=>setOption(value)}>{value}</button>)}</div>
+         <button type="button" className={styles.demoAction} onClick={()=>saveExample("earrings")}><Outline kind="bag"/> Save example</button>
+         <span className={styles.demoNote}>Saved supplier options; check availability on the actual listing.</span></div>
         </div>
        </div>
       </div>
      </article>
-     <article className={styles.step}>
+     <article className={styles.step} data-story-reveal>
       <span className={styles.number} aria-hidden="true">03</span>
       <div className={styles.stepCopy}>
        <h3>Keep your favourites together.</h3>
-       <p>Create a free account and save items in your cart. When you're ready, follow an available original marketplace or buying-agent link to arrange your purchase externally.</p>
-       <Link href="/cart" className={styles.textLink}>View your cart <ArrowIcon direction="right"/></Link>
+       <p>Your shortlist keeps products in one place. In your real Herocon cart, use the original marketplace or available buying-agent links to arrange an external purchase.</p>
+       <Link href="/cart" className={styles.textLink}>View your real cart <ArrowIcon direction="right"/></Link>
       </div>
-      <div className={styles.visual} role="img" aria-label="Illustration of a Herocon cart holding two saved products and their quantities">
-       <div className={styles.browser}>
-        <div className={styles.browserHead}><span>Your shortlist</span><Outline kind="bag"/></div>
-        <div className={styles.cartLine}><ProductPhoto kind="earrings"/><span>Minimalist earrings</span><strong>Qty 1</strong></div>
-        <div className={styles.cartLine}><ProductPhoto kind="shirt"/><span>Cotton T-shirt</span><strong>Qty 2</strong></div>
-        <div className={styles.cartFoot}><span>2 saved product options</span><span>View sources <ArrowIcon direction="right"/></span></div>
+      <div className={styles.stepVisual}>
+       <div className={styles.demoWindow}>
+        <div className={styles.demoHead}><strong>Your example shortlist</strong><span>{shortlist.length} saved</span></div>
+        {shortlist.length===0?<p className={styles.emptyDemo}>Select a product above and save it to see it appear here.</p>:shortlist.map(item=><div className={styles.demoCartRow} key={item.kind+item.option}><ProductPhoto kind={item.kind}/><span><strong>{products[item.kind].name}</strong><br/>{item.option}</span><button type="button" className={styles.removeDemo} aria-label={"Remove "+products[item.kind].name+" "+item.option} onClick={()=>{setShortlist(prev=>prev.filter(x=>x.kind!==item.kind||x.option!==item.option));setNotice("Example removed.");}}><ArrowIcon direction="close"/></button></div>)}
+        <div className={styles.demoFooter}><span>Demo only. No real cart changes.</span>{shortlist.length>0&&<button type="button" onClick={()=>{setShortlist([]);setNotice("Example shortlist cleared.");}}>Clear</button>}</div>
+        <span role="status" className={styles.demoNote}>{notice}</span>
        </div>
       </div>
      </article>
     </div>
    </div>
   </section>
+  <dialog ref={dialogRef} className={styles.modal} aria-labelledby="quick-view-title" onClose={()=>{setDialogOpen(false);triggerRef.current?.focus();}} onCancel={()=>setDialogOpen(false)} onClick={e=>{if(e.target===e.currentTarget)closePreview();}}>
+   <div className={styles.modalHeader}><span>Herocon / Product quick view</span><button type="button" className={styles.closeModal} aria-label="Close product preview" onClick={closePreview}><ArrowIcon direction="close"/></button></div>
+   <div className={styles.modalBody}>
+    <div className={styles.modalPhoto}><ProductPhoto kind={quickProduct}/></div>
+    <div className={styles.modalCopy}>
+     <h3 id="quick-view-title">{chosen.name}</h3><p>{chosen.description}</p>
+     {quickProduct==="earrings"&&<div className={styles.choiceRow} role="group" aria-label="Preview colour options">{earringOptions.map(value=><button key={value} type="button" className={styles.choice} aria-pressed={option===value} onClick={()=>setOption(value)}>{value}</button>)}</div>}
+     <button type="button" className={styles.demoAction} onClick={()=>saveExample(quickProduct)}><Outline kind="bag"/> Save to example shortlist</button>
+     <Link className={styles.textLink} href={chosen.path}>Open actual product <ArrowIcon direction="up-right"/></Link>
+     <p className={styles.demoNote}>Interactive example only. Nothing is purchased or added to your real cart.</p>
+    </div>
+   </div>
+  </dialog>
+  </div>
   <section className={styles.delivery} aria-labelledby="delivery-story-heading">
    <div className={styles.wrap}>
     <div className={styles.deliveryHead}>
