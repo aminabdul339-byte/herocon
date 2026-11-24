@@ -263,3 +263,25 @@
  .wheelBoard{max-width:530px}
  .wheelCaptionRow{margin-top:2px}
 }
+
+
+/* Delivery journey: the same rounded, tactile palette as the sourcing wheel.
+   Keep the original heading, text and four-stage horizontal composition. */
+.delivery .deliveryFlow{gap:clamp(10px,1.5vw,22px);margin:40px 0 29px}
+.delivery .node{min-width:0;display:flex;flex-direction:column;align-items:center;gap:15px}
+.delivery .deliveryDisc{
+ display:grid;place-items:center;width:clamp(92px,9.5vw,132px);aspect-ratio:1;
+ border:1px solid #afc2ab;border-radius:50%;
+ background:linear-gradient(145deg,#fffefa 4%,#edf3e7 54%,#d6e3d0 100%);
+ box-shadow:0 5px 0 #bbcbb8,0 10px 19px #294a3512,inset 0 2px 1px #ffffffd0;
+}
+.delivery .deliveryDisc svg{display:block;width:77%;height:77%;margin:0;filter:drop-shadow(0 2px 1px #294a3514)}
+.delivery .node strong{font-size:14px;line-height:1.4;max-width:100%;overflow-wrap:break-word}
+.delivery .flowArrow{width:24px;height:24px;justify-self:center;color:#6b8e70}
+@media(max-width:760px){
+ .delivery .deliveryFlow{gap:19px 8px;margin:28px 0 25px}
+ .delivery .node{gap:12px}
+ .delivery .deliveryDisc{width:clamp(80px,21vw,108px)}
+ .delivery .node strong{font-size:12px}
+ .delivery .flowArrow{width:18px;height:18px}
+}
