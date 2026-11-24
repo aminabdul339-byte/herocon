@@ -1,100 +1,104 @@
 {
   "crons": [
     {
+      "path": "/api/cron/product-enrichment",
+      "schedule": "35 11 * * *"
+    },
+    {
       "path": "/api/cron/buckydrop-enrichment/0",
-      "schedule": "40 12 * * *"
+      "schedule": "43 11 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/1",
-      "schedule": "30 13 * * *"
+      "schedule": "51 11 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/2",
-      "schedule": "0 14 * * *"
+      "schedule": "59 11 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/3",
-      "schedule": "30 14 * * *"
+      "schedule": "7 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/4",
-      "schedule": "0 15 * * *"
+      "schedule": "15 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/5",
-      "schedule": "30 15 * * *"
+      "schedule": "23 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/6",
-      "schedule": "0 16 * * *"
+      "schedule": "31 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/7",
-      "schedule": "30 16 * * *"
+      "schedule": "39 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/8",
-      "schedule": "0 17 * * *"
+      "schedule": "47 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/9",
-      "schedule": "30 17 * * *"
+      "schedule": "55 12 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/10",
-      "schedule": "0 18 * * *"
+      "schedule": "3 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/11",
-      "schedule": "30 18 * * *"
+      "schedule": "11 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/12",
-      "schedule": "0 19 * * *"
+      "schedule": "19 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/13",
-      "schedule": "30 19 * * *"
+      "schedule": "27 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/14",
-      "schedule": "0 20 * * *"
+      "schedule": "35 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/15",
-      "schedule": "30 20 * * *"
+      "schedule": "43 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/16",
-      "schedule": "0 21 * * *"
+      "schedule": "51 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/17",
-      "schedule": "30 21 * * *"
+      "schedule": "59 13 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/18",
-      "schedule": "0 22 * * *"
+      "schedule": "7 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/19",
-      "schedule": "30 22 * * *"
+      "schedule": "15 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/20",
-      "schedule": "0 23 * * *"
+      "schedule": "23 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/21",
-      "schedule": "30 23 * * *"
+      "schedule": "31 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/22",
-      "schedule": "0 0 * * *"
+      "schedule": "39 14 * * *"
     },
     {
       "path": "/api/cron/buckydrop-enrichment/23",
-      "schedule": "30 0 * * *"
+      "schedule": "47 14 * * *"
     }
   ]
 }
