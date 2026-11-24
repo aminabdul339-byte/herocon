@@ -5,12 +5,13 @@ import {ShopAudienceIcon} from "@/components/ShopIcons";
 import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
 import {enrichPersonalCards} from "@/lib/personal-shop-enrichment";
+import {mixPersonalEdit} from "@/lib/personal-shop-edit";
 
 type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
 const PER_PAGE=24;
 const ORDER:Record<Audience,string[]>={
- women:["Bags","Shoes","Sunglasses","Jewellery","Accessories","Watches"],
+ women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],
  men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]
 };
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
@@ -24,12 +25,13 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
  const availableCategories=ORDER[audience].filter(x=>categoryTotals.has(x));
  const category=availableCategories.includes(filters.category)?filters.category:"All";
  const query=filters.q.trim().toLowerCase();
- const matching=everything.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
+ let matching=everything.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
  matching.sort((a,b)=>{
   if(sort==="name")return nameCompare(a,b);
   const ca=ORDER[audience].indexOf(a.category),cb=ORDER[audience].indexOf(b.category);
   return ca-cb || a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
  });
+ if(category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
  const pageCount=Math.max(1,Math.ceil(matching.length/PER_PAGE));
  const page=Math.min(pageCount,Math.max(1,filters.page));
  const shown=await enrichPersonalCards(matching.slice((page-1)*PER_PAGE,page*PER_PAGE));

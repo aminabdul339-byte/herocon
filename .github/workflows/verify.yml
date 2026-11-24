@@ -27,6 +27,8 @@ jobs:
         run: npm run typecheck
       - name: Business catalogue editorial tests
         run: node --test tests/business-catalogue-edit.test.cjs
+      - name: Personal shop editorial tests
+        run: node --test tests/personal-shop-edit.test.cjs
       - name: BuckyDrop integration and safety tests (mocked, no live orders)
         run: node --test tests/buckydrop-integration.test.cjs
       - name: Production BuckyDrop route smoke tests (no orders or paid lookups)
