@@ -1,0 +1,94 @@
+/* A compact rounded introduction, scoped to the full sourcing catalogue. */
+.hc-site .sc-catalogue-page .sc-catalogue-intro{
+ box-sizing:border-box;
+ margin-block:clamp(18px,2.6vw,34px) clamp(24px,3vw,38px);
+ padding:clamp(24px,3.2vw,44px);
+ height:auto;
+ min-height:0;
+ max-height:none;
+ border:1px solid #dbe3d8;
+ border-radius:28px;
+ background:#f8f9f5;
+ overflow:visible;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-intro h1{
+ font:400 clamp(34px,4.2vw,58px)/1.15 Georgia,"Times New Roman",serif;
+ letter-spacing:-.045em;
+ max-width:100%;
+ margin:10px 0 13px;
+ overflow-wrap:break-word;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-intro h1 em{color:#69876e}
+.hc-site .sc-catalogue-page .sc-catalogue-intro>p:not(.sc-kicker){
+ max-width:760px;
+ font-size:14px;
+ line-height:1.7;
+ margin:0 0 22px;
+ overflow-wrap:break-word;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-intro .sc-searchbar-page{
+ display:flex;align-items:center;
+ box-sizing:border-box;
+ width:100%;max-width:none;
+ gap:10px;
+ padding:5px 5px 5px 16px;
+ background:#fff;
+ border:1px solid #d0ddcf;
+ border-radius:999px;
+ box-shadow:none;
+}
+.hc-site .sc-catalogue-page .sc-searchbar-page:focus-within{
+ border-color:#67886c;box-shadow:0 0 0 3px #668b6c22;
+}
+.hc-site .sc-catalogue-page .sc-searchbar-page .sc-search-icon{flex:none;display:flex;align-items:center}
+.hc-site .sc-catalogue-page .sc-searchbar-page input{
+ flex:1 1 0%;min-width:0;width:0;
+ padding:11px 0;
+ font-size:14px;
+}
+.hc-site .sc-catalogue-page .sc-searchbar-page button{
+ flex:none;white-space:nowrap;
+ min-height:44px;padding:11px 24px;
+ border-radius:999px!important;
+ font-size:13px;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-layout{
+ position:relative;
+ margin-top:0;
+ padding-top:0;
+ min-width:0;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-sidebar,
+.hc-site .sc-catalogue-page .sc-results{min-width:0}
+.hc-site .sc-catalogue-page .sc-results-heading{
+ flex-wrap:wrap;
+ min-height:0;height:auto;
+ overflow:visible;
+}
+.hc-site .sc-catalogue-page .sc-results-heading>div{
+ min-width:0;
+ overflow-wrap:anywhere;
+}
+.hc-site .sc-catalogue-page .sc-results-heading form{
+ flex-wrap:wrap;max-width:100%;
+}
+.hc-site .sc-catalogue-page .sc-results-heading select{
+ max-width:100%;min-width:0;border-radius:999px;
+}
+@media(max-width:600px){
+ .hc-site .sc-catalogue-page .sc-catalogue-intro{
+  padding:21px 17px 22px;
+  border-radius:22px;
+  margin-block:16px 26px;
+ }
+ .hc-site .sc-catalogue-page .sc-catalogue-intro h1{
+  font-size:clamp(31px,8.2vw,43px);
+ }
+ .hc-site .sc-catalogue-page .sc-catalogue-intro>p:not(.sc-kicker){font-size:13px;margin-bottom:18px}
+ .hc-site .sc-catalogue-page .sc-catalogue-intro .sc-searchbar-page{
+  flex-wrap:wrap;padding:10px;border-radius:20px;gap:8px;
+ }
+ .hc-site .sc-catalogue-page .sc-searchbar-page input{flex:1 1 calc(100% - 38px);font-size:16px}
+ .hc-site .sc-catalogue-page .sc-searchbar-page button{width:100%}
+ .hc-site .sc-catalogue-page .sc-results-heading form{margin-top:12px}
+}
