@@ -11,11 +11,12 @@ import {ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-sourc
 
 export const BUCKYDROP_BULK_SHARDS=24;
 const PREFIX="catalogue/buckydrop-bulk/v1/";
-const TIME_LIMIT=245_000;
+// Seven-minute function limit; leave margin for final persistence and next shard.
+const TIME_LIMIT=365_000;
 // BuckyDrop rejected two of four simultaneous requests. Keep one in flight;
 // a funded account can still have a separate per-app throughput limit.
 const WORKERS=1;
-const MAX_BATCHES=40;
+const MAX_BATCHES=50;
 const MIN_BATCH_INTERVAL=7_500;
 const ALL_SAVED=[BUCKYDROP_PREFIX_V1,BUCKYDROP_PREFIX_V2,ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2];
 const hash=(value:string)=>createHash("sha256").update(value).digest("hex");
