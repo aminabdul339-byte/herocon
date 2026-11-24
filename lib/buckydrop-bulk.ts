@@ -183,9 +183,15 @@ export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkP
   !process.env.BUCKYDROP_APP_CODE||!process.env.BUCKYDROP_APP_SECRET){
   p.status="paused";p.issue="BUCKYDROP_NOT_CONFIGURED";return p;
  }
- // Immutable run key means duplicate Vercel Cron delivery cannot rebill a shard.
+ // The two overnight shards already ran on 24 November before today's
+ // schedule was moved forward. Allow one afternoon continuation for each
+ // without removing any existing per-source daily attempts or cooldowns.
+ const runSlot=p.date==="2026-11-24"&&shard>=22&&Date.now()>=Date.parse("2026-11-24T14:30:00Z")
+  ?shard+"-afternoon-continuation":String(shard);
+ // An immutable slot key still blocks duplicate delivery. Existing daily
+ // source claims below prevent another BuckyDrop request for attempted URLs.
  try{
-  await put(PREFIX+"runs/"+p.date+"/"+shard+".json",
+  await put(PREFIX+"runs/"+p.date+"/"+runSlot+".json",
    JSON.stringify({startedAt:p.startedAt}),{
     access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"
    });
