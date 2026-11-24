@@ -43,5 +43,12 @@ export function mixPersonalEdit(products:PersonalShopProduct[],audience:Audience
   for(const pool of primary)take(pool,i+6);
   for(const pool of secondary)take(pool,i);
  }
+ // Women's featured edit: keep the existing first card and promote the
+ // requested Coach handbag to card two. Swap the displaced listing rather
+ // than remove it, so the rest of the editorial ordering stays intact.
+ if(audience==="women"&&ordered.length>1){
+  const coachIndex=ordered.findIndex(p=>p.id==="579377089-13"&&p.category==="Bags");
+  if(coachIndex>1)[ordered[1],ordered[coachIndex]]=[ordered[coachIndex],ordered[1]];
+ }
  return ordered;
 }

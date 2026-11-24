@@ -14,9 +14,20 @@ function audience(gender){
   return (p.gender===gender||p.gender==='unisex')&&(gender!=='women'||p.category!=='Clothing');
  });
 }
-test('women start with six rounds of bags, sunglasses, jewellery and shoes',()=>{
- const input=audience('women'),result=mixPersonalEdit(input,'women');
- assert.deepEqual(Array.from(result.slice(0,24),p=>p.category),Array.from({length:6},()=>['Bags','Sunglasses','Jewellery','Shoes']).flat());
+test('women feature Coach handbag second without removing or shifting other listings',()=>{
+ const order=['Bags','Sunglasses','Jewellery','Shoes','Accessories','Watches'];
+ const input=audience('women').sort((a,b)=>order.indexOf(a.category)-order.indexOf(b.category)||a.name.localeCompare(b.name,'en',{sensitivity:'base',numeric:true}));
+ const coachId='579377089-13';
+ const original=input.map(p=>p.id===coachId?{...p,id:'unfeatured-coach-test'}:p);
+ const baseline=Array.from(mixPersonalEdit(original,'women'),p=>p.id==='unfeatured-coach-test'?coachId:p.id);
+ const result=mixPersonalEdit(input,'women');
+ assert.equal(result[1].id,coachId);
+ assert.match(result[1].name,/Coach/i);
+ assert.deepEqual(Array.from(result.slice(0,4),p=>p.category),['Bags','Bags','Jewellery','Shoes']);
+ const previous=baseline.indexOf(coachId);
+ assert.ok(previous>1);
+ [baseline[1],baseline[previous]]=[baseline[previous],baseline[1]];
+ assert.deepEqual(Array.from(result,p=>p.id),baseline);
  assert.equal(result.length,input.length);
  assert.equal(new Set(result).size,input.length);
  assert.ok(input.every(p=>result.includes(p)));
