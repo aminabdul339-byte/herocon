@@ -5,6 +5,7 @@ import {getProducts} from "@/lib/catalogue-server";
 import {personalShopProducts} from "@/lib/personal-shop";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {readMarketplaceSource,saveMarketplaceSource,SourceEnrichmentError,ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-source-enrichment";
+import {getAllEnrichedSourceHashes} from "@/lib/buckydrop-bulk";
 
 // Only v2 proves that the full provider SKU matrix was preserved.
 const PREFIX=ENRICHMENT_PREFIX_V2;
@@ -111,8 +112,8 @@ function catalogSources(
  legacyKeys:ReadonlySet<string>
 ):CatalogSource[]{
  const sources=new Map<string,{url:string;priority:0|1|2}>();
- // Prioritise Shop for Yourself and refresh legacy (200-SKU-capped) snapshots
- // immediately. Then advance through the remaining business catalogue.
+ // Prioritise Shop for Yourself, then the business catalogue. Existing
+ // saved snapshots from either provider (including legacy) are skipped.
  for(const p of personalShopProducts){
   const url=normalizeMarketplaceLink(p.originalUrl);
   if(url)sources.set(url,{url,priority:1});
@@ -161,7 +162,7 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
  state.lastIssue=null;
  state.lastRunRequests=0;state.lastRunSaved=0;state.lastRunSkipped=0;state.lastRunErrors=0;
  const [existing,legacy,products]=await Promise.all([
-  savedHashes(),savedLegacyHashes(),getProducts()
+  getAllEnrichedSourceHashes(),savedLegacyHashes(),getProducts()
  ]);
  const catalog=catalogSources(products,legacy);
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
@@ -179,7 +180,7 @@ export async function runAutomaticEnrichment():Promise<AutomaticEnrichmentResult
    scanned++;
    state.lastHash=p.hash;
    state.lastKey=p.key;
-   if(seen.has(p.hash)||existing.has(p.hash))continue;
+   if(seen.has(p.hash)||existing.has(p.hash)){state.lastRunSkipped++;continue;}
    seen.add(p.hash);
    // Taobao requires a separate paid product-data entitlement; don't spend
    // the trial allowance testing it on every scheduled run.
