@@ -40,16 +40,16 @@
 .hc-site .hm-home .hd-studio-primary:hover{background:#36563e;transform:translateY(-2px)}
 .hc-site .hm-home .hd-studio-secondary:hover{background:#dce7d8;transform:translateY(-2px)}
 .hd-studio-action svg{width:17px;height:17px;flex:none}
-.hd-studio-action:focus-visible,.hd-float:focus-visible,.hd-source-pill:focus-visible,.hd-motion-toggle:focus-visible{outline:2px solid #507b55;outline-offset:4px}
+.hd-studio-action:focus-visible,.hd-float:focus-visible,.hd-source-pill:focus-visible{outline:2px solid #507b55;outline-offset:4px}
 .hd-studio-marketplaces{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:28px;color:#405d46;font:650 12px/1.5 Arial,Helvetica,sans-serif}
 .hd-studio-marketplaces i{width:3px;height:3px;border-radius:50%;background:#738974}
 /* Keep every card and its complete price area inside an in-flow grid.
    Only the image wrapper has a fixed aspect ratio; the card grows with text. */
 .hc-site .hm-home .hd-scene{
  position:relative;isolation:isolate;box-sizing:border-box;
- display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
- align-items:start;justify-items:center;gap:20px 24px;
- width:100%;max-width:510px;min-width:0;min-height:0;
+ display:grid;grid-template-columns:repeat(2,minmax(0,194px));
+ align-items:start;justify-items:center;justify-content:center;gap:12px 18px;
+ width:100%;max-width:462px;min-width:0;min-height:0;
  margin-inline:auto;padding:32px 28px 24px;
  aspect-ratio:auto;max-height:none;
 }
@@ -88,8 +88,7 @@
  box-shadow:0 8px 18px #28433122;text-decoration:none;
 }
 .hd-source-pill i{width:6px;height:6px;flex:none;border-radius:50%;background:#accfa7}
-.hd-motion-toggle{position:absolute;right:5px;bottom:4px;z-index:8;display:grid;place-items:center;width:30px;height:30px;border:1px solid #c9d5c6;border-radius:50%;background:#f8faf5;color:#536f57}
-.hd-scene[data-paused="true"] .hd-float{animation-play-state:paused}
+.hd-scene:hover .hd-float,.hd-scene:focus-within .hd-float{animation-play-state:paused}
 @keyframes hd-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes hd-float{0%,100%{transform:translateY(0) rotate(var(--r))}50%{transform:translateY(-5px) rotate(var(--r))}}
 @media(min-width:1250px){.hc-site .hm-home .hd-studio{min-height:610px}.hm-home .hd-studio-actions{flex-direction:column}}
@@ -100,13 +99,13 @@
  .hc-site .hm-home .hd-studio h1{font-size:clamp(40px,9vw,59px);margin:19px 0}
  .hm-home .hd-studio-description{font-size:14px;margin-bottom:20px}
  .hd-studio-marketplaces{margin-top:20px}
- .hc-site .hm-home .hd-scene{width:min(100%,440px);margin-inline:auto;gap:15px 18px;padding:22px 23px 34px}
+ .hc-site .hm-home .hd-scene{width:min(100%,440px);margin-inline:auto;gap:11px 13px;padding:22px 23px 28px}
  .hd-orbit{box-shadow:none}
  .hc-site .hm-home .hd-card-meta{padding-top:7px}
  .hc-site .hm-home .hd-studio-action{font-size:12px;padding:11px 15px;gap:10px}
 }
 @media(max-width:380px){.hm-home .hd-studio-copy{padding-inline:18px}.hm-home .hd-studio-actions{flex-direction:column}.hc-site .hm-home .hd-card-price small{font-size:9px}}
-@media(prefers-reduced-motion:reduce){.hd-studio-copy,.hd-float,.hd-source-pill{animation:none!important}.hd-studio-action{transition:none!important}.hd-motion-toggle{display:none}}
+@media(prefers-reduced-motion:reduce){.hd-studio-copy,.hd-float,.hd-source-pill{animation:none!important}.hd-studio-action{transition:none!important}}
 
-@media(max-width:950px) and (min-width:701px){.hc-site .hm-home .hd-scene{gap:16px;padding:24px 19px 30px}.hc-site .hm-home .hd-float{padding:7px}.hd-card-price b{font-size:16px}}
-@media(max-width:380px){.hc-site .hm-home .hd-scene{gap:12px;padding-inline:16px}.hc-site .hm-home .hd-float{padding:6px}.hd-card-price b{font-size:16px}}
+@media(max-width:950px) and (min-width:701px){.hc-site .hm-home .hd-scene{gap:12px 14px;padding:24px 19px 26px}.hc-site .hm-home .hd-float{padding:7px}.hd-card-price b{font-size:16px}}
+@media(max-width:380px){.hc-site .hm-home .hd-scene{gap:10px 12px;padding-inline:16px}.hc-site .hm-home .hd-float{padding:6px}.hd-card-price b{font-size:16px}}
