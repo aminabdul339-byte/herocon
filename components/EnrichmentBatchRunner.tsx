@@ -76,6 +76,7 @@ export default function EnrichmentBatchRunner({
     {progress.activeShards>0?" "+progress.activeShards+" batch(es) currently reporting as active.":""}
     {progress.pausedShards>0?" "+progress.pausedShards+" earlier batch(es) ended paused or failed (historical).":""}
    </p>
+   <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>Of the missing sources: <strong>{progress.permanentlyUnavailable}</strong> marked unavailable by the provider, <strong>{progress.attemptedToday}</strong> already attempted today without a saved record, and <strong>{progress.eligibleNow}</strong> eligible for a new lookup today (subject to provider cooldowns). No saved or unavailable source is deliberately recharged.</p>
    {progress.cooldownUntil&&<p role="status" style={{fontSize:13,color:"#8a5223",fontWeight:650}}>
     Supplier cooldown: {progress.cooldownReason}. API calls are paused until
     {" "}{new Date(progress.cooldownUntil).toLocaleString("en-GB",{

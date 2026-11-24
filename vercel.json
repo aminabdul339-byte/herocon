@@ -103,6 +103,10 @@
     {
       "path": "/api/cron/product-enrichment/continuation",
       "schedule": "51 11 24 11 *"
+    },
+    {
+      "path": "/api/cron/buckydrop-enrichment/catchup",
+      "schedule": "20,30 16 24 11 *"
     }
   ]
 }

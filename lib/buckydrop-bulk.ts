@@ -10,6 +10,9 @@ import {saveNewBuckydropProduct,BUCKYDROP_PREFIX_V1,BUCKYDROP_PREFIX_V2} from "@
 import {ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-source-enrichment";
 
 export const BUCKYDROP_BULK_SHARDS=24;
+// Owner-authorized, date-limited final sweep; not a regular daily shard.
+export const BUCKYDROP_CATCHUP_SHARD=BUCKYDROP_BULK_SHARDS;
+const CATCHUP_DATE="2026-11-24";
 const PREFIX="catalogue/buckydrop-bulk/v1/";
 // Seven-minute function limit; leave margin for final persistence and next shard.
 const TIME_LIMIT=365_000;
@@ -51,7 +54,7 @@ export type BuckydropBulkProgress={
 export type BuckydropBulkStatus={
  totalSaved:number;totalKnown:number;lastRun:string|null;
  checked:number;saved:number;failed:number;unavailable:number;
- pending:number;activeShards:number;pausedShards:number;lastIssue:string|null;
+ pending:number;permanentlyUnavailable:number;attemptedToday:number;eligibleNow:number;activeShards:number;pausedShards:number;lastIssue:string|null;
  buckydropSaved:number;hioBuySaved:number;sharedSaved:number;
  cooldownUntil:string|null;cooldownReason:string|null;
  nextScheduledAt:string|null;nextScheduledShard:number|null;
@@ -142,10 +145,10 @@ async function permanentReject(sourceHash:string,code:string){
  }catch{}
 }
 export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
- const [prefixSets,all,progress,block]=await Promise.all([
+ const [prefixSets,all,progress,block,rejected,attempted]=await Promise.all([
   Promise.all(ALL_SAVED.map(existingHashes)),getProducts(),
-  Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i)))),
-  getGlobalBlock()
+  Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS+1},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i)))),
+  getGlobalBlock(),existingHashes(PREFIX+"unavailable/"),existingHashes(PREFIX+"attempts/"+date()+"/")
  ]);
  const buckydrop=new Set([...prefixSets[0],...prefixSets[1]]);
  const hioBuy=new Set([...prefixSets[2],...prefixSets[3]]);
@@ -163,12 +166,16 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
   if(!lastRun||p.startedAt>lastRun){lastRun=p.startedAt;lastIssue=p.issue;}
  }
  const nextRun=upcomingScheduledShard();
- const totalSaved=c.filter(p=>saved.has(p.hash)).length;
+ const missing=c.filter(p=>!saved.has(p.hash));
+ const permanentlyUnavailable=missing.filter(p=>rejected.has(p.hash)).length;
+ const attemptedToday=missing.filter(p=>!rejected.has(p.hash)&&attempted.has(p.hash)).length;
+ const eligibleNow=missing.length-permanentlyUnavailable-attemptedToday;
+ const totalSaved=c.length-missing.length;
  const buckydropSaved=c.filter(p=>buckydrop.has(p.hash)).length;
  const hioBuySaved=c.filter(p=>hioBuy.has(p.hash)).length;
  const sharedSaved=c.filter(p=>buckydrop.has(p.hash)&&hioBuy.has(p.hash)).length;
  return {totalSaved,totalKnown:c.length,lastRun,checked,saved:added,
-  failed,unavailable,pending:c.length-totalSaved,activeShards,pausedShards,lastIssue,
+  failed,unavailable,pending:missing.length,permanentlyUnavailable,attemptedToday,eligibleNow,activeShards,pausedShards,lastIssue,
   buckydropSaved,hioBuySaved,sharedSaved,
   cooldownUntil:block?new Date(block.until).toISOString():null,
   cooldownReason:block?.code||null,
@@ -176,8 +183,10 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
   nextScheduledShard:nextRun?.shard??null};
 }
 export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkProgress>{
- if(!Number.isInteger(shard)||shard<0||shard>=BUCKYDROP_BULK_SHARDS)throw Error("invalid_shard");
+ const catchup=shard===BUCKYDROP_CATCHUP_SHARD;
+ if(!Number.isInteger(shard)||shard<0||shard>BUCKYDROP_CATCHUP_SHARD)throw Error("invalid_shard");
  const p=basic(shard);
+ if(catchup&&p.date!==CATCHUP_DATE){p.status="skipped";p.issue="CATCHUP_DATE_EXPIRED";return p;}
  if(!process.env.BLOB_READ_WRITE_TOKEN||process.env.BUCKYDROP_ENV!=="live"||
   process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true"||
   !process.env.BUCKYDROP_APP_CODE||!process.env.BUCKYDROP_APP_SECRET){
@@ -186,7 +195,12 @@ export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkP
  // The two overnight shards already ran on 24 November before today's
  // schedule was moved forward. Allow one afternoon continuation for each
  // without removing any existing per-source daily attempts or cooldowns.
- const runSlot=p.date==="2026-11-24"&&shard>=22&&Date.now()>=Date.parse("2026-11-24T14:30:00Z")
+ if(catchup){
+  // Do not overlap the regular batches or run during a provider cooldown.
+  const [block,regular]=await Promise.all([getGlobalBlock(),Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i))))]);
+  if(block||regular.some(r=>r?.status==="running"&&Date.now()-Date.parse(r.updatedAt)<10*60_000)){p.status="paused";p.issue=block?.code||"REGULAR_BATCH_ACTIVE";return p;}
+ }
+ const runSlot=catchup?"final-sweep":p.date==="2026-11-24"&&shard>=22&&Date.now()>=Date.parse("2026-11-24T14:30:00Z")
   ?shard+"-afternoon-continuation":String(shard);
  // An immutable slot key still blocks duplicate delivery. Existing daily
  // source claims below prevent another BuckyDrop request for attempted URLs.
@@ -202,12 +216,13 @@ export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkP
  if(block){p.status="paused";p.issue=block.code;await writeProgress(p);return p;}
  let failedStreak=0,globalStop=false,lastBatchAt=0;
  try{
-  const [saved,unavailable,products]=await Promise.all([
+  const [saved,unavailable,products,attempted]=await Promise.all([
    getAllEnrichedSourceHashes(),
    existingHashes(PREFIX+"unavailable/"),
-   getProducts()
+   getProducts(),
+   catchup?existingHashes(PREFIX+"attempts/"+p.date+"/"):Promise.resolve(new Set<string>())
   ]);
-  const all=candidates(products).filter(x=>belongs(x.hash,shard));
+  const all=candidates(products).filter(x=>catchup?!saved.has(x.hash)&&!unavailable.has(x.hash)&&!attempted.has(x.hash):belongs(x.hash,shard));
   p.totalCandidates=all.length;
   await writeProgress(p);
   const start=Date.now();
