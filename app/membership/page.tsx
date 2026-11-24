@@ -16,12 +16,6 @@ const benefits=[
  "Support ongoing development of product sourcing tools",
  "Manage or cancel your subscription through Stripe"
 ];
-const steps=[
- {no:"01",title:"Find your product",copy:"Browse the catalogue or paste a supplier link."},
- {no:"02",title:"Pay for your items",copy:"Choose your options and place your order."},
- {no:"03",title:"We source it",copy:"Our partner buys your items and stores them at its warehouse in China."},
- {no:"04",title:"Pay shipping",copy:"Pay the confirmed international shipping cost and receive your parcel."}
-];
 
 export default async function MembershipPage(){
  const ownerPremium=isOwnerPremiumCustomer(await currentCustomer());
@@ -58,15 +52,6 @@ export default async function MembershipPage(){
      <Link className="hc-membership-price-link" href="/membership/activate">Join for £9.99/month <span aria-hidden="true"><ArrowIcon/></span></Link>
      <small>Membership is optional while order checkout is unavailable. £9.99 is charged now and renews monthly until cancelled. The catalogue, account and cart are free; no product orders can currently be placed. Products and shipping are separate charges once launched. Cancel anytime through Stripe: membership ordinarily continues to the end of the paid month, with no next-month charge. Cancellation does not automatically refund unused time; statutory cancellation and refund rights still apply. <Link href="/terms-and-conditions">View terms</Link>.</small>
     </aside>}
-   </div>
-  </section>
-  <section className="hc-membership-process">
-   <div className="hc-premium-container">
-    <div className="hc-membership-process-heading"><p className="hc-premium-kicker">HOW IT WORKS</p><h2>From supplier <em>to doorstep.</em></h2></div>
-    <div className="hc-membership-steps">{steps.map(step=><div className="hc-membership-step" key={step.no}>
-     <span>{step.no}</span><h3>{step.title}</h3><p>{step.copy}</p>
-    </div>)}</div>
-    <p className="hc-membership-shipping-note">The sourcing and shipping steps above describe the planned ordering service. Purchasing and delivery payments are not yet live. Product prices, international shipping and applicable taxes or duties will be separate from the membership fee.</p>
    </div>
   </section>
  </main>;
