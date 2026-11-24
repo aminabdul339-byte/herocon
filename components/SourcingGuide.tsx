@@ -163,13 +163,13 @@ export default function SourcingGuide(){
         <div className={styles.detailGrid}>
          <ProductPhoto kind="earrings"/>
          <div className={styles.detailText}><strong>Minimalist earrings</strong><span>Choose a colour</span><div className={styles.choiceRow} role="group" aria-label="Example earring colour">{earringOptions.map(value=><button key={value} type="button" className={styles.choice} aria-pressed={option===value} onClick={()=>setOption(value)}>{value}</button>)}</div>
-         <button type="button" className={styles.demoAction} onClick={()=>saveExample("earrings")}><Outline kind="bag"/> Save example</button>
+         <button type="button" className={styles.demoAction} onClick={()=>saveExample("earrings")}><Outline kind="bag"/> {shortlist.some(item=>item.kind==="earrings"&&item.option===option)?"Saved to example shortlist":"Save example"}</button>{shortlist.length>0&&<a href="#example-shortlist" className={styles.textLink}>View example shortlist <ArrowIcon direction="down"/></a>}
          <span className={styles.demoNote}>Saved supplier options; check availability on the actual listing.</span></div>
         </div>
        </div>
       </div>
      </article>
-     <article className={styles.step} data-story-reveal>
+     <article id="example-shortlist" className={styles.step+" "+styles.storySteps} data-story-reveal>
       <span className={styles.number} aria-hidden="true">03</span>
       <div className={styles.stepCopy}>
        <h3>Keep your favourites together.</h3>
