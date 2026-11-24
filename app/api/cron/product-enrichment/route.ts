@@ -4,7 +4,7 @@ import {runAutomaticEnrichment} from "@/lib/automatic-enrichment";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-export const maxDuration=240;
+export const maxDuration=420;
 function authorized(auth:string|null,secret:string|undefined){
  if(!secret||secret.length<32||!auth||!auth.startsWith("Bearer "))return false;
  const supplied=Buffer.from(auth.slice(7));
