@@ -272,3 +272,57 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
  });
  return result;
 }
+
+// Owner-authorized final HioBuy fallback: dashboard showed 27 units remaining
+// on 24 November. Never reset a provider quota or re-fetch a saved snapshot.
+export async function runHioBuyFinalFallback():Promise<AutomaticEnrichmentResult>{
+ const today=new Date().toISOString().slice(0,10);
+ const result:AutomaticEnrichmentResult={status:"completed",runDate:today,checked:0,added:0,skipped:0,failed:0,savedUnique:0,catalogueUnique:0,lastIssue:null};
+ if(today!=="2026-11-24")return {...result,status:"already_executed"};
+ if(!process.env.HIOBUY_API_KEY||!process.env.BLOB_READ_WRITE_TOKEN)return {...result,status:"not_configured"};
+ const started=Date.now();
+ const previous=await getAutomaticEnrichmentState();
+ if(previous.lastIssue&&globalErrors.has(previous.lastIssue))return {...result,lastIssue:previous.lastIssue};
+ const [saved,products]=await Promise.all([getAllEnrichedSourceHashes(),getProducts()]);
+ const catalog=catalogSources(products,new Set<string>());
+ const missing=catalog.filter(p=>!saved.has(p.hash));
+ result.catalogueUnique=catalog.length;
+ result.savedUnique=catalog.length-missing.length;
+ const eligible=missing.filter(p=>(p.channel!=="taobao"||process.env.HIOBUY_TAOBAO_ENABLED==="true")&&!(previous.blockedChannels[p.channel]?.until&&previous.blockedChannels[p.channel]!.until>Date.now()));
+ if(!eligible.length){console.info("[herocon-hiobuy-final]",{...result,missing:missing.length,eligible:0});return result;}
+ try{
+  await put(LOCK_PREFIX+today+"-final-fallback-27.json",JSON.stringify({startedAt:new Date().toISOString(),maxRequests:27}),{access:"private",addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"});
+ }catch{return {...result,status:"already_executed"};}
+ const blocked=new Set<Channel>();
+ let last=0,streak=0;
+ for(const p of eligible){
+  if(result.checked>=27||Date.now()-started>MAX_RUNTIME_MS-25_000)break;
+  if(blocked.has(p.channel)){result.skipped++;continue;}
+  // Re-read both providers' snapshot indexes before each billable call.
+  // Fail closed if storage is unavailable.
+  const current=await getAllEnrichedSourceHashes();
+  if(current.has(p.hash)){result.skipped++;continue;}
+  try{
+   await put(LOCK_PREFIX+today+"-fallback-attempts/"+p.hash+".json",JSON.stringify({startedAt:new Date().toISOString()}),{access:"private",addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"});
+  }catch{result.skipped++;continue;}
+  const delay=3500-(Date.now()-last);
+  if(last&&delay>0)await new Promise<void>(resolve=>setTimeout(resolve,delay));
+  last=Date.now();result.checked++;
+  try{
+   const detail=await readMarketplaceSource(p.url);
+   await saveMarketplaceSource(detail);
+   result.added++;result.savedUnique++;streak=0;
+  }catch(error){
+   const code=error instanceof SourceEnrichmentError?error.code:"enrichment_failed";
+   result.failed++;result.lastIssue=code;
+   if(subscriptionErrors.has(code)){blocked.add(p.channel);continue;}
+   if(globalErrors.has(code)||code==="enrichment_storage_failed"||code==="hiobuy_not_configured")break;
+   if(["hiobuy_unavailable","CHANNEL_UPSTREAM_ERROR","enrichment_failed"].includes(code)&&++streak>=3)break;
+  }
+  console.info("[herocon-hiobuy-final-progress]",{checked:result.checked,added:result.added,failed:result.failed});
+ }
+ const finalSaved=await getAllEnrichedSourceHashes();
+ result.savedUnique=catalog.filter(p=>finalSaved.has(p.hash)).length;
+ console.info("[herocon-hiobuy-final]",{...result,missing:catalog.length-result.savedUnique,eligible:eligible.length});
+ return result;
+}

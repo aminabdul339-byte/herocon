@@ -76,7 +76,7 @@ export default function EnrichmentBatchRunner({
     {progress.activeShards>0?" "+progress.activeShards+" batch(es) currently reporting as active.":""}
     {progress.pausedShards>0?" "+progress.pausedShards+" earlier batch(es) ended paused or failed (historical).":""}
    </p>
-   <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>Of the missing sources: <strong>{progress.permanentlyUnavailable}</strong> marked unavailable by the provider, <strong>{progress.attemptedToday}</strong> already attempted today without a saved record, and <strong>{progress.eligibleNow}</strong> eligible for a new lookup today (subject to provider cooldowns). No saved or unavailable source is deliberately recharged.</p>
+   <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>Of the missing sources: <strong>{progress.permanentlyUnavailable}</strong> marked unavailable by the provider, <strong>{progress.attemptedToday}</strong> already attempted today without a saved record, and <strong>{progress.eligibleNow}</strong> eligible for a new lookup today (subject to provider cooldowns). Existing snapshots are skipped. HioBuy may independently check sources that BuckyDrop could not retrieve.</p>
    {progress.cooldownUntil&&<p role="status" style={{fontSize:13,color:"#8a5223",fontWeight:650}}>
     Supplier cooldown: {progress.cooldownReason}. API calls are paused until
     {" "}{new Date(progress.cooldownUntil).toLocaleString("en-GB",{
@@ -86,6 +86,7 @@ export default function EnrichmentBatchRunner({
    {progress.lastIssue&&<p style={{fontSize:13,color:"#8a5223"}}>
     Historical issue from a previous batch: <strong>{progress.lastIssue}</strong>. This is not proof the next batch is blocked. Saved records remain preserved.
    </p>}
+   <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>A one-time HioBuy fallback is configured for 24 November (up to 27 lookups, subject to remaining quota and channel access). BuckyDrop recovery is configured for 25 November at 00:10 UTC, with existing daily attempt and cooldown protections.</p>
    <EnrichmentAutoRefresh/>
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
     Following BuckyDrop's rate-limit response to the initial four concurrent lookups,

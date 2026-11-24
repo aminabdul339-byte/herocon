@@ -17,8 +17,9 @@ export async function GET(req:Request,{params}:{params:Promise<{shard:string}>})
  if(process.env.VERCEL_ENV!=="production")
   return NextResponse.json({ok:false,error:"production_only"},{status:403});
  const {shard:raw}=await params;
- const shard=raw==="catchup"?BUCKYDROP_CATCHUP_SHARD:Number(raw);
- if(raw!=="catchup"&&(!/^\d{1,2}$/.test(raw)||!Number.isInteger(shard)||shard<0||shard>=BUCKYDROP_BULK_SHARDS))
+ const catchup=raw==="catchup"||raw==="recovery";
+ const shard=catchup?BUCKYDROP_CATCHUP_SHARD:Number(raw);
+ if(!catchup&&(!/^\d{1,2}$/.test(raw)||!Number.isInteger(shard)||shard<0||shard>=BUCKYDROP_BULK_SHARDS))
   return NextResponse.json({ok:false,error:"invalid_shard"},{status:400});
  try{
   const result=await runBuckydropBulkShard(shard);

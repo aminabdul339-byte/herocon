@@ -12,7 +12,7 @@ import {ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-sourc
 export const BUCKYDROP_BULK_SHARDS=24;
 // Owner-authorized, date-limited final sweep; not a regular daily shard.
 export const BUCKYDROP_CATCHUP_SHARD=BUCKYDROP_BULK_SHARDS;
-const CATCHUP_DATE="2026-11-24";
+const CATCHUP_DATES=new Set(["2026-11-24","2026-11-25"]);
 const PREFIX="catalogue/buckydrop-bulk/v1/";
 // Seven-minute function limit; leave margin for final persistence and next shard.
 const TIME_LIMIT=365_000;
@@ -186,7 +186,7 @@ export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkP
  const catchup=shard===BUCKYDROP_CATCHUP_SHARD;
  if(!Number.isInteger(shard)||shard<0||shard>BUCKYDROP_CATCHUP_SHARD)throw Error("invalid_shard");
  const p=basic(shard);
- if(catchup&&p.date!==CATCHUP_DATE){p.status="skipped";p.issue="CATCHUP_DATE_EXPIRED";return p;}
+ if(catchup&&!CATCHUP_DATES.has(p.date)){p.status="skipped";p.issue="CATCHUP_DATE_EXPIRED";return p;}
  if(!process.env.BLOB_READ_WRITE_TOKEN||process.env.BUCKYDROP_ENV!=="live"||
   process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true"||
   !process.env.BUCKYDROP_APP_CODE||!process.env.BUCKYDROP_APP_SECRET){
