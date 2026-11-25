@@ -5,6 +5,7 @@ import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import {getProducts} from "@/lib/catalogue-server";
 import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
+import {prioritizeHairDiscovery} from "@/lib/hair-discovery-order";
 import {mixBusinessCatalogue,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
 export const dynamic="force-dynamic";
 import ProductCard from "@/components/ProductCard";
@@ -28,6 +29,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  // Mark saved supplier details first; explicit sorting must then apply
  // across the entire catalogue rather than separately within saved groups.
  products=await prioritizeSavedPartnerProducts(products);
+ if(cat==="Wigs & Hair Extensions"&&!query&&sort==="recommended")products=prioritizeHairDiscovery(products);
  const price=(p:typeof products[number])=>{
   if(typeof p.priceGBP==="number"&&Number.isFinite(p.priceGBP))return p.priceGBP;
   const match=(p.price||"").trim().match(/^£\s*([\d,]+(?:\.\d+)?)$/);
