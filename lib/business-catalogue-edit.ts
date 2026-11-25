@@ -12,6 +12,7 @@ export const BUSINESS_EDIT_IDS = [
   "qLiCZEEhOnut6fHdkH-Bow",
   "R1YB-H17wuYDTDPjRob11Q"
 ] as const;
+export const BUSINESS_PAGE_ONE_REPLACEMENTS = [["SM0_-7P2nD9Jt-lug4mpLQ","link-0079b4276e61ff3cba8d7e33b475"],["uD8YL8OxyHTFYPkg-Yb7TQ","link-04b32bced15766a2451f8e5f9ac1"],["wN-Hv8f9htq2-kBWFmrGXw","YZ83IwkNXmZvD7Vni39yAA"]] as const;
 const idOf=(p:Product)=>p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||"";
 const hasPhotoAndSource=(p:Product)=>Boolean(p.originalMarketplaceUrl&&p.imageUrl&&/^https:\/\/\S+$/i.test(p.imageUrl));
 const named=(p:Product)=>[p.title,p.originalTitle,p.displayTitle].filter(Boolean).join(" ");
@@ -38,7 +39,7 @@ export function leadWithBusinessEdit(products:Product[]):Product[]{
 // Saved supplier photos remain available, but the nine curated cards retain
 // the original thumbnails that were chosen for their visual appearance.
 export function restoreBusinessEditThumbnails(shown:Product[],original:Product[]):Product[]{
- const ids=new Set<string>(BUSINESS_EDIT_IDS);
+ const ids=new Set<string>([...BUSINESS_EDIT_IDS,...BUSINESS_PAGE_ONE_REPLACEMENTS.map(([,id])=>id)]);
  const byId=new Map(original.map(p=>[idOf(p),p]));
  return shown.map(p=>{
   const source=byId.get(idOf(p));
@@ -82,7 +83,14 @@ function opportunityScore(p:Product){
  */
 export function mixBusinessCatalogue(products:Product[],pageSize=24):Product[]{
  if(products.length<=pageSize)return leadWithBusinessEdit(products);
- const lead=leadWithBusinessEdit(products).slice(0,pageSize);
+ const ranked=leadWithBusinessEdit(products);
+ // Swap only the three requested page-one cards with real catalogue records.
+ // Keep displaced items available in the remainder of the catalogue.
+ for(const [oldId,newId] of BUSINESS_PAGE_ONE_REPLACEMENTS){
+  const oldIndex=ranked.findIndex(p=>idOf(p)===oldId),newIndex=ranked.findIndex(p=>idOf(p)===newId&&hasPhotoAndSource(p));
+  if(oldIndex>=0&&oldIndex<pageSize&&newIndex>=pageSize){[ranked[oldIndex],ranked[newIndex]]=[ranked[newIndex],ranked[oldIndex]];}
+ }
+ const lead=ranked.slice(0,pageSize);
  const selected=new Set(lead);
  const groups=new Map<string,Product[]>();
  for(const p of products){if(selected.has(p))continue;const key=p.category||"Other";const pool=groups.get(key)||[];pool.push(p);groups.set(key,pool);}

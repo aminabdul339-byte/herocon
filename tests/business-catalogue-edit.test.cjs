@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const moduleObj={exports:{}};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/business-catalogue-edit.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:moduleObj,exports:moduleObj.exports});
-const {BUSINESS_EDIT_IDS,leadWithBusinessEdit,mixBusinessCatalogue,restoreBusinessEditThumbnails}=moduleObj.exports;
+const {BUSINESS_EDIT_IDS,BUSINESS_PAGE_ONE_REPLACEMENTS,leadWithBusinessEdit,mixBusinessCatalogue,restoreBusinessEditThumbnails}=moduleObj.exports;
 const make=(id,title,category)=>({doppelProductId:id,title,category,imageUrl:'https://example.com/'+id+'.jpg',originalMarketplaceUrl:'https://detail.1688.com/offer/123.html',priceGBP:2.72});
 test('all nine actual catalogue products exist with photographs and source links',()=>{
  const files=['herocon-current-catalogue.json','herocon-verified-marketplace-links.json','herocon-wigs-20261118.json'];
@@ -50,4 +50,17 @@ test('handles depleted categories and a partial final page without dropping stoc
  const result=mixBusinessCatalogue(input,24);
  assert.equal(result.length,input.length);
  assert.equal(new Set(result).size,input.length);
+});
+
+test('the three requested page-one swaps preserve all other cards and inventory',()=>{
+ const exact=Array.from(BUSINESS_EDIT_IDS,id=>make(id,'Selected item','Other'));
+ const old=[make(BUSINESS_PAGE_ONE_REPLACEMENTS[0][0],'Curly lace wig','Wigs & Hair Extensions'),make(BUSINESS_PAGE_ONE_REPLACEMENTS[1][0],'Decorative figurine','Home & Decor'),make(BUSINESS_PAGE_ONE_REPLACEMENTS[2][0],'Diamond ring','Jewellery')];
+ const replacements=BUSINESS_PAGE_ONE_REPLACEMENTS.map(([,id],i)=>make(id,i===2?'Nordic minimalist bedside lamp':'Gift bouquet',i===2?'Lighting':'Flowers & Gifts'));
+ const remainder=Array.from({length:20},(_,i)=>make('rest-'+i,'Cotton tee','Tops'));
+ const input=[...exact,...old,...remainder,...replacements];
+ const baseline=leadWithBusinessEdit(input).slice(0,24);
+ const result=mixBusinessCatalogue(input,24);
+ for(let i=0;i<24;i++){const pair=BUSINESS_PAGE_ONE_REPLACEMENTS.find(([id])=>id===baseline[i].doppelProductId);assert.equal(result[i].doppelProductId,pair?pair[1]:baseline[i].doppelProductId);}
+ assert.equal(result.length,input.length);assert.equal(new Set(result).size,input.length);
+ for(const item of old)assert.ok(result.indexOf(item)>=24);
 });
