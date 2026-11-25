@@ -6,6 +6,7 @@ import {personalShopProducts} from "@/lib/personal-shop";
 import {unavailableSourceHashes} from "@/lib/catalogue-unavailable";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {readMarketplaceSource,saveMarketplaceSource,SourceEnrichmentError,ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-source-enrichment";
+import {missingFreightHashes,freightNeedsRefresh,recordFreightRefresh} from "@/lib/domestic-freight-audit";
 import {getAllEnrichedSourceHashes} from "@/lib/buckydrop-bulk";
 
 // Only v2 proves that the full provider SKU matrix was preserved.
@@ -178,6 +179,7 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
  const [existing,legacy,products,hidden]=await Promise.all([
   getAllEnrichedSourceHashes(),savedLegacyHashes(),getProducts(),unavailableSourceHashes()
  ]);
+ const missingFreight=await missingFreightHashes();
  const catalog=catalogSources(products,legacy).filter(p=>existing.has(p.hash)||!hidden.has(p.hash));
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
  let start=catalog.findIndex(x=>x.key>(state.lastKey||""));
@@ -196,7 +198,7 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
    scanned++;
    state.lastHash=p.hash;
    state.lastKey=p.key;
-   if(seen.has(p.hash)||existing.has(p.hash)){state.lastRunSkipped++;continue;}
+   if(seen.has(p.hash)||(existing.has(p.hash)&&(!missingFreight.has(p.hash)||!await freightNeedsRefresh(p.url)))){state.lastRunSkipped++;continue;}
    seen.add(p.hash);
    // Taobao requires a separate paid product-data entitlement; don't spend
    // the trial allowance testing it on every scheduled run.
@@ -221,8 +223,10 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
    try{
     const result=await readMarketplaceSource(p.url);
     await saveMarketplaceSource(result);
+    await recordFreightRefresh(p.url,result.chinaDomesticFreight).catch(()=>{});
     return {hash:p.hash,channel:p.channel,ok:true as const};
    }catch(error){
+    await recordFreightRefresh(p.url,null,error instanceof SourceEnrichmentError?error.code:"enrichment_failed").catch(()=>{});
     // Provider raw response, URL and credentials must never appear in logs.
     return {
      hash:p.hash,channel:p.channel,ok:false as const,

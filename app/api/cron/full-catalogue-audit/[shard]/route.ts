@@ -1,3 +1,5 @@
+import {auditSavedFreight} from "@/lib/domestic-freight-audit";
+import {validFreight} from "@/lib/cart-pricing";
 import {NextResponse} from "next/server";
 import {createHash,timingSafeEqual} from "node:crypto";
 import {list,put} from "@vercel/blob";
@@ -60,13 +62,14 @@ export async function GET(req:Request,{params}:{params:Promise<{shard:string}>})
   const idCounts=new Map<string,number>();
   for(const e of entries){const k=e.collection+":"+e.id;idCounts.set(k,(idCounts.get(k)||0)+1);}
   const selected=[...groups.entries()].filter(([k])=>Number.parseInt(k.slice(0,8),16)%4===shard);
-  const summary={shard,day,totalSources:selected.length,scannedSources:0,totalListings:selected.reduce((n,[,g])=>n+g.length,0),scannedListings:0,sharedSources:0,duplicateWithinCollection:0,missingSources:0,unreadableSources:0,sourceProviderCounts:{} as Record<string,number>,business:makeSummary(),personal:makeSummary(),enrichment:{known:progress.totalKnown,saved:progress.totalSaved,pending:progress.pending,permanent:progress.permanentlyUnavailable,attemptedToday:progress.attemptedToday},complete:false,updatedAt:""};
+  const summary={shard,day,totalSources:selected.length,scannedSources:0,withDomesticFreight:0,withoutDomesticFreight:0,totalListings:selected.reduce((n,[,g])=>n+g.length,0),scannedListings:0,sharedSources:0,duplicateWithinCollection:0,missingSources:0,unreadableSources:0,sourceProviderCounts:{} as Record<string,number>,business:makeSummary(),personal:makeSummary(),enrichment:{known:progress.totalKnown,saved:progress.totalSaved,pending:progress.pending,permanent:progress.permanentlyUnavailable,attemptedToday:progress.attemptedToday},complete:false,updatedAt:""};
   const review:{collection:string;id:string;title:string;category:string;url:string|null;provider:string;flags:string[];photos:number;variants:number;pricedVariants:number;supplierTitle:string;hidden:boolean}[]=[];
   for(let i=0;i<selected.length&&Date.now()-started<345000;i+=12){
    await Promise.all(selected.slice(i,i+12).map(async ([key,g])=>{
     const url=g[0].url,hasH=hio.has(key),hasB=bucky.has(key);
     const [h,b]=url?await Promise.all([hasH?getSavedMarketplaceSource(url):Promise.resolve(null),hasB?getSavedBuckydropProduct(url).catch(()=>null):Promise.resolve(null)]):[null,null];
     const d=h?toDisplaySupplierDetails(h):b;
+    if(url){const freight=await auditSavedFreight(url,h?.chinaDomesticFreight,b?.chinaDomesticFreight);if(validFreight(freight.amountCny))summary.withDomesticFreight++;else summary.withoutDomesticFreight++;}
     const provider=d?(h?h.provider:"buckydrop"):"none";
     summary.scannedSources++;summary.sourceProviderCounts[provider]=(summary.sourceProviderCounts[provider]||0)+1;
     if(!d){summary.missingSources++;if(hasH||hasB)summary.unreadableSources++;}

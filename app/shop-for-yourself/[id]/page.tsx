@@ -90,7 +90,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
          images={gallery}
          price={price}
          gbpOnly
-         initialSource={enrichment?toDisplaySupplierDetails(enrichment):source||undefined}
+         initialSource={enrichment?{...toDisplaySupplierDetails(enrichment),chinaDomesticFreight:enrichment.chinaDomesticFreight??source?.chinaDomesticFreight??null}:source||undefined}
          initialFx={(enrichment||source)?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
          buckydropEnabled={Boolean(source&&!enrichment)}
          sourceLookupFailed={!source&&!enrichment}
