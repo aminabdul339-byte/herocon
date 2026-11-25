@@ -35,6 +35,25 @@ export function classifyProduct(title:string,existingCategory?:string):PrimaryCa
  const s=clean(title||"");
  if(existingCategory==="Flowers & Gifts")return "Flowers & Gifts";
 
+ // Primary-object evidence must outrank materials, styling, packaging and marketing.
+ if(/\b(?:mouse\s*pad|keyboard mat|desk mat)\b/.test(s))return "Electronics & Tech";
+ if(/\b(?:socks?|stockings?|hosiery)\b/.test(s)&&!/\b(?:sock organizer|sock storage|sock drawer|sock knitting machine|sock display|with socks|free socks)\b/.test(s))return "Fashion Accessories";
+ if(/\b(?:quilted|padded|down|puffer)\b/.test(s)&&/\b(?:jackets?|coats?|vests?|parkas?|gilets?)\b/.test(s)&&!/\b(?:phone case|coat cover|jacket cover)\b/.test(s))return /\b(?:children s|kids|baby)\b/.test(s)?"Baby & Kids":"Outerwear";
+ if(/\b(?:quilted|quilt)\b/.test(s)&&/\b(?:handbags?|shoulder bags?|crossbody bags?|chain bags?|bucket bags?)\b/.test(s))return "Bags";
+ if(/\b(?:jeans|denim trousers|sweatpants|cargo shorts)\b/.test(s)&&/\b(?:shelf|shelves|shoe cabinet|statue|hoodies for men)\b/.test(s)&&!/\b(?:storage rack|jeans rack|jeans holder|display rack|storage cabinet)\b/.test(s))return "Bottoms";
+ if(/\b(?:shoe cabinet|shoe box)\b/.test(s)&&/\b(?:basketball shoes|casual shoes|sneakers|low top shoes)\b/.test(s)&&!/\b(?:storage|drawer|transparent|dust proof|assembly|multi layer|rack|organizer)\b/.test(s))return "Shoes";
+ if(/\b(?:ring holder necklace|pendant necklace|watch ring)\b/.test(s)&&!/\b(?:display stand|necklace holder|necklace rack|necklace storage)\b/.test(s))return "Jewellery";
+ if(/\b(?:watch box storage box|watch box organizer)\b/.test(s))return "Storage & Organisation";
+ if(/\b(?:ring box|jewelry box|jewellery box)\b/.test(s)&&/\b(?:gift box|proposal ring box|packaging box)\b/.test(s)&&!/\b(?:with gift box|includes gift box)\b/.test(s))return "Packaging & Supplies";
+ if(/\b(?:bedside table|bedside cabinet|nightstand|dressing table|sideboard|tv cabinet)\b/.test(s)&&/\b(?:solid wood|integrated storage cabinet|led light tv cabinet|furniture storage cabinet|bedside storage rack|storage shelf|storage cabinet)\b/.test(s)&&!/\b(?:ornaments?|soft decoration|soft furnishings|faux books|decorative books|model house decoration|wall decoration)\b/.test(s))return "Furniture";
+ if(/\b(?:soft decoration|soft furnishings|decorative books|faux books|wall decoration|art ornaments|resin arch ornaments)\b/.test(s)&&/\b(?:model room|model house|model home|ornaments?|decorative books|faux books|wall decoration|display cabinet|open shelf)\b/.test(s)&&!/\b(?:table lamp|floor lamp|wall lamp|chandelier|dining table and chairs|sofa chair|coffee table set|pillow|blanket|carpet)\b/.test(s))return "Home & Decor";
+ if(/\b(?:clothes drying rack|laundry drying rack|baby clothes drying rack)\b/.test(s))return "Storage & Organisation";
+ if(/\b(?:water bottle crossbody bag|water bottle bag)\b/.test(s)&&/\b(?:crossbody|shoulder)\b/.test(s))return "Bags";
+ if(/\b(?:wallpaper|floor tiles)\b/.test(s))return "Home & Decor";
+ if(/\b(?:football cards|fifa star cards|playing cards|card booster pack)\b/.test(s))return "Toys & Games";
+ if(/\b(?:furniture hardware|cabinet handle|drawer handle|lamp base mold)\b/.test(s)&&!/\b(?:with hidden handle|with drawer handle)\b/.test(s))return "Other";
+
+
  // Match the object itself before incidental words such as "suitcase style",
  // "dress belt", "wedding dress shoes" and "tooling bag shorts".
  if (/\b(?:phone|iphone|mobile phone|smartphone|airpods?)\s+(?:protective\s+)?(?:cases?|covers?|shells?|models?|holders?|chargers?|accessories)\b|\b(?:magsafe|promax|pro max)\b.{0,60}\b(?:cases?|covers?|shells?)\b/.test(s) && !/\b(?:crossbody|running|shoulder|handbag|purse|wallet)\s+(?:mobile\s+)?phone\s+bags?\b/.test(s))return "Electronics & Tech";
@@ -101,7 +120,7 @@ export function classifyProduct(title:string,existingCategory?:string):PrimaryCa
  if(matches(s,word("(?:rings?|diamond\\s+rings?)")) && matches(s,word("(?:silver|gold|zircon|moissanite|engagement|wedding|925|sapphire|diamond|jewelry|jewellery|luxury)")) && !matches(s,word("(?:led\\s+ring\\s+light|photography\\s+ring\\s+light)")))return "Jewellery";
  if(matches(s,word("(?:nail\\s+(?:lamps?|dryers?|polish|gel\\s+lamps?)|uv\\s+nail\\s+lamps?)")))return "Beauty & Personal Care";
  if(matches(s,word("(?:led\\s+neon\\s+lights?|neon\\s+lights?|lamps?|chandeliers?|pendant\\s+lights?|ceiling\\s+lights?|wall\\s+lights?|floor\\s+lights?|night\\s+lights?|desk\\s+lights?|ring\\s+lights?|lighting\\s+fixtures?|led\\s+(?:strip|light|fixture)s?|sconces?|light\\s+bulbs?)")))return "Lighting";
- if(matches(s,word("(?:blankets?|throw\\s+blankets?|pillowcases?|pillows?|cushions?|duvets?|bedding|bedsheets?|bed\\s+sheets?|fitted\\s+sheets?|mattress\\s+(?:covers?|protectors?)|bed\\s+covers?|bedspreads?|comforters?|carpets?|rugs?|floor\\s+mats?|doormats?|curtains?|tablecloths?|towels?|sofa\\s+covers?|chair\\s+covers?|quilt(?:s|ed)?|throws?)")) && !matches(s,word("(?:air\\s+cushion|pillow\\s+bags?|towel\\s+bottom\\s+socks?|sofa\\s+cushion\\s+backpack|shoe\\s+cushion)")))return "Home Textiles";
+ if(matches(s,word("(?:blankets?|throw\\s+blankets?|pillowcases?|pillows?|cushions?|duvets?|bedding|bedsheets?|bed\\s+sheets?|fitted\\s+sheets?|mattress\\s+(?:covers?|protectors?)|bed\\s+covers?|bedspreads?|comforters?|carpets?|rugs?|floor\\s+mats?|doormats?|curtains?|tablecloths?|towels?|sofa\\s+covers?|chair\\s+covers?|quilts?|throws?)")) && !matches(s,word("(?:air\\s+cushion|pillow\\s+bags?|towel\\s+bottom\\s+socks?|sofa\\s+cushion\\s+backpack|shoe\\s+cushion)")))return "Home Textiles";
  if(matches(s,word("(?:mousepads?|mouse\\s+pads?|desk\\s+mats?|keyboard\\s+mats?)")))return "Electronics & Tech";
  if(matches(s,word("(?:decorative\\s+paintings?|paintings?|wall\\s+art|posters?|art\\s+prints?|wall\\s+prints?|vases?|ornaments?|sculptures?|statues?|figurines?|candlesticks?|candle\\s+holders?|picture\\s+frames?|photo\\s+frames?|artworks?|mirrors?|flower\\s+pots?|planters?|display\\s+trays?|decorative\\s+trays?|art\\s+trays?|trays?|table\\s+decorations?)")))return "Home & Decor";
  if(matches(s,word("(?:sofas?|armchairs?|chairs?|stools?|desks?|tables?|bedside\\s+(?:tables?|cabinets?|units?)|nightstands?|wardrobes?|bookcases?|bookshelves|shelves?|shelving\\s+units?|cabinets?|dressers?|drawers?|sideboards?|tv\\s+stands?|benches?|recliners?|headboards?|beds?|furniture\\s+sets?)")) &&
