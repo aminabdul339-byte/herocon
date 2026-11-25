@@ -5,7 +5,7 @@ import type {Product} from "@/lib/types";
 import DiscoveryMotion from "@/components/DiscoveryMotion";
 
 const edit=[
- {id:"Bxt1jifoJ5oinfAzFTydtw",title:"Sculptural cat décor",marketplace:"Taobao"},
+ {id:"YjXAnN1cosMO1iGVWJw5FA",title:"Ribbed bodycon dress",marketplace:"1688"},
  {id:"HEWCWVJ5M7RL3Y-J_uV0bg",title:"Body-wave wig",marketplace:"1688"},
  {id:"qLiCZEEhOnut6fHdkH-Bow",title:"Moissanite ring",marketplace:"Taobao"},
  {id:"g8ulL_pzvvdAvGHNTXB-xw",title:"Gold-accent glassware",marketplace:"Taobao"}
