@@ -19,7 +19,7 @@ async function databaseTrial(u:Customer):Promise<TrialRecord|null>{
 }
 async function legacyTrial(u:Customer):Promise<TrialRecord|null>{
  if(!process.env.BLOB_READ_WRITE_TOKEN)return null;
- try{const r=await get(path(emailOf(u)),{access:"private",useCache:false});if(!r||r.statusCode===404)return null;if(r.statusCode!==200||!r.stream)return null;const data=JSON.parse(await new Response(r.stream).text());return validTrial(data)?data:null;}catch{return null;}
+ try{const r=await get(path(emailOf(u)),{access:"private",useCache:false});if(!r)return null;if(r.statusCode!==200||!r.stream)return null;const data=JSON.parse(await new Response(r.stream).text());return validTrial(data)?data:null;}catch{return null;}
 }
 export async function readPremiumTrial(u:Customer):Promise<TrialRecord|null>{
  const [db,legacy]=await Promise.all([databaseTrial(u),legacyTrial(u)]);
