@@ -72,7 +72,7 @@ export default function CartPage(){
       <button className="hc-cart-bulk-buy" type="button" disabled>Select products to buy</button>}
      <p className="hc-cart-bulk-note">{hasHio?"Your HIOBuy products are saved in the cart. Deselect them to review BuckyDrop products separately. HIOBuy checkout is not enabled.":"Owner Premium only. Includes your checked items and their quantities, not the entire cart. No £9.99 membership charge. Actual payment is still disabled until supplier and shipping setup is verified."}</p>
     </>}
-    <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
+    <Link className="hc-cart-bulk-buy" href="/warehouse">Preview Herocon checkout <ArrowIcon direction="right"/></Link><p className="hc-cart-bulk-note">Explore product payment, My Warehouse and international shipping. No live charges.</p><Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}
   </section>
  </main>;
