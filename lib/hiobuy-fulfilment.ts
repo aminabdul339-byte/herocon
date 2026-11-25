@@ -1,6 +1,7 @@
 import "server-only";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {productTotal,canPayShipping} from "@/lib/hiobuy-pricing";
+import {groupProcurementLines, extractCreatedOrderIds} from "@/lib/hiobuy-order-groups";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
 type Obj=Record<string,unknown>;
 export const obj=(x:unknown):Obj=>x&&typeof x==="object"&&!Array.isArray(x)?x as Obj:{};
@@ -26,9 +27,9 @@ export async function parseProduct(input:unknown){
  if(!url||!/^https:\/\/(detail\.1688\.com|item\.taobao\.com)\//.test(url))throw new HioError("UNSUPPORTED_PRODUCT_LINK",400);
  const raw=await call("products/parse",{url,language:"en"});
  const p=obj(raw.product);const channel=str(p.channel)||(url.includes("1688.com")?"1688":"taobao");
- const id=str(p.id);if(!id||!["1688","taobao"].includes(channel))throw new HioError("INVALID_PRODUCT",502);
+ const id=str(p.source_product_id),sellerId=str(obj(p.seller).id);if(!id||!sellerId||!["1688","taobao"].includes(channel))throw new HioError("INVALID_PRODUCT",502);
  const variants=arr(p.variants).slice(0,500).map(v=>{const s=obj(v);return {id:str(s.sku_id),name:arr(s.attributes).map(a=>{const z=obj(a);return [str(z.translated_name)||str(z.original_name)||label(z.name),str(z.translated_value)||str(z.original_value)||label(z.value)].filter(Boolean).join(": ");}).join(" / ")||"Variant",stock:typeof s.stock==="number"?s.stock:null};}).filter(v=>v.id);
- return {url,id,channel,title:label(p.title)||"Marketplace product",minimum:typeof p.min_order_quantity==="number"?p.min_order_quantity:null,variants};
+ return {url,id,channel,sellerId,sellerName:str(obj(p.seller).name),title:label(p.title)||"Marketplace product",minimum:typeof p.min_order_quantity==="number"?p.min_order_quantity:null,variants};
 }
 function receiver(){
  const r=obj(JSON.parse(process.env.HIOBUY_WAREHOUSE_RECEIVER_JSON||"{}"));
@@ -40,10 +41,10 @@ export async function quoteProduct(url:unknown,sku:unknown,quantity:unknown){
  if(typeof quantity!=="number"||!Number.isInteger(quantity)||quantity<1||quantity>99)throw new HioError("INVALID_QUANTITY",400);
  const v=p.variants.find(x=>x.id===sku);
  if(!v||v.stock===0||(v.stock!==null&&v.stock<quantity)||(p.minimum!==null&&quantity<p.minimum))throw new HioError("SKU_OR_QUANTITY_UNAVAILABLE",422);
- const body={channel:p.channel,...(p.channel==="1688"?{flow:"general"}:{}),receiver:receiver(),lines:[{id:p.id,spec_id:v.id,quantity}]};
+ const body={channel:p.channel,...(p.channel==="1688"?{flow:"general"}:{}),receiver:receiver(),lines:[{offer_id:p.id,spec_id:v.id,quantity}]};
  const raw=await call("orders/preview",body);
  if(raw.success!==true||arr(raw.unavailable_lines).length)throw new HioError("ORDER_PREVIEW_UNAVAILABLE",422);
- const total=obj(raw.total),goods=fen(total.merchandise),domestic=fen(total.shipping);
+ const total=obj(raw.total),goods=fen(total.merchandise),domestic=fen(total.shipping); // Explicit merchandise amount required; never infer goods from a possibly fee-inclusive payable total.
  const fx=await getReferenceCnyGbpRate();
  return {product:p.title,variant:v.name,quantity,cnyFen:{goods,domestic},...productTotal(goods,domestic,fx.rate),fxDate:fx.date,estimateOnly:true};
 }
@@ -60,7 +61,11 @@ export async function connectionStatus(){
 }
 // Internal pilot primitives. These are deliberately not reachable from customer or Stripe routes
 // until provider response contracts, ownership, durable payment claims and reconciliation are tested.
-export async function procurementCreate(body:Obj,externalId:string){return call("orders/create",{...body,external_order_id:externalId},externalId);}
+export async function procurementCreate(group:ReturnType<typeof groupProcurementLines>[number],externalId:string){
+ const raw=await call("orders/create",{channel:group.channel,...(group.channel==="1688"?{flow:"general"}:{}),receiver:receiver(),lines:group.lines.map(l=>({offer_id:l.offerId,spec_id:l.skuId,quantity:l.quantity})),external_order_id:externalId},externalId);
+ // Preserve every returned identifier even if the provider reports a partial result.
+ return {raw,orderIds:extractCreatedOrderIds(raw),requiresReconciliation:raw.success!==true||arr(raw.failed_offers).length>0};
+}
 export async function procurementDetail(channel:string,id:string){return call("orders/detail",{channel,order_id:id});}
 export async function procurementPay(channel:string,id:string,maximumFen:number,key:string){
  const detail=await procurementDetail(channel,id);
