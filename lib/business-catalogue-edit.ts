@@ -175,3 +175,11 @@ export function freeBusinessEdit(products:Product[],limit=48):Product[]{
  return result.slice(0,limit);
 }
 export function rankBusinessCategory(products:Product[]):Product[]{return [...products].sort((a,b)=>opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));}
+
+/** Premium browsing retains the founder's opening edit and then the actual
+ * catalogue order. The free preview ranking never rearranges the paid tail. */
+export function preserveBusinessOrder(products:Product[]):Product[]{
+ const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>products.find(p=>idOf(p)===id&&hasPhotoAndSource(p))).filter((p):p is Product=>!!p);
+ const selected=new Set(pinned);
+ return [...pinned,...products.filter(p=>!selected.has(p))];
+}

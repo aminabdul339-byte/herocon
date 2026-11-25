@@ -11,7 +11,7 @@ import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
 import {prioritizeJewelleryDiscovery} from "@/lib/jewellery-discovery-order";
 import {prioritizeHairDiscovery} from "@/lib/hair-discovery-order";
-import {mixBusinessCatalogue,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
+import {preserveBusinessOrder,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
 export const dynamic="force-dynamic";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -36,7 +36,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  let products=scored.map(x=>x.product);
  // Mark saved supplier details first; explicit sorting must then apply
  // across the entire catalogue rather than separately within saved groups.
- if(access.premium)products=await prioritizeSavedPartnerProducts(products);
+ if(access.premium&&(query||cat||collection||sort!=="recommended"))products=await prioritizeSavedPartnerProducts(products);
  if(access.premium&&cat==="Wigs & Hair Extensions"&&!query&&sort==="recommended")products=prioritizeHairDiscovery(products);
  if(access.premium&&cat==="Jewellery"&&!query&&sort==="recommended")products=prioritizeJewelleryDiscovery(products);
  const price=(p:typeof products[number])=>{
@@ -55,7 +55,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  // Only the unfiltered Relevant view receives the curated, mixed pagination.
  // Search terms, category browsing, newest and price ordering stay unchanged.
  const isDefaultEdit=!query&&!cat&&!collection&&sort==="recommended";
- if(access.premium&&isDefaultEdit)products=mixBusinessCatalogue(products,PAGE_SIZE);
+ if(access.premium&&isDefaultEdit)products=preserveBusinessOrder(products);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
  const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),window=freePageWindow(requestedPage,totalMatches,limitedCategory,BUSINESS_CATEGORY_LIMIT),pages=access.premium?Math.max(1,Math.ceil(products.length/PAGE_SIZE)):window.pages,page=access.premium?Math.min(requestedPage,pages):window.page;

@@ -42,7 +42,7 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
   const ca=ORDER[audience].indexOf(a.category),cb=ORDER[audience].indexOf(b.category);
   return ca-cb || a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
  });
- if(premium&&category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
+ if(premium&&category==="All"&&!query&&sort==="featured"){const opening=mixPersonalEdit(matching,audience).slice(0,PER_PAGE);const selected=new Set(opening.map(p=>p.id));matching=[...opening,...source.filter(p=>!selected.has(p.id))];}
  const window=freePageWindow(filters.page,totalMatches,limitedCategory,PERSONAL_CATEGORY_LIMIT);
  const pageCount=premium?Math.max(1,Math.ceil(matching.length/PER_PAGE)):window.pages;
  const page=premium?Math.min(pageCount,Math.max(1,filters.page)):window.page;
