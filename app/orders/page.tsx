@@ -3,6 +3,9 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 import {useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ShoppingCenterNav from "@/components/ShoppingCenterNav";
+import FulfilmentPreview from "@/components/FulfilmentPreview";
+import "../warehouse/warehouse.css";
 
 type Status={
  partnerOrderNo:string;shopOrderNo:string|null;submittedAt:string;localState:string;shippingPrepaid?:boolean;
@@ -34,8 +37,8 @@ export default function OrdersPage(){
   }catch(e){setError(e instanceof Error?e.message:"Your order information could not be retrieved.");}
   finally{setLoading(false);}
  }
- return <main className="sc-guide-page"><Header/>
-  <section className="sc-page-hero sc-container"><p className="sc-kicker">ORDER UPDATES</p><h1>Follow your <em>order.</em></h1><p>Track your purchase, warehouse arrival and delivery using your order reference and private access code.</p></section>
+ return <main className="sc-guide-page"><Header/><ShoppingCenterNav/><FulfilmentPreview view="orders"/>
+  <section className="sc-container"><details><summary>Track an existing order with a reference and access code</summary><p>For existing Herocon pilot orders.</p>
   <section className="sc-section sc-container hc-order-check-wrap">
    <div className="hc-order-check-panel"><h2>Track an order</h2><p>Enter the details supplied with your Herocon order confirmation. This is for Herocon orders, not orders placed directly on external marketplace websites.</p>
     <form onSubmit={check} className="hc-order-form">
@@ -77,7 +80,7 @@ export default function OrdersPage(){
     {!status.salesStatus&&!status.parcels.length&&<p>There are no additional provider updates for this order yet.</p>}
    </div>}
   </section>
-  <section className="sc-resource-note sc-container">Online ordering is currently unavailable. Tracking is for Herocon orders only.</section>
+  </details></section>
   <div className="sc-container hc-order-footer"><Link href="/cart" className="sc-button sc-button-outline">View your cart <ArrowIcon/></Link></div>
  </main>;
 }

@@ -3,6 +3,9 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ShoppingCenterNav from "@/components/ShoppingCenterNav";
+import FulfilmentPreview from "@/components/FulfilmentPreview";
+import "../warehouse/warehouse.css";
 import {useCart} from "@/components/CartProvider";
 
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
@@ -32,7 +35,7 @@ export default function CartPage(){
  const pricesMissing=selectedItems.some(item=>item.unitPrice==null);
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
- return <main className="hc-cart-page"><Header/>
+ return <main className="hc-cart-page"><Header/><ShoppingCenterNav/>
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">YOUR SHOPPING CART</p>
    <h1>Your <em>cart.</em></h1>
@@ -72,8 +75,9 @@ export default function CartPage(){
       <button className="hc-cart-bulk-buy" type="button" disabled>Select products to buy</button>}
      <p className="hc-cart-bulk-note">{hasHio?"Your HIOBuy products are saved in the cart. Deselect them to review BuckyDrop products separately. HIOBuy checkout is not enabled.":"Owner Premium only. Includes your checked items and their quantities, not the entire cart. No £9.99 membership charge. Actual payment is still disabled until supplier and shipping setup is verified."}</p>
     </>}
-    <Link className="hc-cart-bulk-buy" href="/warehouse">Preview Herocon checkout <ArrowIcon direction="right"/></Link><p className="hc-cart-bulk-note">Explore product payment, My Warehouse and international shipping. No live charges.</p><Link className="hc-cart-shop" href="/search">Continue shopping</Link>
+    <a className="hc-cart-bulk-buy" href="#account-demo">Try checkout preview <ArrowIcon direction="right"/></a><p className="hc-cart-bulk-note">Test the purchase journey below without a real charge.</p><Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}
   </section>
+  <div id="account-demo"><FulfilmentPreview view="cart"/></div>
  </main>;
 }
