@@ -8,6 +8,7 @@ import {categoryAuditOverrides} from "./category-audit-store";
 import {getDiscoveredProducts} from "./discovered-products";
 import {normalizeMarketplaceLink} from "./marketplace-links";
 import {marketplaceIdentity} from "./catalogue-identity";
+import {excludedCatalogueListing} from "./catalogue-editorial-exclusions";
 import {withoutEmoji} from "./emoji-free";
 import {unavailableSourceHashes,isUnavailableSource} from "./catalogue-unavailable";
 
@@ -103,7 +104,7 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
     if (await addFile(name)) break;
   }
   for (const name of additions) await addFile(name);
-  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:CATEGORY_OVERRIDES[product.doppelProductId||""]||classifyProduct(product.title,product.category)}));
+  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)&&!excludedCatalogueListing(product.originalMarketplaceUrl,product.title,product.originalTitle)).map(product => ({...product,category:CATEGORY_OVERRIDES[product.doppelProductId||""]||classifyProduct(product.title,product.category)}));
 });
 
 // The original catalogue remains in committed JSON files. Products found through
@@ -113,7 +114,7 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
  const [base,hidden,audit]=await Promise.all([getBaseProducts(),unavailableSourceHashes(),categoryAuditOverrides()]);
  const corrected=(p:Product):Product=>({...p,category:CATEGORY_OVERRIDES[p.doppelProductId||""]||audit[p.doppelProductId||""]||classifyProduct(p.title,p.category)});
  const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(corrected);
- const discovered=(await getDiscoveredProducts()).filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
+ const discovered=(await getDiscoveredProducts()).filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)&&!excludedCatalogueListing(p.originalMarketplaceUrl,p.title,p.originalTitle,p.displayTitle)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
  if(!discovered.length)return staticProducts;
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));

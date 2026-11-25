@@ -1,3 +1,5 @@
+import {claimLinkTrial} from "@/lib/free-link-trial";
+import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 import {catalogueAccess} from "@/lib/catalogue-access";
 import {NextResponse} from "next/server";
 import {BuckydropError} from "@/lib/buckydrop";
@@ -30,7 +32,7 @@ const jsonError=(message:string,status:number)=>NextResponse.json(
 );
 
 export async function POST(request:Request){
- if(!(await catalogueAccess()).premium)return jsonError("Marketplace link lookup requires Premium.",403);
+ const access=await catalogueAccess();if(!access.customer)return jsonError("Sign in to use your free product link lookup.",401);
  // Transition: public lookup reads existing snapshots only. New discovery is owner-gated through HioBuy.
  const origin=request.headers.get("origin");
  if(!origin)return jsonError("Please submit product links from the Herocon website.",403);
@@ -56,8 +58,11 @@ export async function POST(request:Request){
  const ip=request.headers.get("x-real-ip")||request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
  if(rateLimited(ip))return jsonError("Too many searches. Please try again shortly.",429);
  try {
+  if(excludedCatalogueListing(productLink))return jsonError("This listing is not available in Herocon.",404);
+  if(!access.premium&&!await claimLinkTrial(access.customer.id,productLink))return jsonError("Your free link lookup has been used. Join Premium to look up another product.",403);
   const hio=await getSavedMarketplaceSource(productLink);
   const product=hio?toDisplaySupplierDetails(hio):await getSavedBuckydropProduct(productLink);
+  if(product&&excludedCatalogueListing(productLink,product.title))return jsonError("This listing is not available in Herocon.",404);
   if(!product)return jsonError("This product is not in our saved catalogue yet. New marketplace searches are being migrated to our new sourcing partner.",404);
   const cacheStatus="hit";
   // Avoid duplicating a listing already in the original committed catalogue.

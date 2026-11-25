@@ -120,7 +120,7 @@ export function mixBusinessCatalogue(products:Product[],pageSize=24):Product[]{
  // Preserve the exact live first-page edit when all its listings remain available.
  // Otherwise fall back to the normal eligible catalogue selection; never show stale cards.
  const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>ranked.find(p=>idOf(p)===id&&hasPhotoAndSource(p)));
- const lead=pageSize===BUSINESS_PAGE_ONE_ORDER.length&&pinned.every((p):p is Product=>!!p)?pinned:ranked.slice(0,pageSize);
+ const availablePinned=pinned.filter((p):p is Product=>!!p);const lead=pageSize===BUSINESS_PAGE_ONE_ORDER.length?[...availablePinned,...ranked.filter(p=>!availablePinned.includes(p))].slice(0,pageSize):ranked.slice(0,pageSize);
  const selected=new Set(lead);
  const groups=new Map<string,Product[]>();
  for(const p of products){if(selected.has(p))continue;const key=p.category||"Other";const pool=groups.get(key)||[];pool.push(p);groups.set(key,pool);}
@@ -160,3 +160,18 @@ export function mixBusinessCatalogue(products:Product[],pageSize=24):Product[]{
  }
  return result;
 }
+
+/** Free edit: exact founder page one, then high-ranked clear products across
+ * categories, without re-running the mixed catalogue algorithm on a subset. */
+export function freeBusinessEdit(products:Product[],limit=48):Product[]{
+ const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>products.find(p=>idOf(p)===id&&hasPhotoAndSource(p))).filter((p):p is Product=>!!p);
+ const used=new Set(pinned);
+ const pools=new Map<string,Product[]>();
+ for(const p of products){if(used.has(p)||!hasPhotoAndSource(p))continue;const cat=p.category||"Other";const g=pools.get(cat)||[];g.push(p);pools.set(cat,g);}
+ for(const g of pools.values())g.sort((a,b)=>opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));
+ const groups=[...pools.entries()].sort(([a],[b])=>(opportunityWeights[b]||1)-(opportunityWeights[a]||1)||a.localeCompare(b)).map(([,g])=>g);
+ const result=[...pinned];
+ for(let i=0;result.length<limit&&groups.some(g=>g[i]);i++)for(const g of groups){if(g[i]&&result.length<limit)result.push(g[i]);}
+ return result.slice(0,limit);
+}
+export function rankBusinessCategory(products:Product[]):Product[]{return [...products].sort((a,b)=>opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));}

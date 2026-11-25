@@ -23,7 +23,7 @@ const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
 export default async function ShopForYourself({filters,rates,premium}:{filters:Filters;rates:ShopFxRates;premium:boolean}){
- const {audience,sort}=filters;
+ const {audience}=filters;const sort=premium?filters.sort:"featured";
  const hidden=await unavailableSourceHashes();
  const [women,men]=await Promise.all([personalAll("women"),personalAll("men")]);
  const available=(a:Audience)=>a==="women"?women:men;
@@ -37,12 +37,12 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
  const totalMatches=everything.filter(x=>!limitedCategory||x.category===category).length;
  const source=premium?everything:limitedCategory?await personalCategoryPreview(audience,category):await personalCollectionPreview(audience);
  let matching=source.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
- matching.sort((a,b)=>{
+ if(premium)matching.sort((a,b)=>{
   if(sort==="name")return nameCompare(a,b);
   const ca=ORDER[audience].indexOf(a.category),cb=ORDER[audience].indexOf(b.category);
   return ca-cb || a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
  });
- if(category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
+ if(premium&&category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
  const window=freePageWindow(filters.page,totalMatches,limitedCategory,PERSONAL_CATEGORY_LIMIT);
  const pageCount=premium?Math.max(1,Math.ceil(matching.length/PER_PAGE)):window.pages;
  const page=premium?Math.min(pageCount,Math.max(1,filters.page)):window.page;
@@ -57,7 +57,7 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
   q.set("audience",p.audience);
   if(p.category&&p.category!=="All")q.set("category",p.category);
   if(p.q)q.set("q",p.q);
-  if(p.sort!=="featured")q.set("sort",p.sort);
+  if(premium&&p.sort!=="featured")q.set("sort",p.sort);
   if(p.page>1)q.set("page",String(p.page));
   return "/shop-for-yourself?"+q.toString()+"#browse-finds";
  }

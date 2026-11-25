@@ -1,5 +1,6 @@
 import source from "@/data/shop-personal-merged.json";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
+import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 import {withoutEmoji} from "@/lib/emoji-free";
 
 export type PersonalShopProduct={
@@ -15,7 +16,7 @@ const seenImages=new Set<string>();
 const filtered:PersonalShopProduct[]=[];
 for(const p of parsed){
  const originalUrl=normalizeMarketplaceLink(p.originalUrl);
- if(!originalUrl||!accepted.has(p.category)||!p.name.trim()||
+ if(!originalUrl||excludedCatalogueListing(originalUrl,p.name)||!accepted.has(p.category)||!p.name.trim()||
     !p.imageUrl||!(p.imageUrl.startsWith("https://")||p.imageUrl.startsWith("/shop-for-yourself-images/"))||
     seenLinks.has(originalUrl)||seenImages.has(p.imageUrl))continue;
  seenLinks.add(originalUrl);

@@ -1,4 +1,7 @@
 import type {Metadata} from "next";
+import Link from "next/link";
+import {linkTrial} from "@/lib/free-link-trial";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {catalogueAccess} from "@/lib/catalogue-access";
 import {PremiumNotice} from "@/components/MembershipPlans";
 import Header from "@/components/Header";
@@ -17,7 +20,10 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
  const params=await searchParams;
  const initialUrl=typeof params.url==="string"?params.url.slice(0,1000):"";
  const access=await catalogueAccess();
- if(!access.premium)return <main className="hc-link-page hc-link-minimal"><Header/><section className="hc-plan-locked"><h1>Find your own products.</h1><p>Search by marketplace link with Premium. Live keyword and image search are in rollout.</p><PremiumNotice feature="marketplace sourcing"/></section></main>;
+ if(!access.customer)return <main className="hc-link-page hc-link-minimal"><Header/><section className="hc-plan-locked"><h1>Try a product link.</h1><p>Create a free account to try one marketplace product link. Premium unlocks more.</p><Link href={"/account?next="+encodeURIComponent("/find-product"+(initialUrl?"?url="+encodeURIComponent(initialUrl):""))}>Sign in or join free</Link></section></main>;
+ const trial=access.premium?null:await linkTrial(access.customer.id).catch(()=>undefined);
+ if(!access.premium&&trial===undefined)return <main><Header/><section className="hc-plan-locked"><h1>Link lookup temporarily unavailable.</h1><p>Please try again later.</p></section></main>;
+ if(trial&&normalizeMarketplaceLink(initialUrl)!==trial.url)return <main className="hc-link-page hc-link-minimal"><Header/><section className="hc-plan-locked"><h1>Your free link lookup has been used.</h1><p>Upgrade to Premium to look up more products.</p><Link href={"/find-product?url="+encodeURIComponent(trial.url)}>Reopen your first product</Link><PremiumNotice feature="more marketplace link lookups"/></section></main>;
  if(isOwnerPremiumCustomer(access.customer))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery initialUrl={initialUrl} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
  return <main className="hc-link-page hc-link-minimal" data-has-url={Boolean(initialUrl)}><Header/>
   <section className="hc-link-intro" aria-labelledby="hc-link-title">
@@ -27,7 +33,7 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
     <h1 id="hc-link-title">Find a product by link.</h1>
     <p className="hc-link-intro-copy">Find saved supplier photos, options and reference prices. Live keyword, image and marketplace searches are in rollout.</p>
     <div className="hc-link-input-panel">
-     <ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>
+     {trial?<p>Your free lookup has been used. You can revisit this product; <Link href="/membership">join Premium</Link> to try another link.</p>:<><ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>{!access.premium&&<p>One free product link per account. A valid submitted link uses your trial, even if no saved listing is found.</p>}</>}
      <div className="hc-link-platforms"><span>Supported marketplaces</span><ul aria-label="Supported marketplaces"><li>1688</li><li>Taobao</li><li>Tmall</li><li>Weidian</li></ul></div>
     </div>
    </div>
