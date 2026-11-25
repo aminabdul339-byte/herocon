@@ -6,7 +6,9 @@ import {BuckydropError} from "@/lib/buckydrop";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {getSavedMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {type DiscoverySaveResult} from "@/lib/discovered-products";
+import {saveSupplierDiscovery,type DiscoverySaveResult} from "@/lib/discovered-products";
+import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
+import {classifyProduct} from "@/lib/product-taxonomy";
 import {getBaseProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
 
@@ -71,7 +73,13 @@ export async function POST(request:Request){
    const originalCatalogue=await getBaseProducts();
    const existing=originalCatalogue.find(item=>normalizeMarketplaceLink(item.originalMarketplaceUrl)===productLink);
    if(existing)catalogueSave={status:"existing",productId:productId(existing)};
-   // Do not create another catalogue record or charge a provider for a cache-only lookup.
+   else if(product.images.length&&product.title.trim()&&!/^(untitled product|marketplace product|product details)$/i.test(product.title.trim())){
+    const prices=product.variants.map(v=>v.price).filter((v):v is number=>typeof v==="number"&&Number.isFinite(v)&&v>=0);
+    const priceCNY=prices.length?Math.min(...prices):product.offerPrice??product.listPrice??undefined;
+    const fx=await getReferenceCnyGbpRate().catch(()=>null);
+    const priceGBP=priceCNY!==undefined&&fx&&fx.rate>0?Math.round(priceCNY*fx.rate*100)/100:undefined;
+    catalogueSave=await saveSupplierDiscovery({url:productLink,title:product.title,images:product.images,priceCNY,priceGBP,sellerName:product.sellerName||undefined,category:classifyProduct(product.title),sourceBatch:"customer-link-discovery"});
+   }
   }catch(error){
    console.error("[lookup] Unable to save discovered product:",error instanceof Error?error.message:"unknown");
   }
