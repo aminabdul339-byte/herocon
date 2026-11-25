@@ -7,7 +7,7 @@ export type Order={id:string;userId:string;mode:"mock"|"stripe_test";createdAt:s
 export class RehearsalError extends Error{constructor(public status:number,message:string){super(message);}}
 const prefix=(uid:string,id:string)=>{if(!uuid.test(uid)||!uuid.test(id))throw new RehearsalError(400,"Invalid reference");return ROOT+uid+"/"+id+"/";};
 async function read<T>(path:string):Promise<T|null>{
- const r=await get(path,{access:"private",useCache:false});if(!r||r.statusCode===404)return null;
+ const r=await get(path,{access:"private",useCache:false});if(!r)return null;
  if(r.statusCode!==200||!r.stream)throw new RehearsalError(503,"Private storage unavailable");
  return JSON.parse(await new Response(r.stream).text()) as T;
 }
