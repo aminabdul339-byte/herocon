@@ -147,6 +147,26 @@
     {
       "path": "/api/cron/category-audit/3",
       "schedule": "29 12 25 11 *"
+    },
+    {
+      "path": "/api/cron/final-enrichment-pass",
+      "schedule": "30,36 15 25 11 *"
+    },
+    {
+      "path": "/api/cron/full-catalogue-audit/0",
+      "schedule": "45 15 25,26 11 *"
+    },
+    {
+      "path": "/api/cron/full-catalogue-audit/1",
+      "schedule": "52 15 25,26 11 *"
+    },
+    {
+      "path": "/api/cron/full-catalogue-audit/2",
+      "schedule": "59 15 25,26 11 *"
+    },
+    {
+      "path": "/api/cron/full-catalogue-audit/3",
+      "schedule": "6 16 25,26 11 *"
     }
   ]
 }
