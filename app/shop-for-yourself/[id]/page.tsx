@@ -3,6 +3,7 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import Header from "@/components/Header";
+import {savedDomesticFreight} from "@/lib/saved-domestic-freight";
 import ProductExperience from "@/components/ProductExperience";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {findPersonalProduct,audienceProducts} from "@/lib/personal-shop";
@@ -90,7 +91,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
          images={gallery}
          price={price}
          gbpOnly
-         initialSource={enrichment?{...toDisplaySupplierDetails(enrichment),chinaDomesticFreight:enrichment.chinaDomesticFreight??source?.chinaDomesticFreight??null}:source||undefined}
+         initialSource={enrichment?{...toDisplaySupplierDetails(enrichment),chinaDomesticFreight:enrichment.chinaDomesticFreight??await savedDomesticFreight(item.originalUrl)}:source?{...source,chinaDomesticFreight:await savedDomesticFreight(item.originalUrl)}:undefined}
          initialFx={(enrichment||source)?{rate:rates.cnyToGbp,date:rates.cnyDate}:undefined}
          buckydropEnabled={Boolean(source&&!enrichment)}
          sourceLookupFailed={!source&&!enrichment}

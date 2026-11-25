@@ -222,7 +222,8 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
   const completed=await Promise.all(batch.map(async p=>{
    try{
     const result=await readMarketplaceSource(p.url);
-    await saveMarketplaceSource(result);
+    // Do not overwrite an existing full supplier snapshot merely to recover freight.
+    if(!existing.has(p.hash))await saveMarketplaceSource(result);
     await recordFreightRefresh(p.url,result.chinaDomesticFreight).catch(()=>{});
     return {hash:p.hash,channel:p.channel,ok:true as const};
    }catch(error){

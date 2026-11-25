@@ -9,7 +9,8 @@ export async function savedDomesticFreight(value:unknown):Promise<number|null>{
  const saved=await getSavedMarketplaceSource(url);
  if(validFreight(saved?.chinaDomesticFreight))return saved.chinaDomesticFreight;
  // Historic supplier snapshot: no billable lookup and no inference from weight.
+ const recorded=await readFreightRecord(url);if(recorded?.source==="hiobuy"&&validFreight(recorded.amountCny))return recorded.amountCny;
  const legacy=await getSavedBuckydropProduct(url).catch(()=>null);
  if(validFreight(legacy?.chinaDomesticFreight))return legacy.chinaDomesticFreight;
- const recorded=await readFreightRecord(url);return validFreight(recorded?.amountCny)?recorded.amountCny:null;
+ return validFreight(recorded?.amountCny)?recorded.amountCny:null;
 }

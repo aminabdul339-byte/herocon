@@ -16,8 +16,8 @@ async function save(r:FreightRecord){const hash=key(r.url);await put(ROOT+"recor
 export async function auditSavedFreight(url:string,hio:unknown,historical:unknown){
  const prior=await readFreightRecord(url);
  // Fresh, actual provider value wins. Never replace a known value with null.
- const amountCny=validFreight(hio)?hio:validFreight(historical)?historical:prior?.amountCny??null;
- const source=validFreight(hio)?"hiobuy":validFreight(historical)?"historical":prior?.source??"unknown";
+ const amountCny=validFreight(hio)?hio:prior?.source==="hiobuy"&&validFreight(prior.amountCny)?prior.amountCny:validFreight(historical)?historical:prior?.amountCny??null;
+ const source=validFreight(hio)||prior?.source==="hiobuy"&&validFreight(prior.amountCny)?"hiobuy":validFreight(historical)?"historical":prior?.source??"unknown";
  const r:FreightRecord={...prior,url,amountCny,source,checkedAt:new Date().toISOString()};
  await save(r);return r;
 }
