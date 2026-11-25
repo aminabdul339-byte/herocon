@@ -252,23 +252,28 @@ body .hc-site{background:var(--hc-chalk);color:var(--hc-brand-deep)}
 }
 .hc-site .hc-editorial-product-layout .gallery-main .gallery-count{display:none}
 .hc-site .hc-gallery-controls{
- position:absolute;bottom:21px;right:20px;
- display:flex;align-items:center;gap:8px;
- padding:5px;border-radius:999px;background:#f5f5f1e8;
- border:1px solid #e0e6de;box-shadow:0 5px 20px #25432a16;
- backdrop-filter:blur(10px)
+ position:absolute;inset:0;pointer-events:none;
+ display:block;padding:0;border:0;border-radius:0;background:none;box-shadow:none;
 }
 .hc-site .hc-gallery-controls button{
- width:37px;height:37px;border:0;background:#ffffff9c;
- display:grid;place-items:center;border-radius:100%;cursor:pointer;
- color:var(--hc-brand-deep)
+ position:absolute;top:50%;transform:translateY(-50%);pointer-events:auto;
+ width:42px;height:42px;border:1px solid #dce3da;background:#fffffff0;
+ display:grid;place-items:center;border-radius:50%;cursor:pointer;
+ color:var(--hc-brand-deep);box-shadow:0 2px 8px #25432a12;
+ transition:background .18s,color .18s;
 }
+.hc-site .hc-gallery-controls button:first-child{left:12px}
+.hc-site .hc-gallery-controls button:last-child{right:12px}
 .hc-site .hc-gallery-controls button:hover{background:var(--hc-brand);color:white}
-.hc-site .hc-gallery-controls svg{width:18px;height:18px}
+.hc-site .hc-gallery-controls button:focus-visible{outline:2px solid var(--hc-brand-deep);outline-offset:3px}
+.hc-site .hc-gallery-controls svg{width:20px;height:20px}
 .hc-site .hc-gallery-controls output{
- color:var(--hc-brand-deep);font-size:10px;letter-spacing:.12em;
- font-weight:700;min-width:51px;text-align:center
+ position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+ color:var(--hc-brand-deep);font-size:10px;letter-spacing:.08em;
+ font-weight:600;text-align:center;background:#ffffffe0;border-radius:999px;padding:5px 9px;
 }
+.hc-site .hc-editorial-product-layout .gallery-main{touch-action:pan-y pinch-zoom}
+
 .hc-site .hc-editorial-product-layout .thumbs{
  display:flex;gap:9px;margin-top:11px;
  overflow-x:auto;overflow-y:hidden;
@@ -506,8 +511,8 @@ body .hc-site{background:var(--hc-chalk);color:var(--hc-brand-deep)}
  .hc-site .hc-personal-experience .hc-editorial-product-layout .gallery-main{
   aspect-ratio:4/5;border-radius:13px
  }
- .hc-site .hc-gallery-controls{bottom:12px;right:12px;gap:2px}
- .hc-site .hc-gallery-controls button{height:32px;width:32px}
+ .hc-site .hc-gallery-controls{inset:0}
+ .hc-site .hc-gallery-controls button{height:40px;width:40px}
  .hc-site .hc-editorial-product-layout .thumbs{gap:6px}
  .hc-site .hc-editorial-product-layout .thumbs button{flex:0 0 62px;width:62px}
  .hc-site .hc-editorial-product-layout .buy-panel h1,

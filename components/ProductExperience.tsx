@@ -1,6 +1,6 @@
 "use client";
 import {ArrowIcon} from "@/components/ArrowIcon";
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {ExternalArrowIcon} from "@/components/ShopIcons";
@@ -27,7 +27,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [activeSku,setActiveSku]=useState("");
  const [quantities,setQuantities]=useState<Record<string,number>>({});
  const [visibleSkuCount,setVisibleSkuCount]=useState(6);
- const [skuSearch,setSkuSearch]=useState("");
+ const galleryTouch=useRef<{x:number;y:number}|null>(null);
  const [showAllPhotos,setShowAllPhotos]=useState(false);
  const [showAllDetailPhotos,setShowAllDetailPhotos]=useState(false);
  const [singleQuantity,setSingleQuantity]=useState(1);
@@ -58,8 +58,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const subtotal=selectedRows.reduce((sum,v)=>sum+(v.price||0)*(quantities[v.skuCode]||0),0);
  const hasUnknownPrice=selectedRows.some(v=>v.price==null);
  const minOrder=source?.moq!=null&&source.moq>0?source.moq:null;
- const matchingSkus=source?.variants.filter(v=>!skuSearch.trim()||
-   (v.title+" "+v.skuCode+" "+v.options.map(o=>o.name+" "+o.value).join(" ")).toLocaleLowerCase().includes(skuSearch.trim().toLocaleLowerCase()))||[];
+ const matchingSkus=source?.variants||[];
  const visibleSkus=matchingSkus.slice(0,visibleSkuCount);
  const originalMatching=originalVariants.find(v=>(!colour||!v.colour||v.colour===colour)&&(!size||!v.size||v.size===size)&&(!style||!v.style||v.style===style)&&v.available!==false);
  const sellerImages=source?.images.length?source.images:images;
@@ -174,7 +173,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  return <>
   <section className="product-layout hc-editorial-product-layout">
    <div className="hc-editorial-gallery">
-    <div className="gallery-main">
+    <div className="gallery-main" onTouchStart={e=>{galleryTouch.current=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;}} onTouchCancel={()=>{galleryTouch.current=null;}} onTouchEnd={e=>{const start=galleryTouch.current;galleryTouch.current=null;if(!start||gallery.length<2||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)setImage((chosenIndex+(dx<0?1:-1)+gallery.length)%gallery.length);}}>
      {gallery[chosenIndex]?<img src={gallery[chosenIndex]} alt={title} referrerPolicy="no-referrer" onError={()=>{const failed=gallery[chosenIndex];setBadImages(previous=>previous.includes(failed)?previous:[...previous,failed]);}}/>:<div className="hc-image-missing">Product image currently unavailable</div>}
      <span className="gallery-count">{gallery.length?chosenIndex+1:0} / {gallery.length}</span>
      {gallery.length>1&&<div className="hc-gallery-controls" aria-label="Product image gallery">
@@ -208,12 +207,6 @@ export default function ProductExperience({product,id,title,images,price,buckydr
         This marketplace did not provide a complete set of purchasable SKU identifiers.
         Only returned options are displayed; availability may need supplier confirmation.
        </p>}
-      {source.variants.length>16&&<label style={{display:"block",margin:"10px 0 14px",fontSize:13}}>
-        <span style={{display:"block",fontWeight:700,marginBottom:5}}>Find an option</span>
-        <input type="search" value={skuSearch} placeholder="Search seller options…" onChange={e=>{
-          setSkuSearch(e.currentTarget.value);setVisibleSkuCount(6);
-        }} style={{width:"100%",padding:"11px 12px",border:"1px solid #c6ccbe",borderRadius:5}}/>
-      </label>}
       <div className="sc-sku-list">
        {visibleSkus.map(v=>{
         const quantity=quantities[v.skuCode]||0;
@@ -233,7 +226,6 @@ export default function ProductExperience({product,id,title,images,price,buckydr
         </div>;
        })}
       </div>
-      {matchingSkus.length===0&&<p style={{fontSize:14}}>No seller options match your search.</p>}
       {matchingSkus.length>visibleSkuCount&&<button type="button" className="sc-sku-show-more"
        onClick={()=>setVisibleSkuCount(n=>n+12)}>
        Show more options ({matchingSkus.length-visibleSkuCount} remaining) <ArrowIcon direction="down"/>
