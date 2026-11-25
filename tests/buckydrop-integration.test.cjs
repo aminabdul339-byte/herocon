@@ -206,3 +206,76 @@ test('merchant pricing rejects missing or negative costs, rather than treating t
  assert.throws(()=>assessMerchantCheckout(1500,{...c,walletAndFxFeesPence:-1}),/Invalid/);
  assert.throws(()=>assessMerchantCheckout(1499.5,c),/Invalid/);
 });
+
+function discoveryFixture({owner=true,premium=false,existing=false,storageFails=false}={}){
+ const url='https://detail.1688.com/offer/123456789.html';
+ const item={id:'123456789',channel:'1688',source_url:url,title:{translated:'Ceramic vase'},image:'https://images.example.test/vase.jpg',price:{display_amount:20},variants:[{sku_id:'sku-1',price:{display_amount:18}}]};
+ const blobs=new Map(),snapshots=new Map(),cards=new Map();
+ let calls=0,writes=0;
+ const modules={
+  'next/server':{NextResponse:{json:(body,opts={})=>Response.json(body,{status:opts.status||200,headers:opts.headers})}},
+  '@vercel/blob':{get:async k=>blobs.has(k)?{statusCode:200,stream:blobs.get(k)}:null,put:async(k,v)=>{blobs.set(k,v);},list:async()=>({blobs:[]})},
+  '@/lib/customer-auth':{currentCustomer:async()=>({id:'owner'}),accountOriginValid:()=>true},
+  '@/lib/owner-premium':{isOwnerPremiumCustomer:()=>owner},
+  '@/lib/membership-access':{membershipEntitlement:async()=>({premium})},
+  '@/lib/discovery-access-model':{discoveryAllowed:(o,p,a)=>o||p&&['search','image','detail'].includes(a)},
+  '@/lib/discovery-quota':{reserveDiscovery:async()=> 'ok'},
+  '@/lib/cart-pricing':{domesticFromProduct:()=>null},
+  '@/lib/catalogue-editorial-exclusions':{excludedCatalogueListing:()=>false},
+  '@/lib/marketplace-links':{normalizeMarketplaceLink:u=>u===url?url:null},
+  '@/lib/fx-reference':{getReferenceCnyGbpRate:async()=>({rate:0.1,date:'2026-11-25'})},
+  '@/lib/catalogue-server':{getBaseProducts:async()=>existing?[{originalMarketplaceUrl:url,doppelProductId:'existing-id'}]:[]},
+  '@/lib/catalogue':{productId:p=>p.doppelProductId},
+  '@/lib/product-taxonomy':{classifyProduct:()=> 'Home & Living'},
+  '@/lib/discovered-products':{saveSupplierDiscovery:async input=>{if(cards.has(input.url))return {status:'existing',productId:'link-id'};cards.set(input.url,input);return {status:'added',productId:'link-id'};}},
+  '@/lib/marketplace-source-enrichment':{
+   fromHiobuy:(raw,sourceUrl)=>({version:2,provider:'hiobuy',sourceUrl,retrievedAt:'2026-11-25',title:'Ceramic vase',images:[item.image],detailImages:[],variants:[{id:'sku-1',priceCNY:18}],variantCompleteness:'complete',variantCount:1,sourceSpecs:[]}),
+   getSavedMarketplaceSource:async key=>snapshots.get(key)||null,
+   saveMarketplaceSource:async snapshot=>{if(storageFails)throw Error('mock storage failure');writes++;snapshots.set(snapshot.sourceUrl,snapshot);}
+  }
+ };
+ const {POST}=load('app/api/hiobuy/discovery/route.ts',{modules,fetch:async endpoint=>{
+  calls++;return {ok:true,json:async()=>endpoint.endsWith('/search')||endpoint.endsWith('/search-by-image')?{items:[item],page:1,total:1}:{product:item}};
+ }},{HIOBUY_API_KEY:'fake-test-key'});
+ const request=async body=>{const response=await POST(new Request('https://herocon.store/api/hiobuy/discovery',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}));return {status:response.status,...await response.json()};};
+ return {request,url,cards,snapshots,calls:()=>calls,writes:()=>writes};
+}
+test('HioBuy keyword and image results do not import until a product is opened',async()=>{
+ const f=discoveryFixture();
+ for(const body of [{action:'search',channel:'1688',keyword:'vase'},{action:'image',channel:'1688',image:'data:image/png;base64,AAAA'}]){
+  const r=await f.request(body);assert.equal(r.status,200);assert.equal(r.items.length,1);assert.equal(r.catalogueSave,undefined);
+ }
+ assert.equal(f.cards.size,0);assert.equal(f.snapshots.size,0);
+ const detail=await f.request({action:'detail',channel:'1688',id:'123456789'});
+ assert.equal(detail.catalogueSave.status,'added');assert.equal(f.cards.size,1);assert.equal(f.snapshots.size,1);
+ assert.equal(f.cards.get(f.url).priceGBP,1.8);assert.equal(f.cards.get(f.url).sourceBatch,'hiobuy-customer-discovery');
+ const cached=await f.request({action:'detail',channel:'1688',id:'123456789'});
+ assert.equal(cached.cacheStatus,'hit');assert.equal(cached.catalogueSave.status,'existing');
+ assert.equal(f.calls(),3);assert.equal(f.writes(),1);assert.equal(f.cards.size,1);
+});
+test('HioBuy pasted link imports without duplicate cards or provider calls on reopen',async()=>{
+ const f=discoveryFixture();const body={action:'parse',url:f.url};
+ assert.equal((await f.request(body)).catalogueSave.status,'added');
+ assert.equal((await f.request(body)).catalogueSave.status,'existing');
+ assert.equal(f.calls(),1);assert.equal(f.cards.size,1);
+ const existing=discoveryFixture({existing:true});
+ assert.equal((await existing.request(body)).catalogueSave.productId,'existing-id');
+ assert.equal(existing.cards.size,0);assert.equal(existing.snapshots.size,1);
+});
+test('HioBuy catalogue failure does not prevent product display and owner gate remains enforced',async()=>{
+ const failed=discoveryFixture({storageFails:true});
+ const r=await failed.request({action:'parse',url:failed.url});
+ assert.equal(r.status,200);assert.ok(r.product);assert.equal(r.catalogueSave.status,'unavailable');
+ const blocked=discoveryFixture({owner:false});
+ assert.equal((await blocked.request({action:'parse',url:blocked.url})).status,403);
+ assert.equal(blocked.calls(),0);assert.equal(blocked.cards.size,0);
+});
+
+test('Premium customers can auto-import opened products without changing owner-only actions',async()=>{
+ const f=discoveryFixture({owner:false,premium:true});
+ assert.equal((await f.request({action:'parse',url:f.url})).status,403);
+ assert.equal((await f.request({action:'search',channel:'1688',keyword:'vase'})).status,200);
+ assert.equal(f.cards.size,0);
+ assert.equal((await f.request({action:'detail',channel:'1688',id:'123456789'})).catalogueSave.status,'added');
+ assert.equal(f.cards.size,1);
+});
