@@ -24,7 +24,7 @@ const savedHashes=unstable_cache(async():Promise<string[]>=>{
    do{
     const result=await list({prefix,limit:1000,cursor});
     for(const file of result.blobs){
-     const hash=file.pathname.slice(prefix.length).replace(/\\.json$/,"");
+     const hash=file.pathname.slice(prefix.length).replace(/\.json$/,"");
      if(/^[a-f0-9]{64}$/.test(hash))values.add(hash);
     }
     if(!result.hasMore)break;

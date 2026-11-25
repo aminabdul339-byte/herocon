@@ -44,6 +44,10 @@ export function conciseProductTitle(p:Product):string{
   }
   // Avoid visual descriptions unrelated to the main product; categories already
   // constrain the type, and explicit original titles remain in product details.
+  if(picked.includes("MagSafe")&&picked.includes("Magnetic"))picked.splice(picked.indexOf("Magnetic"),1);
+  if(picked.includes("Bodycon")&&picked.includes("Ribbed"))picked.reverse();
+  if(picked.includes("Marble")&&picked.includes("Nordic"))picked.reverse();
+  if(picked.includes("Zircon")&&picked.includes("Heart-Shaped"))picked.reverse();
   return [...picked,label].join(" ");
  }
  const cleaned=plain.replace(noise," ").replace(/[!,;:]+/g," ").replace(/\s+/g," ").trim();

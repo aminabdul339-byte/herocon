@@ -17,12 +17,12 @@ export default function ProductCard({product,eager=false,titleOverride,hrefOverr
  const title=titleOverride||cleanTitle(product),price=priceOverride??productPrice(product);
  const destination=hrefOverride||"/product/"+encodeURIComponent(id);
  const personal=Boolean(hrefOverride?.startsWith("/shop-for-yourself/"));
- const priceLabel=priceNoteOverride||(personal?"Reference price":"Wholesale reference price");
+ const priceLabel=/^£\s*\d|^¥\s*\d/.test(price)?(priceNoteOverride||(personal?"Reference price":"Wholesale reference price")):"Check price with supplier";
  const hasSavedDetails=product.hasPartnerDetails===true;
  return <article className="hc-product-card hc-refined-card">
   <div className="hc-image-wrap">
    <Link prefetch={false} className="hc-card-photo-link" href={destination} aria-label={"View "+title}>{images[imageIndex]?<img src={images[imageIndex]} alt={title} loading={eager?"eager":"lazy"} fetchPriority={eager?"high":"auto"} decoding="async" referrerPolicy="no-referrer" onError={()=>setImageIndex(current=>current+1)}/>:<div className="hc-image-missing">Product image unavailable<br/>View product details</div>}</Link>
   </div>
-  <div className="hc-card-info"><h3 title={product.title}><Link prefetch={false} className="hc-card-title-link" href={destination}>{title}</Link></h3><strong className="hc-price">{price}</strong><span className="hc-price-note">{priceLabel}</span><div className="hc-card-supplier-status">{hasSavedDetails?<><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="m6.5 10 2.3 2.4 4.8-5"/></svg><span>Supplier details available</span></>:<span>Marketplace listing available</span>}</div><div className="hc-card-bottom"><Link prefetch={false} href={destination}>Explore product <ArrowIcon direction="right"/></Link></div></div>
+  <div className="hc-card-info"><h3 title={product.title}><Link prefetch={false} className="hc-card-title-link" href={destination}>{title}</Link></h3><strong className="hc-price">{price}</strong><span className="hc-price-note">{priceLabel}</span><div className="hc-card-supplier-status">{hasSavedDetails?<><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="m6.5 10 2.3 2.4 4.8-5"/></svg><span>Supplier details available</span></>:<span>Supplier details pending</span>}</div><div className="hc-card-bottom"><Link prefetch={false} href={destination}>Explore product <ArrowIcon direction="right"/></Link></div></div>
  </article>;
 }

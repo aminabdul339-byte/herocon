@@ -57,7 +57,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const totalUnits=selectedRows.reduce((sum,v)=>sum+(quantities[v.skuCode]||0),0);
  const subtotal=selectedRows.reduce((sum,v)=>sum+(v.price||0)*(quantities[v.skuCode]||0),0);
  const hasUnknownPrice=selectedRows.some(v=>v.price==null);
- const minOrder=Math.max(1,source?.moq||1);
+ const minOrder=source?.moq!=null&&source.moq>0?source.moq:null;
  const matchingSkus=source?.variants.filter(v=>!skuSearch.trim()||
    (v.title+" "+v.skuCode+" "+v.options.map(o=>o.name+" "+o.value).join(" ")).toLocaleLowerCase().includes(skuSearch.trim().toLocaleLowerCase()))||[];
  const visibleSkus=matchingSkus.slice(0,visibleSkuCount);
@@ -190,7 +190,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <p className="eyebrow">{product.category||"Product details"}</p>
     <h1>{title}</h1>
     <div className="product-price">{priceLabel}</div>
-    <p className="sc-source-subprice">{wholesale?"Wholesale reference price":"Reference price"} · {priceLabel.includes("¥")?"CNY":"GBP"} · Delivery separate</p>
+    <p className="sc-source-subprice">{wholesale?"Wholesale reference price":"Reference price"} · {priceLabel.includes("¥")?"CNY · ":priceLabel.includes("£")?"GBP · ":""}Delivery separate</p>
     <div className="hc-product-quick-facts">
      <span className="hc-product-source-status">{source?"Supplier details available":"Marketplace listing available"}</span>
      {source?.moq!=null&&<span>Minimum order: {source.moq} units</span>}
@@ -238,7 +238,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
        onClick={()=>setVisibleSkuCount(n=>n+12)}>
        Show more options ({matchingSkus.length-visibleSkuCount} remaining) <ArrowIcon direction="down"/>
       </button>}
-      {selectedRows.length>0&&<div className="sc-sku-summary"><div><strong>{totalUnits} selected</strong><span>{totalUnits<minOrder?"Seller minimum: "+minOrder+" units":"Seller minimum met"}</span></div><div><strong>{hasUnknownPrice?"Price on request":dualPrice(subtotal)}</strong><span>Product subtotal</span></div></div>}
+      {selectedRows.length>0&&<div className="sc-sku-summary"><div><strong>{totalUnits} selected</strong><span>{minOrder==null?"Minimum order not recorded":totalUnits<minOrder?"Seller minimum: "+minOrder+" units":"Seller minimum met"}</span></div><div><strong>{hasUnknownPrice?"Price on request":dualPrice(subtotal)}</strong><span>Product subtotal</span></div></div>}
     </div>:<>
       <Selector label="COLOUR" value={colour} items={colours} set={value=>{setColour(value);setCartMessage("");}}/>
       <Selector label="SIZE" value={size} items={sizes} set={value=>{setSize(value);setCartMessage("");}}/>
