@@ -42,3 +42,5 @@
 .hc-site .hc-center-nav{width:100%;box-sizing:border-box;max-width:none}
 .hc-site .hc-center-settings{display:none}
 @media(max-width:650px){.hc-site .hc-center-navwrap,.hc-site .hc-center-body,.hc-site .hc-cart-page > :is(.hc-cart-hero,.hc-cart-wrap){width:calc(100% - 28px)}.hc-site .hc-center-navwrap{margin-top:14px}}
+
+.hc-site .hc-center-test-exit{font-size:12px;text-align:right;margin:0 0 8px}.hc-site .hc-center-test-exit a{color:#536e59;text-decoration:underline;text-underline-offset:3px}
