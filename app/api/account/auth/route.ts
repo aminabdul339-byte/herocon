@@ -31,7 +31,9 @@ export async function POST(request:Request){
  const email=typeof data.email==="string"?data.email.trim().toLowerCase():"";
  const password=typeof data.password==="string"?data.password:"";
  if(email.length<5||email.length>150||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return reply({error:"Please enter a valid email address."},400);
- if((mode==="signup"||mode==="login")&&(password.length<12||password.length>128))return reply({error:"Use a password of at least 12 characters."},400);
+ if(mode==="signup"&&(password.length<8||password.length>128))return reply({error:"Use a password between 8 and 128 characters."},400);
+ if(mode==="signup"&&password!==data.confirmPassword)return reply({error:"Passwords do not match."},400);
+ if(mode==="login"&&(!password||password.length>128))return reply({error:"Enter your password."},400);
  try{
   if(mode==="resend"){await authApi("/resend?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{type:"signup",email});return reply({ok:true,message:"Verification email requested. Check your inbox and spam folder."});}
   if(mode==="verify"){const code=typeof data.code==="string"?data.code:"";if(!/^\d{6,10}$/.test(code))return reply({error:"Enter a valid verification code."},400);const session=await authApi("/verify",{email,token:code,type:"signup"});if(!session.access_token||!session.user?.email_confirmed_at)return reply({error:"Email verification failed."},403);const response=reply({ok:true,authenticated:true});setCustomerCookies(response,session);return response;}
