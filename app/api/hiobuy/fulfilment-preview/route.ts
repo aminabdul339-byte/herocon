@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {currentCustomer,accountOriginValid} from "@/lib/customer-auth";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
-import {connectionStatus,parseProduct,quoteProduct,HioError} from "@/lib/hiobuy-fulfilment";
+import {connectionStatus,parseProduct,quoteProduct,quoteCart,HioError} from "@/lib/hiobuy-fulfilment";
 export const dynamic="force-dynamic";
 export const runtime="nodejs";
 export const maxDuration=60;
@@ -13,10 +13,11 @@ export async function POST(request:Request){
  if(Date.now()-windowStart>60000){windowStart=Date.now();requests=0;}
  if(++requests>12)return reply({error:"RATE_LIMIT"},429);
  try{
-  const raw=await request.text();if(raw.length>3000)return reply({error:"REQUEST_TOO_LARGE"},413);
+  const raw=await request.text();if(raw.length>8000)return reply({error:"REQUEST_TOO_LARGE"},413);
   const d=JSON.parse(raw);
   if(d.action==="connection")return reply(await connectionStatus());
   if(d.action==="parse")return reply(await parseProduct(d.url));
+  if(d.action==="quote-cart")return reply(await quoteCart(d.lines));
   if(d.action==="quote")return reply(await quoteProduct(d.url,d.sku,d.quantity));
   return reply({error:"UNSUPPORTED_ACTION"},400);
  }catch(e){return reply({error:e instanceof HioError?e.code:"PROVIDER_CHECK_FAILED"},e instanceof HioError&&e.status>=400&&e.status<600?e.status:503);}
