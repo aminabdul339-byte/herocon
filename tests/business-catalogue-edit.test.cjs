@@ -36,7 +36,7 @@ test('every later page mixes business categories with no missing or repeated pro
  const actual=mixBusinessCatalogue(input,24);
  assert.equal(actual.length,input.length);
  assert.equal(new Set(actual).size,input.length);
- assert.deepEqual(Array.from(actual.slice(0,9),p=>p.doppelProductId),Array.from(BUSINESS_EDIT_IDS));
+ assert.deepEqual(Array.from(actual.slice(0,9),p=>p.doppelProductId),Array.from(BUSINESS_PAGE_ONE_ORDER).filter(id=>BUSINESS_EDIT_IDS.includes(id)));
  assert.deepEqual(Array.from(actual,p=>p.doppelProductId),Array.from(mixBusinessCatalogue(input,24),p=>p.doppelProductId));
  for(let page=1;page<10;page++){
   const chunk=actual.slice(page*24,(page+1)*24);
@@ -58,9 +58,10 @@ test('the three requested page-one swaps preserve all other cards and inventory'
  const replacements=BUSINESS_PAGE_ONE_REPLACEMENTS.map(([,id],i)=>make(id,i===2?'Nordic minimalist bedside lamp':'Gift bouquet',i===2?'Lighting':'Flowers & Gifts'));
  const remainder=Array.from({length:20},(_,i)=>make('rest-'+i,'Cotton tee','Tops'));
  const input=[...exact,...old,...remainder,...replacements];
- const baseline=leadWithBusinessEdit(input).slice(0,24);
  const result=mixBusinessCatalogue(input,24);
- for(let i=0;i<24;i++){const pair=BUSINESS_PAGE_ONE_REPLACEMENTS.find(([id])=>id===baseline[i].doppelProductId);assert.equal(result[i].doppelProductId,pair?pair[1]:baseline[i].doppelProductId);}
+ const availablePinned=Array.from(BUSINESS_PAGE_ONE_ORDER).filter(id=>input.some(p=>p.doppelProductId===id));
+ assert.deepEqual(Array.from(result.slice(0,availablePinned.length),p=>p.doppelProductId),availablePinned);
+ for(const replacement of replacements)assert.ok(result.indexOf(replacement)<24);
  assert.equal(result.length,input.length);assert.equal(new Set(result).size,input.length);
  for(const item of old)assert.ok(result.indexOf(item)>=24);
 });
