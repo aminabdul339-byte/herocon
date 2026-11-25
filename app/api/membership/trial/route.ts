@@ -43,8 +43,15 @@ export async function POST(req:Request){
     if(!emailValid(email)||typeof d.code!=="string"||!/^\d{6,10}$/.test(d.code))return reply({error:"Enter a valid email and verification code."},400);
     session=await authApi("/verify",{email,token:d.code,type:"email"});
    }
-   if(!session.access_token||!await verifyCustomerAccess(session.access_token))return reply({error:"Email verification failed."},403);
-   const response=reply({ok:true});setCustomerCookies(response,session);response.cookies.set(COOKIE,"",{...opts,maxAge:0});return response;
+   const customer=session.access_token?await verifyCustomerAccess(session.access_token):null;
+   if(!customer)return reply({error:"Email verification failed."},403);
+   // Email verification and explicit trial consent activate the entitlement.
+   let active=false,trialError:string|undefined;
+   if(d.acceptedTerms===true||d.action==="exchange"){
+    try{const existing=await membershipEntitlement(customer);if(existing.premium){active=true;}else{const trial=await startPremiumTrial(customer);const confirmed=await readPremiumTrial(customer);active=trialActive(confirmed)&&confirmed?.endsAt===trial.endsAt;}}
+    catch{trialError="Email verified. Trial activation could not be confirmed; please retry activation.";}
+   }
+   const response=reply({ok:true,active,trialError});setCustomerCookies(response,session);response.cookies.set(COOKIE,"",{...opts,maxAge:0});return response;
   }
   if(d.action==="start"){
    if(d.acceptedTerms!==true)return reply({error:"Accept the trial terms first."},400);
@@ -52,7 +59,9 @@ export async function POST(req:Request){
    const entitlement=await membershipEntitlement(u);
    if(entitlement.premium&&!entitlement.trialEndsAt)return reply({error:"You already have Premium access."},409);
    const trial=await startPremiumTrial(u);
-   return reply({trial,active:trialActive(trial)});
+   const confirmed=await readPremiumTrial(u);
+   if(!confirmed||confirmed.endsAt!==trial.endsAt)return reply({error:"Trial activation could not be confirmed. Please retry."},503);
+   return reply({trial:confirmed,active:trialActive(confirmed)});
   }
   return reply({error:"Unknown action."},400);
  }catch(e){const failure=publicEmailError(e,flow);return reply({error:failure.error},failure.status);}

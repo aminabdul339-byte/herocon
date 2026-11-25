@@ -51,6 +51,7 @@ function MembershipGate(){
   }catch(e){setError(e instanceof Error?e.message:"Unable to open Stripe Billing.");setWorking(false);}
  }
  const active=Boolean(membership.membershipActive||membership.testMembershipActive);
+ const trialActive=!!account.trialEndsAt&&Date.parse(account.trialEndsAt)>Date.now();
  const isTest=membership.mode==="test";
  const through=membership.renewalAt?new Date(membership.renewalAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):null;
  const owner=Boolean(membership.complimentaryOwnerPremium);
@@ -78,7 +79,7 @@ function MembershipGate(){
       <Link className="hc-billing-action hc-billing-primary" href="/search">Browse the catalogue <ArrowIcon direction="right"/></Link>
       {button("Manage billing or cancel","portal",false)}
      </>:<>
-      <Link className="hc-billing-action" href="/membership/trial">Try 3 days free with email <ArrowIcon direction="right"/></Link><ul className="hc-billing-benefits">{["Full Herocon catalogue","Catalogue keyword search","Saved marketplace link lookup"].map(label=><li key={label}><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>{label}</li>)}</ul>
+      {trialActive?<Link className="hc-billing-action" href="/membership/trial">View your active free trial <ArrowIcon direction="right"/></Link>:<Link className="hc-billing-action" href="/membership/trial">Try 3 days free with email <ArrowIcon direction="right"/></Link>}<ul className="hc-billing-benefits">{["Full Herocon catalogue","Catalogue keyword search","Saved marketplace link lookup"].map(label=><li key={label}><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>{label}</li>)}</ul>
       <p className="hc-billing-rollout"><strong>In rollout</strong> Live marketplace search, product purchasing and international shipping are not yet available to public customers. Product and delivery charges will be separate.</p>
       {membership.ownerLiveTest&&<p className="hc-billing-warning">Owner-only live billing test: £9.99 is charged now and renews monthly until cancelled. Product ordering and shipping are not enabled.</p>}
       {membership.billingReady&&membership.canSubscribe?<>
