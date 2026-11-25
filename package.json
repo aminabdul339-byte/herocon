@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "prebuild": "node scripts/check-no-emojis.mjs"
+    "prebuild": "node scripts/check-no-emojis.mjs && npm run test:account",
+    "test:account": "node --experimental-strip-types --test tests/shopping-account.test.cjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.9.0",

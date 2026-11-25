@@ -2,7 +2,7 @@ import "server-only";
 import {get,put,list} from "@vercel/blob";
 import {createHash,randomUUID} from "node:crypto";
 import {nextStage,notices,type Stage} from "@/lib/hiobuy-test-lifecycle";
-export type Line={title:string;variant:string;quantity:number;priceFen:number;sourceUrl:string;productId:string;skuId:string;channel:string};
+export type Line={title:string;variant:string;quantity:number;priceFen:number;sourceUrl:string;productId:string;skuId:string;channel:string;image?:string;productPath?:string};
 export type TestOrder={id:string;createdAt:string;lines:Line[];productFen:number;shippingFen:number|null;stage:Stage;events:{stage:Exclude<Stage,"draft">;at:string;subject:string;body:string}[];quoteMode:"provider_preview"|"simulation";shippingMode:"provider_estimate"|"simulation"|null;version:1;mode:"simulation"};
 const prefix=(owner:string)=>"owner-tests/orders/v1/"+createHash("sha256").update(owner).digest("hex")+"/";
 const valid=(id:string)=>/^HC-TEST-[A-F0-9]{24}$/.test(id);
