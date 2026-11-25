@@ -1,0 +1,6 @@
+const test=require("node:test"),assert=require("node:assert/strict");const {domesticFromProduct,freightSummary,productPayment}=require("../lib/cart-pricing.ts");
+const line=(url,fee,quantity=1)=>({marketplaceUrl:url,domesticFreightCny:fee,quantity,unitPrice:10,currency:"CNY"});
+test("product freight is yuan, zero is valid, unknown is not zero",()=>{assert.equal(domesticFromProduct({shipping:{domestic_shipping_fee:{currency:"CNY",amount:5}}}),5);assert.equal(domesticFromProduct({shipping:{domestic_shipping_fee:{currency:"CNY",amount:0}}}),0);assert.equal(domesticFromProduct({shipping:{domestic_shipping_fee:{currency:"USD",amount:5}}}),null);assert.equal(domesticFromProduct({shipping:{weight_kg:1}}),null);});
+test("same listing freight only once, selected listings add independently",()=>{assert.deepEqual(freightSummary([line("a",5,3),line("a",5),line("b",7)]),{knownFen:1200,unknown:0,complete:true});});
+test("missing and conflicting freight never becomes a complete total",()=>{assert.equal(freightSummary([line("a",null)]).complete,false);assert.equal(freightSummary([line("a",4),line("a",5)]).complete,false);assert.equal(freightSummary([line("a",0)]).complete,true);});
+test("7 percent applies to goods only, domestic included once",()=>{assert.deepEqual(productPayment(2000,200),{goodsMinor:2000,domesticMinor:200,feeMinor:140,totalMinor:2340});});

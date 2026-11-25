@@ -3,6 +3,7 @@ import {accountOriginValid,currentCustomer} from "@/lib/customer-auth";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {createTestOrder,advanceTestOrder,listTestOrders,type Line,type TestOrder} from "@/lib/owner-test-order";
+import {productPayment} from "@/lib/cart-pricing";
 import {safeImage} from "@/lib/shopping-account-model";
 import {stages,type Stage} from "@/lib/hiobuy-test-lifecycle";
 export const runtime="nodejs";export const dynamic="force-dynamic";export const maxDuration=60;
@@ -17,9 +18,29 @@ function lines(value:unknown):Line[]{if(!Array.isArray(value)||value.length<1||v
 export async function GET(){const user=await currentCustomer();if(!user||!isOwnerPremiumCustomer(user))return reply({error:"Owner access required."},403);try{return reply({orders:await listTestOrders(user.id)});}catch{return reply({error:"Order storage unavailable."},503);}}
 export async function POST(req:Request){const user=await currentCustomer();if(!user||!accountOriginValid(req)||!isOwnerPremiumCustomer(user))return reply({error:"Owner access required."},403);let input:Record<string,unknown>;try{const raw=await req.text();if(raw.length>16000)return reply({error:"Request too large."},413);input=obj(JSON.parse(raw));}catch{return reply({error:"Invalid request."},400);}
  try{
-  if(input.action==="preview"){const item=lines(input.lines);if(item.some(x=>x.channel!=="1688"||!x.productId||!x.skuId))throw Error("Select verified 1688 variants first.");const results=[];for(const l of item){const data=await api("/v1/orders/preview",{channel:"1688",flow:"general",language:"en",receiver:warehouse,lines:[{id:l.productId,spec_id:l.skuId,quantity:l.quantity}]});const root=obj(data.data||data.result||data);const payment=amount(obj(root.total).payment);results.push({title:l.title,paymentFen:payment,requestId:str(data.request_id,100),data:root});}return reply({results,totalFen:results.every(x=>x.paymentFen!==null)?results.reduce((n,x)=>n+(x.paymentFen||0),0):null});}
+  if(input.action==="preview"){
+   const item=lines(input.lines);if(item.some(x=>x.channel!=="1688"||!x.productId||!x.skuId))throw Error("Select verified 1688 variants first.");
+   // Group variants of the same listing. Separate listings are previewed separately
+   // until verified seller grouping is wired for the production checkout.
+   const groups=new Map<string,Line[]>();for(const l of item){const k=l.sourceUrl;const g=groups.get(k)||[];if(g.some(x=>x.productId!==l.productId))throw Error("Conflicting product identifiers.");g.push(l);groups.set(k,g);}
+   const results:{title:string;paymentFen:number|null;goodsFen:number|null;domesticFen:number|null;requestId:string;data:unknown}[]=[];
+   for(const group of groups.values()){
+    const data=await api("/v1/orders/preview",{channel:"1688",flow:"general",language:"en",receiver:warehouse,lines:group.map(l=>({id:l.productId,spec_id:l.skuId,quantity:l.quantity}))});
+    const root=obj(data.data||data.result||data),t=obj(root.total),payment=amount(t.payment),domestic=amount(t.shipping),merchandise=amount(t.merchandise);
+    const expectedGoods=group.reduce((n,l)=>n+l.priceFen*l.quantity,0);
+    // If the preview doesn't explicitly identify merchandise, accept only the
+    // selected SKU subtotal when the provider total exactly reconciles to it
+    // plus domestic shipping (no unknown fee or discount).
+    const goods=merchandise!==null?merchandise:payment!==null&&domestic!==null&&payment===expectedGoods+domestic?expectedGoods:null;
+    if(root.success!==true||(Array.isArray(root.unavailable_lines)&&root.unavailable_lines.length))throw Error("Supplier preview contains unavailable items.");
+    results.push({title:group[0].title,paymentFen:payment,goodsFen:goods,domesticFen:domestic,requestId:str(data.request_id,100),data:root});
+   }
+   const complete=results.every(x=>x.goodsFen!==null&&x.domesticFen!==null&&x.paymentFen!==null);
+   const breakdown=complete?productPayment(results.reduce((n,x)=>n+x.goodsFen!,0),results.reduce((n,x)=>n+x.domesticFen!,0)):null;
+   return reply({results,breakdown,totalFen:breakdown?.totalMinor??null});
+  }
   if(input.action==="shipping"){const weight=num(input.weight);if(weight===null||weight<1||weight>30)throw Error("Enter a test parcel weight between 1 and 30 kg.");const data=await api("/v1/fulfillment/shipping/quotes",{destination:{country_code:"GB"},weight_kg:weight,attributes:["GENERAL"],services:{channel:[]}});const root=obj(data.data||data);const quotes=Array.isArray(root.quotes)?root.quotes:[];return reply({quotes:quotes.map(v=>{const x=obj(v),channel=obj(x.channel);return {name:str(channel.name)||str(channel.code),code:str(channel.code),status:str(x.quote_status),available:x.available===true,totalFen:amount(x.total)};}).filter(x=>x.available&&x.status==="COMPLETE"&&x.totalFen!==null),requestId:str(data.request_id,100)});}
-  if(input.action==="pay"){const selected=lines(input.lines);const total=num(input.totalFen);if(total===null||!Number.isSafeInteger(total)||total<1||total>100000000)throw Error("Invalid simulated total.");return reply({order:await createTestOrder(user.id,selected,total,input.quoteMode==="provider_preview"?"provider_preview":"simulation",str(input.attempt,50))});}
+  if(input.action==="pay"){const selected=lines(input.lines);const total=num(input.totalFen);if(total===null||!Number.isSafeInteger(total)||total<1||total>100000000)throw Error("Invalid simulated total.");const b=obj(input.breakdown),goods=num(b.goodsMinor),domestic=num(b.domesticMinor);if(goods===null||domestic===null)throw Error("Missing product and domestic delivery breakdown.");const breakdown=productPayment(goods,domestic);if(breakdown.totalMinor!==total||breakdown.feeMinor!==b.feeMinor)throw Error("Simulated total does not match the 7% fee and freight breakdown.");return reply({order:await createTestOrder(user.id,selected,total,input.quoteMode==="provider_preview"?"provider_preview":"simulation",str(input.attempt,50),breakdown)});}
   if(input.action==="advance"){const expected=str(input.expected) as Stage;if(!stages.includes(expected))throw Error("Invalid status.");const shippingMode:TestOrder["shippingMode"]=input.shippingMode==="provider_estimate"?"provider_estimate":"simulation";return reply({order:await advanceTestOrder(user.id,str(input.id,60),expected,num(input.shippingFen),shippingMode)});}
   return reply({error:"Unsupported action."},400);
  }catch(e){return reply({error:e instanceof Error?e.message:"Test request failed."},400);}

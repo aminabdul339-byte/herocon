@@ -19,7 +19,7 @@ function importLegacy(state:AccountState,legacy:TestOrder[]):AccountState{
  const stage=o.stage,parcelId="P-"+o.id,packed=["packing","shipping_due","shipping_paid","shipped","delivered"].includes(stage),paid=["shipping_paid","shipped","delivered"].includes(stage);
  const status:AccountItem["status"]=paid?"parcel":packed?"reserved":stage==="warehouse_received"?"warehouse":stage==="purchased"?"incoming":"purchased";
  const items:AccountItem[]=o.lines.map((l,i)=>({id:o.id+"-"+i,orderId:o.id,title:l.title,variant:l.variant,quantity:l.quantity,unitMinor:l.priceFen,currency:"CNY",image:safeImage(l.image),productPath:l.productPath,status,...(packed?{parcelId}:{})}));
- state.orders.push({id:o.id,createdAt:o.createdAt,amountMinor:o.productFen,currency:"CNY",itemIds:items.map(i=>i.id)});state.items.push(...items);
+ state.orders.push({id:o.id,createdAt:o.createdAt,amountMinor:o.productFen,currency:"CNY",itemIds:items.map(i=>i.id),feeMinor:o.breakdown?.feeMinor,domesticMinor:o.breakdown?.domesticMinor});state.items.push(...items);
  if(packed)state.parcels.push({id:parcelId,createdAt:o.createdAt,itemIds:items.map(i=>i.id),status:stage as Parcel["status"],currency:"CNY",...(o.shippingFen!==null?{shippingMinor:o.shippingFen}:{}),...(stage==="shipped"||stage==="delivered"?{tracking:"TEST-"+o.id.slice(-8)}:{})});
  for(const e of o.events)state.updates.push({id:o.id+"-"+e.stage,at:e.at,reference:o.id,text:e.subject});
  }
