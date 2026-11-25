@@ -189,12 +189,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <p className="eyebrow">{product.category||"Product details"}</p>
     <h1>{title}</h1>
     <div className="product-price">{priceLabel}</div>
-    <p className="sc-source-subprice">{wholesale?"Wholesale reference price":"Reference price"} · {priceLabel.includes("¥")?"CNY · ":priceLabel.includes("£")?"GBP · ":""}Delivery separate</p>
-    <div className="hc-product-quick-facts">
-     <span className="hc-product-source-status">{source?"Supplier details available":"Marketplace listing available"}</span>
-     {source?.moq!=null&&<span>Minimum order: {source.moq} units</span>}
-     {source?.available===false&&<span>Currently unavailable</span>}
-    </div>
+    {source?.available===false&&<p className="hc-source-unverified" role="status">Currently unavailable</p>}
     <div className="hc-seller-row">
      <span className="supplier-title">{product.sourceMarketplace||source?.marketplace||"Marketplace"}{sellerName?" · "+sellerName:""}</span>
      {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Original listing <ExternalArrowIcon/></a>}
