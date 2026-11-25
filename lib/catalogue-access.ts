@@ -6,7 +6,7 @@ import {getProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
 import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
-import {freeBusinessEdit,rankBusinessCategory} from "@/lib/business-catalogue-edit";
+import {freeBusinessEdit,rankBusinessCategory,earlyBusinessEdit} from "@/lib/business-catalogue-edit";
 import {prioritizeJewelleryDiscovery} from "@/lib/jewellery-discovery-order";
 import {prioritizeHairDiscovery} from "@/lib/hair-discovery-order";
 import {mixPersonalEdit} from "@/lib/personal-shop-edit";
@@ -14,7 +14,7 @@ import {FREE_COLLECTION_LIMIT,featuredPreviewIds,BUSINESS_CATEGORY_LIMIT,PERSONA
 export const catalogueAccess=cache(async()=>{const customer=await currentCustomer();return {customer,premium:customer?await checkActiveMembership(customer):false};});
 export const businessPreview=cache(async()=>freeBusinessEdit(await getProducts(),FREE_COLLECTION_LIMIT));
 export const businessCategoryPreview=cache(async(name:string)=>{
- const all=(await getProducts()).filter(p=>p.category===name);const ranked=rankBusinessCategory(all);
+ const full=await getProducts();const all=full.filter(p=>p.category===name);const preferred=earlyBusinessEdit(full).filter(p=>p.category===name);const ranked=[...new Map([...preferred,...rankBusinessCategory(all)].map(p=>[productId(p),p])).values()];
  return (name==="Jewellery"?prioritizeJewelleryDiscovery(ranked):name==="Wigs & Hair Extensions"?prioritizeHairDiscovery(ranked):ranked).slice(0,BUSINESS_CATEGORY_LIMIT);
 });
 export const accessibleBusinessProducts=cache(async()=>{const all=await getProducts();if((await catalogueAccess()).premium)return all;

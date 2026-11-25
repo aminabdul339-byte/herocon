@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import "./membership-plans.css";
-const free=["2 catalogue pages and 2 rows per category","Original marketplace links","Shopping account and cart","One free marketplace link lookup"];
+const free=["2 catalogue pages and 3 rows per category","Original marketplace links","Shopping account and cart","One free marketplace link lookup"];
 const premium=["Full Herocon catalogue","Catalogue keyword search","Saved product link lookup"];
 const upcoming=["Live marketplace search by link, keyword or image","Herocon purchasing and warehouse delivery"];
 function Mark(){return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>;}

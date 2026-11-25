@@ -1,4 +1,4 @@
-import {accessibleBusinessProducts} from "@/lib/catalogue-access";
+import {catalogueAccess,accessibleBusinessProducts} from "@/lib/catalogue-access";
 import {PremiumNotice} from "@/components/MembershipPlans";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
@@ -24,12 +24,12 @@ const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
 
 export default async function ProductPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
- const products=await accessibleBusinessProducts();
+ const [products,access]=await Promise.all([accessibleBusinessProducts(),catalogueAccess()]);
  const found=products.find(x=>productId(x)===id||x.canonicalId===id);
  if(!found){const exists=(await getProducts()).some(x=>productId(x)===id||x.canonicalId===id);if(!exists)notFound();return <main><Header/><section className="hc-plan-locked"><h1>This product is in the Premium catalogue.</h1><PremiumNotice/></section></main>;}
  const product={...found,originalTitle:found.originalTitle||found.title};
- const more=products.filter(x=>product.sellerId&&x.sellerId===product.sellerId&&productId(x)!==id).slice(0,8);
- const similar=related(products,product,8);
+ const more=access.premium?products.filter(x=>product.sellerId&&x.sellerId===product.sellerId&&productId(x)!==id).slice(0,8):[];
+ const similar=access.premium?related(products,product,8):[];
  const customer=await currentCustomer();
  const trialOwnerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
   ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();
@@ -49,9 +49,9 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
   <Suspense key={id} fallback={<ProductLoadingSkeleton/>}>
    <EnrichedCatalogueProduct {...common}/>
   </Suspense>
-  {product.sellerId&&<Link className="seller-strip" href={"/seller/"+encodeURIComponent(product.sellerId)}><span><small>SELLER</small><b>{product.sellerName}</b></span><span>Explore all products <ArrowIcon direction="right"/></span></Link>}
+  {access.premium&&product.sellerId&&<Link className="seller-strip" href={"/seller/"+encodeURIComponent(product.sellerId)}><span><small>SELLER</small><b>{product.sellerName}</b></span><span>Explore all products <ArrowIcon direction="right"/></span></Link>}
   {more.length>0&&<ProductSection eyebrow="THE SELLER EDIT" title={"More from "+product.sellerName+"."} products={more}/>}
-  <ProductSection eyebrow="CHOSEN FOR YOU" title="You may also like." products={similar} alt/>
+  {access.premium&&similar.length>0&&<ProductSection eyebrow="CHOSEN FOR YOU" title="You may also like." products={similar} alt/>}
  </main>;
 }
 

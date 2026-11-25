@@ -161,25 +161,33 @@ export function mixBusinessCatalogue(products:Product[],pageSize=24):Product[]{
  return result;
 }
 
-/** Free edit: exact founder page one, then high-ranked clear products across
- * categories, without re-running the mixed catalogue algorithm on a subset. */
-export function freeBusinessEdit(products:Product[],limit=48):Product[]{
- const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>products.find(p=>idOf(p)===id&&hasPhotoAndSource(p))).filter((p):p is Product=>!!p);
- const used=new Set(pinned);
- const pools=new Map<string,Product[]>();
- for(const p of products){if(used.has(p)||!hasPhotoAndSource(p))continue;const cat=p.category||"Other";const g=pools.get(cat)||[];g.push(p);pools.set(cat,g);}
- for(const g of pools.values())g.sort((a,b)=>opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));
- const groups=[...pools.entries()].sort(([a],[b])=>(opportunityWeights[b]||1)-(opportunityWeights[a]||1)||a.localeCompare(b)).map(([,g])=>g);
- const result=[...pinned];
- for(let i=0;result.length<limit&&groups.some(g=>g[i]);i++)for(const g of groups){if(g[i]&&result.length<limit)result.push(g[i]);}
- return result.slice(0,limit);
-}
-export function rankBusinessCategory(products:Product[]):Product[]{return [...products].sort((a,b)=>opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));}
 
-/** Premium browsing retains the founder's opening edit and then the actual
- * catalogue order. The free preview ranking never rearranges the paid tail. */
+/** Founder opening page, followed by a fixed editorial selection of actual
+ * lighting, decor, nails and dresses. Remaining stock stays in source order. */
+const EARLY_EDIT_POOLS=[
+ ["plEADg5tY2SQnsioXDDLqQ","-lHyokdWTdf0lo-778q2bw","Q-_0AVEeZNjoVHa4oupHtQ","EHrGApvMkFKA-24TboADpg","2sRygZlsZktTv91d11BSEg","6rk_jRljZWLV7dGiXWsAlQ","bn1Us9qNfamP8IU8uuLfKA","xAhXGV47t0tKvYp_npfE3w","8Y7hLNIrshCSBYg9zPNA9w","5xO_jqq7i6gxJ8RUrOw2tQ","fNMtEbVvMdpGRe6m15ZZLQ","SPDLe121F9jR3sTdgoig9Q","yHCNywX_oSxQbGxs-i1Ejw"],
+ ["4QucBqTfsk76WbDuGGzyBA","RbYT4P62F8aghciU32UFCw","-pKMxTapzPLSSQTrwCL9Dw","lmjNIBGoyaG7ZIY3GdxISA","-4R8jqSD1DY_xlgHS18_SQ","gRI0o79a-NBSymtpE7Q3aw","92FsImSS8_sQwZFpjpaSog","NQeS4yMU3r-aoJHAdXaTsg","_-ET_BpAjFe9GkM4uSiP-Q","8L5119Y5oUO0MLVrT_w9Uw","PEEo8NfzaiCPsg4kzh6xIw","ZmTfvYAxCMfM5MsT_cf2AQ","7AYxx1SBT3l2by0GayVgfg"],
+ ["NbpVbwcbrjQX6zrR7-gCFQ","NQTel5-g_doG6HVDfvr_Sw","ViXrIhmbRItdJyn5HvRdKw","OSKicXXxZOCP-pM2rJl8kA","z7wnBKL8mg9FLzTfNd2spQ","kaO0lDqko8-25Yv_Pr2Xvw","ecOvVgnSnu52w7vFjdx34A","FTZ4dbzvU0E-yBFNFGw9RA","ZRr0gqR3E-bAxyDXUq22cQ"],
+ ["9INdeLafB9k1-hQe64qDQQ","-bDZqh8dSeT9b6vY9zjXjA","vJtYi14nMR62yqezXS7fsQ","QqzffRjiMyNKs9xZlSrm9Q","uFDbKZijVUDgHrOfWAiD9Q","zmcFLXhlnDI9AyHB3zO8LA","8t3fo9eRc1lLdPqNSasQ2w","iSd8W-jAr4Kgh8zBVRM_aA","MuTlXrJFmtjTpNn_jG43EA","QdCtw6poCdD0NO2yL9QT-Q","KurflWaxYSEuQ9uRWMu21w","uwqqCs2w2PjPlrhfbQx_jQ","vRcO1sSD1KEnReFBtWVqtw","5_DfqyLHaIdpl2UMbzvDyg","YjXAnN1cosMO1iGVWJw5FA"]
+] as const;
+const earlyCategories=["Lighting","Home & Decor","Nails & Nail Supplies","Dresses"];
+const lowLevel=/\b(?:cosplay|spoof mask|3d headgear|baseball bat|fishhook embroidery|hello kitty|skull|skeleton|novelty|cartoon|blind box|replica)\b/i;
+const suitable=(p:Product)=>hasPhotoAndSource(p)&&!lowLevel.test(named(p));
+export function rankBusinessCategory(products:Product[]):Product[]{return [...products].sort((a,b)=>Number(suitable(b))-Number(suitable(a))||opportunityScore(b)-opportunityScore(a)||stableKey(a).localeCompare(stableKey(b)));}
+export function earlyBusinessEdit(products:Product[]):Product[]{
+ const byId=new Map(products.map(p=>[idOf(p),p]));
+ const chosen=new Set<Product>(),photos=new Set<string>(),result:Product[]=[];
+ const add=(p:Product|undefined,uniquePhoto=true)=>{if(!p||chosen.has(p)||!suitable(p))return;const photo=p.imageUrl!.split("?")[0];if(uniquePhoto&&photos.has(photo))return;chosen.add(p);photos.add(photo);result.push(p);};
+ // Preserve the user's exact first-page selection (even where photos repeat).
+ for(const id of BUSINESS_PAGE_ONE_ORDER)add(byId.get(id),false);
+ const pools=EARLY_EDIT_POOLS.map((ids,i)=>[...ids.map(id=>byId.get(id)).filter((p):p is Product=>!!p),...rankBusinessCategory(products.filter(p=>p.category===earlyCategories[i]))]);
+ for(let i=0;result.length<72&&pools.some(g=>i<g.length);i++)for(const g of pools){if(result.length<72)add(g[i]);}
+ // In a depleted catalogue, fill with suitable photographed products only.
+ for(const p of rankBusinessCategory(products)){if(result.length>=72)break;add(p);}
+ return result;
+}
+export function freeBusinessEdit(products:Product[],limit=48):Product[]{return earlyBusinessEdit(products).slice(0,limit);}
 export function preserveBusinessOrder(products:Product[]):Product[]{
- const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>products.find(p=>idOf(p)===id&&hasPhotoAndSource(p))).filter((p):p is Product=>!!p);
- const selected=new Set(pinned);
- return [...pinned,...products.filter(p=>!selected.has(p))];
+ const lead=earlyBusinessEdit(products),selected=new Set(lead);
+ return [...lead,...products.filter(p=>!selected.has(p))];
 }

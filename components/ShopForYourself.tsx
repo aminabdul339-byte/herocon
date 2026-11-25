@@ -99,12 +99,12 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
   {shown.length?
     <div className={"hc-self-grid hc-personal-grid"+(!premium&&limitedCategory?" hc-free-category":"")}>{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
     locked?null:<div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
-  {showLock&&<CatalogueLockedPreview personal category={limitedCategory} remaining={locked?Math.max(1,remaining):remaining}/>}
-  {!premium&&limitedCategory&&!showLock&&totalMatches>4&&<CatalogueLockedPreview personal category compactOnly remaining={totalMatches-4}/>}
+  {showLock&&<CatalogueLockedPreview personal category={limitedCategory} fullPage={locked&&!limitedCategory} remaining={locked?Math.max(1,remaining):remaining}/>}
+  {!premium&&limitedCategory&&!showLock&&totalMatches>6&&<CatalogueLockedPreview personal category compactOnly remaining={totalMatches-6}/>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
     {page>1?<Link href={href({page:locked?(limitedCategory?1:Math.min(FREE_PAGE_LIMIT,pageCount)):page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
     <span>Page {page} of {pageCount}</span>
-    {page<pageCount?(premium||!limitedCategory&&page<FREE_PAGE_LIMIT?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<Link href="/membership">Unlock more <ArrowIcon direction="right"/></Link>):<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
+    {page<pageCount?(premium||!limitedCategory&&page<FREE_PAGE_LIMIT?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<Link href={!limitedCategory&&page===FREE_PAGE_LIMIT?href({page:page+1}):"/membership"}>Unlock more <ArrowIcon direction="right"/></Link>):<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
   </nav>}
   <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
  </section>;

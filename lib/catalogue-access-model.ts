@@ -1,8 +1,8 @@
 export const CATALOGUE_PAGE_SIZE=24;
 export const FREE_PAGE_LIMIT=2;
 export const FREE_COLLECTION_LIMIT=CATALOGUE_PAGE_SIZE*FREE_PAGE_LIMIT;
-export const BUSINESS_CATEGORY_LIMIT=6;
-export const PERSONAL_CATEGORY_LIMIT=8;
+export const BUSINESS_CATEGORY_LIMIT=9;
+export const PERSONAL_CATEGORY_LIMIT=12;
 export const featuredPreviewIds=["YjXAnN1cosMO1iGVWJw5FA","HEWCWVJ5M7RL3Y-J_uV0bg","qLiCZEEhOnut6fHdkH-Bow","g8ulL_pzvvdAvGHNTXB-xw","4QucBqTfsk76WbDuGGzyBA","zmcFLXhlnDI9AyHB3zO8LA"] as const;
 /** Fixed collection sample before search/filter/sort: changing filters cannot unlock products. */
 export function previewCollection<T>(all:readonly T[],id:(p:T)=>string,category:(p:T)=>string,featured:readonly string[]=[]):T[]{
@@ -34,3 +34,6 @@ export function freePageWindow(requested:number,total:number,category:boolean,ca
  const end=category?categoryLimit:start+CATALOGUE_PAGE_SIZE;
  return {page,pages,locked,start,end,hasLocked:total>(category?categoryLimit:CATALOGUE_PAGE_SIZE*FREE_PAGE_LIMIT)};
 }
+
+// Ignore legacy load-more parameters for every membership tier.
+export function cataloguePageSize(){return CATALOGUE_PAGE_SIZE;}

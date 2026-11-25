@@ -30,6 +30,7 @@ export async function generateMetadata({params}:Params):Promise<Metadata>{
  const {id}=await params;
  const item=findPersonalProduct(id);
  if(!item)return {title:"Product not found | Herocon"};
+ const access=await catalogueAccess();if(!access.premium&&!(await Promise.all([personalPreview("women"),personalPreview("men")])).flat().some(p=>p.id===id))return {title:"Premium catalogue | Herocon"};
  return {title:item.name+" | The Personal Edit | Herocon",description:"Explore "+item.name+" with its GBP reference price and original marketplace listing."};
 }
 
@@ -76,7 +77,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
  };
  const shownProduct=withMarketplaceSource(product,enrichment);
  const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
- const related=(preview?(audience==="women"?preview[0]:preview[1]):audienceProducts(audience)).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
+ const related=access.premium?audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4):[];
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>
