@@ -1,3 +1,4 @@
+import {domesticFromProduct} from "@/lib/cart-pricing";
 import {NextResponse} from "next/server";
 import {createHash} from "node:crypto";
 import {get,put,list} from "@vercel/blob";
@@ -24,7 +25,7 @@ function normalize(raw:unknown,channel:string){
  const id=string(p.id,500)||string(p.source_product_id,500)||String(numeric(p.id)??"");
  const market=string(p.channel)||channel;
  const images=Array.from(new Set([httpsImage(p.image),...array(p.images).map(x=>httpsImage(asRecord(x).url))].filter(Boolean))).slice(0,40);
- return {id,channel:market,title:label(p.title)||"Untitled product",url:normalizeMarketplaceLink(p.source_url)||sourceUrl(market,id),images,price:price(p.price),seller:string(seller.name),minimum:numeric(p.min_order_quantity),
+ return {id,channel:market,title:label(p.title)||"Untitled product",url:normalizeMarketplaceLink(p.source_url)||sourceUrl(market,id),images,price:price(p.price),domesticFreightCny:domesticFromProduct(p),seller:string(seller.name),minimum:numeric(p.min_order_quantity),
  variants:array(p.variants).slice(0,300).map(v=>{const x=asRecord(v);return {id:string(x.sku_id,500)||String(numeric(x.sku_id)??""),name:array(x.attributes).map(a=>{const r=asRecord(a);return [string(r.translated_name)||string(r.original_name)||label(r.name),string(r.translated_value)||string(r.original_value)||label(r.value)].filter(Boolean).join(": ");}).filter(Boolean).join(" / ")||"Variant",price:price(x.price),stock:numeric(x.stock),image:httpsImage(x.image)};}),
  attributes:array(p.attributes).slice(0,60).map(a=>{const x=asRecord(a);return {name:string(x.translated_name)||string(x.original_name)||label(x.name),value:string(x.translated_value)||string(x.original_value)||label(x.value)};}).filter(a=>a.name&&a.value)};
 }

@@ -4,7 +4,7 @@ import type {FormEvent} from "react";
 import Link from "next/link";
 import {useCart} from "@/components/CartProvider";
 type Variant={id:string;name:string;price:number|null;stock:number|null;image:string};
-type Item={id:string;channel:string;title:string;url:string;images:string[];price:number|null;seller:string;minimum:number|null;variants:Variant[];attributes:{name:string;value:string}[]};
+type Item={id:string;channel:string;domesticFreightCny?:number|null;title:string;url:string;images:string[];price:number|null;seller:string;minimum:number|null;variants:Variant[];attributes:{name:string;value:string}[]};
 type Rate={rate:number;date:string};
 type SavedSearch={id:string;label:string;savedAt:string;action:string};
 type Result={history?:SavedSearch[];cacheStatus?:string;savedAt?:string|null;items?:Item[];product?:Item;page?:number;total?:number|null;fx?:Rate|null;error?:string};
@@ -42,7 +42,7 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  const existingQuantity=cartItems.find(x=>x.key===cartKey)?.quantity??0;
  const max=Math.min(999-existingQuantity,variant?.stock==null?999:Math.max(0,Math.floor(variant.stock)-existingQuantity));
  const canAdd=!!detail?.id&&!!detail.url&&hydrated&&account.status==="authenticated"&&(!detail.variants.length||!!variant?.id)&&quantity>=min&&quantity<=max&&(cartItems.length<100||existingQuantity>0);
- function addToCart(){if(!detail||!canAdd)return;addItems([{key:cartKey,source:"hiobuy",productId:"hiobuy:"+detail.channel+":"+detail.id,productPath:"/find-product?hioId="+encodeURIComponent(detail.id)+"&hioChannel="+encodeURIComponent(detail.channel),title:detail.title,image:variant?.image||detail.images[0],marketplaceUrl:detail.url,variant:variant?.name||"",skuCode:variant?.id||undefined,quantity,unitPrice:variant?variant.price:detail.price,currency:"CNY"}]);setCartMessage("Added to your cart.");}
+ function addToCart(){if(!detail||!canAdd)return;addItems([{key:cartKey,source:"hiobuy",productId:"hiobuy:"+detail.channel+":"+detail.id,productPath:"/find-product?hioId="+encodeURIComponent(detail.id)+"&hioChannel="+encodeURIComponent(detail.channel),title:detail.title,image:variant?.image||detail.images[0],marketplaceUrl:detail.url,variant:variant?.name||"",skuCode:variant?.id||undefined,quantity,unitPrice:variant?variant.price:detail.price,currency:"CNY",domesticFreightCny:detail.domesticFreightCny??null}]);setCartMessage("Added to your cart.");}
  function submit(e:FormEvent){e.preventDefault();void run(mode==="parse"?{action:"parse",url}:mode==="search"?{action:"search",channel:"1688",keyword,page:1}:{action:"image",channel:"1688",image,page:1});}
  function changeMode(m:Mode){abort.current?.abort();setBusy(false);setMode(m);setError("");setItems(null);setDetail(null);last.current=null;}
  function readImage(file:File|undefined){setImage("");setFileName("");setError("");if(!file)return;if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>2*1024*1024){setError("Choose a JPEG, PNG or WebP image under 2 MB.");return;}const r=new FileReader();r.onload=()=>{if(typeof r.result==="string"){setImage(r.result);setFileName(file.name);}};r.onerror=()=>setError("Could not read that image.");r.readAsDataURL(file);}

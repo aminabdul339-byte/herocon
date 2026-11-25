@@ -1,4 +1,6 @@
 "use client";
+import {validFreight} from "@/lib/cart-pricing";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {createContext,useContext,useEffect,useState} from "react";
 
 export type CartItem={
@@ -14,6 +16,7 @@ export type CartItem={
  quantity:number;
  unitPrice:number|null;
  currency:"CNY"|"GBP";
+ domesticFreightCny?:number|null;
  /** Whether this line is part of the next order. Kept with the cart in localStorage. */
  selected?:boolean;
 };
@@ -32,6 +35,7 @@ type CartContextValue={
  selectAllItems:(selected:boolean)=>void;
  removeItem:(key:string)=>void;
  clearCart:()=>void;
+ updateFreight:(rates:Record<string,number|null>)=>void;
 };
 const STORAGE_KEY_PREFIX="herocon-user-cart-v2:";
 const MAX_LINES=100;
@@ -95,7 +99,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
    const map=new Map(previous.map(item=>[item.key,item]));
    for(const item of nextItems.filter(validItem)){
     const existing=map.get(item.key);
-    if(existing)map.set(item.key,{...item,quantity:clamp(existing.quantity+item.quantity),selected:existing.selected!==false});
+    if(existing)map.set(item.key,{...item,quantity:clamp(existing.quantity+item.quantity),domesticFreightCny:validFreight(item.domesticFreightCny)?item.domesticFreightCny:existing.domesticFreightCny,selected:existing.selected!==false});
     else if(map.size<MAX_LINES)map.set(item.key,{...item,quantity:clamp(item.quantity),selected:true});
    }
    return [...map.values()];
@@ -112,8 +116,9 @@ export function CartProvider({children}:{children:React.ReactNode}){
  }
  function removeItem(key:string){setItems(previous=>previous.filter(item=>item.key!==key));}
  function clearCart(){setItems([]);}
+ const updateFreight=(rates:Record<string,number|null>)=>setItems(previous=>previous.map(i=>{const url=normalizeMarketplaceLink(i.marketplaceUrl);const fee=url?rates[url]:undefined;return validFreight(fee)?{...i,domesticFreightCny:fee}:i;}));
  const count=items.reduce((sum,item)=>sum+item.quantity,0);
- const value={items,count,hydrated,account,refreshAccount,addItems,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart};
+ const value={items,count,hydrated,account,refreshAccount,addItems,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart,updateFreight};
  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 export function useCart(){

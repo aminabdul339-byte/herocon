@@ -4,11 +4,13 @@ import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ShoppingCenterNav from "@/components/ShoppingCenterNav";
+import {freightSummary,validFreight,productPayment} from "@/lib/cart-pricing";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart} from "@/components/CartProvider";
 
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
 export default function CartPage(){
- const {items,count,hydrated,account,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart}=useCart();
+ const {items,count,hydrated,account,updateQuantity,setItemSelected,selectAllItems,removeItem,clearCart,updateFreight}=useCart();
  const [fx,setFx]=useState<{rate:number;date:string}|null>(null);
  const [fxUnavailable,setFxUnavailable]=useState(false);
  const selectedItems=items.filter(item=>item.selected!==false);
@@ -28,10 +30,13 @@ export default function CartPage(){
    .catch(()=>{if(!controller.signal.aborted)setFxUnavailable(true);});
   return ()=>controller.abort();
  },[]);
+ const lookupKey=JSON.stringify([...new Set(items.filter(i=>!validFreight(i.domesticFreightCny)).map(i=>normalizeMarketplaceLink(i.marketplaceUrl)).filter((x):x is string=>!!x))].sort());
+ useEffect(()=>{if(!hydrated||account.status!=="authenticated")return;const urls=JSON.parse(lookupKey) as string[];if(!urls.length)return;const controller=new AbortController();(async()=>{for(let i=0;i<urls.length;i+=30){try{const r=await fetch("/api/cart/domestic-freight",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({urls:urls.slice(i,i+30)}),signal:controller.signal,cache:"no-store"});if(r.ok&&!controller.signal.aborted){const d=await r.json();if(!controller.signal.aborted)updateFreight(d.freight||{});}}catch{}}})();return ()=>controller.abort();},[lookupKey,hydrated,account.status,account.id]);
  const cny=selectedItems.reduce((sum,item)=>sum+(item.currency==="CNY"&&item.unitPrice!=null?item.unitPrice*item.quantity:0),0);
  const gbp=selectedItems.reduce((sum,item)=>sum+(item.currency==="GBP"&&item.unitPrice!=null?item.unitPrice*item.quantity:0),0);
  const pricesMissing=selectedItems.some(item=>item.unitPrice==null);
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
+ const freight=freightSummary(selectedItems.map(i=>({...i,marketplaceUrl:normalizeMarketplaceLink(i.marketplaceUrl)||i.marketplaceUrl})));const domesticGbp=freight.knownFen===0?0:fx?Math.round(freight.knownFen*fx.rate)/100:null;const payment=selectedLines>0&&!pricesMissing&&estimatedGbp!==null&&domesticGbp!==null&&freight.complete?productPayment(Math.round(estimatedGbp*100),Math.round(domesticGbp*100)):null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
  return <main className="hc-cart-page"><Header/><ShoppingCenterNav/>
   <section className="sc-page-hero sc-container hc-cart-hero">
@@ -48,7 +53,7 @@ export default function CartPage(){
      {items.map(item=><article className={"hc-cart-line"+(item.selected===false?" hc-cart-line-unselected":"")} key={item.key}>
       <label className="hc-cart-select-item" title={"Select "+item.title}><input type="checkbox" checked={item.selected!==false} onChange={event=>setItemSelected(item.key,event.target.checked)} aria-label={"Select "+item.title+" to buy"}/></label>
       <Link href={item.productPath} className="hc-cart-image">{item.image?<img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer"/>:<span>Product</span>}</Link>
-      <div className="hc-cart-copy"><Link href={item.productPath} className="hc-cart-title">{item.title}</Link>{item.variant&&<p>{item.variant}</p>}
+      <div className="hc-cart-copy"><Link href={item.productPath} className="hc-cart-title">{item.title}</Link>{item.variant&&<p>{item.variant}</p>}<p className="hc-cart-domestic">China delivery: {validFreight(item.domesticFreightCny)?item.domesticFreightCny===0?"Free (recorded)":(convertedGbp(item.domesticFreightCny)?"≈ "+convertedGbp(item.domesticFreightCny)+" · ":"")+money("CNY",item.domesticFreightCny)+" (estimate)":"Not yet confirmed"}</p>
        <div className="hc-cart-controls"><span>Quantity</span><div className="hc-cart-quantity"><button type="button" className="hc-cart-quantity-step" aria-label={"Decrease quantity of "+item.title} disabled={item.quantity<=1} onClick={()=>updateQuantity(item.key,item.quantity-1)}>−</button><input aria-label={"Quantity of "+item.title} type="number" min={1} max={999} value={item.quantity} onChange={e=>{const v=Number(e.target.value);if(Number.isInteger(v)&&v>=1&&v<=999)updateQuantity(item.key,v);}}/><button type="button" className="hc-cart-quantity-step" aria-label={"Increase quantity of "+item.title} disabled={item.quantity>=999} onClick={()=>updateQuantity(item.key,item.quantity+1)}>+</button></div><button type="button" className="hc-cart-remove" onClick={()=>removeItem(item.key)}>Remove</button>{account.ownerPremium&&<Link href={"/find-product?url="+encodeURIComponent(item.marketplaceUrl||"")} className="hc-cart-owner-buy-link">Verify with HioBuy</Link>}</div>
       </div>
       <strong className="hc-cart-price">{item.unitPrice==null?"Price unavailable":<>
@@ -63,7 +68,7 @@ export default function CartPage(){
      {gbp>0&&<p><span>Products priced in GBP</span><strong>{money("GBP",gbp)}</strong></p>}
      {selectedLines>0&&estimatedGbp!==null&&<p className="hc-cart-gbp-total"><span>{pricesMissing?"Priced items, approx. GBP":"Estimated product subtotal (GBP)"}</span><strong>{(cny>0?"≈ ":"")+money("GBP",estimatedGbp)}</strong></p>}
      {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
-     {selectedLines>0&&estimatedGbp!==null&&!pricesMissing&&<p><span>Estimated procurement fee (7%)</span><strong>≈ {money("GBP",Math.round(estimatedGbp*7)/100)}</strong></p>}<p><span>Chinese domestic delivery</span><strong>Confirmed at checkout</strong></p><p><span>International delivery</span><strong>Paid separately</strong></p>
+     {selectedLines>0&&estimatedGbp!==null&&!pricesMissing&&<p><span>Estimated procurement fee (7%)</span><strong>≈ {money("GBP",Math.round(estimatedGbp*7)/100)}</strong></p>}<p><span>Chinese domestic delivery</span><strong>{!selectedLines?"—":freight.complete?(domesticGbp!==null?money("GBP",domesticGbp):money("CNY",freight.knownFen/100)):(freight.knownFen>0?(domesticGbp!==null?money("GBP",domesticGbp):money("CNY",freight.knownFen/100))+" + unconfirmed":"Unconfirmed")}</strong></p>{selectedLines>0&&<><p className="hc-cart-gbp-total"><span>Estimated first payment</span><strong>{payment?"≈ "+money("GBP",payment.totalMinor/100):"Pending quote"}</strong></p><p className="hc-cart-bulk-note">Recorded freight counted once per listing, not per option. Final freight depends on quantity, seller grouping and warehouse address.</p></>}<p><span>International delivery</span><strong>Paid separately</strong></p>
     </div>
     {account.ownerPremium&&<>
      {selectedLines>0?<Link className="hc-cart-bulk-buy" href="/owner/checkout">Checkout <ArrowIcon direction="right"/></Link>:<button className="hc-cart-bulk-buy" disabled>Select products to buy</button>}

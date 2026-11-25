@@ -1,4 +1,5 @@
 import "server-only";
+import {domesticFromProduct,validFreight} from "@/lib/cart-pricing";
 import {createHash} from "node:crypto";
 import {get,put,list as listBlobs} from "@vercel/blob";
 import {unstable_cache} from "next/cache";
@@ -19,7 +20,7 @@ export type SourceEnrichment={
  variantCompleteness?:"complete"|"missing_ids"|"unavailable";minOrderQuantity?:number;
  title?:string;descriptionText?:string;sellerName?:string;
  images:string[];detailImages:string[];variants:Variant[];
- priceCNY?:number;variantCount?:number;sourceSpecs:{name:string;value:string}[];
+ priceCNY?:number;chinaDomesticFreight?:number;variantCount?:number;sourceSpecs:{name:string;value:string}[];
 };
 export class SourceEnrichmentError extends Error{
  constructor(public readonly code:string,public readonly status=502){super(code);}
@@ -137,6 +138,7 @@ export function fromHiobuy(value:unknown,url:string):SourceEnrichment{
   sellerName:str(obj(p.seller).name,140)||undefined,
   images:all,detailImages,variants,
   priceCNY:number(price.promotion_amount)??number(price.display_amount),
+  chinaDomesticFreight:domesticFromProduct(p)??undefined,
   variantCount:totalVariants,variantCompleteness:completeness,
   minOrderQuantity:number(p.min_order_quantity),sourceSpecs
  };
@@ -381,7 +383,7 @@ export function toDisplaySupplierDetails(data:SourceEnrichment):DisplaySupplierD
   productProps:data.sourceSpecs,
   listPrice:data.priceCNY??null,
   offerPrice:data.priceCNY??null,
-  chinaDomesticFreight:null,
+  chinaDomesticFreight:validFreight(data.chinaDomesticFreight)?data.chinaDomesticFreight:null,
   moq:data.minOrderQuantity??null,
   available:null,
   images:data.images,

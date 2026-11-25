@@ -121,7 +121,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   if(!marketplace){setCartMessage("This product does not have a direct marketplace link.");return;}
   if(outOfStock){setCartMessage("The seller currently lists this product as unavailable.");return;}
   const productPath=customProductPath|| (id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace):"/product/"+encodeURIComponent(id));
-  const common={productId:id,productPath,title,image:gallery[chosenIndex]||product.imageUrl,marketplaceUrl:marketplace};
+  const common={productId:id,productPath,title,image:gallery[chosenIndex]||product.imageUrl,marketplaceUrl:marketplace,domesticFreightCny:source?.chinaDomesticFreight??null};
   let rows:CartItem[]=[];
   if(source&&source.variants.length>0){
    const chosen=selectedRows.length?selectedRows:(sourceVariant&&sourceVariant.stock!==0?[sourceVariant]:[]);

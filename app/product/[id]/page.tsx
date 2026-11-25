@@ -14,6 +14,7 @@ import {currentCustomer} from "@/lib/customer-auth";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
+import {savedDomesticFreight} from "@/lib/saved-domestic-freight";
 import type {Product} from "@/lib/types";
 
 const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
@@ -72,7 +73,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
       product={product}
       title={cleanTitle(product)}
       images={[...new Set([...props.images,...imagesFor(product)])]}
-      initialSource={toDisplaySupplierDetails(enriched)}
+      initialSource={{...toDisplaySupplierDetails(enriched),chinaDomesticFreight:enriched.chinaDomesticFreight??await savedDomesticFreight(sourceUrl)}}
       buckydropEnabled={false}
     />
     {button}
