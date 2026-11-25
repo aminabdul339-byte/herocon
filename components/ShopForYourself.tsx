@@ -1,4 +1,6 @@
-import {personalPreview} from "@/lib/catalogue-access";
+import {personalAll,personalCollectionPreview,personalCategoryPreview} from "@/lib/catalogue-access";
+import CatalogueLockedPreview from "@/components/CatalogueLockedPreview";
+import {FREE_PAGE_LIMIT,PERSONAL_CATEGORY_LIMIT,freePageWindow} from "@/lib/catalogue-access-model";
 import {PremiumNotice} from "@/components/MembershipPlans";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
@@ -23,7 +25,7 @@ function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.
 export default async function ShopForYourself({filters,rates,premium}:{filters:Filters;rates:ShopFxRates;premium:boolean}){
  const {audience,sort}=filters;
  const hidden=await unavailableSourceHashes();
- const [women,men]=premium?await Promise.all([Promise.resolve(audienceProducts("women").filter(p=>!isUnavailableSource(p.originalUrl,hidden))),Promise.resolve(audienceProducts("men").filter(p=>!isUnavailableSource(p.originalUrl,hidden)))]):await Promise.all([personalPreview("women"),personalPreview("men")]);
+ const [women,men]=await Promise.all([personalAll("women"),personalAll("men")]);
  const available=(a:Audience)=>a==="women"?women:men;
  const everything=available(audience);
  const categoryTotals=new Map<string,number>();
@@ -31,16 +33,24 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
  const availableCategories=ORDER[audience].filter(x=>categoryTotals.has(x));
  const category=availableCategories.includes(filters.category)?filters.category:"All";
  const query=filters.q.trim().toLowerCase();
- let matching=everything.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
+ const limitedCategory=category!=="All";
+ const totalMatches=everything.filter(x=>!limitedCategory||x.category===category).length;
+ const source=premium?everything:limitedCategory?await personalCategoryPreview(audience,category):await personalCollectionPreview(audience);
+ let matching=source.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
  matching.sort((a,b)=>{
   if(sort==="name")return nameCompare(a,b);
   const ca=ORDER[audience].indexOf(a.category),cb=ORDER[audience].indexOf(b.category);
   return ca-cb || a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
  });
  if(category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
- const pageCount=Math.max(1,Math.ceil(matching.length/PER_PAGE));
- const page=Math.min(pageCount,Math.max(1,filters.page));
- const shown=await enrichPersonalCards(matching.slice((page-1)*PER_PAGE,page*PER_PAGE));
+ const window=freePageWindow(filters.page,totalMatches,limitedCategory,PERSONAL_CATEGORY_LIMIT);
+ const pageCount=premium?Math.max(1,Math.ceil(matching.length/PER_PAGE)):window.pages;
+ const page=premium?Math.min(pageCount,Math.max(1,filters.page)):window.page;
+ const locked=!premium&&window.locked;
+ const visible=locked?[]:premium?matching.slice((page-1)*PER_PAGE,page*PER_PAGE):matching.slice(window.start,window.end);
+ const shown=await enrichPersonalCards(visible);
+ const showLock=!premium&&(locked||limitedCategory&&totalMatches>visible.length||!limitedCategory&&page===FREE_PAGE_LIMIT&&window.hasLocked);
+ const remaining=limitedCategory?Math.max(0,totalMatches-visible.length):Math.max(0,totalMatches-Math.min(totalMatches,FREE_PAGE_LIMIT*PER_PAGE));
  function href(changes:Partial<Filters>){
   const p:Filters={...filters,...changes};
   const q=new URLSearchParams();
@@ -83,16 +93,17 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
     </Link>)}
   </nav>
   <div className="hc-self-results-caption hc-personal-catalogue-meta">
-    <span><strong>{matching.length.toLocaleString("en-GB")} {matching.length===1?"product":"products"}</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
-    {matching.length>0&&<span>Showing {((page-1)*PER_PAGE+1).toLocaleString("en-GB")}–{Math.min(page*PER_PAGE,matching.length).toLocaleString("en-GB")}</span>}
+    <span><strong>{(premium?matching.length:totalMatches).toLocaleString("en-GB")} products</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
+    {visible.length>0&&<span>{!premium&&limitedCategory?"Free category preview":"Showing "+((page-1)*PER_PAGE+1).toLocaleString("en-GB")+"–"+Math.min((page-1)*PER_PAGE+visible.length,premium?matching.length:totalMatches).toLocaleString("en-GB")}</span>}
   </div>
   {shown.length?
-    <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
-    <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
+    <div className={"hc-self-grid hc-personal-grid"+(!premium&&limitedCategory?" hc-free-category":"")}>{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
+    locked?null:<div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
+  {showLock&&<CatalogueLockedPreview personal category={limitedCategory} remaining={locked?Math.max(1,remaining):remaining}/>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
-    {page>1?<Link href={href({page:page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
+    {page>1?<Link href={href({page:locked?(limitedCategory?1:Math.min(FREE_PAGE_LIMIT,pageCount)):page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
     <span>Page {page} of {pageCount}</span>
-    {page<pageCount?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
+    {page<pageCount?(premium||!limitedCategory&&page<FREE_PAGE_LIMIT?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<Link href="/membership">Unlock more <ArrowIcon direction="right"/></Link>):<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
   </nav>}
   <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
  </section>;
