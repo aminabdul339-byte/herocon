@@ -50,6 +50,7 @@ function AccountContent(){
  const [readyToConfirm,setReadyToConfirm]=useState(false);
  const {account}=useCart();
  const pending=useMemo(()=>Boolean(next),[next]);
+ useEffect(()=>{const code=search.get("code");if(code&&code.length<=1024)window.location.replace("/membership/trial?code="+encodeURIComponent(code));},[search]);
  useEffect(()=>{
   if(search.get("error")==="confirmation")setNotice("That confirmation link has expired or could not be verified. Please request another email.");
   else if(search.get("confirmed")==="1")setNotice("Your email is confirmed. You can now use your free Herocon account.");
@@ -137,6 +138,7 @@ function AccountContent(){
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
      {readyToConfirm&&<p className="hc-account-notice">Use the email link in this browser to restore the pending product, even if it opens a new tab. If you verify on another device, return to this one and sign in.</p>}
+     <Link href="/membership/trial" className="hc-account-text-button">Continue with email / try Premium free</Link>
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>

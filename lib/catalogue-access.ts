@@ -1,7 +1,7 @@
 import "server-only";
 import {cache} from "react";
 import {currentCustomer} from "@/lib/customer-auth";
-import {checkActiveMembership} from "@/lib/membership-access";
+import {membershipEntitlement} from "@/lib/membership-access";
 import {getProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
@@ -11,7 +11,7 @@ import {prioritizeJewelleryDiscovery} from "@/lib/jewellery-discovery-order";
 import {prioritizeHairDiscovery} from "@/lib/hair-discovery-order";
 import {mixPersonalEdit} from "@/lib/personal-shop-edit";
 import {FREE_COLLECTION_LIMIT,featuredPreviewIds,BUSINESS_CATEGORY_LIMIT,PERSONAL_CATEGORY_LIMIT} from "@/lib/catalogue-access-model";
-export const catalogueAccess=cache(async()=>{const customer=await currentCustomer();return {customer,premium:customer?await checkActiveMembership(customer):false};});
+export const catalogueAccess=cache(async()=>{const customer=await currentCustomer();return {customer,...(customer?await membershipEntitlement(customer):{premium:false,trialEndsAt:null})};});
 export const businessPreview=cache(async()=>freeBusinessEdit(await getProducts(),FREE_COLLECTION_LIMIT));
 export const businessCategoryPreview=cache(async(name:string)=>{
  const full=await getProducts();const all=full.filter(p=>p.category===name);const preferred=earlyBusinessEdit(full).filter(p=>p.category===name);const ranked=[...new Map([...preferred,...rankBusinessCategory(all)].map(p=>[productId(p),p])).values()];

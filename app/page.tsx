@@ -60,7 +60,7 @@ export default async function Home(){
       <p>Found something elsewhere? <span>Bring the original product link to Herocon.</span></p>
       <div><Link href="/find-product">Paste a product link <Arrow up/></Link></div>
     </div>
-    <MembershipPlans member={access.premium} signedIn={!!access.customer}/>
+    <MembershipPlans member={access.premium} signedIn={!!access.customer} trialEndsAt={access.trialEndsAt}/>
     <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;
 }

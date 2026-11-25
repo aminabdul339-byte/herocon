@@ -1,3 +1,4 @@
+import {cookies} from "next/headers";
 import {NextResponse} from "next/server";
 import {authApi,customerAuthConfigured,setCustomerCookies} from "@/lib/customer-auth";
 export const runtime="nodejs";
@@ -6,16 +7,18 @@ export async function GET(request:Request){
  const url=new URL(request.url);
  const token=url.searchParams.get("token_hash")||"";
  const type=url.searchParams.get("type")||"";
- if(!customerAuthConfigured()||!["signup","recovery","email"].includes(type)||!token||token.length>1024){
+ if(!customerAuthConfigured()||!["signup","recovery","email","magiclink"].includes(type)||!token||token.length>1024){
   return NextResponse.redirect("https://herocon.store/account?error=confirmation",303);
  }
  try{
   const session=await authApi("/verify",{token_hash:token,type});
   if(!session.access_token||!session.refresh_token)throw Error("Missing identity session.");
-  const redirectTo=type==="recovery"?"https://herocon.store/account/new-password":"https://herocon.store/account?confirmed=1";
+  const trialRequested=Boolean((await cookies()).get("__Host-hc-trial-verifier")?.value);
+  const redirectTo=type==="recovery"?"https://herocon.store/account/new-password":trialRequested?"https://herocon.store/membership/trial":"https://herocon.store/account?confirmed=1";
   const response=NextResponse.redirect(redirectTo,303);
   response.headers.set("Cache-Control","private, no-store");
   setCustomerCookies(response,session);
+  if(trialRequested&&type!=="recovery")response.cookies.set("__Host-hc-trial-verifier","",{httpOnly:true,secure:true,sameSite:"lax",path:"/",maxAge:0});
   return response;
  }catch{
   return NextResponse.redirect("https://herocon.store/account?error=confirmation",303);
