@@ -182,7 +182,7 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
   nextScheduledAt:nextRun?.at||null,
   nextScheduledShard:nextRun?.shard??null};
 }
-export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkProgress>{
+export async function runBuckydropBulkShard(shard:number,ownerRecovery=false):Promise<BuckydropBulkProgress>{
  const catchup=shard===BUCKYDROP_CATCHUP_SHARD;
  if(!Number.isInteger(shard)||shard<0||shard>BUCKYDROP_CATCHUP_SHARD)throw Error("invalid_shard");
  const p=basic(shard);
@@ -200,7 +200,7 @@ export async function runBuckydropBulkShard(shard:number):Promise<BuckydropBulkP
   const [block,regular]=await Promise.all([getGlobalBlock(),Promise.all(Array.from({length:BUCKYDROP_BULK_SHARDS},(_,i)=>readJson<BuckydropBulkProgress>(resultPath(i))))]);
   if(block||regular.some(r=>r?.status==="running"&&Date.now()-Date.parse(r.updatedAt)<10*60_000)){p.status="paused";p.issue=block?.code||"REGULAR_BATCH_ACTIVE";return p;}
  }
- const runSlot=catchup?"final-sweep":p.date==="2026-11-24"&&shard>=22&&Date.now()>=Date.parse("2026-11-24T14:30:00Z")
+ const runSlot=catchup?(ownerRecovery&&p.date==="2026-11-25"?"owner-recovery":"final-sweep"):p.date==="2026-11-24"&&shard>=22&&Date.now()>=Date.parse("2026-11-24T14:30:00Z")
   ?shard+"-afternoon-continuation":String(shard);
  // An immutable slot key still blocks duplicate delivery. Existing daily
  // source claims below prevent another BuckyDrop request for attempted URLs.
