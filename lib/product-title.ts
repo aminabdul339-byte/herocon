@@ -32,13 +32,44 @@ const features:Rule[]=[
  [/\b(?:bodycon|bandage)\b/i,"Bodycon"],[/\bribbed\b/i,"Ribbed"],[/\b(?:u[- ]neck|scoop neck)\b/i,"Scoop-Neck"],[/\b(?:lace front|front lace)\b/i,"Lace-Front"],[/\bdeep wave\b/i,"Deep-Wave"],[/\b(?:body wave|big wave)\b/i,"Body-Wave"],[/\bcurly\b/i,"Curly"],[/\b(?:bone straight|straight hair)\b/i,"Straight"],[/\b(?:moissanite)\b/i,"Moissanite"],[/\b(?:zirconia|zircon)\b/i,"Zircon"],[/\bheart[ -]shaped\b/i,"Heart-Shaped"],[/\b(?:sterling silver|s925|925 silver)\b/i,"Sterling Silver"],[/\b(?:gold[ -]plated)\b/i,"Gold-Plated"],[/\b(?:pearl)\b/i,"Pearl"],[/\b(?:engagement)\b/i,"Engagement"],[/\b(?:marble)\b/i,"Marble"],[/\b(?:ceramic)\b/i,"Ceramic"],[/\b(?:nordic|scandinavian)\b/i,"Nordic"],[/\b(?:minimalist|minimalistic)\b/i,"Minimalist"],[/\b(?:geometric)\b/i,"Geometric"],[/\b(?:cat)\b/i,"Cat"],[/\b(?:dog)\b/i,"Dog"],[/\b(?:crystal)\b/i,"Crystal"],[/\b(?:sunflower)\b/i,"Sunflower"],[/\b(?:tulip)\b/i,"Tulip"],[/\b(?:rose)\b/i,"Rose"],[/\b(?:mini|pocket[ -]sized)\b/i,"Mini"],[/\b(?:satin)\b/i,"Satin"],[/\b(?:quilted)\b/i,"Quilted"],[/\b(?:leather)\b/i,"Leather"],[/\b(?:camouflage)\b/i,"Camouflage"],[/\b(?:cargo)\b/i,"Cargo"],[/\b(?:waffle knit)\b/i,"Waffle-Knit"],[/\b(?:cotton)\b/i,"Cotton"],[/\b(?:oversized)\b/i,"Oversized"],[/\b(?:zip[ -]up|zipper)\b/i,"Zip-Up"],[/\b(?:long[ -]sleeve)\b/i,"Long-Sleeve"],[/\b(?:short[ -]sleeve)\b/i,"Short-Sleeve"],[/\b(?:magsafe)\b/i,"MagSafe"],[/\b(?:magnetic)\b/i,"Magnetic"],[/\b(?:transparent|clear)\b/i,"Clear"],[/\b(?:foldable)\b/i,"Foldable"],[/\b(?:solid wood)\b/i,"Solid Wood"]
 ];
 const noise=/\b(?:cross[- ]border|foreign trade|factory direct(?: sale| supply| delivery)?|factory supply|wholesale|hot[- ]selling|best[- ]selling|in stock|ships instantly|new model|new style|new fashion|high quality|high[- ]end|light luxury|internet celebrity|european and american|american and european|trendy brand|popular|versatile|fashionable|fashion|202[0-9]|spring and summer|autumn and winter|spring and autumn|for men and women|for women|for men|new arrival|amazon|aliexpress|temu|export|dropshipping)\b/gi;
+
+const editorialNames:Record<string,string>={
+ "EOh7f7a2YmF2MD6mBg5g9w":"Backless Halter-Neck Slit Dress",
+ "QdCtw6poCdD0NO2yL9QT-Q":"Square-Neck Slit Dress",
+ "YjXAnN1cosMO1iGVWJw5FA":"Ribbed Bodycon Mini Dress",
+ "-V4SGku_-0w-sRsds6WXPA":"Monogram Sleeveless Knit Dress"
+};
+const categoryFeatures:Record<string,Rule[]>={
+ "Dresses":[[/\bbackless\b/i,"Backless"],[/\b(?:halter[ -]neck|hanging neck)\b/i,"Halter-Neck"],[/\b(?:square[ -]neck|one-neck)\b/i,"Square-Neck"],[/\b(?:high[ -]slit|high split)\b/i,"High-Slit"],[/\b(?:slit|split hip)\b/i,"Slit"],[/\b(?:spaghetti strap|suspender|sling)\b/i,"Strappy"],[/\bstrapless\b/i,"Strapless"],[/\bruched\b/i,"Ruched"],[/\ba[ -]line\b/i,"A-Line"],[/\bpolka[ -]dot\b/i,"Polka-Dot"],[/\b(?:monogram|full letter)\b/i,"Monogram"],[/\b(?:knit|knitted|knitwear|sweater dress)\b/i,"Knit"],[/\bdenim\b/i,"Denim"],[/\blace\b/i,"Lace"],[/\bmesh\b/i,"Mesh"],[/\bpolo collar\b/i,"Polo-Collar"],[/\bfloral\b/i,"Floral"],[/\b(?:evening dress|evening gown)\b/i,"Evening"],[/\b(?:tennis dress|tennis skirt)\b/i,"Tennis"],[/\b(?:buttoned|gold button|button wool)\b/i,"Button-Detail"],[/\bwool\b/i,"Wool"],[/\b(?:sleeveless|tank dress|vest dress)\b/i,"Sleeveless"],[/\blong[ -]sleeve(?:d)?\b/i,"Long-Sleeve"],[/\bshort[ -]sleeve(?:d)?\b/i,"Short-Sleeve"],[/\b(?:maxi|long dress)\b/i,"Maxi"],[/\b(?:mini dress|short dress)\b/i,"Mini"],[/\b(?:midi|knee[ -]length)\b/i,"Midi"],[/\bpleated\b/i,"Pleated"],[/\b(?:hollow[ -]out|cut[ -]out)\b/i,"Cut-Out"],[/\bslim[ -]fit\b/i,"Slim-Fit"]],
+ "Tops":[[/\b(?:graphic|printed|print)\b/i,"Graphic"],[/\b(?:striped|stripes)\b/i,"Striped"],[/\bfur collar\b/i,"Fur-Collar"],[/\b(?:washed|gradient)\b/i,"Washed"],[/\b(?:heavyweight|[23]\d\d\s*g)\b/i,"Heavyweight"],[/\b(?:oversized|loose[ -]fitting)\b/i,"Oversized"],[/\bembroidered\b/i,"Embroidered"],[/\b(?:polo collar|polo shirt)\b/i,"Polo"],[/\b(?:cropped|crop top)\b/i,"Cropped"],[/\b(?:retro|vintage)\b/i,"Vintage"],[/\bshort[ -]sleeve(?:d)?\b/i,"Short-Sleeve"],[/\blong[ -]sleeve(?:d)?\b/i,"Long-Sleeve"]],
+ "Bottoms":[[/\bwide[ -]leg\b/i,"Wide-Leg"],[/\b(?:straight[ -]leg|straight pants)\b/i,"Straight-Leg"],[/\b(?:washed|distressed)\b/i,"Washed"],[/\b(?:cargo|multi[ -]pocket)\b/i,"Cargo"],[/\bdrawstring\b/i,"Drawstring"],[/\bhigh[ -]waisted\b/i,"High-Waisted"],[/\b(?:running|training)\b/i,"Running"],[/\bpleated\b/i,"Pleated"],[/\braw denim\b/i,"Raw Denim"]],
+ "Bags":[[/\b(?:crocodile pattern|croc pattern)\b/i,"Croc-Pattern"],[/\bwoven\b/i,"Woven"],[/\bquilted\b/i,"Quilted"],[/\bmonogram\b/i,"Monogram"],[/\blarge[ -]capacity\b/i,"Large-Capacity"],[/\btravel\b/i,"Travel"],[/\b(?:sports|gym|fitness)\b/i,"Sports"],[/\bchain strap\b/i,"Chain-Strap"],[/\bcanvas\b/i,"Canvas"],[/\bnylon\b/i,"Nylon"]],
+ "Jewellery":[[/\b(?:cuban chain|cuban link)\b/i,"Cuban-Link"],[/\bcross\b/i,"Cross"],[/\b(?:beaded|beads)\b/i,"Beaded"],[/\bhoop\b/i,"Hoop"],[/\b(?:stud earrings|ear studs)\b/i,"Stud"],[/\b(?:teardrop|water drop)\b/i,"Teardrop"],[/\bbutterfly\b/i,"Butterfly"],[/\b(?:tennis bracelet|tennis necklace)\b/i,"Tennis"],[/\badjustable\b/i,"Adjustable"],[/\bwoven\b/i,"Woven"],[/\bstainless steel\b/i,"Stainless Steel"]],
+ "Shoes":[[/\b(?:air[ -]cushion|air sole)\b/i,"Air-Cushioned"],[/\b(?:platform|thick[ -]sole)\b/i,"Platform"],[/\bpointed[ -]toe\b/i,"Pointed-Toe"],[/\bhigh[ -]top\b/i,"High-Top"],[/\blow[ -]top\b/i,"Low-Top"],[/\bsnow boots\b/i,"Snow"],[/\brunning\b/i,"Running"],[/\bbasketball\b/i,"Basketball"],[/\bsuede\b/i,"Suede"],[/\bmesh\b/i,"Mesh"],[/\b(?:bridal|wedding shoes)\b/i,"Bridal"]],
+ "Outerwear":[[/\bhooded\b/i,"Hooded"],[/\bwaterproof\b/i,"Waterproof"],[/\bwindproof\b/i,"Windproof"],[/\bfleece\b/i,"Fleece"],[/\bbomber\b/i,"Bomber"],[/\breflective\b/i,"Reflective"],[/\bdenim\b/i,"Denim"],[/\bwool\b/i,"Wool"]],
+ "Hair Accessories":[[/\bacetate\b/i,"Acetate"],[/\bshark clip\b/i,"Claw"],[/\bduckbill\b/i,"Duckbill"],[/\bpearl\b/i,"Pearl"],[/\brhinestone\b/i,"Rhinestone"],[/\bmonogram\b/i,"Monogram"],[/\bmetal\b/i,"Metal"],[/\bfloral\b/i,"Floral"]],
+ "Wigs & Hair Extensions":[[/\bpixie\b/i,"Pixie"],[/\bbob\b/i,"Bob"],[/\bbraided\b/i,"Braided"],[/\b(?:kinky curly|small curly)\b/i,"Kinky-Curly"],[/\b(?:human hair|real hair)\b/i,"Human Hair"],[/\bsynthetic\b/i,"Synthetic"],[/\bponytail\b/i,"Ponytail"],[/\bbun\b/i,"Bun"]],
+ "Fashion Accessories":[[/\bbaseball cap\b/i,"Baseball"],[/\b(?:knitted|woolen|wool)\b/i,"Knit"],[/\bfootball\b/i,"Football"],[/\bbasketball\b/i,"Basketball"],[/\b(?:sports socks|running socks)\b/i,"Sports"],[/\b(?:grip|silicone)\b/i,"Grip"],[/\bembroidered\b/i,"Embroidered"],[/\btassel\b/i,"Tassel"],[/\bbuckle\b/i,"Buckle"]],
+ "Watches":[[/\bquartz\b/i,"Quartz"],[/\bdual display\b/i,"Dual-Display"],[/(?<!non[- ])\bmechanical\b/i,"Mechanical"],[/\b(?:digital|electronic)\b/i,"Digital"],[/\bwaterproof\b/i,"Waterproof"],[/\bstainless steel\b/i,"Stainless Steel"],[/\boctagonal\b/i,"Octagonal"]],
+ "Electronics & Tech":[[/\bsuitcase[ -]style\b/i,"Suitcase-Style"],[/\b(?:aluminum alloy|aluminium alloy|metal)\b/i,"Metal"],[/\bbluetooth\b/i,"Bluetooth"],[/\bwireless\b/i,"Wireless"],[/\bportable\b/i,"Portable"],[/\bwaterproof\b/i,"Waterproof"]],
+ "Home Textiles":[[/\b(?:tufted|tufting)\b/i,"Tufted"],[/\bround\b/i,"Round"],[/\bnon[ -]slip\b/i,"Non-Slip"],[/\bplush\b/i,"Plush"]],
+ "Home & Decor":[[/\babstract\b/i,"Abstract"],[/\bresin\b/i,"Resin"],[/\bmetal\b/i,"Metal"],[/\bglass\b/i,"Glass"],[/\bsculptural\b/i,"Sculptural"],[/\bowl\b/i,"Owl"],[/\bangel\b/i,"Angel"]],
+ "Lighting":[[/\b(?:bubble ball|globe)\b/i,"Globe"],[/\b(?:dimming|dimmable)\b/i,"Dimmable"],[/\bfabric\b/i,"Fabric-Shade"],[/\bbamboo\b/i,"Bamboo"],[/\bglass\b/i,"Glass"],[/\bled\b/i,"LED"]],
+ "Nails & Nail Supplies":[[/\bfrench\b/i,"French-Tip"],[/\balmond\b/i,"Almond"],[/\bcoffin\b/i,"Coffin"],[/\bglitter\b/i,"Glitter"],[/\bgel\b/i,"Gel"],[/\bmatte\b/i,"Matte"],[/\b(?:24 pieces|24pcs)\b/i,"24-Piece"]],
+ "Furniture":[[/\b(?:ergonomic|ergonomics)\b/i,"Ergonomic"],[/\b(?:gaming|e[ -]sports)\b/i,"Gaming"],[/\b(?:recliner|reclining)\b/i,"Reclining"],[/\bcaterpillar\b/i,"Caterpillar"],[/\bround\b/i,"Round"],[/\bsquare\b/i,"Square"],[/\b(?:compact|small apartment)\b/i,"Compact"]],
+ "Storage & Organisation":[[/\bmulti[ -]layer\b/i,"Multi-Tier"],[/\bbathroom\b/i,"Bathroom"],[/\bfloor[ -]standing\b/i,"Freestanding"],[/\b(?:clothing store|clothes rack)\b/i,"Clothing"],[/\bdust[ -]proof\b/i,"Dustproof"]],
+ "Home & Kitchen":[[/\bstainless steel\b/i,"Stainless Steel"],[/\bstraw cup\b/i,"Straw"],[/\b(?:wooden|ebony)\b/i,"Wooden"]],
+ "Packaging & Supplies":[[/\bwaterproof\b/i,"Waterproof"],[/\bdrawer box\b/i,"Drawer-Style"],[/\bextra thick\b/i,"Heavy-Duty"]]
+};
+
 export function conciseProductTitle(p:Product):string{
+ const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
  const raw=withoutEmoji((p.displayTitle||p.title||p.originalTitle||"").trim()).replace(/&amp;/gi,"&");
  const plain=raw.replace(/【[^】]*】|\[[^\]]*\]/g," ").replace(/\s+/g," ").trim()||raw;
  const rule=(types[p.category||""]||[]).find(([r])=>r.test(plain));
  if(rule){
   const label=rule[1],picked:string[]=[];
-  for(const [pattern,feature] of features){
+  for(const [pattern,feature] of [...features,...(categoryFeatures[p.category||""]||[])]){
    if(picked.length>=2)break;
    if(pattern.test(plain)&&!label.toLowerCase().includes(feature.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(feature.toLowerCase())))picked.push(feature);
   }
@@ -48,9 +79,15 @@ export function conciseProductTitle(p:Product):string{
   if(picked.includes("Bodycon")&&picked.includes("Ribbed"))picked.reverse();
   if(picked.includes("Marble")&&picked.includes("Nordic"))picked.reverse();
   if(picked.includes("Zircon")&&picked.includes("Heart-Shaped"))picked.reverse();
-  return [...picked,label].join(" ");
+  if(picked.length||label.split(/\s+/).length>=3)return [...picked,label].join(" ");
+  // Preserve real distinguishing words instead of reducing every listing to a noun.
+  const cleaned=plain.replace(noise," ").replace(/[!,;:]+/g," ").replace(/\s+/g," ").trim();
+  const words=cleaned.split(/\s+/).filter(Boolean);
+  const match=words.findIndex((_,i)=>rule[0].test(words.slice(i,i+3).join(" ")));
+  if(match>=0){const phrase=words.slice(Math.max(0,match-2),match+6).join(" ");if(phrase.length>label.length&&rule[0].test(phrase))return phrase;}
+  return words.slice(0,9).join(" ")||label;
  }
  const cleaned=plain.replace(noise," ").replace(/[!,;:]+/g," ").replace(/\s+/g," ").trim();
- const fallback=cleaned.split(" ").filter(Boolean).slice(0,7).join(" ");
+ const fallback=cleaned.split(" ").filter(Boolean).slice(0,9).join(" ");
  return fallback||raw.slice(0,70)||p.category||"Product";
 }
