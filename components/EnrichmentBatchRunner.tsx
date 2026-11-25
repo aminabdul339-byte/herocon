@@ -14,10 +14,6 @@ export default function EnrichmentBatchRunner({
  const pageCount=Math.max(1,Math.ceil(total/12));
  const href=(n:number)=>"/enrichment?collection="+collection+"&page="+n;
  const pct=uniqueSources>0?Math.min(100,Math.floor(100*savedUnique/uniqueSources)):0;
- const complete=uniqueSources>0&&savedUnique===uniqueSources&&progress.pending===0;
- const nextScheduled=false&&progress.nextScheduledAt?new Date(progress.nextScheduledAt).toLocaleString("en-GB",{
-  dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
- }):null;
  const lastRun=progress.lastRun?new Date(progress.lastRun).toLocaleString("en-GB",{
   dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
  }):null;
@@ -54,10 +50,7 @@ export default function EnrichmentBatchRunner({
     style={{height:9,background:"#d4ded1",borderRadius:20,overflow:"hidden"}}>
     <div style={{height:"100%",width:pct+"%",background:"#3e7251"}}/>
    </div>
-   {!complete&&nextScheduled&&<p role="status" style={{fontSize:14,lineHeight:1.65,margin:"15px 0 0",fontWeight:700}}>
-    Next scheduled batch: {nextScheduled} (UTC/London) · Shard {progress.nextScheduledShard}.
-    {progress.cooldownUntil?" The supplier cooldown must expire before requests resume.":" No active provider cooldown is recorded."}
-   </p>}
+
    <p style={{fontSize:13,lineHeight:1.7,margin:"15px 0 0"}}>
     Provider breakdown: <strong>{progress.buckydropSaved.toLocaleString("en-GB")}</strong> saved BuckyDrop sources
     {" · "}<strong>{progress.hioBuySaved.toLocaleString("en-GB")}</strong> saved HioBuy sources
