@@ -16,9 +16,9 @@ export const metadata:Metadata={title:"Explore wholesale products",description:"
 const PAGE_SIZE=24;
 export default async function SearchPage({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){
  const s=await searchParams,all=await getProducts();
- const query=(s.q||"").trim(),requestedCategory=(s.category||"").trim(),cat=resolveCategory(requestedCategory)||requestedCategory,sort=s.sort||"recommended";
+ const query=(s.q||"").trim(),requestedCategory=(s.category||"").trim(),cat=/^(?:sets?\s*&\s*co-ords|co-ords|sets?)$/i.test(requestedCategory)?"":resolveCategory(requestedCategory)||requestedCategory,sort=s.sort||"recommended";
  const collection=s.collection==="clothing"?"clothing":"";
- const clothingCategories=new Set(["Tops","Bottoms","Dresses","Outerwear","Sets & Co-ords","Underwear & Lingerie","Sleepwear & Loungewear"]);
+ const clothingCategories=new Set(["Tops","Bottoms","Dresses","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear"]);
  const clothingCount=all.filter(p=>clothingCategories.has(p.category||"")).length;
  const scored=all.map(p=>({product:p,score:productSearchScore(p,query)})).filter(x=>x.score>0&&(!cat||x.product.category===cat)&&(!collection||clothingCategories.has(x.product.category||"")));
  scored.sort((a,b)=>b.score-a.score);

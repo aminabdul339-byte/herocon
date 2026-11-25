@@ -1,0 +1,33 @@
+import type {PrimaryCategory} from "./product-taxonomy";
+/** Editorial corrections from catalogue and screenshot review. */
+export const CATEGORY_OVERRIDES:Readonly<Record<string,PrimaryCategory>>={
+  "Dny_gU5-ew6o63aSudk-ag": "Bottoms",
+  "RMC8PdL7clXwajnienGECA": "Electronics & Tech",
+  "mIeVMyn5q-mbPEZil9JKuw": "Electronics & Tech",
+  "ecpsFTL8JVdcJDuIs5w6KQ": "Electronics & Tech",
+  "15zesGoW2RauqdLeDpLr6g": "Electronics & Tech",
+  "byQTlCQJ_eIpgWfvZVl8tA": "Electronics & Tech",
+  "k20rZHlwTrsilFqObaWy2w": "Fashion Accessories",
+  "gqiAQB8xfUcFtJX5EtHWrw": "Tops",
+  "A7hxgFUwkXj-jlPFUtljIg": "Fashion Accessories",
+  "-oeO7zsGWL3ROgl4NzOlAg": "Fashion Accessories",
+  "qppWrroX2bKjPNutYU-ZWQ": "Shoes",
+  "6dL5RJFBfW55icc1X79lXw": "Bags",
+  "-OEZX5XLTKmnAulk1ONhrw": "Outerwear",
+  "a3efnfAptsWumzo925yeQA": "Tops",
+  "BCWe7vPbt_KMDifufSeymA": "Bottoms",
+  "l_GIAPjWDwAs6heObCHgzw": "Furniture",
+  "eDWWUxKGSkGlZzdHSHd3MQ": "Furniture",
+  "7hZL7y-b0iIvWSqhcVnLSQ": "Tops",
+  "R-2FFYmvJicodsPt1mcdpg": "Bottoms",
+  "Hvo6xuMwo0F6Sd-kkZd9fA": "Outerwear",
+  "qLT2yAD2ePYYnj6KG_mQVg": "Outerwear",
+  "-9XbvnN10duuW2vb-zyzsg": "Outerwear",
+  "V8fwgx53gYvTIZ01tVyopA": "Home & Decor",
+  "GuOfNREYiUV2FAeg5mDmGA": "Home & Decor",
+  "BFg0vtWa1iVsE6XwClhlVQ": "Shoes",
+  "Qp6VxtqHWr3laSJOi5UMOA": "Underwear & Lingerie",
+  "GoBELwdh0mB7JhGNV_h3OA": "Bags",
+  "As04qCDGYgRZ62SxU__pUQ": "Beauty & Personal Care",
+  "lr-_Z7hQsOitxaZZU-POZw": "Bags"
+};

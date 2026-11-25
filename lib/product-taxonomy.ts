@@ -6,7 +6,7 @@
  * or "jewellery" in "jewellery storage box".
  */
 export const PRIMARY_CATEGORIES=[
- "Tops","Bottoms","Dresses","Outerwear","Sets & Co-ords","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
+ "Tops","Bottoms","Dresses","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
  "Jewellery","Hair Accessories","Wigs & Hair Extensions","Nails & Nail Supplies","Fashion Accessories","Watches",
  "Furniture","Lighting","Home Textiles","Storage & Organisation","Home & Decor","Home & Kitchen","Flowers & Gifts",
  "Beauty & Personal Care","Electronics & Tech","Sports & Outdoors",
@@ -34,6 +34,30 @@ function existingFallback(existing?:string):PrimaryCategory {
 export function classifyProduct(title:string,existingCategory?:string):PrimaryCategory{
  const s=clean(title||"");
  if(existingCategory==="Flowers & Gifts")return "Flowers & Gifts";
+
+ // Match the object itself before incidental words such as "suitcase style",
+ // "dress belt", "wedding dress shoes" and "tooling bag shorts".
+ if (/\b(?:phone|iphone|mobile phone|smartphone|airpods?)\s+(?:protective\s+)?(?:cases?|covers?|shells?|models?|holders?|chargers?|accessories)\b|\b(?:magsafe|promax|pro max)\b.{0,60}\b(?:cases?|covers?|shells?)\b/.test(s) && !/\b(?:crossbody|running|shoulder|handbag|purse|wallet)\s+(?:mobile\s+)?phone\s+bags?\b/.test(s))return "Electronics & Tech";
+ if (/\b(?:cargo|tooling|camouflage|multi pocket|drawstring)\b/.test(s)&&/\b(?:shorts|pants|trousers|jeans)\b/.test(s)&&/\b(?:pocket|organ bag|tooling bag)\b/.test(s))return "Bottoms";
+ if (/\b(?:wedding shoes|bridal shoes|bridesmaid shoes|wedding heels|pointed toe)\b/.test(s)&&/\b(?:shoes|heels|sandals|pumps)\b/.test(s))return "Shoes";
+ if (/\b(?:belt for (?:men|women|dresses|jeans)|belts? casual|belt women|belt men|belt buckle|buckle belt|decorative belt|jeans belt|small belt|waist belt|thin belt|leather belt)\b/.test(s)&&!/\b(?:dress|coat|trench|jacket|pants|trousers|shorts|skirt)\s+with\s+(?:a\s+)?belt\b|\b(?:sneakers|footwear|running shoes|low top shoes)\b/.test(s))return "Fashion Accessories";
+ if (/\b(?:makeup|cosmetic|foundation|blush|eyeshadow|eye shadow|contour|powder|concealer|eyelash|eyebrow)\s+brush(?:es)?\b/.test(s)&&!/\bbrush\s+(?:storage\s+)?(?:bags?|cases?|holders?|organizers?)\b|\b(?:model house|soft furnishings|soft decoration)\b/.test(s))return "Beauty & Personal Care";
+ if (/\b(?:nail polish|nail tips|press on nails|wearable nails|nail art|nail clippers|nail files?|nail grinder|nail brush|nail stickers|manicure tools)\b/.test(s))return "Nails & Nail Supplies";
+ if (/\b(?:base layer|long sleeve inner wear|waffle knit street long sleeve)\b/.test(s)&&!/\b(?:maxi|midi|mini|evening|wedding|bodycon|halter|sundress)\b/.test(s))return "Tops";
+ if (/\b(?:shopping bag|shoulder bag|handbag|backpack|coin purse)\b/.test(s)&&/\b(?:two|three) piece set\b/.test(s))return "Bags";
+ if (/\b(?:children s clothing|children clothing|fashion children|kids clothing|baby clothing|infant clothing)\b/.test(s))return "Baby & Kids";
+ if (/\b(?:baseball bat|tennis racket|badminton racket)\b/.test(s))return "Sports & Outdoors";
+ if (/\b(?:wired game mechanical mouse|gaming mouse|game mouse|computer mouse|mobile phone model|simulation model phone|phone model|noise reduction headphones)\b/.test(s))return "Electronics & Tech";
+ if (/\b(?:eau de toilette|eau de parfum|parfum|perfume)\b/.test(s)&&!/\b(?:model room|soft decoration|soft furnishings|ornaments set)\b/.test(s))return "Beauty & Personal Care";
+ if (/\b(?:coconut palm mattress|palm mattress|mattress)\b/.test(s)&&!/\b(?:cover|protector|pad|topper)\b/.test(s))return "Furniture";
+ if (/\b(?:trash can|garbage bin|waste bin|folding container)\b/.test(s))return "Storage & Organisation";
+ if (/\b(?:engagement letter|wedding letter|wedding certificate|wedding photo props|engagement photo props|bouquet|artificial flowers|flower gift)\b/.test(s))return "Flowers & Gifts";
+ if (/\b(?:engagement gift box|wedding gift box|thank you cards|mailer boxes|clothing tag|vinted tag label|packaging box)\b/.test(s)&&!/\b(?:underwear|wallet|handbag|makeup brush)\b/.test(s))return "Packaging & Supplies";
+ if (/\b(?:playing cards|card booster pack|trading cards|graded card display case)\b/.test(s))return "Toys & Games";
+ if (/\b(?:leather card holder|credit card holder|coin card holder|card slot|card case)\b/.test(s)&&!/\b(?:phone|magsafe|iphone)\b/.test(s))return "Bags";
+ if (/\b(?:fashion accessories|badges)\b/.test(s)&&s.trim().length<30&&existingCategory!=="Hair Accessories")return "Fashion Accessories";
+ if (/羽绒服|男士外套/.test(s))return "Outerwear";
+
  // Explicit nail-category imports are source-linked discovery records, not quality-approved merchandise.
  if(existingCategory==="Nails & Nail Supplies")return "Nails & Nail Supplies";
  // Lace wigs and hair extensions are hair products, not generic accessories or clothing.
@@ -95,7 +119,7 @@ export function classifyProduct(title:string,existingCategory?:string):PrimaryCa
  if(matches(s,word("(?:belts?|keychains?|key\\s+rings?|lanyards?)")))return "Fashion Accessories";
  if(matches(s,word("(?:hoodies?|sweatshirts?|t\\s?shirts?)")) && !matches(s,word("(?:shirt\\s+dress|sweatshirt\\s+dress)")))return "Tops";
  if(matches(s,word("(?:two\\s+piece\\s+(?:sets?|suits?|outfits?)|three\\s+piece\\s+sets?|co\\s+ord\\s+sets?|matching\\s+sets?|sweatshirt\\s+and\\s+pants\\s+sets?|jacket\\s+and\\s+pants\\s+sets?|tracksuits?|outfit\\s+sets?)")) &&
- !matches(s,word("(?:sofa\\s+sets?|dining\\s+table\\s+sets?|furniture\\s+sets?)")))return "Sets & Co-ords";
+ !matches(s,word("(?:sofa\\s+sets?|dining\\s+table\\s+sets?|furniture\\s+sets?)")))return /\b(?:jackets?|blazers?|coats?)\b/.test(s)?"Outerwear":"Tops";
  if(matches(s,word("(?:earrings?|ear\\s+studs?|necklaces?|pendants?|bracelets?|bangles?|anklets?|chokers?|brooches?|jewell?ery\\s+sets?|jewell?ery|moissanite\\s+rings?|engagement\\s+rings?|wedding\\s+rings?|finger\\s+rings?|signet\\s+rings?|sterling\\s+silver\\s+rings?|zircon\\s+rings?)")) ||
     (matches(s,word("rings?"))&&!matches(s,word("(?:key\\s+rings?|phone\\s+rings?|ring\\s+lights?|rings?\\s+(?:light|binder|toss|stand|holder|box|tray|hook)|curtain\\s+rings?|rings?\\s+pulls?|rings?\\s+handle|ring\\s+fit)"))))
   return "Jewellery";
@@ -112,7 +136,7 @@ export function classifyProduct(title:string,existingCategory?:string):PrimaryCa
    return "Dresses";
  if(matches(s,word("(?:jackets?|coats?|overcoats?|trench\\s+coats?|blazers?|parkas?|puffers?|windbreakers?|down\\s+jackets?|denim\\s+jackets?|bomber\\s+jackets?|raincoats?|gilets?)")) &&
     !matches(s,word("(?:jacket\\s+and\\s+(?:pants?|trousers?|skirt)|coat\\s+rack|coat\\s+hanger|coat\\s+hook)")))return "Outerwear";
- if(matches(s,word("(?:two\\s+piece\\s+sets?|two\\s+piece\\s+suits?|three\\s+piece\\s+sets?|co\\s+ords?|matching\\s+sets?|tracksuits?|jogging\\s+suits?|sweatshirt\\s+(?:and|with)\\s+(?:pants?|shorts?)|top\\s+and\\s+(?:pants?|skirt)|shirt\\s+and\\s+shorts|blazer\\s+and\\s+(?:pants?|skirt)|outfit\\s+sets?|clothing\\s+sets?|suit\\s+sets?)")))return "Sets & Co-ords";
+ if(matches(s,word("(?:two\\s+piece\\s+sets?|two\\s+piece\\s+suits?|three\\s+piece\\s+sets?|co\\s+ords?|matching\\s+sets?|tracksuits?|jogging\\s+suits?|sweatshirt\\s+(?:and|with)\\s+(?:pants?|shorts?)|top\\s+and\\s+(?:pants?|skirt)|shirt\\s+and\\s+shorts|blazer\\s+and\\s+(?:pants?|skirt)|outfit\\s+sets?|clothing\\s+sets?|suit\\s+sets?)")))return /\b(?:jackets?|blazers?|coats?)\b/.test(s)?"Outerwear":"Tops";
  if(matches(s,word("(?:jeans|trousers?|pants?|shorts|skirts?|leggings?|joggers?|sweatpants?|cargo\\s+pants?|slacks?|denim\\s+pants?|boxer\\s+shorts?|underpants?|briefs?)")))return "Bottoms";
  if(matches(s,word("(?:hoodies?|sweatshirts?|t\\s?shirts?|tees?|shirts?|blouses?|sweaters?|jumpers?|cardigans?|knitwear|tops?|polos?|jerseys?|vests?|tank\\s+tops?|crop\\s+tops?|pullovers?|long\\s+sleeve\\s+tops?|base\\s+layers?)")) &&
     !matches(s,word("(?:low\\s+top\\s+(?:shoes?|sneakers?)|high\\s+top\\s+(?:shoes?|sneakers?)|table\\s+top|counter\\s+top|desktop|lap\\s+top|top\\s+clip|top\\s+handle\\s+bag|top\\s+loader|tank\\s+top\\s+dress)")))return "Tops";
@@ -131,7 +155,6 @@ export const CATEGORY_ALIASES:Record<string,PrimaryCategory>={
  "bottom":"Bottoms","bottoms":"Bottoms","pants":"Bottoms","trousers":"Bottoms","jeans":"Bottoms","skirts":"Bottoms","shorts":"Bottoms",
  "dress":"Dresses","dresses":"Dresses","gown":"Dresses","gowns":"Dresses",
  "jacket":"Outerwear","jackets":"Outerwear","outerwear":"Outerwear","coats":"Outerwear",
- "set":"Sets & Co-ords","sets":"Sets & Co-ords","co-ords":"Sets & Co-ords","outfits":"Sets & Co-ords",
  "shoe":"Shoes","shoes":"Shoes","sneaker":"Shoes","sneakers":"Shoes","trainer":"Shoes","trainers":"Shoes","boots":"Shoes","footwear":"Shoes",
  "bag":"Bags","bags":"Bags","backpacks":"Bags","handbags":"Bags",
  "jewelry":"Jewellery","jewellery":"Jewellery","jewelery":"Jewellery","jewel":"Jewellery","rings":"Jewellery","ring":"Jewellery","necklaces":"Jewellery","earrings":"Jewellery","bracelets":"Jewellery",

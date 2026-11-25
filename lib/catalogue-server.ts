@@ -3,6 +3,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Product } from "./types";
 import {classifyProduct} from "./product-taxonomy";
+import {CATEGORY_OVERRIDES} from "./category-overrides";
+import {categoryAuditOverrides} from "./category-audit-store";
 import {getDiscoveredProducts} from "./discovered-products";
 import {normalizeMarketplaceLink} from "./marketplace-links";
 import {marketplaceIdentity} from "./catalogue-identity";
@@ -101,15 +103,16 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
     if (await addFile(name)) break;
   }
   for (const name of additions) await addFile(name);
-  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:classifyProduct(product.title,product.category)}));
+  return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)).map(product => ({...product,category:CATEGORY_OVERRIDES[product.doppelProductId||""]||classifyProduct(product.title,product.category)}));
 });
 
 // The original catalogue remains in committed JSON files. Products found through
 // the public link search are durably stored in the private Vercel Blob store and
 // appear in product search, category browsing, saved items, and product pages.
 export const getProducts = cache(async ():Promise<Product[]>=>{
- const [base,hidden]=await Promise.all([getBaseProducts(),unavailableSourceHashes()]);
- const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden));
+ const [base,hidden,audit]=await Promise.all([getBaseProducts(),unavailableSourceHashes(),categoryAuditOverrides()]);
+ const corrected=(p:Product):Product=>({...p,category:CATEGORY_OVERRIDES[p.doppelProductId||""]||audit[p.doppelProductId||""]||classifyProduct(p.title,p.category)});
+ const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(corrected);
  const discovered=(await getDiscoveredProducts()).filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
  if(!discovered.length)return staticProducts;
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
@@ -143,5 +146,5 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
   links.add(key);ids.add(p.doppelProductId);
   additions.push(p);
  }
- return [...additions,...enriched];
+ return [...additions,...enriched].map(corrected);
 });

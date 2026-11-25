@@ -1,0 +1,448 @@
+{
+  "date": "2026-11-25",
+  "method": "Full committed catalogue title/rule pass; screenshot-derived overrides; not a full visual audit.",
+  "total": 2694,
+  "before": {
+    "Tops": 353,
+    "Other": 121,
+    "Electronics & Tech": 35,
+    "Bottoms": 92,
+    "Home & Decor": 109,
+    "Bags": 312,
+    "Outerwear": 131,
+    "Shoes": 192,
+    "Fashion Accessories": 128,
+    "Watches": 27,
+    "Underwear & Lingerie": 21,
+    "Home Textiles": 43,
+    "Home & Kitchen": 8,
+    "Jewellery": 331,
+    "Lighting": 31,
+    "Beauty & Personal Care": 52,
+    "Storage & Organisation": 31,
+    "Sports & Outdoors": 5,
+    "Costumes": 8,
+    "Toys & Games": 12,
+    "Sleepwear & Loungewear": 3,
+    "Dresses": 47,
+    "Hair Accessories": 242,
+    "Sets & Co-ords": 2,
+    "Packaging & Supplies": 4,
+    "Furniture": 73,
+    "Wigs & Hair Extensions": 240,
+    "Baby & Kids": 2,
+    "Nails & Nail Supplies": 39
+  },
+  "after": {
+    "Tops": 354,
+    "Other": 87,
+    "Baby & Kids": 8,
+    "Electronics & Tech": 43,
+    "Bottoms": 95,
+    "Home & Decor": 109,
+    "Outerwear": 136,
+    "Shoes": 193,
+    "Fashion Accessories": 134,
+    "Watches": 26,
+    "Underwear & Lingerie": 21,
+    "Home Textiles": 43,
+    "Home & Kitchen": 8,
+    "Bags": 305,
+    "Jewellery": 330,
+    "Lighting": 31,
+    "Beauty & Personal Care": 56,
+    "Storage & Organisation": 33,
+    "Sports & Outdoors": 6,
+    "Costumes": 8,
+    "Toys & Games": 15,
+    "Sleepwear & Loungewear": 3,
+    "Packaging & Supplies": 9,
+    "Hair Accessories": 242,
+    "Furniture": 75,
+    "Flowers & Gifts": 3,
+    "Dresses": 42,
+    "Wigs & Hair Extensions": 240,
+    "Nails & Nail Supplies": 39
+  },
+  "moved": [
+    {
+      "id": "mdtGfQYKTBRn28_GMn0x0g",
+      "title": "Fashion Children's Clothing-0140",
+      "from": "Other",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7794428461"
+    },
+    {
+      "id": "Dny_gU5-ew6o63aSudk-ag",
+      "title": "European and American High Street Style Drawstring Lace-up Washed Old Casual Camouflage Multi-Pocket Organ Bag Tooling Bag Shorts",
+      "from": "Bags",
+      "to": "Bottoms",
+      "sourceUrl": "https://detail.1688.com/offer/869082465696.html"
+    },
+    {
+      "id": "_zVF8oaUHat5XDkgw3OAqA",
+      "title": "Fashion Children's Clothing-1268",
+      "from": "Other",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7797418662"
+    },
+    {
+      "id": "1GE5bddRQq6yDRbDk9UdYg",
+      "title": "Fashion Children's Clothing-1353",
+      "from": "Other",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7794448471"
+    },
+    {
+      "id": "RMC8PdL7clXwajnienGECA",
+      "title": "Big Brand Magnetic Magsafe Suitcase 18Promax Phone Case 17/1615143 Foreign Trade Cross-Border",
+      "from": "Bags",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/1018242027829.html"
+    },
+    {
+      "id": "cg7-Fn93dtZwFFg5SJAhwA",
+      "title": "Fashion Children's Clothing-1133",
+      "from": "Other",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7794414891"
+    },
+    {
+      "id": "mIeVMyn5q-mbPEZil9JKuw",
+      "title": "New Aluminum Alloy /Black Suitcase-Style Full-Cover Phone Case Suitable for 17/16/15/14 Metal",
+      "from": "Bags",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/975018528486.html"
+    },
+    {
+      "id": "7I7MnJHxuu5fQS_pY6Momw",
+      "title": "Fashion Children's Clothing-0737",
+      "from": "Other",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7794462569"
+    },
+    {
+      "id": "V2P6pZ2cTO0BjUYdkEatSg",
+      "title": "Suitable for Iphone17 Mobile Phone Model, 17Air Simulation Model, 17Promax Model Phone",
+      "from": "Other",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/920876982852.html"
+    },
+    {
+      "id": "DoSHA8SN0ulIkstgmrQhqA",
+      "title": "28-inch red fashion brand baseball bat baseball bat baseball bat free storage bag",
+      "from": "Bags",
+      "to": "Sports & Outdoors",
+      "sourceUrl": "https://detail.1688.com/offer/625180009205.html"
+    },
+    {
+      "id": "zz2m9tDgw3NkuAhP70u8IQ",
+      "title": "Badges",
+      "from": "Other",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=1007366411320"
+    },
+    {
+      "id": "-9XbvnN10duuW2vb-zyzsg",
+      "title": "2024 Casual Sports Hooded Men's Side Zipper Suit 490 and 163",
+      "from": "Other",
+      "to": "Outerwear",
+      "sourceUrl": "https://detail.1688.com/offer/767458964273.html"
+    },
+    {
+      "id": "qLT2yAD2ePYYnj6KG_mQVg",
+      "title": "2026 Four Seasons Casual Sports Hooded Men's Side Zipper 490 and 163 Set",
+      "from": "Other",
+      "to": "Outerwear",
+      "sourceUrl": "https://detail.1688.com/offer/844520502620.html"
+    },
+    {
+      "id": "QookG0iY6p9izdbg0urnsg",
+      "title": "跨境外贸爆款小红马可拆卸帽子加厚保暖经典款款男士羽绒服外套",
+      "from": "Other",
+      "to": "Outerwear",
+      "sourceUrl": "https://detail.1688.com/offer/721727168241.html"
+    },
+    {
+      "id": "ecpsFTL8JVdcJDuIs5w6KQ",
+      "title": "Genuine Luggage-Style Phone Case Suitable for 17 Pro Max, 18 Pro Max/16/14",
+      "from": "Bags",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/1010693336686.html"
+    },
+    {
+      "id": "7hZL7y-b0iIvWSqhcVnLSQ",
+      "title": "N Times Replenishment Version/Pony round Neck Twisted Base/Cold Weather Can Be Used as Inner Match/Add Favorites to Shopping Cart Will Not Miss",
+      "from": "Other",
+      "to": "Tops",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7660671118"
+    },
+    {
+      "id": "15zesGoW2RauqdLeDpLr6g",
+      "title": "Genuine Suitcase Mobile Phone Case Suitable for Iphone17Promax 16Promax/15/14",
+      "from": "Bags",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/995018676523.html"
+    },
+    {
+      "id": "Hw166reNpGYhwclzsP7EwQ",
+      "title": "Factory Direct Sales of Green Watch Boxes for , Watch Packaging, Wave Pattern Submariner Watch Box Flip-Top Packaging Box",
+      "from": "Watches",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://detail.1688.com/offer/928130623327.html"
+    },
+    {
+      "id": "k20rZHlwTrsilFqObaWy2w",
+      "title": "American Retro Silver Buckle D Letter Belt for Men, Versatile Decorative Belt for Dresses and Jeans, Women's Spring and Summer New Style",
+      "from": "Dresses",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=942622588401"
+    },
+    {
+      "id": "gqiAQB8xfUcFtJX5EtHWrw",
+      "title": "In stock, ships instantly! Reset self-styled vintage slim fit base layer, vintage waffle knit street long sleeve inner wear bandage dress.",
+      "from": "Dresses",
+      "to": "Tops",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7863188128"
+    },
+    {
+      "id": "NAOP5ycsgOuQJagT_QnMoQ",
+      "title": "Wholesale G502 wired game mechanical mouse RGB electric competition macro lol hero alliance chicken computer internet cafe mouse",
+      "from": "Other",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/863296115843.html"
+    },
+    {
+      "id": "5MBSORga9dezF1cNKfS1Vw",
+      "title": "Cross Border Explosive Jean Paul Gaultier Le Male Parfum Paul Naked Men's Eau de Toilette",
+      "from": "Other",
+      "to": "Beauty & Personal Care",
+      "sourceUrl": "https://detail.1688.com/offer/857284015366.html"
+    },
+    {
+      "id": "sgzsvz66cZjUC2FQe8NQqg",
+      "title": "Spot Ultra-Thin Multi-Card Slot Simple Pu Cross-Grain Leather Card Holder Id Coin Card Holder All-In-One Unisex",
+      "from": "Other",
+      "to": "Bags",
+      "sourceUrl": "https://detail.1688.com/offer/803598687938.html"
+    },
+    {
+      "id": "GSe0LkaLDmkXCgXI_bEPOQ",
+      "title": "Applicable to 15 15PLUS mobile phone model 15pro max display machine model props simulation prototype 16",
+      "from": "Other",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/727742914064.html"
+    },
+    {
+      "id": "A7hxgFUwkXj-jlPFUtljIg",
+      "title": "Triangle Belt P Letter Men's and Women's High-end Belt Casual All-match Shorts Skirt Business Dress Jeans Belt",
+      "from": "Dresses",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://detail.1688.com/offer/689454903939.html"
+    },
+    {
+      "id": "usjAesDIL6iDQFeSDIdMZw",
+      "title": "Tcg Japanese Version First-Generation Starter Rare Cards Psa Custom Graded Card Display Case for Entertainment Use",
+      "from": "Other",
+      "to": "Toys & Games",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=1041973039374"
+    },
+    {
+      "id": "BCWe7vPbt_KMDifufSeymA",
+      "title": "(Spot) Ture 2010M Denim",
+      "from": "Other",
+      "to": "Bottoms",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7533359965"
+    },
+    {
+      "id": "4Gt39PN8FyX2SE-UiA-i7g",
+      "title": "Brazil 2012 Santos Jersey shanduos commemorative edition football uniform No. 11 Neymar retro white children's clothing",
+      "from": "Tops",
+      "to": "Baby & Kids",
+      "sourceUrl": "https://detail.1688.com/offer/746237993265.html"
+    },
+    {
+      "id": "Q_3EF384_KtcUpgzv4I6Gw",
+      "title": "Vinted Tag Label",
+      "from": "Other",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=945701128978"
+    },
+    {
+      "id": "OpJqzr9a20k-houIGSC5CQ",
+      "title": "Sup EME FW13 Gold Deck of Cards Golden Trend Playing Cards Gold Foil Local Gold Zhs",
+      "from": "Other",
+      "to": "Toys & Games",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7336958341"
+    },
+    {
+      "id": "vOOLCY48q_LkkYt5OwE1ug",
+      "title": "Cross-Border Cards Card Blind Box Pet Small Evolutions Card Booster Pack",
+      "from": "Other",
+      "to": "Toys & Games",
+      "sourceUrl": "https://detail.1688.com/offer/831026155632.html"
+    },
+    {
+      "id": "Hvo6xuMwo0F6Sd-kkZd9fA",
+      "title": "Wyndham MEN'S AND WOMEN'S down -3808M-3808MB",
+      "from": "Other",
+      "to": "Outerwear",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7514713492"
+    },
+    {
+      "id": "R-2FFYmvJicodsPt1mcdpg",
+      "title": "(In stock) Ch KS fit, blue raw selvedge denim with silver edge, original design by Kristian Stark of .",
+      "from": "Other",
+      "to": "Bottoms",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7829942505"
+    },
+    {
+      "id": "-oeO7zsGWL3ROgl4NzOlAg",
+      "title": "Snake Pattern Spring and Summer New Vintage Thin Belt Women Snakeskin All-match Jeans Dress Decorative Small Belt Women",
+      "from": "Dresses",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://detail.1688.com/offer/593293697907.html"
+    },
+    {
+      "id": "byQTlCQJ_eIpgWfvZVl8tA",
+      "title": "New Aluminum Alloy /Black Luggage Case All-inclusive Mobile Phone Case 16promax/15/14",
+      "from": "Bags",
+      "to": "Electronics & Tech",
+      "sourceUrl": "https://detail.1688.com/offer/904529443984.html"
+    },
+    {
+      "id": "6dL5RJFBfW55icc1X79lXw",
+      "title": "in stock ne net surprised cat cartoon cute folding large capacity shopping bag shoulder bag coin purse two-piece set",
+      "from": "Sets & Co-ords",
+      "to": "Bags",
+      "sourceUrl": "https://detail.1688.com/offer/828382658509.html"
+    },
+    {
+      "id": "-OEZX5XLTKmnAulk1ONhrw",
+      "title": "Slim-Fit Letter Print Top with Visible Stitching Design, Slim-Fit Hooded Zip-Up Short Jacket and Pants Set",
+      "from": "Sets & Co-ords",
+      "to": "Outerwear",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=802519933158"
+    },
+    {
+      "id": "qppWrroX2bKjPNutYU-ZWQ",
+      "title": "Pointed Toe Wedding Shoes for Women 2025 New Main Wedding Dress High Heels Wedding Banquet Shoes Bridesmaid Shoes French Retro Engagement Shoes",
+      "from": "Dresses",
+      "to": "Shoes",
+      "sourceUrl": "https://detail.1688.com/offer/819838123195.html"
+    },
+    {
+      "id": "NefRUOTPLOSofcF3pjhHdQ",
+      "title": "Engagement Gift Box, Engagement Gift Box, Wedding Gift Box, Engagement Gift Box, Wedding",
+      "from": "Other",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=998187347483"
+    },
+    {
+      "id": "vzp2mpU9XW31-lQ4wjrifw",
+      "title": "Engagement letter appointment letter wedding letter Creative Chinese Style handwriting retro elegant gift date wedding engagement supplies",
+      "from": "Other",
+      "to": "Flowers & Gifts",
+      "sourceUrl": "https://detail.1688.com/offer/732059405648.html"
+    },
+    {
+      "id": "yHix_7RVm4QGLYST7mysxA",
+      "title": "Jewelry Box, Engagement Gift Box, Wedding Gift Box, Multi-Layered Engagement Gift Box, Cash Box, Wedding Supplies",
+      "from": "Other",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://detail.1688.com/offer/926759168829.html"
+    },
+    {
+      "id": "OIdErDn8yqKyntHwYZs-Eg",
+      "title": "Engagement Photo Props Kt Board Wedding Certificate Handheld Atmosphere Photo Artifact Small Objects Wedding Special Posing Tool",
+      "from": "Other",
+      "to": "Flowers & Gifts",
+      "sourceUrl": "https://detail.1688.com/offer/922738224483.html"
+    },
+    {
+      "id": "7hFS7kymFJ6ZIwr8NYK8gA",
+      "title": "Chinoiserie Engagement Letter, Wedding Letter, High-End Chinoiserie Scroll, Wedding Man's Traditional Handwritten Gift Book, Engagement Letter",
+      "from": "Other",
+      "to": "Flowers & Gifts",
+      "sourceUrl": "https://detail.1688.com/offer/941777193664.html"
+    },
+    {
+      "id": "pN7R5kHkq0XImjnMiqCEXQ",
+      "title": "Darry Ring (dR) Diamond Engagement Ring Double Ring Jewelry Box Gift Box Packaging Box New Wedding Couple Style",
+      "from": "Jewellery",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://detail.1688.com/offer/1089583944530.html"
+    },
+    {
+      "id": "NQzsO9Ip5uLNzVeEj3pplg",
+      "title": "FASHION Accessories",
+      "from": "Other",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7846538171"
+    },
+    {
+      "id": "6Hc819blPu-vRLXkPFBFWw",
+      "title": "FASHION Accessories",
+      "from": "Other",
+      "to": "Fashion Accessories",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7765951336"
+    },
+    {
+      "id": "QMr8RDoJWpNHhEKZ_46Bjw",
+      "title": "Suitable for 18Promax Packaging Box, 18Pro Mobile Phone Box, 18 Duo Live Broadcast Props, Internet Celebrity Display Box",
+      "from": "Other",
+      "to": "Packaging & Supplies",
+      "sourceUrl": "https://detail.1688.com/offer/744310397098.html"
+    },
+    {
+      "id": "MajrdZA_9lexBJFJqrMPYA",
+      "title": "Modern Simple Washable Fabric Folding Container",
+      "from": "Other",
+      "to": "Storage & Organisation",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7876862224"
+    },
+    {
+      "id": "PVT1FoMIORpK4K0-HbvAHg",
+      "title": "Trash Can for Home Use, Bedroom, Living Room, Office, Hotel, Bathroom, Commercial Use, Light Luxury, Nordic Style, Modern Minimalist",
+      "from": "Other",
+      "to": "Storage & Organisation",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=652022870644"
+    },
+    {
+      "id": "l_GIAPjWDwAs6heObCHgzw",
+      "title": "Approx 10cm Thickened Soft Palm Mattress, Simple Modern Style",
+      "from": "Other",
+      "to": "Furniture",
+      "sourceUrl": "https://item.taobao.com/item.htm?id=1051995719889"
+    },
+    {
+      "id": "eDWWUxKGSkGlZzdHSHd3MQ",
+      "title": "Eco-Friendly Coconut Palm Mattress 1.8m Double Simmons Latex Palm Mattress 1.5m Hard Mattress Economical Modern Foldableing",
+      "from": "Other",
+      "to": "Furniture",
+      "sourceUrl": "https://detail.1688.com/offer/961059839524.html"
+    },
+    {
+      "id": "MZZ1a9JiHe2_dUV8lV1ZDQ",
+      "title": "Cosmetic Bag with 12 Makeup Brush Set, Champagne Color Makeup Brush Set, Makeup Tools, Makeup Brush Set",
+      "from": "Bags",
+      "to": "Beauty & Personal Care",
+      "sourceUrl": "https://detail.1688.com/offer/974161535024.html"
+    },
+    {
+      "id": "As04qCDGYgRZ62SxU__pUQ",
+      "title": "[Exclusive for Old Fans] Milk Huhoo Storage Bag Brush! Gujiachi Makeup Brush 12-Piece Set Storage Bag Professional Face Powder Highlight Blush Brush Liquid Foundation BB Cream Eye Shadow Brush",
+      "from": "Bags",
+      "to": "Beauty & Personal Care",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7662747969"
+    },
+    {
+      "id": "MBXbPzhYE-fPMfH9KL7NiA",
+      "title": "Tide Brand Makeup Brush Wool Powder Brush Redressing Brush Blush Brush Foundation Brush Full Set of Gift Boxes",
+      "from": "Packaging & Supplies",
+      "to": "Beauty & Personal Care",
+      "sourceUrl": "https://weidian.com/item.html?itemID=7287367354"
+    }
+  ],
+  "remainingOther": 87
+}
