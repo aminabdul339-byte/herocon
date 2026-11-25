@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {get,list,put} from "@vercel/blob";
 import {getProducts} from "@/lib/catalogue-server";
 import {personalShopProducts} from "@/lib/personal-shop";
+import {unavailableSourceHashes} from "@/lib/catalogue-unavailable";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {readMarketplaceSource,saveMarketplaceSource,SourceEnrichmentError,ENRICHMENT_PREFIX_V1,ENRICHMENT_PREFIX_V2} from "@/lib/marketplace-source-enrichment";
 import {getAllEnrichedSourceHashes} from "@/lib/buckydrop-bulk";
@@ -174,10 +175,10 @@ export async function runAutomaticEnrichment(continuation=false):Promise<Automat
  state.lastRun=new Date().toISOString();
  state.lastIssue=null;
  state.lastRunRequests=0;state.lastRunSaved=0;state.lastRunSkipped=0;state.lastRunErrors=0;
- const [existing,legacy,products]=await Promise.all([
-  getAllEnrichedSourceHashes(),savedLegacyHashes(),getProducts()
+ const [existing,legacy,products,hidden]=await Promise.all([
+  getAllEnrichedSourceHashes(),savedLegacyHashes(),getProducts(),unavailableSourceHashes()
  ]);
- const catalog=catalogSources(products,legacy);
+ const catalog=catalogSources(products,legacy).filter(p=>existing.has(p.hash)||!hidden.has(p.hash));
  if(!catalog.length){await saveState(state);return {status:"completed",...zero,savedUnique:existing.size};}
  let start=catalog.findIndex(x=>x.key>(state.lastKey||""));
  if(start<0)start=continuation?catalog.length:0;
@@ -283,8 +284,8 @@ export async function runHioBuyFinalFallback():Promise<AutomaticEnrichmentResult
  const started=Date.now();
  const previous=await getAutomaticEnrichmentState();
  if(previous.lastIssue&&globalErrors.has(previous.lastIssue))return {...result,lastIssue:previous.lastIssue};
- const [saved,products]=await Promise.all([getAllEnrichedSourceHashes(),getProducts()]);
- const catalog=catalogSources(products,new Set<string>());
+ const [saved,products,hidden]=await Promise.all([getAllEnrichedSourceHashes(),getProducts(),unavailableSourceHashes()]);
+ const catalog=catalogSources(products,new Set<string>()).filter(p=>saved.has(p.hash)||!hidden.has(p.hash));
  const missing=catalog.filter(p=>!saved.has(p.hash));
  result.catalogueUnique=catalog.length;
  result.savedUnique=catalog.length-missing.length;

@@ -5,6 +5,7 @@ import EnrichmentBatchRunner from "@/components/EnrichmentBatchRunner";
 import {getProducts} from "@/lib/catalogue-server";
 import {productId,cleanTitle} from "@/lib/catalogue";
 import {personalShopProducts} from "@/lib/personal-shop";
+import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {createHash} from "node:crypto";
 import {getAllEnrichedSourceHashes,getBuckydropBulkStatus} from "@/lib/buckydrop-bulk";
@@ -27,8 +28,9 @@ export default async function EnrichmentPage({
  </section></main>;
  const query=await searchParams;
  const collection=query.collection==="personal"?"personal":"business";
- const allProducts=await getProducts();
- const originals=collection==="personal"?personalShopProducts.map(p=>({
+ const [allProducts,hidden]=await Promise.all([getProducts(),unavailableSourceHashes()]);
+ const personal=personalShopProducts.filter(p=>!isUnavailableSource(p.originalUrl,hidden));
+ const originals=collection==="personal"?personal.map(p=>({
    id:p.id,title:p.name,sourceUrl:p.originalUrl,
    productPath:"/shop-for-yourself/"+encodeURIComponent(p.id),
    existingImages:p.imageUrl?1:0,existingVariants:0,
@@ -68,15 +70,11 @@ export default async function EnrichmentPage({
   };
  }));
  const savedUnique=progress.totalSaved;
- const unique=new Set([
-  ...allProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)),
-  ...personalShopProducts.map(p=>normalizeMarketplaceLink(p.originalUrl))
- ].filter((link):link is string=>Boolean(link)));
  return <main style={{minHeight:"100vh",background:"#f8f8f3"}}>
   <Header/>
   <EnrichmentBatchRunner collection={collection} rows={rows} page={page} total={items.length}
     providerConnected={Boolean(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"&&process.env.BUCKYDROP_APP_CODE&&process.env.BUCKYDROP_APP_SECRET&&process.env.BUCKYDROP_ENV==="live")}
     automationConfigured={Boolean(process.env.CRON_SECRET?.trim()&&process.env.BLOB_READ_WRITE_TOKEN)}
-    progress={progress} uniqueSources={unique.size} savedUnique={savedUnique}/>
+    progress={progress} uniqueSources={progress.totalKnown} savedUnique={savedUnique}/>
  </main>;
 }

@@ -153,7 +153,7 @@ export async function getBuckydropBulkStatus():Promise<BuckydropBulkStatus>{
  const buckydrop=new Set([...prefixSets[0],...prefixSets[1]]);
  const hioBuy=new Set([...prefixSets[2],...prefixSets[3]]);
  const saved=new Set([...buckydrop,...hioBuy]);
- const c=candidates(all);
+ const c=candidates(all).filter(p=>saved.has(p.hash)||!rejected.has(p.hash));
  let checked=0,added=0,failed=0,unavailable=0,activeShards=0,pausedShards=0;
  let lastRun:string|null=null,lastIssue:string|null=null;
  for(const p of progress){
@@ -222,7 +222,7 @@ export async function runBuckydropBulkShard(shard:number,ownerRecovery=false):Pr
    getProducts(),
    catchup?existingHashes(PREFIX+"attempts/"+p.date+"/"):Promise.resolve(new Set<string>())
   ]);
-  const all=candidates(products).filter(x=>catchup?!saved.has(x.hash)&&!unavailable.has(x.hash)&&!attempted.has(x.hash):belongs(x.hash,shard));
+  const all=candidates(products).filter(x=>saved.has(x.hash)||!unavailable.has(x.hash)).filter(x=>catchup?!saved.has(x.hash)&&!unavailable.has(x.hash)&&!attempted.has(x.hash):belongs(x.hash,shard));
   p.totalCandidates=all.length;
   await writeProgress(p);
   const start=Date.now();

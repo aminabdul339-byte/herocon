@@ -14,6 +14,7 @@ export default function EnrichmentBatchRunner({
  const pageCount=Math.max(1,Math.ceil(total/12));
  const href=(n:number)=>"/enrichment?collection="+collection+"&page="+n;
  const pct=uniqueSources>0?Math.min(100,Math.floor(100*savedUnique/uniqueSources)):0;
+ const complete=uniqueSources>0&&savedUnique===uniqueSources&&progress.pending===0;
  const nextScheduled=progress.nextScheduledAt?new Date(progress.nextScheduledAt).toLocaleString("en-GB",{
   dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
  }):null;
@@ -35,10 +36,10 @@ export default function EnrichmentBatchRunner({
   <section style={{border:"1px solid #d4ded3",background:"#f3f7f0",
    borderRadius:10,padding:22,margin:"22px 0 24px"}}>
    <p style={{fontSize:12,letterSpacing:1.3,fontWeight:800,margin:"0 0 8px"}}>
-    {providerConnected&&automationConfigured?"BUCKYDROP BATCH SCHEDULE CONFIGURED":"AUTOMATIC PROCESSING NEEDS ATTENTION"}
+    {complete?"CATALOGUE ENRICHMENT COMPLETE":providerConnected&&automationConfigured?"BUCKYDROP BATCH SCHEDULE CONFIGURED":"AUTOMATIC PROCESSING NEEDS ATTENTION"}
    </p>
    <p style={{margin:"0 0 13px",fontSize:14,lineHeight:1.6}}>
-    {providerConnected&&automationConfigured
+    {complete?"All active supplier links have saved details. Permanently rejected listings without a saved record are excluded from both catalogues. Future batches skip saved records and only process newly added eligible links.":providerConnected&&automationConfigured
      ?"The automatic job has 24 scheduled batches. They run independently and skip all supplier links with existing snapshots. Vercel controls the exact start time; an older paused batch does not stop future scheduled batches."
      :"BuckyDrop's live API, private storage, or secure Cron authentication is not configured; no paid batch calls can run."}
    </p>
@@ -55,7 +56,7 @@ export default function EnrichmentBatchRunner({
     style={{height:9,background:"#d4ded1",borderRadius:20,overflow:"hidden"}}>
     <div style={{height:"100%",width:pct+"%",background:"#3e7251"}}/>
    </div>
-   {nextScheduled&&<p role="status" style={{fontSize:14,lineHeight:1.65,margin:"15px 0 0",fontWeight:700}}>
+   {!complete&&nextScheduled&&<p role="status" style={{fontSize:14,lineHeight:1.65,margin:"15px 0 0",fontWeight:700}}>
     Next scheduled batch: {nextScheduled} (UTC/London) · Shard {progress.nextScheduledShard}.
     {progress.cooldownUntil?" The supplier cooldown must expire before requests resume.":" No active provider cooldown is recorded."}
    </p>}
@@ -86,7 +87,6 @@ export default function EnrichmentBatchRunner({
    {progress.lastIssue&&<p style={{fontSize:13,color:"#8a5223"}}>
     Historical issue from a previous batch: <strong>{progress.lastIssue}</strong>. This is not proof the next batch is blocked. Saved records remain preserved.
    </p>}
-   <p style={{fontSize:13,lineHeight:1.7,margin:"8px 0 0"}}>A one-time HioBuy fallback is configured for 24 November (up to 27 lookups, subject to remaining quota and channel access). BuckyDrop recovery is configured for 25 November at 00:10 UTC, with existing daily attempt and cooldown protections.</p>
    <EnrichmentAutoRefresh/>
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
     Following BuckyDrop's rate-limit response to the initial four concurrent lookups,
