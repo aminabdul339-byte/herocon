@@ -33,6 +33,8 @@ const nextConfig:NextConfig={
  images:{unoptimized:true},
  experimental:{serverActions:{bodySizeLimit:"1mb"}},
  poweredByHeader:false,
+ // Raw catalogue imports are server-read data, not public download endpoints.
+ async redirects(){return ["herocon-current-catalogue.json","herocon-linked-products-only.json","herocon-makeup-brushes-20261119.json","herocon-nails-20261118.json","herocon-next-catalogue.json","herocon-products-import.example.json","herocon-verified-marketplace-links.json","herocon-wigs-20261118.json"].map(file=>({source:"/"+file,destination:"/membership",permanent:false}));},
  async headers(){
   return [
    {source:"/:path*",headers:securityHeaders},
