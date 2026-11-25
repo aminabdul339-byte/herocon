@@ -35,3 +35,10 @@
 .hc-site .hc-cart-page>.hc-cart-wrap{margin-top:0}
 @media(max-width:760px){.hc-site .hc-center-navwrap,.hc-site .hc-center-body{width:calc(100% - 28px)}.hc-site .hc-center-navwrap{margin-top:14px;display:block}.hc-site .hc-center-nav{width:100%;box-sizing:border-box;border-radius:18px}.hc-site .hc-center-settings{display:none}.hc-site .hc-center-tab{flex-direction:column;gap:4px;font-size:11px;padding:8px 2px;border-radius:13px;position:relative;min-height:48px}.hc-site .hc-center-tab small{position:absolute;top:4px;left:calc(50% + 9px);padding:2px 5px}.hc-site .hc-center-hero,.hc-site .hc-cart-page>.hc-cart-hero{border-radius:20px;padding:21px 22px!important;margin-bottom:16px!important}.hc-site .hc-center-panel,.hc-site .hc-center-body .hc-owner-order .hc-ot-panel{padding:18px;border-radius:20px}.hc-site .hc-center-hero p:not(.sc-kicker){font-size:13px!important}}
 @media(prefers-reduced-motion:reduce){.hc-site .hc-center-tab{transition:none}}
+
+/* Use one identical content frame for the tabs, hero and account panels. */
+.hc-site .hc-center-navwrap,.hc-site .hc-center-body,.hc-site .hc-cart-page > :is(.hc-cart-hero,.hc-cart-wrap){width:min(1200px,calc(100% - 48px));max-width:100%;box-sizing:border-box;margin-inline:auto}
+.hc-site .hc-center-navwrap{display:block;margin-top:22px;margin-bottom:14px}
+.hc-site .hc-center-nav{width:100%;box-sizing:border-box;max-width:none}
+.hc-site .hc-center-settings{display:none}
+@media(max-width:650px){.hc-site .hc-center-navwrap,.hc-site .hc-center-body,.hc-site .hc-cart-page > :is(.hc-cart-hero,.hc-cart-wrap){width:calc(100% - 28px)}.hc-site .hc-center-navwrap{margin-top:14px}}

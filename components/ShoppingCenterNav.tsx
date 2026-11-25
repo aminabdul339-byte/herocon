@@ -11,5 +11,5 @@ const tabs=[
 ];
 export default function ShoppingCenterNav(){
  const pathname=usePathname();const {count}=useCart();const active=pathname==="/owner/checkout"?"/cart":pathname==="/owner/orders"?"/orders":pathname;
- return <div className="hc-center-navwrap"><nav className="hc-center-nav" aria-label="Shopping account">{tabs.map(t=><Link className="hc-center-tab" key={t.href} href={t.href} aria-current={active===t.href?"page":undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={t.path}/></svg><span>{t.name}</span>{t.href==="/cart"&&count>0&&<small>{count}</small>}</Link>)}</nav><Link className="hc-center-settings" href="/account">Account settings</Link></div>;
+ return <div className="hc-center-navwrap"><nav className="hc-center-nav" aria-label="Shopping account">{tabs.map(t=><Link className="hc-center-tab" key={t.href} href={t.href} aria-current={active===t.href?"page":undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={t.path}/></svg><span>{t.name}</span>{t.href==="/cart"&&count>0&&<small>{count}</small>}</Link>)}</nav></div>;
 }
