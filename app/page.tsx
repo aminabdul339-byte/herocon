@@ -1,15 +1,17 @@
 import Link from "next/link";
 import Header from "@/components/Header";
-import MembershipPlans from "@/components/MembershipPlans";
-import {catalogueAccess,accessibleBusinessProducts} from "@/lib/catalogue-access";
+import HomepageMembership from "@/components/HomepageMembership";
+import {freeBusinessEdit} from "@/lib/business-catalogue-edit";
+import {featuredPreviewIds} from "@/lib/catalogue-access-model";
+import {productId} from "@/lib/catalogue";
 import AtelierHero from "@/components/AtelierHero";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
-import {prioritizeSavedPartnerProducts,attachSavedPartnerImages,selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
+import {selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
 import type {Metadata} from "next";
 import "./discovery-studio.css";
 
-export const dynamic="force-dynamic";
+export const revalidate=300;
 
 export const metadata:Metadata={
   title:"Herocon — Your link to China",
@@ -21,8 +23,8 @@ function Arrow({up=false}:{up?:boolean}){
 }
 
 export default async function Home(){
-  const [access,accessible]=await Promise.all([catalogueAccess(),accessibleBusinessProducts()]);
-  const products=await prioritizeSavedPartnerProducts(accessible);
+  const all=await getProducts();
+  const products=[...new Map([...freeBusinessEdit(all),...all.filter(p=>featuredPreviewIds.some(id=>id===productId(p)))].map(p=>[productId(p),p])).values()];
   // Two deliberately curated swaps for the homepage Discovery Edit.
   // Select from actual existing catalogue records; never invent listing data.
   // Keep the wig and nail entries picked by the existing editorial selection.
@@ -37,7 +39,7 @@ export default async function Home(){
       ? products.find(candidate=>candidate.doppelProductId===replacement&&candidate.imageUrl&&candidate.originalMarketplaceUrl)||product
       : product;
   });
-  const featured=await attachSavedPartnerImages(featuredSelection);
+  const featured=featuredSelection;
   const editorialNames:Readonly<Record<string,string>>={
     "4QucBqTfsk76WbDuGGzyBA":"Simple Modern Abstract Sculpture Character Bookends",
     "zmcFLXhlnDI9AyHB3zO8LA":"INS European and American-style 2023 Summer Lace Dress",
@@ -60,7 +62,7 @@ export default async function Home(){
       <p>Found something elsewhere? <span>Bring the original product link to Herocon.</span></p>
       <div><Link href="/find-product">Paste a product link <Arrow up/></Link></div>
     </div>
-    <MembershipPlans member={access.premium} signedIn={!!access.customer} trialEndsAt={access.trialEndsAt}/>
+    <HomepageMembership/>
     <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;
 }

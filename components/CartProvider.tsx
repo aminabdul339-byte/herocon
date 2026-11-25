@@ -1,7 +1,8 @@
 "use client";
 import {validFreight} from "@/lib/cart-pricing";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {createContext,useContext,useEffect,useState} from "react";
+import {createContext,useContext,useEffect,useState,useRef} from "react";
+import {useRouter,usePathname} from "next/navigation";
 
 export type CartItem={
  key:string;
@@ -20,7 +21,7 @@ export type CartItem={
  /** Whether this line is part of the next order. Kept with the cart in localStorage. */
  selected?:boolean;
 };
-export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string;ownerPremium?:boolean};
+export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string;ownerPremium?:boolean;premium?:boolean;trialEndsAt?:string|null};
 export const PENDING_CART_KEY="herocon-pending-add-v1";
 export const cartStorageKey=(userId:string)=>"herocon-user-cart-v2:"+userId;
 type CartContextValue={
@@ -61,22 +62,28 @@ export function CartProvider({children}:{children:React.ReactNode}){
  const [hydrated,setHydrated]=useState(false);
  const [storageUserId,setStorageUserId]=useState<string|null>(null);
  const [account,setAccount]=useState<AccountStatus>({status:"checking"});
- async function refreshAccount():Promise<AccountStatus>{
-  try{
+ const router=useRouter(),pathname=usePathname();
+ const last=useRef<AccountStatus>({status:"checking"}),lastCheck=useRef(0),inflight=useRef<Promise<AccountStatus>|null>(null);
+ function refreshAccount():Promise<AccountStatus>{
+  if(inflight.current)return inflight.current;
+  const work=(async()=>{try{
    const res=await fetch("/api/account/session",{cache:"no-store",credentials:"same-origin"});
    const data=await res.json();
    let next:AccountStatus;
    if(data.authenticated===true&&typeof data.user?.id==="string"&&typeof data.user?.email==="string")
-    next={status:"authenticated",id:data.user.id,email:data.user.email,ownerPremium:data.user.ownerPremium===true};
+    next={status:"authenticated",id:data.user.id,email:data.user.email,ownerPremium:data.user.ownerPremium===true,premium:data.user.premium===true,trialEndsAt:typeof data.user.trialEndsAt==="string"?data.user.trialEndsAt:null};
    else next={status:res.status===503?"unavailable":"guest"};
-   setAccount(next);return next;
+   const previous=last.current;last.current=next;lastCheck.current=Date.now();setAccount(next);
+   if(data.refreshed===true||previous.status!=="checking"&&(previous.id!==next.id||previous.premium!==next.premium||previous.trialEndsAt!==next.trialEndsAt))router.refresh();
+   return next;
   }catch{
    const unavailable:AccountStatus={status:"unavailable"};
-   setAccount(unavailable);
-   return unavailable;
-  }
+   lastCheck.current=Date.now();setAccount(unavailable);return unavailable;
+  }})();inflight.current=work;void work.finally(()=>{if(inflight.current===work)inflight.current=null;});return work;
  }
- useEffect(()=>{void refreshAccount();},[]);
+ useEffect(()=>{if(Date.now()-lastCheck.current>30000)void refreshAccount();},[pathname]);
+ useEffect(()=>{const check=()=>{if(document.visibilityState==="visible"&&Date.now()-lastCheck.current>30000)void refreshAccount();};const timer=window.setInterval(check,120000);window.addEventListener("focus",check);document.addEventListener("visibilitychange",check);return()=>{window.clearInterval(timer);window.removeEventListener("focus",check);document.removeEventListener("visibilitychange",check);};},[]);
+ useEffect(()=>{if(!account.trialEndsAt)return;const delay=Date.parse(account.trialEndsAt)-Date.now();if(delay<=0){void refreshAccount();return;}const timer=window.setTimeout(()=>void refreshAccount(),Math.min(delay+100,2147483647));return()=>window.clearTimeout(timer);},[account.trialEndsAt]);
  useEffect(()=>{
   setHydrated(false);
   if(account.status!=="authenticated"||!account.id){

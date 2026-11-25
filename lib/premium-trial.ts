@@ -17,4 +17,4 @@ export async function startPremiumTrial(customer:Customer):Promise<TrialRecord>{
  try{await put(path(customer.email),JSON.stringify(trial),{access:"private",allowOverwrite:false,addRandomSuffix:false,contentType:"application/json"});return trial;}
  catch{const prior=await readPremiumTrial(customer);if(prior)return prior;throw Error("Trial storage unavailable.");}
 }
-export async function activePremiumTrial(customer:Customer){try{const t=await readPremiumTrial(customer);return trialActive(t)?t:null;}catch{return null;}}
+export async function activePremiumTrial(customer:Customer){for(let attempt=0;attempt<2;attempt++){try{const t=await readPremiumTrial(customer);return trialActive(t)?t:null;}catch(e){if(attempt===1)console.warn("herocon-trial-read-failed",e instanceof Error?e.name:"unknown");}}return null;}
