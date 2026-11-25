@@ -3,6 +3,7 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ShoppingCenterNav from "@/components/ShoppingCenterNav";
 import {useCart} from "@/components/CartProvider";
 
 const money=(currency:"CNY"|"GBP",value:number)=>currency==="CNY"?"¥"+value.toFixed(2):"£"+value.toFixed(2);
@@ -32,11 +33,11 @@ export default function CartPage(){
  const pricesMissing=selectedItems.some(item=>item.unitPrice==null);
  const estimatedGbp=fx?gbp+cny*fx.rate:cny===0?gbp:null;
  const convertedGbp=(value:number)=>fx?money("GBP",value*fx.rate):null;
- return <main className="hc-cart-page"><Header/>
+ return <main className="hc-cart-page"><Header/><ShoppingCenterNav/>
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">YOUR SHOPPING CART</p>
    <h1>Your <em>cart.</em></h1>
-   <p>{account.ownerPremium?"Owner Premium active. Select the items you want to buy in the private test checkout.":"Keep track of products you like and compare original marketplace listings. Product checkout is currently limited to the owner pilot."}</p>
+   <p>{account.ownerPremium?"Review your selected products and proceed to the private test checkout.":"Review your selected products. Online purchasing is coming soon."}</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
