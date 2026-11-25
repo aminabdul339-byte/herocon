@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import {usePathname,useSearchParams} from "next/navigation";
-import {Suspense} from "react";
+import {Suspense,useEffect,useState} from "react";
+import {counts} from "@/lib/shopping-account-model";
 import {useCart} from "@/components/CartProvider";
 import "./shopping-center.css";
 const tabs=[
@@ -11,8 +12,8 @@ const tabs=[
  {name:"Parcels",href:"/parcels",path:"M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10M7.5 5l9 4"}
 ];
 function Nav({testMode=false}:{testMode?:boolean}){
- const pathname=usePathname();const {count}=useCart();const active=pathname==="/owner/checkout"?"/cart":pathname==="/owner/orders"?"/orders":pathname;
- return <div className="hc-center-navwrap"><nav className="hc-center-nav" aria-label="Shopping account">{tabs.map(t=><Link className="hc-center-tab" key={t.href} href={t.href+(testMode&&t.href!=="/cart"?"?test=1":"")} aria-current={active===t.href?"page":undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={t.path}/></svg><span>{t.name}</span>{t.href==="/cart"&&count>0&&<small>{count}</small>}</Link>)}</nav></div>;
+ const pathname=usePathname();const {count,account}=useCart();const [numbers,setNumbers]=useState<{orders:number;warehouse:number;parcels:number}|null>(null);useEffect(()=>{setNumbers(null);if(account.status!=="authenticated")return;let active=true;let serial=0;const refresh=()=>{const current=++serial;fetch("/api/account/shopping"+(testMode?"?test=1":""),{cache:"no-store"}).then(async r=>{if(!r.ok)return;const d=await r.json();if(active&&current===serial)setNumbers(counts(d.account));}).catch(()=>{});};refresh();window.addEventListener("hc-account-changed",refresh);return ()=>{active=false;window.removeEventListener("hc-account-changed",refresh);};},[account.status,account.id,testMode,pathname]);const active=pathname==="/owner/checkout"?"/cart":pathname==="/owner/orders"?"/orders":pathname;
+ return <div className="hc-center-navwrap"><nav className="hc-center-nav" aria-label="Shopping account">{tabs.map(t=><Link className="hc-center-tab" key={t.href} href={t.href+(testMode&&t.href!=="/cart"?"?test=1":"")} aria-current={active===t.href?"page":undefined}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={t.path}/></svg><span>{t.name}</span>{t.href==="/cart"?count>0&&<small>{count}</small>:numbers&&numbers[t.href.slice(1) as keyof typeof numbers]>0&&<small>{numbers[t.href.slice(1) as keyof typeof numbers]}</small>}</Link>)}</nav></div>;
 }
 
 function AccountNav(){const {account}=useCart();const params=useSearchParams();return <Nav testMode={account.status==="authenticated"&&account.ownerPremium===true&&params.get("test")==="1"}/>;}

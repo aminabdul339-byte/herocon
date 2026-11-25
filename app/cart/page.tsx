@@ -63,12 +63,13 @@ export default function CartPage(){
      {gbp>0&&<p><span>Products priced in GBP</span><strong>{money("GBP",gbp)}</strong></p>}
      {selectedLines>0&&estimatedGbp!==null&&<p className="hc-cart-gbp-total"><span>{pricesMissing?"Priced items, approx. GBP":"Estimated product subtotal (GBP)"}</span><strong>{(cny>0?"≈ ":"")+money("GBP",estimatedGbp)}</strong></p>}
      {pricesMissing&&<p><span>Some prices</span><strong>Unavailable</strong></p>}
-     <p><span>International delivery</span><strong>Not included</strong></p>
+     {selectedLines>0&&estimatedGbp!==null&&!pricesMissing&&<p><span>Estimated procurement fee (7%)</span><strong>≈ {money("GBP",Math.round(estimatedGbp*7)/100)}</strong></p>}<p><span>Chinese domestic delivery</span><strong>Confirmed at checkout</strong></p><p><span>International delivery</span><strong>Paid separately</strong></p>
     </div>
     {account.ownerPremium&&<>
      {selectedLines>0?<Link className="hc-cart-bulk-buy" href="/owner/checkout">Checkout <ArrowIcon direction="right"/></Link>:<button className="hc-cart-bulk-buy" disabled>Select products to buy</button>}
      <p className="hc-cart-bulk-note">Owner-only test checkout. Verify supplier options, review the order and make a simulated payment. No actual money is charged.</p>
     </>}
+    {!account.ownerPremium&&<><button className="hc-cart-bulk-buy" disabled>Checkout coming soon</button><p className="hc-cart-bulk-note">Final supplier price and delivery must be verified before payment.</p></>}
     <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}
   </section>
