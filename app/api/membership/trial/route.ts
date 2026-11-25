@@ -1,3 +1,4 @@
+import {publicEmailError} from "@/lib/email-auth-error";
 import {NextResponse} from "next/server";
 import {cookies} from "next/headers";
 import {randomBytes,createHash} from "node:crypto";
@@ -17,9 +18,11 @@ export async function POST(req:Request){
  if(!accountOriginValid(req))return reply({error:"Open the Herocon trial page."},403);
  if(!customerAuthConfigured())return reply({error:"Email sign-in is unavailable."},503);
  if(limited(req))return reply({error:"Too many requests. Try again later."},429);
+ let flow="trial";
  try{
   const raw=await req.text();if(raw.length>2000)return reply({error:"Request too long."},413);
   const d=JSON.parse(raw);if(!d||typeof d!=="object")return reply({error:"Invalid request."},400);
+  flow=typeof d.action==="string"&&["email","verify","exchange","start"].includes(d.action)?d.action:"trial";
   if(d.action==="email"){
    const email=typeof d.email==="string"?d.email.trim().toLowerCase():"";
    if(!emailValid(email)||d.acceptedTerms!==true)return reply({error:"Enter your email and accept the terms."},400);
@@ -52,5 +55,5 @@ export async function POST(req:Request){
    return reply({trial,active:trialActive(trial)});
   }
   return reply({error:"Unknown action."},400);
- }catch(e){return reply({error:e instanceof CustomerAuthError?(e.status===429?"Please wait before requesting another email.":"Email verification could not be completed. Try again."):"Trial service temporarily unavailable."},e instanceof CustomerAuthError?e.status:503);}
+ }catch(e){const failure=publicEmailError(e,flow);return reply({error:failure.error},failure.status);}
 }

@@ -7,7 +7,7 @@ export const AUTH_REFRESH_COOKIE="__Host-hc-refresh";
 export type Customer={id:string;email:string;accessToken:string};
 export type SupabaseSession={access_token?:string;refresh_token?:string;expires_in?:number;user?:{id?:string;email?:string;email_confirmed_at?:string|null}};
 export class CustomerAuthError extends Error{
- constructor(public status:number,message:string){super(message);}
+ constructor(public status:number,message:string,public code?:string){super(message);}
 }
 export function customerAuthConfigured():boolean{
  const url=process.env.HEROCON_SUPABASE_URL||"";
@@ -31,7 +31,8 @@ export async function authApi(path:string,body:unknown,method:"POST"|"PUT"="POST
  if(!response.ok){
   const reason=typeof json.msg==="string"?json.msg:typeof json.error_description==="string"?json.error_description:
    typeof json.message==="string"?json.message:"Account request was not accepted.";
-  throw new CustomerAuthError(response.status>=500?503:response.status,reason.slice(0,160));
+  const code=typeof json.error_code==="string"&&/^[a-z0-9_]{1,80}$/.test(json.error_code)?json.error_code:undefined;
+  throw new CustomerAuthError(response.status>=500?503:response.status,reason.slice(0,160),code);
  }
  return json as SupabaseSession&Record<string,unknown>;
 }

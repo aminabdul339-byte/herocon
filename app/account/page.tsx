@@ -48,6 +48,7 @@ function AccountContent(){
  const [email,setEmail]=useState(""),[password,setPassword]=useState("");
  const [working,setWorking]=useState(false),[notice,setNotice]=useState("");
  const [readyToConfirm,setReadyToConfirm]=useState(false);
+ const [verificationCode,setVerificationCode]=useState("");
  const {account}=useCart();
  const pending=useMemo(()=>Boolean(next),[next]);
  useEffect(()=>{const code=search.get("code");if(code&&code.length<=1024)window.location.replace("/membership/trial?code="+encodeURIComponent(code));},[search]);
@@ -86,6 +87,18 @@ function AccountContent(){
   }catch(error){setNotice(error instanceof Error?error.message:"The account service is temporarily unavailable.");}
   finally{setWorking(false);}
  }
+ async function verifySignup(resend=false){
+  if(working)return;setWorking(true);setNotice("");
+  try{
+   const response=await fetch("/api/account/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:resend?"resend":"verify",email,code:verificationCode}),credentials:"same-origin",cache:"no-store"});
+   const result=await response.json() as AuthResult;
+   if(!response.ok)throw Error(result.error||"Verification could not be completed.");
+   if(resend){setNotice(result.message||"Verification email requested. Check your inbox and spam folder.");return;}
+   const session=await fetch("/api/account/session",{cache:"no-store",credentials:"same-origin"});const data=await session.json();
+   if(!session.ok||!data.authenticated||!data.user?.id)throw Error("Sign in to finish verification.");
+   savePendingSelection(data.user.id);window.location.assign(next||"/account");
+  }catch(e){setNotice(e instanceof Error?e.message:"Verification unavailable.");}finally{setWorking(false);}
+ }
  async function logout(){
   setWorking(true);
   try{await fetch("/api/account/logout",{method:"POST",credentials:"same-origin"});}
@@ -95,13 +108,11 @@ function AccountContent(){
   <Header/>
   <section className="hc-account-shell">
    <div className="hc-account-intro">
-    <p className="hc-premium-kicker">{account.ownerPremium?"OWNER PREMIUM":"YOUR HEROCON ACCOUNT"}</p>
-    <h1>Your Herocon account</h1>
-    <p>{account.ownerPremium?"You have complimentary Premium access to the full Herocon catalogue and available sourcing tools.":"Discover products from Chinese marketplaces, save your favourites and explore new sourcing opportunities. Start free or try Premium for three days with just your email."}</p>
-    <div className="hc-account-perks">
-     {account.ownerPremium?<><p><strong>PREMIUM ACCESS</strong> Full catalogue and available search tools.</p><p><strong>OWNER WORKSPACE</strong> Private sourcing and fulfilment testing.</p></>:<><p><strong>FREE</strong> Browse two catalogue pages, three rows per category and try one product link.</p><p><strong>3-DAY TRIAL</strong> Explore available Premium features. No card or automatic renewal.</p><p><strong>PREMIUM</strong> Unlock the full catalogue, keyword search and saved product link lookups for £9.99/month.</p><p className="hc-account-fine">Live marketplace search, purchasing and shipping are in rollout.</p></>}
-    </div>
-    {pending&&<p className="hc-account-pending">Your selected product will be added after sign-in.</p>}
+    <h1>{account.status==="authenticated"?"Your account":"Welcome to Herocon"}</h1>
+    <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
+    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Try Premium free</strong><span>3 days</span></div><p>Full catalogue and available search tools. No card or automatic renewal.</p><Link href="/membership/trial">Start with email <ArrowIcon direction="right"/></Link></div>:null}
+    <Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>
+    {pending&&<p className="hc-account-pending">Your selected product will be saved after sign-in.</p>}
    </div>
    <div className="hc-account-card">
     {account.status==="authenticated"&&!next?<>
@@ -121,22 +132,22 @@ function AccountContent(){
      <h2>Opening your cart…</h2>
     </>:<>
      <div className="hc-account-tabs">
-      <button type="button" className={mode==="signup"?"active":""} onClick={()=>{setMode("signup");setNotice("");}}>Create account</button>
-      <button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setNotice("");}}>Sign in</button>
+      <button type="button" className={mode==="signup"?"active":""} onClick={()=>{setMode("signup");setNotice("");setReadyToConfirm(false);}}>Create account</button>
+      <button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setNotice("");setReadyToConfirm(false);}}>Sign in</button>
      </div>
-     <h2>{mode==="signup"?"Create your free account":mode==="login"?"Welcome back":"Reset your password"}</h2>
-     <p>{mode==="signup"?"Start with Free, or try Premium for three days.":mode==="login"?"Sign in to your personal cart.":"We'll send reset instructions if this email has an account."}</p>
-     <form onSubmit={handleSubmit}>
+     <h2>{readyToConfirm?"Verify your email":mode==="signup"?"Create account":mode==="login"?"Sign in":"Reset password"}</h2>
+     <p>{readyToConfirm?"Enter the code from your email, or open the confirmation link.":mode==="signup"?"Free to join.":mode==="login"?"Access your Herocon account.":"We’ll send reset instructions if this email has an account."}</p>
+     {readyToConfirm?<form onSubmit={e=>{e.preventDefault();void verifySignup();}}><label>Email<input type="email" value={email} readOnly style={inputStyle}/></label><label>Verification code<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" maxLength={10} required value={verificationCode} onChange={e=>setVerificationCode(e.target.value.replace(/[^0-9]/g,""))} style={inputStyle}/></label><button type="submit" style={buttonStyle} disabled={working||!/^\d{6,10}$/.test(verificationCode)}>Verify email</button><div className="hc-account-verify-actions"><button type="button" className="hc-account-text-button" disabled={working} onClick={()=>void verifySignup(true)}>Resend email</button><button type="button" className="hc-account-text-button" onClick={()=>{setReadyToConfirm(false);setNotice("");setVerificationCode("");}}>Change email</button></div></form>:<form onSubmit={handleSubmit}>
       <label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle}/></label>
       {mode!=="recover"&&<label>Password<input type="password" required minLength={12} maxLength={128} autoComplete={mode==="signup"?"new-password":"current-password"} value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle}/><small>At least 12 characters</small></label>}
       <button type="submit" disabled={working||account.status==="checking"} style={buttonStyle}>
        {working?"Please wait…":mode==="signup"?"Create free account":mode==="login"?"Sign in":"Send password-reset email"}
       </button>
-     </form>
+     </form>}
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
-     {readyToConfirm&&<p className="hc-account-notice">Use the email link in this browser to restore the pending product, even if it opens a new tab. If you verify on another device, return to this one and sign in.</p>}
-     <Link href="/membership/trial" className="hc-account-text-button">Try Premium free for 3 days</Link>
+     {readyToConfirm&&<p className="hc-account-fine">If the email contains a link instead, open it in this browser. Check your spam folder if nothing arrives.</p>}
+     {!readyToConfirm&&<Link href="/membership/trial" className="hc-account-email-link">Continue with email only <ArrowIcon direction="right"/></Link>}
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>
