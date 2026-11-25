@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prebuild": "node scripts/check-no-emojis.mjs && npm run test:hiobuy",
-    "test:hiobuy": "node --experimental-strip-types --test tests/hiobuy-pricing.test.cjs tests/hiobuy-order-groups.test.cjs tests/hiobuy-rehearsal.test.cjs"
+    "test:hiobuy": "node --experimental-strip-types --test tests/hiobuy-pricing.test.cjs tests/hiobuy-order-groups.test.cjs tests/hiobuy-rehearsal.test.cjs tests/hiobuy-webhook.test.cjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.9.0",

@@ -15,3 +15,6 @@ Optional real Stripe test-mode Checkout: configure STRIPE_SECRET_KEY (sk_test_ o
 - Review UK consumer terms, returns, delivery and tax/import disclosures, privacy, restricted products and compliance. No public paid checkout until gates are satisfied.
  
 References: https://hiobuy.com/en/guides/hiobuy-platform-update-october-2026 and https://hiobuy.com/en/api-docs/fulfillment-setup.
+
+## Provider event inbox
+Endpoint /api/hiobuy/webhook. Configure HIOBUY_WEBHOOK_SECRET and HIOBUY_APP_ID only on the server. Accepts signed portal test events; live events disabled unless HEROCON_HIOBUY_LIVE_EVENT_INBOX=true. Events are deduplicated and persisted privately as pending_reconciliation, not yet applied to customer records. Set up Hiobuy Portal Send test after activation permits webhook configuration. Live ingestion must be followed by a customer-ownership-aware reconciliation consumer and durable notification delivery before launch. See https://hiobuy.com/en/guides/webhooks-demo-cloudflare.
