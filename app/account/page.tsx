@@ -109,7 +109,7 @@ function AccountContent(){
      <p className="hc-premium-kicker">ACCOUNT ACTIVE</p>
      <h2>Welcome back.</h2>
      <p>Signed in as <strong>{account.email}</strong>.</p>
-     {account.ownerPremium&&<><p role="status" style={{background:"#ecf4e9",color:"#215b37",padding:14,borderRadius:12,fontWeight:800}}>Owner Premium active · Complimentary · No new subscription charge</p><Link className="hc-account-primary-link" href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link></>}
+     {account.ownerPremium&&<><p role="status" style={{background:"#ecf4e9",color:"#215b37",padding:14,borderRadius:12,fontWeight:800}}>Owner Premium active · Complimentary · No new subscription charge</p><Link className="hc-account-primary-link" href="/owner/orders">My test orders <ArrowIcon direction="right"/></Link><Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link></>}
      <Link className="hc-account-primary-link" href="/cart">View your cart <ArrowIcon direction="right"/></Link>
      <Link href="/membership/activate">Manage membership and billing <ArrowIcon direction="right"/></Link>
      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>

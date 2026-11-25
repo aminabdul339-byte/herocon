@@ -168,7 +168,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   }
   addItems(rows);
   setCartMessage(rows.length===1?"Added to your cart.":"Selected options added to your cart.");
-  if(buyNow)router.push("/membership/activate?next="+encodeURIComponent("/cart?checkout=1"));
+  if(buyNow)router.push(verified.ownerPremium?"/cart":"/membership/activate?next="+encodeURIComponent("/cart?checkout=1"));
  }
 
  return <>
@@ -235,12 +235,12 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </>}
     <div className="hc-buy-actions">
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
-     {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||stockConflict||!marketplace} onClick={()=>router.push("/find-product?url="+encodeURIComponent(marketplace||""))}>Verify with HioBuy · owner access</button>:
+     {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||stockConflict||!marketplace} onClick={()=>void handleCart(true)}>Buy now</button>:
       <Link className="hc-buy-now-button" href="/cart" style={{display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}>View cart</Link>}
     </div>
-    {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active. Verify the new provider’s product and SKU before purchasing.</p>}
+    {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active. Test checkout only; no real charge.</p>}
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
-    <p className="hc-checkout-note">{ownerDirectBuy?"HioBuy migration · checkout is not yet enabled.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
+    <p className="hc-checkout-note">{ownerDirectBuy?"Owner test checkout · real purchases are disabled.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
     <div className="hc-editorial-accordions" aria-label="Sourcing information">
       <details><summary>Pricing &amp; delivery</summary>
        {stockConflict&&<p>Saved supplier listing status and variant stock disagree. Availability must be confirmed before purchasing. You can still plan items in your cart.</p>}

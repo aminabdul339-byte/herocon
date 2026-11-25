@@ -36,7 +36,7 @@ export default function CartPage(){
   <section className="sc-page-hero sc-container hc-cart-hero">
    <p className="sc-kicker">YOUR SHOPPING CART</p>
    <h1>Your <em>cart.</em></h1>
-   <p>{account.ownerPremium?"Owner Premium active. Verify your selected products with HioBuy before ordering. Live payments remain disabled.":"Keep track of products you like and compare original marketplace listings. Product checkout is currently limited to the owner pilot."}</p>
+   <p>{account.ownerPremium?"Owner Premium active. Select the items you want to buy in the private test checkout.":"Keep track of products you like and compare original marketplace listings. Product checkout is currently limited to the owner pilot."}</p>
   </section>
   <section className="sc-container hc-cart-wrap" aria-live="polite">
    {!hydrated?<p>Loading your cart…</p>:items.length===0?
@@ -65,8 +65,8 @@ export default function CartPage(){
      <p><span>International delivery</span><strong>Not included</strong></p>
     </div>
     {account.ownerPremium&&<>
-     <Link className="hc-cart-bulk-buy" href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link>
-     <p className="hc-cart-bulk-note">Existing cart selections are preserved. New supplier IDs, variants and costs must be verified before checkout. No order or payment is submitted here.</p>
+     {selectedLines>0?<Link className="hc-cart-bulk-buy" href="/owner/checkout">Checkout <ArrowIcon direction="right"/></Link>:<button className="hc-cart-bulk-buy" disabled>Select products to buy</button>}
+     <p className="hc-cart-bulk-note">Owner-only test checkout. Verify supplier options, review the order and make a simulated payment. No actual money is charged.</p>
     </>}
     <Link className="hc-cart-shop" href="/search">Continue shopping</Link>
     </aside></div>}
