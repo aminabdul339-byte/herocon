@@ -1,3 +1,5 @@
+import {accessibleBusinessProducts} from "@/lib/catalogue-access";
+import {PremiumNotice} from "@/components/MembershipPlans";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import {Suspense} from "react";
@@ -22,9 +24,9 @@ const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
 
 export default async function ProductPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
- const products=await getProducts();
+ const products=await accessibleBusinessProducts();
  const found=products.find(x=>productId(x)===id||x.canonicalId===id);
- if(!found)notFound();
+ if(!found){const exists=(await getProducts()).some(x=>productId(x)===id||x.canonicalId===id);if(!exists)notFound();return <main><Header/><section className="hc-plan-locked"><h1>This product is in the Premium catalogue.</h1><PremiumNotice/></section></main>;}
  const product={...found,originalTitle:found.originalTitle||found.title};
  const more=products.filter(x=>product.sellerId&&x.sellerId===product.sellerId&&productId(x)!==id).slice(0,8);
  const similar=related(products,product,8);

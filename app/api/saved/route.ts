@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {getProducts} from "@/lib/catalogue-server";
+import {accessibleBusinessProducts as getProducts} from "@/lib/catalogue-access";
 export const dynamic="force-dynamic";
 export async function GET(request:NextRequest){
  const raw=request.nextUrl.searchParams.get("ids")||"";

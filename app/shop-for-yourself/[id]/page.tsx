@@ -1,3 +1,5 @@
+import {catalogueAccess,personalPreview} from "@/lib/catalogue-access";
+import {PremiumNotice} from "@/components/MembershipPlans";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -36,7 +38,9 @@ export default async function ShopProductPage({params,searchParams}:Params){
  const item=findPersonalProduct(id);
  const hidden=await unavailableSourceHashes();
  if(!item||isUnavailableSource(item.originalUrl,hidden))notFound();
- const search=await searchParams;
+ const [search,access]=await Promise.all([searchParams,catalogueAccess()]);
+ const preview=access.premium?null:await Promise.all([personalPreview("women"),personalPreview("men")]);
+ if(preview&&!preview.flat().some(p=>p.id===id))return <main><Header/><section className="hc-plan-locked"><h1>This product is in the Premium catalogue.</h1><PremiumNotice/></section></main>;
  const audience=item.gender==="unisex"
   ?(search.audience==="men"?"men":"women")
   :item.gender;
@@ -72,7 +76,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
  };
  const shownProduct=withMarketplaceSource(product,enrichment);
  const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
- const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
+ const related=(preview?(audience==="women"?preview[0]:preview[1]):audienceProducts(audience)).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>

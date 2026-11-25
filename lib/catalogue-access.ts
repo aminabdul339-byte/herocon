@@ -1,0 +1,13 @@
+import "server-only";
+import {cache} from "react";
+import {currentCustomer} from "@/lib/customer-auth";
+import {checkActiveMembership} from "@/lib/membership-access";
+import {getProducts} from "@/lib/catalogue-server";
+import {productId} from "@/lib/catalogue";
+import {audienceProducts} from "@/lib/personal-shop";
+import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
+import {previewCollection,featuredPreviewIds} from "@/lib/catalogue-access-model";
+export const catalogueAccess=cache(async()=>{const customer=await currentCustomer();return {customer,premium:customer?await checkActiveMembership(customer):false};});
+export const businessPreview=cache(async()=>previewCollection(await getProducts(),productId,p=>p.category||"",featuredPreviewIds));
+export const accessibleBusinessProducts=cache(async()=> (await catalogueAccess()).premium?await getProducts():await businessPreview());
+export const personalPreview=cache(async(audience:"women"|"men")=>{const hidden=await unavailableSourceHashes();return previewCollection(audienceProducts(audience).filter(p=>!isUnavailableSource(p.originalUrl,hidden)),p=>p.id,p=>p.category);});

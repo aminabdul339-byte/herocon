@@ -1,3 +1,5 @@
+import {personalPreview} from "@/lib/catalogue-access";
+import {PremiumNotice} from "@/components/MembershipPlans";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
@@ -18,10 +20,11 @@ const ORDER:Record<Audience,string[]>={
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
-export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
+export default async function ShopForYourself({filters,rates,premium}:{filters:Filters;rates:ShopFxRates;premium:boolean}){
  const {audience,sort}=filters;
  const hidden=await unavailableSourceHashes();
- const available=(a:Audience)=>audienceProducts(a).filter(p=>!isUnavailableSource(p.originalUrl,hidden));
+ const [women,men]=premium?await Promise.all([Promise.resolve(audienceProducts("women").filter(p=>!isUnavailableSource(p.originalUrl,hidden))),Promise.resolve(audienceProducts("men").filter(p=>!isUnavailableSource(p.originalUrl,hidden)))]):await Promise.all([personalPreview("women"),personalPreview("men")]);
+ const available=(a:Audience)=>a==="women"?women:men;
  const everything=available(audience);
  const categoryTotals=new Map<string,number>();
  for(const x of everything)categoryTotals.set(x.category,(categoryTotals.get(x.category)||0)+1);
@@ -61,7 +64,7 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
       </Link>)}
     </nav>
   </div>
-  <form className="hc-personal-catalogue-search" role="search" action="/shop-for-yourself#browse-finds" method="get">
+  {premium?<form className="hc-personal-catalogue-search" role="search" action="/shop-for-yourself#browse-finds" method="get">
     <input name="audience" type="hidden" value={audience}/>
     {category!=="All"&&<input name="category" type="hidden" value={category}/>}
     {sort==="name"&&<input name="sort" type="hidden" value="name"/>}
@@ -69,7 +72,7 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
     <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
     <button type="submit">Search <span aria-hidden="true"><ArrowIcon direction="right"/></span></button>
-  </form>
+  </form>:<PremiumNotice feature="keyword search and the full collection"/>}
   <div className="hc-personal-category-heading"><span>SHOP BY CATEGORY</span><span>{everything.length.toLocaleString("en-GB")} {audience==="women"?"women’s":"men’s"} finds</span></div>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>

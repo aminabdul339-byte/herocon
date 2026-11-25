@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {getProducts} from "@/lib/catalogue-server";
+import {accessibleBusinessProducts as getProducts} from "@/lib/catalogue-access";
 import {productId} from "@/lib/catalogue";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getSavedBuckydropProduct,getOrSaveBuckydropProduct} from "@/lib/buckydrop-cache";

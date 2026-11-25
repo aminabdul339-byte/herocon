@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import MembershipPlans from "@/components/MembershipPlans";
+import {catalogueAccess,accessibleBusinessProducts} from "@/lib/catalogue-access";
 import AtelierHero from "@/components/AtelierHero";
 import ProductCard from "@/components/ProductCard";
 import {getProducts} from "@/lib/catalogue-server";
@@ -19,7 +21,8 @@ function Arrow({up=false}:{up?:boolean}){
 }
 
 export default async function Home(){
-  const products=await prioritizeSavedPartnerProducts(await getProducts());
+  const [access,accessible]=await Promise.all([catalogueAccess(),accessibleBusinessProducts()]);
+  const products=await prioritizeSavedPartnerProducts(accessible);
   // Two deliberately curated swaps for the homepage Discovery Edit.
   // Select from actual existing catalogue records; never invent listing data.
   // Keep the wig and nail entries picked by the existing editorial selection.
@@ -57,6 +60,7 @@ export default async function Home(){
       <p>Found something elsewhere? <span>Bring the original product link to Herocon.</span></p>
       <div><Link href="/find-product">Paste a product link <Arrow up/></Link></div>
     </div>
+    <MembershipPlans member={access.premium} signedIn={!!access.customer}/>
     <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;
 }

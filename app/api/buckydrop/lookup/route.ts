@@ -1,3 +1,4 @@
+import {catalogueAccess} from "@/lib/catalogue-access";
 import {NextResponse} from "next/server";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
@@ -29,6 +30,7 @@ const jsonError=(message:string,status:number)=>NextResponse.json(
 );
 
 export async function POST(request:Request){
+ if(!(await catalogueAccess()).premium)return jsonError("Marketplace link lookup requires Premium.",403);
  // Transition: public lookup reads existing snapshots only. New discovery is owner-gated through HioBuy.
  const origin=request.headers.get("origin");
  if(!origin)return jsonError("Please submit product links from the Herocon website.",403);
