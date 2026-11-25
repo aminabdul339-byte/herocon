@@ -20,7 +20,7 @@ export function CatalogueCategoryScroll({category}:{category:string}){
  },[category]);
  return null;
 }
-export function CatalogueMobileCategory({category,collection,query,sort,categories}:{category:string;collection:string;query:string;sort:string;categories:{name:string;count:number}[]}){
+export function CatalogueMobileCategory({category,collection,query,sort,budget="",categories}:{category:string;collection:string;query:string;sort:string;budget?:string;categories:{name:string;count:number}[]}){
  const router=useRouter();
  const [selected,setSelected]=useState(category);
  const [pending,startTransition]=useTransition();
@@ -30,13 +30,14 @@ export function CatalogueMobileCategory({category,collection,query,sort,categori
   if(selected)params.set("category",selected);
   if(collection)params.set("collection",collection);
   if(query)params.set("q",query);
+  if(budget)params.set("maxPrice",budget);
   if(sort!=="recommended")params.set("sort",sort);
   startTransition(()=>router.push("/search"+(params.size?"?"+params.toString():""),{scroll:false}));
  }}>
  <label htmlFor="mobile-category-select">Browse a category</label>
  <select id="mobile-category-select" name="category" value={selected} onChange={e=>setSelected(e.target.value)} disabled={pending}><option value="">All categories</option>{categories.map(c=><option key={c.name} value={c.name}>{c.name} ({c.count})</option>)}</select>
  {collection&&<input type="hidden" name="collection" value={collection}/>}
- {query&&<input type="hidden" name="q" value={query}/>}
+ {query&&<input type="hidden" name="q" value={query}/>} {budget&&<input type="hidden" name="maxPrice" value={budget}/>}
  {sort!=="recommended"&&<input type="hidden" name="sort" value={sort}/>}
  <button type="submit" disabled={pending}>{pending?"Loading…":"Show products"}</button>
  </form>;

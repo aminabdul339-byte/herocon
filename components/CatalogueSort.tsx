@@ -9,7 +9,7 @@ const options=[
  {value:"price-desc",label:"Price: high to low"}
 ];
 
-export default function CatalogueSort({sort,query,category,collection}:{sort:string;query:string;category:string;collection:string}){
+export default function CatalogueSort({sort,query,category,collection,budget=""}:{sort:string;query:string;category:string;collection:string;budget?:string}){
  const router=useRouter();
  const [selected,setSelected]=useState(options.some(o=>o.value===sort)?sort:"recommended");
  const [pending,startTransition]=useTransition();
@@ -20,6 +20,7 @@ export default function CatalogueSort({sort,query,category,collection}:{sort:str
   if(query)params.set("q",query);
   if(category)params.set("category",category);
   if(collection)params.set("collection",collection);
+  if(budget)params.set("maxPrice",budget);
   if(value!=="recommended")params.set("sort",value);
   const suffix=params.toString();
   startTransition(()=>router.push("/search"+(suffix?"?"+suffix:""),{scroll:false}));
