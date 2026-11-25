@@ -21,7 +21,7 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
     <div className="hc-link-intro-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a4.5 4.5 0 0 0 6.4 0l3-3A4.5 4.5 0 0 0 13 3.6l-1.7 1.7"/><path d="M14 11a4.5 4.5 0 0 0-6.4 0l-3 3A4.5 4.5 0 0 0 11 20.4l1.7-1.7"/></svg></div>
     <p className="sc-kicker">FIND YOUR OWN PRODUCTS</p>
     <h1 id="hc-link-title">Found something you love?<br/><em>Paste the link.</em></h1>
-    <p className="hc-link-intro-copy">Discover the seller&apos;s photos, available options and reference prices in CNY and GBP, all in one place.</p>
+    <p className="hc-link-intro-copy">Find saved supplier photos, options and reference prices. New live searches are being migrated to our new sourcing partner.</p>
     <div className="hc-link-input-panel">
      <ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>
      <div className="hc-link-platforms"><span>Supported marketplaces</span><ul aria-label="Supported marketplaces"><li>1688</li><li>Taobao</li><li>Tmall</li><li>Weidian</li></ul></div>

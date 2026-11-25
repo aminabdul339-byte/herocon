@@ -15,7 +15,7 @@ export default function EnrichmentBatchRunner({
  const href=(n:number)=>"/enrichment?collection="+collection+"&page="+n;
  const pct=uniqueSources>0?Math.min(100,Math.floor(100*savedUnique/uniqueSources)):0;
  const complete=uniqueSources>0&&savedUnique===uniqueSources&&progress.pending===0;
- const nextScheduled=progress.nextScheduledAt?new Date(progress.nextScheduledAt).toLocaleString("en-GB",{
+ const nextScheduled=false&&progress.nextScheduledAt?new Date(progress.nextScheduledAt).toLocaleString("en-GB",{
   dateStyle:"medium",timeStyle:"short",timeZone:"Europe/London"
  }):null;
  const lastRun=progress.lastRun?new Date(progress.lastRun).toLocaleString("en-GB",{
@@ -27,8 +27,7 @@ export default function EnrichmentBatchRunner({
    Complete supplier details, without repeat charges.
   </h1>
   <p style={{maxWidth:780,lineHeight:1.7}}>
-   Herocon now uses BuckyDrop to fill gaps in the Start a Business and Shop for Yourself
-   catalogues. Every supplier URL is normalised and de-duplicated across collections.
+   Herocon is migrating new sourcing activity to HioBuy. Existing BuckyDrop and HioBuy snapshots remain available in both catalogues. Every supplier URL is normalised and de-duplicated across collections.
    Existing HioBuy and BuckyDrop records are skipped before any paid supplier lookup.
    Saved full variant lists, gallery images, descriptions, seller and price details
    are displayed on the product pages. No manual page-by-page work is required.
@@ -36,12 +35,11 @@ export default function EnrichmentBatchRunner({
   <section style={{border:"1px solid #d4ded3",background:"#f3f7f0",
    borderRadius:10,padding:22,margin:"22px 0 24px"}}>
    <p style={{fontSize:12,letterSpacing:1.3,fontWeight:800,margin:"0 0 8px"}}>
-    {complete?"CATALOGUE ENRICHMENT COMPLETE":providerConnected&&automationConfigured?"BUCKYDROP BATCH SCHEDULE CONFIGURED":"AUTOMATIC PROCESSING NEEDS ATTENTION"}
+    HIOBUY MIGRATION · SAVED CATALOGUE PRESERVED
    </p>
    <p style={{margin:"0 0 13px",fontSize:14,lineHeight:1.6}}>
-    {complete?"All active supplier links have saved details. Permanently rejected listings without a saved record are excluded from both catalogues. Future batches skip saved records and only process newly added eligible links.":providerConnected&&automationConfigured
-     ?"The automatic job has 24 scheduled batches. They run independently and skip all supplier links with existing snapshots. Vercel controls the exact start time; an older paused batch does not stop future scheduled batches."
-     :"BuckyDrop's live API, private storage, or secure Cron authentication is not configured; no paid batch calls can run."}
+    New BuckyDrop batches are retired. Existing snapshots remain reference data. HioBuy procurement and shipping are being validated separately.
+   <Link href="/owner/hiobuy">Open HioBuy fulfilment setup</Link>
    </p>
    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:15,marginBottom:16}}>
     <div><strong style={{fontSize:28}}>{savedUnique.toLocaleString("en-GB")}</strong>
@@ -89,13 +87,7 @@ export default function EnrichmentBatchRunner({
    </p>}
    <EnrichmentAutoRefresh/>
    <p style={{fontSize:12,color:"#6c7268",lineHeight:1.6,margin:"10px 0 0"}}>
-    Following BuckyDrop's rate-limit response to the initial four concurrent lookups,
-    batches now send only one product lookup at a time, spaced by at least 7.5 seconds.
-    Additional throttling errors extend the cooldown instead of forcing more requests.
-    Each supplier link is attempted no more than once per batch day, and
-    existing records across either source are never intentionally recharged.
-    Some listings may be unavailable or unsupported by BuckyDrop.
-    Prices and stock are snapshots, not checkout guarantees.
+    Saved reference records are retained. New orders must use current HioBuy product and SKU identifiers. Prices and stock are not checkout guarantees.
    </p>
   </section>
   <nav style={{display:"flex",gap:18,flexWrap:"wrap",margin:"20px 0 25px"}}>

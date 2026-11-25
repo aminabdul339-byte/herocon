@@ -22,6 +22,7 @@ export function liveReady(){
   typeof process.env.BUCKYDROP_APP_SECRET==="string"&&!!process.env.BUCKYDROP_APP_SECRET;
 }
 export async function callBucky<T extends Record<string,unknown>>(op:BuckyOperation,body:Record<string,unknown>):Promise<T>{
+ if((op==="create-shop-order"||op==="shipping-quote")&&process.env.HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED!=="true")throw new BuckydropError("PROVIDER_RETIRED",503,"New purchases and quotes are migrating to HioBuy.");
  if(!liveReady())throw new BuckydropError("LIVE_NOT_CONFIGURED",503,"Live shipping and order services are not configured.");
  const raw=JSON.stringify(body);
  const timestamp=String(Date.now());

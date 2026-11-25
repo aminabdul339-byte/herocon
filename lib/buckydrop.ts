@@ -117,6 +117,7 @@ export class BuckydropError extends Error{
 }
 export async function queryBuckydropProduct(productLink:string):Promise<BuckydropProduct>{
   const environment=process.env.BUCKYDROP_ENV==="live"?"live":"sandbox";
+  if(environment==="live"&&process.env.HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED!=="true")throw new BuckydropError("PROVIDER_RETIRED",503,"New supplier requests are migrating to HioBuy. Saved reference details remain available.");
   if(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true")throw new BuckydropError("NOT_ENABLED",503,"Product lookup is not enabled.");
   if(!isApprovedSource(productLink,environment))throw new BuckydropError("INVALID_SOURCE",400,"The source URL is unsupported in this environment.");
   const appCode=process.env.BUCKYDROP_APP_CODE;

@@ -186,6 +186,7 @@ export async function runBuckydropBulkShard(shard:number,ownerRecovery=false):Pr
  const catchup=shard===BUCKYDROP_CATCHUP_SHARD;
  if(!Number.isInteger(shard)||shard<0||shard>BUCKYDROP_CATCHUP_SHARD)throw Error("invalid_shard");
  const p=basic(shard);
+ if(process.env.HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED!=="true"){p.status="skipped";p.issue="PROVIDER_RETIRED";return p;}
  if(catchup&&!CATCHUP_DATES.has(p.date)){p.status="skipped";p.issue="CATCHUP_DATE_EXPIRED";return p;}
  if(!process.env.BLOB_READ_WRITE_TOKEN||process.env.BUCKYDROP_ENV!=="live"||
   process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true"||

@@ -1,12 +1,12 @@
 "use client";
 import {useEffect,useState} from "react";
 import ProductExperience from "@/components/ProductExperience";
-import type {BuckydropProduct} from "@/lib/buckydrop";
+import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
-import type {ProductLinkLookupResult} from "@/lib/marketplace-links";
+
 
 type CatalogSave={status:"added"|"existing"|"unavailable";productId:string|null};
-type Status={phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}|{phase:"ready";product:BuckydropProduct;url:string;save:CatalogSave;cacheStatus:"hit"|"stored"|null};
+type Status={phase:"idle"}|{phase:"loading"}|{phase:"error";message:string}|{phase:"ready";product:DisplaySupplierDetails;url:string;save:CatalogSave;cacheStatus:"hit"|"stored"|null};
 
 export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  const [status,setStatus]=useState<Status>({phase:initialUrl?"loading":"idle"});
@@ -21,7 +21,7 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
    signal:controller.signal,
    cache:"no-store"
   }).then(async response=>{
-   const result:ProductLinkLookupResult&{error?:string;catalogueSave?:CatalogSave;cacheStatus?:"hit"|"stored"}=await response.json();
+   const result:{product:DisplaySupplierDetails;productLink:string;error?:string;catalogueSave?:CatalogSave;cacheStatus?:"hit"|"stored"}=await response.json();
    if(!response.ok||!result.product)throw new Error(result.error||"We couldn't retrieve this product.");
    return result;
   }).then(result=>{
@@ -73,7 +73,7 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
     title={source.title}
     images={source.images}
     price="Supplier price"
-    buckydropEnabled
+    buckydropEnabled={source.source==="buckydrop"}
     initialSource={source}
    />
 

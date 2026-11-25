@@ -6,6 +6,7 @@ import "server-only";
  */
 export function checkoutLaunchReadiness(stage:"products"|"all_in"="products"){
  const checks=[
+  ["Legacy BuckyDrop purchasing explicitly authorised",process.env.HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED==="true"],
   ["Live checkout explicitly enabled",process.env.HEROCON_STRIPE_LIVE_CHECKOUT_ENABLED==="true"],
   ["Checkout payment model fully tested",stage==="all_in"?process.env.HEROCON_ONE_PAYMENT_LIVE_APPROVED==="true"&&process.env.HEROCON_ONE_PAYMENT_PILOT_QUOTES_ENABLED==="true":process.env.HEROCON_TWO_STAGE_SHIPPING_READY==="true"],
   ["Fresh rotated Stripe live key attested",process.env.HEROCON_STRIPE_KEY_ROTATED==="true"],

@@ -1,8 +1,9 @@
 import {NextResponse} from "next/server";
 import {BuckydropError} from "@/lib/buckydrop";
-import {getOrSaveBuckydropProduct} from "@/lib/buckydrop-cache";
+import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
+import {getSavedMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
-import {saveDiscoveredProduct,type DiscoverySaveResult} from "@/lib/discovered-products";
+import {type DiscoverySaveResult} from "@/lib/discovered-products";
 import {getBaseProducts} from "@/lib/catalogue-server";
 import {productId} from "@/lib/catalogue";
 
@@ -28,9 +29,7 @@ const jsonError=(message:string,status:number)=>NextResponse.json(
 );
 
 export async function POST(request:Request){
- if(process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP!=="true"||process.env.BUCKYDROP_ENV!=="live"){
-  return jsonError("Product link lookup is not available right now.",503);
- }
+ // Transition: public lookup reads existing snapshots only. New discovery is owner-gated through HioBuy.
  const origin=request.headers.get("origin");
  if(!origin)return jsonError("Please submit product links from the Herocon website.",403);
  try {
@@ -55,14 +54,17 @@ export async function POST(request:Request){
  const ip=request.headers.get("x-real-ip")||request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";
  if(rateLimited(ip))return jsonError("Too many searches. Please try again shortly.",429);
  try {
-  const {product,cacheStatus}=await getOrSaveBuckydropProduct(productLink);
+  const hio=await getSavedMarketplaceSource(productLink);
+  const product=hio?toDisplaySupplierDetails(hio):await getSavedBuckydropProduct(productLink);
+  if(!product)return jsonError("This product is not in our saved catalogue yet. New marketplace searches are being migrated to our new sourcing partner.",404);
+  const cacheStatus="hit";
   // Avoid duplicating a listing already in the original committed catalogue.
   let catalogueSave:DiscoverySaveResult={status:"unavailable",productId:null};
   try{
    const originalCatalogue=await getBaseProducts();
    const existing=originalCatalogue.find(item=>normalizeMarketplaceLink(item.originalMarketplaceUrl)===productLink);
    if(existing)catalogueSave={status:"existing",productId:productId(existing)};
-   else catalogueSave=await saveDiscoveredProduct(productLink,product);
+   // Do not create another catalogue record or charge a provider for a cache-only lookup.
   }catch(error){
    console.error("[lookup] Unable to save discovered product:",error instanceof Error?error.message:"unknown");
   }
