@@ -25,3 +25,23 @@
 .hc-site .hc-account-page .hc-account-email-link{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #d5e0d1;border-radius:10px;padding:10px 12px;margin-top:13px;font-size:12px;font-weight:600;color:#345740;text-decoration:none}
 .hc-site .hc-account-page .hc-account-card .hc-account-fine{font-size:11px!important;margin-top:12px!important;line-height:1.5}.hc-site .hc-account-page .hc-account-notice{padding:10px;border-radius:10px;font-size:12px;overflow-wrap:anywhere}.hc-site .hc-account-verify-actions{display:flex;justify-content:space-between;gap:8px}.hc-site .hc-account-verify-actions .hc-account-text-button{margin:0;font-size:12px}.hc-site .hc-account-card form .hc-account-verify-actions button{background:transparent!important;color:#345740!important;border-radius:0!important}
 @media(max-width:720px){.hc-site .hc-account-page .hc-account-shell{width:calc(100% - 28px);grid-template-columns:1fr;gap:18px;padding:24px 0 42px}.hc-site .hc-account-page .hc-account-intro{padding:0}.hc-site .hc-account-page .hc-account-card{padding:18px}}
+
+/* Account identity and membership: shopping navigation lives in the cart area. */
+.hc-site .hc-account-page .hc-account-status-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hc-site .hc-account-page .hc-account-status-heading h2{margin:0!important;font-size:22px!important}
+.hc-site .hc-account-status-heading>span{font-size:10px;font-weight:600;color:#55745d}
+.hc-site .hc-account-page .hc-account-card>.hc-account-email-address{font-size:13px;color:#617466;overflow-wrap:anywhere;margin:7px 0 19px}
+.hc-site .hc-account-membership-state,.hc-site .hc-account-trial-countdown{border:1px solid #d8e2d4;border-radius:14px;background:linear-gradient(135deg,#f8faf5,#edf3e9);padding:15px}
+.hc-site .hc-account-membership-state strong,.hc-site .hc-account-trial-top strong{font-size:14px;font-weight:600;color:#294735}
+.hc-site .hc-account-membership-state p,.hc-site .hc-account-trial-countdown p{font-size:11px;line-height:1.5;color:#617466;margin:7px 0 0}
+.hc-site .hc-account-trial-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hc-site .hc-account-trial-top>span{font-size:10px;color:#55745d}
+.hc-site .hc-account-trial-time{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 10px}
+.hc-site .hc-account-trial-time>div{display:grid;justify-items:center;gap:4px;padding:11px 5px;border-radius:10px;border:1px solid #dce5d8;background:#fffefa}
+.hc-site .hc-account-trial-time b{font:600 27px/1 var(--hc-flow-font,Arial,sans-serif);font-variant-numeric:tabular-nums;letter-spacing:-.035em;color:#294735}
+.hc-site .hc-account-trial-time span{font-size:10px;color:#617466}
+.hc-site .hc-account-member-actions{display:grid;gap:8px;margin-top:15px}
+.hc-site .hc-account-member-actions>a,.hc-site .hc-account-page .hc-account-member-actions>.hc-account-secondary{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:38px;padding:10px 12px;margin:0;border:1px solid #d5e0d1;border-radius:10px;background:#fffefa;font:500 12px/1.35 var(--hc-flow-font,Arial,sans-serif);color:#345740;text-decoration:none;width:100%;cursor:pointer}
+.hc-site .hc-account-member-actions>a svg{width:14px;height:14px;flex:none}
+.hc-site .hc-account-page .hc-account-member-actions>.hc-account-secondary{justify-content:center;color:#617466;border-color:transparent;background:transparent}
+.hc-site .hc-account-member-actions>a:hover{background:#eef3e9}

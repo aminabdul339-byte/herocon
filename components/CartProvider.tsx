@@ -21,7 +21,7 @@ export type CartItem={
  /** Whether this line is part of the next order. Kept with the cart in localStorage. */
  selected?:boolean;
 };
-export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string;ownerPremium?:boolean;premium?:boolean;trialEndsAt?:string|null};
+export type AccountStatus={status:"checking"|"guest"|"authenticated"|"unavailable";id?:string;email?:string;ownerPremium?:boolean;premium?:boolean;trialEndsAt?:string|null;clockOffsetMs?:number};
 export const PENDING_CART_KEY="herocon-pending-add-v1";
 export const cartStorageKey=(userId:string)=>"herocon-user-cart-v2:"+userId;
 type CartContextValue={
@@ -71,7 +71,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
    const data=await res.json();
    let next:AccountStatus;
    if(data.authenticated===true&&typeof data.user?.id==="string"&&typeof data.user?.email==="string")
-    next={status:"authenticated",id:data.user.id,email:data.user.email,ownerPremium:data.user.ownerPremium===true,premium:data.user.premium===true,trialEndsAt:typeof data.user.trialEndsAt==="string"?data.user.trialEndsAt:null};
+    next={status:"authenticated",id:data.user.id,email:data.user.email,ownerPremium:data.user.ownerPremium===true,premium:data.user.premium===true,trialEndsAt:typeof data.user.trialEndsAt==="string"?data.user.trialEndsAt:null,clockOffsetMs:typeof data.serverNow==="number"?data.serverNow-Date.now():0};
    else next={status:res.status===503?"unavailable":"guest"};
    const previous=last.current;last.current=next;lastCheck.current=Date.now();setAccount(next);
    if(data.refreshed===true||previous.status!=="checking"&&(previous.id!==next.id||previous.premium!==next.premium||previous.trialEndsAt!==next.trialEndsAt))router.refresh();
@@ -83,7 +83,7 @@ export function CartProvider({children}:{children:React.ReactNode}){
  }
  useEffect(()=>{if(Date.now()-lastCheck.current>30000)void refreshAccount();},[pathname]);
  useEffect(()=>{const check=()=>{if(document.visibilityState==="visible"&&Date.now()-lastCheck.current>30000)void refreshAccount();};const timer=window.setInterval(check,120000);window.addEventListener("focus",check);document.addEventListener("visibilitychange",check);return()=>{window.clearInterval(timer);window.removeEventListener("focus",check);document.removeEventListener("visibilitychange",check);};},[]);
- useEffect(()=>{if(!account.trialEndsAt)return;const delay=Date.parse(account.trialEndsAt)-Date.now();if(delay<=0){void refreshAccount();return;}const timer=window.setTimeout(()=>void refreshAccount(),Math.min(delay+100,2147483647));return()=>window.clearTimeout(timer);},[account.trialEndsAt]);
+ useEffect(()=>{if(!account.trialEndsAt)return;const end=Date.parse(account.trialEndsAt);if(!Number.isFinite(end))return;const delay=end-(Date.now()+(account.clockOffsetMs??0));const expire=()=>{router.refresh();void refreshAccount();};if(delay<=0){expire();return;}const timer=window.setTimeout(expire,Math.min(delay+150,2147483647));return()=>window.clearTimeout(timer);},[account.trialEndsAt,account.clockOffsetMs]);
  useEffect(()=>{
   setHydrated(false);
   if(account.status!=="authenticated"||!account.id){

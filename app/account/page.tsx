@@ -4,6 +4,7 @@ import Link from "next/link";
 import {Suspense,useEffect,useMemo,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import Header from "@/components/Header";
+import AccountTrialCountdown from "@/components/AccountTrialCountdown";
 import {useCart,PENDING_CART_KEY,cartStorageKey,type CartItem} from "@/components/CartProvider";
 
 type Mode="signup"|"login"|"recover";
@@ -111,18 +112,20 @@ function AccountContent(){
     <h1>{account.status==="authenticated"?"Your account":"Welcome to Herocon"}</h1>
     <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
     {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Try Premium free</strong><span>3 days</span></div><p>Full catalogue and available search tools. No card or automatic renewal.</p><Link href="/membership/trial">Start with email <ArrowIcon direction="right"/></Link></div>:null}
-    <Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>
+    {account.status!=="authenticated"&&<Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>}
     {pending&&<p className="hc-account-pending">Your selected product will be saved after sign-in.</p>}
    </div>
    <div className="hc-account-card">
     {account.status==="authenticated"&&!next?<>
-     <p className="hc-premium-kicker">ACCOUNT ACTIVE</p>
-     <h2>Welcome back.</h2>
-     <p>Signed in as <strong>{account.email}</strong>.</p>
-     {account.ownerPremium&&<><p role="status" style={{background:"#ecf4e9",color:"#215b37",padding:14,borderRadius:12,fontWeight:800}}>Owner Premium active · Complimentary · No new subscription charge</p><Link href="/orders?test=1">Private test workspace <ArrowIcon direction="right"/></Link><Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link></>}
-     <Link className="hc-account-primary-link" href="/cart">View your cart <ArrowIcon direction="right"/></Link><Link href="/orders">Orders <ArrowIcon direction="right"/></Link><Link href="/warehouse">Warehouse <ArrowIcon direction="right"/></Link><Link href="/parcels">Parcels <ArrowIcon direction="right"/></Link>
-     <Link href="/membership/activate">Manage membership and billing <ArrowIcon direction="right"/></Link>
-     <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">Log out</button>
+     <div className="hc-account-status-heading"><h2>My account</h2><span>Verified</span></div>
+     <p className="hc-account-email-address">{account.email}</p>
+     {account.ownerPremium?<div className="hc-account-membership-state"><strong>Owner Premium</strong><p>Complimentary access. No recurring charge.</p></div>:account.trialEndsAt?<AccountTrialCountdown key={account.trialEndsAt} endsAt={account.trialEndsAt} clockOffsetMs={account.clockOffsetMs??0}/>:account.premium?<div className="hc-account-membership-state"><strong>Premium</strong><p>Full catalogue and available sourcing tools.</p></div>:<div className="hc-account-membership-state"><strong>Free membership</strong><p>Explore Premium for more access.</p></div>}
+     <div className="hc-account-member-actions">
+      <Link href={account.trialEndsAt?"/membership/trial":account.premium?"/membership/activate":"/membership"}>{account.trialEndsAt?"View trial":account.premium?"Manage membership":"Explore membership"} <ArrowIcon direction="right"/></Link>
+      {account.trialEndsAt&&<Link href="/membership/activate">Upgrade to Premium <ArrowIcon direction="right"/></Link>}
+      {account.ownerPremium&&<Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link>}
+      <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">{working?"Signing out…":"Log out"}</button>
+     </div>
     </>:account.status==="unavailable"?<>
      <p className="hc-premium-kicker">ACCOUNT SETUP</p>
      <h2>Sign-in unavailable.</h2>

@@ -7,7 +7,7 @@ import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store","Vary":"Cookie"}});
-async function accountReply(u:Customer,refreshed=false){const membership=await membershipEntitlement(u);return reply({status:"authenticated",authenticated:true,refreshed,user:{id:u.id,email:u.email,ownerPremium:isOwnerPremiumCustomer(u),...membership}});}
+async function accountReply(u:Customer,refreshed=false){const membership=await membershipEntitlement(u);return reply({status:"authenticated",authenticated:true,refreshed,serverNow:Date.now(),user:{id:u.id,email:u.email,ownerPremium:isOwnerPremiumCustomer(u),...membership}});}
 function expiring(token:string){try{const p=JSON.parse(Buffer.from(token.split(".")[1],"base64url").toString("utf8"));return typeof p.exp==="number"&&p.exp*1000-Date.now()<10*60*1000;}catch{return false;}}
 export async function GET(){
  if(!customerAuthConfigured())return reply({status:"unavailable",authenticated:false,reason:"Free accounts will open once Herocon's authentication service is connected."},503);

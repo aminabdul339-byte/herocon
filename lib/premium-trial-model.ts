@@ -5,3 +5,6 @@ export function validTrial(value:unknown):value is TrialRecord{if(!value||typeof
 export function trialActive(t:TrialRecord|null,now=Date.now()){return !!t&&validTrial(t)&&Date.parse(t.startedAt)<=now&&now<Date.parse(t.endsAt);}
 
 export function resolvePremiumEntitlement(owner:boolean,paid:boolean,trial:TrialRecord|null,now=Date.now()){if(owner||paid)return {premium:true,trialEndsAt:null};if(trial&&trialActive(trial,now))return {premium:true,trialEndsAt:trial.endsAt};return {premium:false,trialEndsAt:null};}
+
+/** Round up a partial minute so the display reaches all zeros only at expiry. */
+export function trialCountdown(endsAt:string,now:number){const end=Date.parse(endsAt);const ms=Number.isFinite(end)&&Number.isFinite(now)?Math.max(0,Math.min(TRIAL_MS,end-now)):0;const total=Math.ceil(ms/60000);return {days:Math.floor(total/1440),hours:Math.floor(total%1440/60),minutes:total%60,expired:ms===0};}
