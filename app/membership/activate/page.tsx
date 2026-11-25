@@ -4,6 +4,7 @@ import {Suspense,useEffect,useState} from "react";
 import {useSearchParams} from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
+import "@/components/membership-plans.css";
 import {useCart} from "@/components/CartProvider";
 
 type State={
@@ -26,9 +27,9 @@ function MembershipGate(){
  useEffect(()=>{
   if(account.status!=="authenticated"){setLoading(false);return;}
   let alive=true;
-  setLoading(true);
+  setLoading(true);setError("");setMembership({});
   fetch("/api/account/membership",{cache:"no-store",credentials:"same-origin"})
-   .then(async response=>response.ok?response.json():null)
+   .then(async response=>response.ok?response.json():Promise.reject(new Error("Unable to verify membership.")))
    .then(data=>{if(alive){setMembership(data||{});setLoading(false);}})
    .catch(()=>{if(alive){setLoading(false);setError("Unable to check membership.");}});
   return ()=>{alive=false;};
@@ -52,59 +53,49 @@ function MembershipGate(){
  const active=Boolean(membership.membershipActive||membership.testMembershipActive);
  const isTest=membership.mode==="test";
  const through=membership.renewalAt?new Date(membership.renewalAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):null;
- return <main className="hc-account-page">
+ const owner=Boolean(membership.complimentaryOwnerPremium);
+ const checking=account.status==="checking"||loading;
+ const signedIn=account.status==="authenticated";
+ const button=(label:string,kind:"checkout"|"portal",primary=true)=><button type="button" className={"hc-billing-action"+(primary?" hc-billing-primary":"")} disabled={working||(kind==="checkout"&&!consents)} onClick={()=>void launch(kind)}>{working?"Opening Stripe…":label}<ArrowIcon direction="right"/></button>;
+ return <main className="hc-member-page hc-membership-clean">
   <Header/>
-  <section className="hc-member-purchase-shell">
-   <p className="hc-premium-kicker">HEROCON MEMBERSHIP</p>
-   <h1>Herocon membership.<br/><em>£9.99/month.</em></h1>
-   <p>Free accounts have a limited catalogue preview. Premium unlocks the full catalogue, catalogue keyword search and saved marketplace link lookup. Live marketplace sourcing, purchasing and shipping are in rollout.</p>
-   <div className="hc-member-purchase-card">
-    <span>MONTHLY MEMBERSHIP</span>
-    <strong>£9.99 <small>/ month</small></strong>
-    {account.status==="checking"||loading?<p>Checking membership…</p>:
-     account.status!=="authenticated"?<>
-      <p>Create a free account or sign in to continue.</p>
-      <Link className="hc-account-primary-link" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Sign in / Create an account <ArrowIcon direction="right"/></Link>
-     </>:membership.complimentaryOwnerPremium?<>
-      <p><strong>Owner Premium — complimentary lifetime access while your owner account is authorised.</strong> No £9.99 monthly subscription or recurring billing is required.</p>
-      <p>Only your verified owner account can use the private BuckyDrop product-purchasing pilot. Real payment remains locked until fulfilment and shipping are validated.</p>
-      {membership.paidMembershipActive&&<p style={{color:"#8b4c2d"}}>An existing paid subscription may still renew until cancelled separately.</p>}
-      {membership.billingLookupUnavailable&&<p style={{color:"#8b4c2d"}}>Previous subscription status could not be verified. Check Stripe if you have ever paid for membership.</p>}
-      {membership.hasBillingAccount&&<button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage existing Stripe billing and cancellation</button>}
-      <Link className="hc-account-primary-link" href="/pilot/buckydrop">Open owner-only purchasing <ArrowIcon direction="right"/></Link>
+  <section className="hc-billing-shell" aria-labelledby="hc-billing-title">
+   <Link href="/membership" className="hc-billing-back"><ArrowIcon direction="left"/> Membership plans</Link>
+   <header className="hc-billing-heading"><h1 id="hc-billing-title">{owner||active?"Your membership":"Join Premium"}</h1><p>{owner||active?"Manage your access and billing.":"Full catalogue access and sourcing tools."}</p></header>
+   <div className="hc-billing-card">
+    <div className="hc-billing-top"><div><h2>Herocon Premium</h2><p>{owner?"Complimentary owner access":active?isTest?"Test membership":"Active subscription":"Monthly membership"}</p></div><div className="hc-billing-price"><strong>{owner?"£0":"£9.99"}</strong>{!owner&&<small> / month</small>}</div></div>
+    {checking?<p role="status" className="hc-billing-status">Checking membership…</p>:!signedIn?<><p>Create a free account or sign in to continue.</p><Link className="hc-billing-action hc-billing-primary" href={"/account?next="+encodeURIComponent("/membership/activate?next="+encodeURIComponent(next))}>Sign in or create an account <ArrowIcon direction="right"/></Link></>:owner?<>
+      <div className="hc-billing-facts"><span>Access</span><strong>Premium · Complimentary</strong><span>Recurring charge</span><strong>None for owner access</strong></div>
+      <p>No paid subscription is needed while your owner account is authorised.</p>
+      {membership.paidMembershipActive&&<p className="hc-billing-warning">You also have an existing paid subscription. It may renew until cancelled separately.</p>}
+      {membership.billingLookupUnavailable&&<p className="hc-billing-warning">Previous billing could not be verified. Check Stripe if you have paid for membership before.</p>}
+      <Link className="hc-billing-action hc-billing-primary" href="/search">Browse the catalogue <ArrowIcon direction="right"/></Link>
+      <Link className="hc-billing-action" href="/pilot/buckydrop">Private purchasing test <ArrowIcon direction="right"/></Link>
+      {membership.hasBillingAccount&&button("Manage existing billing","portal",false)}
      </>:active?<>
-      <p><strong>{isTest?"Test membership active":"Membership active"}</strong>{through?" · Paid through "+through:""}{membership.cancelAtPeriodEnd?" · Cancels at period end.":""}</p>
-      {isTest?<p>Stripe test mode. No real payment has been made, and product purchases remain locked.</p>:
-       <><p>Product ordering and international shipping payments are not currently available through Herocon.</p><Link className="hc-account-primary-link" href="/search">Browse the catalogue <ArrowIcon direction="right"/></Link></>}
-      <button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage billing and cancellation <ArrowIcon/></button>
+      <div className="hc-billing-facts"><span>Status</span><strong>{isTest?"Test mode":"Active"}</strong>{through&&<><span>{membership.cancelAtPeriodEnd?"Access ends":"Paid through"}</span><strong>{through}</strong></>}{membership.cancelAtPeriodEnd&&<><span>Renewal</span><strong>Cancelled at period end</strong></>}</div>
+      {isTest&&<p className="hc-billing-warning">No real payment has been made in Stripe test mode.</p>}
+      <Link className="hc-billing-action hc-billing-primary" href="/search">Browse the catalogue <ArrowIcon direction="right"/></Link>
+      {button("Manage billing or cancel","portal",false)}
      </>:<>
-      <p className="hc-member-purchase-fine-print">£9.99 charged today and every month until cancelled. Premium unlocks full catalogue access, catalogue keyword search and saved product-link lookup. <strong>Membership does not currently allow you to place product orders or pay for international shipping through Herocon.</strong> Products and international shipping are separate charges once available.</p>
-      {membership.ownerLiveTest&&<p role="note" style={{color:"#874d25",fontWeight:600}}>
-       Owner-only LIVE billing test: your card will be charged £9.99 now and renew monthly until you cancel.
-       Herocon's product ordering and international shipping checkout are not yet available.
-       Use Manage billing to cancel your test subscription.
-      </p>}
-      {membership.billingReady&&membership.canSubscribe?
-       <>
-        {isTest&&<p style={{color:"#a36632"}}>Stripe test mode — no real money will be charged.</p>}
-        <label className="hc-member-consent">
-         <input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)}/>
-         <span>I understand that £9.99 will be charged now and every month until I cancel. Product ordering and shipping through Herocon are not yet available; live marketplace search is also in rollout. Product and shipping costs are separate once available. I can cancel through Stripe and have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span>
-        </label>
-        <p className="hc-member-cancellation-note">Cancel anytime. Regular cancellation takes effect at the end of your paid billing period: access continues until then, with no further monthly payment. Cancellation does not automatically refund unused time; your statutory cancellation and refund rights remain unaffected.</p>
-        <button type="button" className="hc-account-primary-link hc-member-billing-button" disabled={working||!consents}
-         onClick={()=>launch("checkout")}>{working?"Opening Stripe…":isTest?"Try membership in Stripe Test Mode":<>Subscribe for £9.99/month <ArrowIcon direction="right"/></>}</button>
-       </>:
-       <p>Membership payments are currently unavailable.</p>}
-      {membership.hasBillingAccount&&<button className="hc-member-billing-button" type="button" disabled={working} onClick={()=>launch("portal")}>Manage existing billing <ArrowIcon direction="right"/></button>}
-      <Link className="hc-membership-secondary" href="/cart">Return to cart <ArrowIcon direction="right"/></Link>
+      <ul className="hc-billing-benefits">{["Full Herocon catalogue","Catalogue keyword search","Saved marketplace link lookup"].map(label=><li key={label}><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>{label}</li>)}</ul>
+      <p className="hc-billing-rollout"><strong>In rollout</strong> Live marketplace search, product purchasing and international shipping are not yet available to public customers. Product and delivery charges will be separate.</p>
+      {membership.ownerLiveTest&&<p className="hc-billing-warning">Owner-only live billing test: £9.99 is charged now and renews monthly until cancelled. Product ordering and shipping are not enabled.</p>}
+      {membership.billingReady&&membership.canSubscribe?<>
+        {isTest&&<p className="hc-billing-warning">Stripe test mode — no real money will be charged.</p>}
+        <label className="hc-billing-consent"><input type="checkbox" checked={consents} onChange={e=>setConsents(e.target.checked)}/><span>I agree to £9.99 today and every month until I cancel. I understand that live marketplace search, product ordering and shipping are not yet available, and have reviewed the <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</span></label>
+        {button(isTest?"Try Stripe test membership":"Subscribe for £9.99/month","checkout")}
+        <p className="hc-billing-fine">Cancel through Stripe. Access continues until the end of the paid period, with no further monthly payment. Cancellation does not automatically refund unused time; statutory cancellation and refund rights are unaffected.</p>
+       </>:<p className="hc-billing-status">Membership payments are currently unavailable.</p>}
+      {membership.hasBillingAccount&&button("Manage existing billing","portal",false)}
      </>}
-    {error&&<p role="alert" style={{color:"#a14235"}}>{error}</p>}
+    {error&&<p role="alert" className="hc-billing-warning">{error}</p>}
    </div>
-   <p>You can manage or cancel your membership through Stripe. Orders and delivery payments are not yet available.</p>
+   {!owner&&active&&!isTest&&<p className="hc-billing-fine">Product ordering and international shipping payments are not yet available.</p>}
+   <p className="hc-billing-footer"><Link href="/membership">Compare plans</Link><span aria-hidden="true">·</span><Link href="/account">My account</Link></p>
   </section>
  </main>;
 }
 export default function MembershipActivationPage(){
- return <Suspense fallback={<main className="hc-account-page"><Header/><p>Loading membership…</p></main>}><MembershipGate/></Suspense>;
+ return <Suspense fallback={<main className="hc-member-page hc-membership-clean"><Header/><section className="hc-billing-shell"><p role="status">Loading membership…</p></section></main>}><MembershipGate/></Suspense>;
 }

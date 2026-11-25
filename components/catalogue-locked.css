@@ -1,18 +1,15 @@
-/* Individually locked cards. No product IDs, supplier URLs or actual hidden photos are sent. */
+/* Real public-preview photographs under a restrained frosted finish. */
 .hc-site .hc-locked-preview{margin:16px 0 12px}
 .hc-site .hc-locked-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .hc-site .hc-locked-personal .hc-locked-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.hc-site .hc-locked-card{position:relative;isolation:isolate;display:block;overflow:hidden;min-width:0;min-height:150px;border:1px solid #d9e3d6;border-radius:18px;padding:9px;background:#fffefa;text-decoration:none;color:#355740;transition:box-shadow .2s}
-.hc-site .hc-locked-card:hover,.hc-site .hc-locked-card:focus-visible{box-shadow:0 0 0 2px #a2b7a0;outline:none}
-.hc-site .hc-locked-content{filter:blur(7px);opacity:.68;pointer-events:none;user-select:none}
-.hc-site .hc-locked-photo{aspect-ratio:1.05;border-radius:12px;background:linear-gradient(145deg,#deded4,#b7c7b8);display:grid;place-items:center;overflow:hidden;color:#68816d}
-.hc-site .hc-locked-photo svg{width:72%;height:75%;opacity:.6}
-.hc-site .hc-locked-tone-1{background:linear-gradient(145deg,#eee1d4,#d7c3ae);color:#a68f77}.hc-site .hc-locked-tone-2{background:linear-gradient(145deg,#e7d3d7,#cdb8bd);color:#b28c94}.hc-site .hc-locked-tone-3{background:linear-gradient(145deg,#e8e7e1,#c6c6bc);color:#77796e}
-.hc-site .hc-locked-line,.hc-site .hc-locked-price{height:9px;width:75%;border-radius:9px;background:#b6c6b8;margin:14px 5px 0}.hc-site .hc-locked-price{width:30%;margin:10px 5px 8px}
-.hc-site .hc-locked-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;background:#f7f9f22e;font-size:11px;font-weight:600;letter-spacing:.02em}
-.hc-site .hc-locked-icon{display:grid;place-items:center;width:35px;height:35px;border-radius:50%;background:#fffefae8;border:1px solid #fff;box-shadow:0 3px 12px #29473516;color:#426449;backdrop-filter:blur(9px)}
-.hc-site .hc-locked-overlay>span:last-child{padding:3px 8px;border-radius:999px;background:#fffefae0}
-.hc-site .hc-locked-caption{font-size:12px;color:#5d7360;text-align:center;margin:14px 0;line-height:1.6}.hc-site .hc-locked-caption a{font-weight:600;text-decoration:underline;text-underline-offset:3px;color:#345740}
+.hc-site .hc-locked-card{position:relative;display:block;overflow:hidden;min-width:0;border:1px solid #dbe3d8;border-radius:18px;padding:8px 8px 0;background:#fffefa;color:#45644d;text-decoration:none;transition:border-color .2s,box-shadow .2s}
+.hc-site .hc-locked-card:hover,.hc-site .hc-locked-card:focus-visible{border-color:#9eb39e;box-shadow:0 4px 15px #29473510;outline:none}
+.hc-site .hc-locked-photo{position:relative;isolation:isolate;aspect-ratio:1.06;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#ebece5,#d8e1d6)}
+.hc-site .hc-locked-photo img{position:absolute;inset:-12px;width:calc(100% + 24px);height:calc(100% + 24px);object-fit:cover;filter:blur(12px) saturate(.72);opacity:.74;pointer-events:none}
+.hc-site .hc-locked-glass{position:absolute;inset:0;background:linear-gradient(145deg,#fffefa38,#e6eee23d);box-shadow:inset 0 1px 0 #fff8;pointer-events:none}
+.hc-site .hc-locked-info{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 5px;font-size:12px;font-weight:500;line-height:1.4}
+.hc-site .hc-locked-info span{display:inline-flex;align-items:center;gap:6px}.hc-site .hc-locked-info svg{flex:none;color:#55735b}
+.hc-site .hc-locked-caption{font-size:12px;color:#5d7360;text-align:center;margin:14px 0;line-height:1.6}.hc-site .hc-locked-caption a{font-weight:600;text-decoration:underline;text-underline-offset:3px;color:#345740}.hc-site .hc-locked-caption small{display:block;font-size:10px;color:#637867;margin-top:3px}
 .hc-site .sc-results-grid.hc-free-category{grid-template-columns:repeat(3,minmax(0,1fr))}
 .hc-site .hc-self-v2[data-audience] .hc-personal-grid.hc-free-category{grid-template-columns:repeat(4,minmax(0,1fr))}
 .hc-site .hc-locked-preview.hc-locked-compact-only{display:none}

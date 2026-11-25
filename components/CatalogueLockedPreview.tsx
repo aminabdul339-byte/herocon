@@ -1,12 +1,21 @@
 import Link from "next/link";
+import {businessPreview,personalCollectionPreview} from "@/lib/catalogue-access";
 import "./catalogue-locked.css";
-const forms=["lamp","vase","nails","dress","bag","shoe"] as const;
-function Shape({kind}:{kind:typeof forms[number]}){return <svg viewBox="0 0 120 100" aria-hidden="true" fill="currentColor">{kind==="lamp"?<><path d="M39 16h42l16 36H23z"/><rect x="56" y="52" width="8" height="34" rx="3"/><rect x="39" y="85" width="42" height="6" rx="3"/></>:kind==="vase"?<path d="M49 8h22l-4 22c24 14 29 28 20 47-9 20-45 20-54 0-9-19-4-33 20-47z"/>:kind==="nails"?<>{[0,1,2,3].map(i=><rect key={i} x={20+i*21} y={22+i%2*8} width="15" height="54" rx="8"/>)}</>:kind==="dress"?<path d="M43 9l11 11h12L77 9l10 13-11 25 25 43H19l25-43-11-25z"/>:kind==="bag"?<><rect x="21" y="34" width="78" height="53" rx="15"/><path d="M42 36V25a18 18 0 0 1 36 0v11" stroke="currentColor" strokeWidth="6" fill="none"/></>:<path d="M18 51l24-14 20 21 35 11q12 7 4 16H19q-13-4-1-34z"/>}</svg>}
-export default function CatalogueLockedPreview({personal=false,category=false,remaining,compactOnly=false,fullPage=false}:{personal?:boolean;category?:boolean;remaining:number;compactOnly?:boolean;fullPage?:boolean}){
+const photoSafe=(src:unknown):src is string=>typeof src==="string"&&(/^https:\/\/[^\s]+$/.test(src)||/^\/shop-for-yourself-images\/[a-zA-Z0-9._-]+$/.test(src));
+function Lock(){return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/></svg>}
+export default async function CatalogueLockedPreview({personal=false,category=false,remaining,compactOnly=false,fullPage=false}:{personal?:boolean;category?:boolean;remaining:number;compactOnly?:boolean;fullPage?:boolean}){
  if(remaining<=0)return null;
  const amount=Math.min(remaining,fullPage?24:personal?12:9);
+ // Use only imagery from the already accessible free sample, not locked listing
+ // photographs, IDs, prices or links. This is an illustrative preview.
+ const samples=personal?[...await personalCollectionPreview("women"),...await personalCollectionPreview("men")]:await businessPreview();
+ const photos=[...new Set(samples.map(p=>p.imageUrl).filter(photoSafe))];
+ const offset=personal?0:Math.min(24,Math.max(0,photos.length-amount));
  return <section className={"hc-locked-preview"+(personal?" hc-locked-personal":"")+(compactOnly?" hc-locked-compact-only":"")+(compactOnly&&personal&&remaining>3?" hc-locked-tablet":"")} aria-label="Premium products">
- <div className="hc-locked-grid">{Array.from({length:amount},(_,i)=><Link href="/membership" prefetch={false} aria-label="Locked product. Explore Premium membership" className="hc-locked-card" key={i}><div className="hc-locked-content" aria-hidden="true"><div className={"hc-locked-photo hc-locked-tone-"+(i%4)}><Shape kind={personal?(i%2?"shoe":"bag"):forms[i%4]}/></div><div className="hc-locked-line"/><div className="hc-locked-price"/></div><div className="hc-locked-overlay"><span className="hc-locked-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/></svg></span><span>Premium</span></div></Link>)}</div>
- <p className="hc-locked-caption">{category?"Unlock the rest of this category.":"Unlock the full catalogue."} <Link href="/membership">Explore Premium · £9.99/month</Link></p>
+ <div className="hc-locked-grid">{Array.from({length:amount},(_,i)=>{const photo=photos.length?photos[(offset+i)%photos.length]:undefined;return <Link href="/membership" prefetch={false} aria-label="Unlock more products with Premium" className="hc-locked-card" key={i}>
+ <div className="hc-locked-photo" aria-hidden="true">{photo&&<img src={photo} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"/>}<div className="hc-locked-glass"/></div>
+ <div className="hc-locked-info"><span><Lock/> Premium</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></div>
+ </Link>})}</div>
+ <p className="hc-locked-caption">{category?"Unlock the rest of this category.":"Unlock the full catalogue."} <Link href="/membership">Explore Premium · £9.99/month</Link><small>Illustrative preview imagery.</small></p>
  </section>;
 }

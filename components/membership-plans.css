@@ -29,3 +29,29 @@
 .hc-site .hc-plan-cta svg,.hc-site .hc-plan-gate>a svg{width:14px;height:14px;flex:none;vertical-align:middle}.hc-site .hc-plan-gate>a{display:inline-flex;align-items:center;gap:7px}
 @media(max-width:600px){.hc-site .hc-plan-section{width:calc(100% - 28px);margin:26px auto 32px}.hc-site .hc-plan-heading{align-items:flex-start;flex-direction:column;gap:5px}.hc-site .hc-plan-grid{grid-template-columns:1fr;border-radius:17px}.hc-site .hc-plan-card{padding:17px 19px}.hc-site .hc-plan-premium{border-left:0;border-top:1px solid #d6e0d4}.hc-site .hc-plan-gate{padding:15px}}
 @media(prefers-reduced-motion:reduce){.hc-site .hc-plan-cta{transition:none!important}}
+
+/* Membership activation/management shares the comparison's compact typography and glass. */
+.hc-site .hc-billing-shell{box-sizing:border-box;width:min(520px,calc(100% - 36px));margin:40px auto 64px;color:#294735;font-family:"Avenir Next","Segoe UI",Arial,sans-serif}
+.hc-site .hc-billing-back{display:inline-flex;align-items:center;gap:6px;color:#536d5b;font-size:12px;text-decoration:none;margin-bottom:18px}
+.hc-site .hc-billing-back svg,.hc-site .hc-billing-action svg{width:14px;height:14px;flex:none}
+.hc-site .hc-billing-heading{margin-bottom:18px}
+.hc-site .hc-billing-heading h1{font:600 clamp(24px,3vw,32px)/1.15 "Avenir Next","Segoe UI",Arial,sans-serif!important;letter-spacing:-.04em!important;color:#243e31!important;margin:0 0 6px!important}
+.hc-site .hc-billing-heading p{font-size:13px;line-height:1.5;color:#5a7060;margin:0}
+.hc-site .hc-billing-card{padding:23px;border:1px solid #d7e1d4;border-radius:20px;background:linear-gradient(145deg,#fffefbf5,#f2f6eed9);box-shadow:0 6px 22px #243e3108}
+.hc-site .hc-billing-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-bottom:15px;margin-bottom:14px;border-bottom:1px solid #dce5d8}
+.hc-site .hc-billing-top h2{font:600 16px/1.3 "Avenir Next","Segoe UI",Arial,sans-serif!important;letter-spacing:-.015em!important;margin:0!important;color:#294735!important}
+.hc-site .hc-billing-top p{font-size:11px;margin:4px 0 0;color:#617466}
+.hc-site .hc-billing-price{white-space:nowrap}.hc-site .hc-billing-price strong{font:600 28px/1.1 "Avenir Next","Segoe UI",Arial,sans-serif!important;letter-spacing:-.04em}.hc-site .hc-billing-price small{font-size:11px;color:#617466}
+.hc-site .hc-billing-card>p{font-size:13px;line-height:1.6;color:#536d5b;margin:12px 0}
+.hc-site .hc-billing-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;font-size:12px;padding:1px 0 7px;color:#536d5b}
+.hc-site .hc-billing-facts strong{font-size:12px;text-align:right;font-weight:600;color:#294735}
+.hc-site .hc-billing-action{display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;gap:8px;border:1px solid #c9d8c5;background:#fffefa;border-radius:11px;padding:11px 13px;min-height:42px;font:600 12px/1.4 "Avenir Next","Segoe UI",Arial,sans-serif;color:#294735;text-decoration:none;cursor:pointer;text-align:left;margin-top:9px}
+.hc-site .hc-billing-action.hc-billing-primary{background:#345740;color:#fff;border-color:#345740}.hc-site .hc-billing-action:hover{background:#eff4eb}.hc-site .hc-billing-action.hc-billing-primary:hover{background:#284a34}.hc-site .hc-billing-action:disabled{opacity:.5;cursor:not-allowed}
+.hc-site .hc-billing-benefits{display:grid;gap:9px;margin:0;padding:0;list-style:none}.hc-site .hc-billing-benefits li{display:flex;gap:8px;align-items:center;font-size:12px;color:#36543e}.hc-site .hc-billing-benefits svg{flex:none;color:#5e8064}
+.hc-site .hc-billing-card .hc-billing-rollout{border-top:1px solid #dce5d8;padding-top:12px;font-size:11px;line-height:1.6}.hc-site .hc-billing-rollout strong{display:block;font-size:11px;margin-bottom:3px}
+.hc-site .hc-billing-consent{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.65;padding:12px;border:1px solid #dbe4d8;border-radius:12px;background:#fffefa;margin:14px 0}.hc-site .hc-billing-consent input{margin:3px 0 0;flex:none;accent-color:#345740;width:16px;height:16px}.hc-site .hc-billing-consent a,.hc-site .hc-billing-footer a{color:#345740;text-decoration:underline;text-underline-offset:3px}
+.hc-site .hc-billing-card .hc-billing-fine,.hc-site .hc-billing-fine{font-size:11px;line-height:1.65;color:#617466;margin:12px 0 0}
+.hc-site .hc-billing-card .hc-billing-warning{font-size:12px;color:#854a32;background:#fcf4e9;border:1px solid #ead9c8;padding:10px;border-radius:10px}
+.hc-site .hc-billing-card .hc-billing-status{font-size:12px;color:#536d5b}
+.hc-site .hc-billing-footer{display:flex;align-items:center;justify-content:center;gap:10px;color:#617466;font-size:12px;margin:16px 0 0}
+@media(max-width:600px){.hc-site .hc-billing-shell{margin:25px auto 40px}.hc-site .hc-billing-card{padding:17px;border-radius:17px}.hc-site .hc-billing-price strong{font-size:25px!important}}
