@@ -127,6 +127,10 @@
     {
       "path": "/api/cron/flower-gift-shop-import",
       "schedule": "56 11 25 11 *"
+    },
+    {
+      "path": "/api/cron/supplier-908313261357-import",
+      "schedule": "0 9 26 11 *"
     }
   ]
 }
