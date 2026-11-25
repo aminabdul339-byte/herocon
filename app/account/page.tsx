@@ -95,13 +95,11 @@ function AccountContent(){
   <Header/>
   <section className="hc-account-shell">
    <div className="hc-account-intro">
-    <p className="hc-premium-kicker">{account.ownerPremium?"YOUR HEROCON / OWNER PREMIUM":"YOUR HEROCON / FREE ACCOUNT"}</p>
-    <h1>Your account.<br/><em>Your cart.</em></h1>
-    <p>{account.ownerPremium?<>Your account has <strong>complimentary Owner Premium</strong> access. No £9.99 monthly membership is required. Live product purchasing is paused during the HioBuy fulfilment migration.</>:<>Create an account to save products in your cart and explore original marketplace listings. <strong>Registration is free.</strong> Paid membership is optional while product ordering is being developed.</>}</p>
+    <p className="hc-premium-kicker">{account.ownerPremium?"OWNER PREMIUM":"YOUR HEROCON ACCOUNT"}</p>
+    <h1>Your Herocon account</h1>
+    <p>{account.ownerPremium?"You have complimentary Premium access to the full Herocon catalogue and available sourcing tools.":"Discover products from Chinese marketplaces, save your favourites and explore new sourcing opportunities. Start free or try Premium for three days with just your email."}</p>
     <div className="hc-account-perks">
-     <p><strong>01 / SIGN UP</strong> Create your free account.</p>
-     <p><strong>02 / YOUR CART</strong> Keep your selected products together.</p>
-     <p><strong>03 / MEMBERSHIP</strong> {account.ownerPremium?"Owner Premium included at £0/month. HioBuy testing is reserved for your account.":"Optional £9.99/month early access. Product orders are not yet available."}</p>
+     {account.ownerPremium?<><p><strong>PREMIUM ACCESS</strong> Full catalogue and available search tools.</p><p><strong>OWNER WORKSPACE</strong> Private sourcing and fulfilment testing.</p></>:<><p><strong>FREE</strong> Browse two catalogue pages, three rows per category and try one product link.</p><p><strong>3-DAY TRIAL</strong> Explore available Premium features. No card or automatic renewal.</p><p><strong>PREMIUM</strong> Unlock the full catalogue, keyword search and saved product link lookups for £9.99/month.</p><p className="hc-account-fine">Live marketplace search, purchasing and shipping are in rollout.</p></>}
     </div>
     {pending&&<p className="hc-account-pending">Your selected product will be added after sign-in.</p>}
    </div>
@@ -127,7 +125,7 @@ function AccountContent(){
       <button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setNotice("");}}>Sign in</button>
      </div>
      <h2>{mode==="signup"?"Create your free account":mode==="login"?"Welcome back":"Reset your password"}</h2>
-     <p>{mode==="signup"?"Your account is free.":mode==="login"?"Sign in to your personal cart.":"We'll send reset instructions if this email has an account."}</p>
+     <p>{mode==="signup"?"Start with Free, or try Premium for three days.":mode==="login"?"Sign in to your personal cart.":"We'll send reset instructions if this email has an account."}</p>
      <form onSubmit={handleSubmit}>
       <label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle}/></label>
       {mode!=="recover"&&<label>Password<input type="password" required minLength={12} maxLength={128} autoComplete={mode==="signup"?"new-password":"current-password"} value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle}/><small>At least 12 characters</small></label>}
@@ -138,7 +136,7 @@ function AccountContent(){
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
      {readyToConfirm&&<p className="hc-account-notice">Use the email link in this browser to restore the pending product, even if it opens a new tab. If you verify on another device, return to this one and sign in.</p>}
-     <Link href="/membership/trial" className="hc-account-text-button">Continue with email / try Premium free</Link>
+     <Link href="/membership/trial" className="hc-account-text-button">Try Premium free for 3 days</Link>
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>
