@@ -7,7 +7,7 @@ type Variant={id:string;name:string;price:number|null;stock:number|null;image:st
 type Item={id:string;channel:string;title:string;url:string;images:string[];price:number|null;seller:string;minimum:number|null;variants:Variant[];attributes:{name:string;value:string}[]};
 type Rate={rate:number;date:string};
 type SavedSearch={id:string;label:string;savedAt:string;action:string};
-type Result={history?:SavedSearch[];cacheStatus?:string;savedAt?:string|null;items?:Item[];product?:Item;page?:number;total?:number|null;fx?:Rate|null;error?:string};
+type Result={catalogueSave?:{status:"added"|"existing"|"unavailable";productId:string|null};history?:SavedSearch[];cacheStatus?:string;savedAt?:string|null;items?:Item[];product?:Item;page?:number;total?:number|null;fx?:Rate|null;error?:string};
 type Mode="parse"|"search"|"image";
 const names={parse:"Paste a link",search:"Keyword search",image:"Image search"};
 const market=(s:string)=>s==="taobao"?"Taobao":s==="weidian"?"Weidian":"1688";
@@ -29,7 +29,7 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
    if(controller.signal.aborted)return;
    setFx(result.fx??null);
    if(result.product){setDetail(result.product);setQuantity(Math.max(1,Math.min(999,Math.ceil(result.product.minimum??1))));}
-   setCacheMessage(result.cacheStatus==="hit"?"Saved reference data · "+(result.savedAt?new Date(result.savedAt).toLocaleString():""):result.cacheStatus==="stored"?"Search saved to Herocon":result.cacheStatus==="unavailable"?"Results retrieved, but storage is temporarily unavailable.":"");
+   setCacheMessage(result.catalogueSave?.status==="added"?"Automatically added to the business catalogue.":result.catalogueSave?.status==="existing"?"Already in the business catalogue.":result.catalogueSave?.status==="unavailable"?"Product retrieved, but the catalogue could not be updated.":result.cacheStatus==="hit"?"Saved reference data · "+(result.savedAt?new Date(result.savedAt).toLocaleString():""):result.cacheStatus==="stored"?"Search saved to Herocon":result.cacheStatus==="unavailable"?"Results retrieved, but storage is temporarily unavailable.":"");
    if(result.cacheStatus==="stored")void loadHistory();
    if(result.items){setItems(result.items);setPage(result.page??1);setTotal(result.total??null);}
   }catch(e){if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Something went wrong.");}
