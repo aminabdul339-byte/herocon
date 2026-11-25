@@ -80,7 +80,7 @@ function attribute(v:unknown):{name:string;value:string}|null{
  const value=cleanText(data.translated_value||data.value||data.original_value||data.valueName||data.label,240);
  return name&&value?{name,value}:null;
 }
-function fromHiobuy(value:unknown,url:string):SourceEnrichment{
+export function fromHiobuy(value:unknown,url:string):SourceEnrichment{
  const root=obj(value),p=obj(root.product);
  if(!Object.keys(p).length)throw new SourceEnrichmentError("hiobuy_product_missing",502);
  // HioBuy detail returns its SKU matrix in one response; no documented SKU paging.
@@ -118,7 +118,7 @@ function fromHiobuy(value:unknown,url:string):SourceEnrichment{
   (typeof desc.original==="string"&&desc.original.trim())?desc.original:description;
  const descriptionText=cleanSellerDescription(cleanText(preferredDescription,45000),30000);
  const sourceSpecs=list(p.attributes).map(attribute).filter((a):a is {name:string;value:string}=>a!==null);
- const gallery=photos(p.images,Number.MAX_SAFE_INTEGER);
+ const gallery=[...new Set([...photos(p.images,Number.MAX_SAFE_INTEGER),...photos(p.image)])];
  const variantImages=photos(variants.map(v=>v.image),Number.MAX_SAFE_INTEGER);
  const all=[...new Set([...gallery,...variantImages])];
  const htmlDesc=typeof description==="string"?description:
@@ -165,7 +165,7 @@ async function hiobuy(url:string):Promise<SourceEnrichment>{
   const allowed=["CHANNEL_NOT_AUTHORIZED","INVALID_API_KEY","INSUFFICIENT_SCOPE",
    "PAID_SUBSCRIPTION_REQUIRED","QUOTA_EXCEEDED","RATE_LIMITED",
    "RATE_LIMIT_EXCEEDED","PLATFORM_QUOTA_EXCEEDED","CHANNEL_CAPABILITY_NOT_SUPPORTED",
-   "CHANNEL_UPSTREAM_ERROR","VALIDATION_ERROR"];
+   "CHANNEL_UPSTREAM_ERROR","VALIDATION_ERROR","NOT_FOUND"];
   throw new SourceEnrichmentError(
    allowed.includes(code)?code:response.status===429?"hiobuy_rate_limited":"hiobuy_failed",
    response.status===429?429:503

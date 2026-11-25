@@ -8,7 +8,7 @@
 export const PRIMARY_CATEGORIES=[
  "Tops","Bottoms","Dresses","Outerwear","Sets & Co-ords","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
  "Jewellery","Hair Accessories","Wigs & Hair Extensions","Nails & Nail Supplies","Fashion Accessories","Watches",
- "Furniture","Lighting","Home Textiles","Storage & Organisation","Home & Decor","Home & Kitchen",
+ "Furniture","Lighting","Home Textiles","Storage & Organisation","Home & Decor","Home & Kitchen","Flowers & Gifts",
  "Beauty & Personal Care","Electronics & Tech","Sports & Outdoors",
  "Baby & Kids","Toys & Games","Costumes","Packaging & Supplies","Pet Supplies","Other"
 ] as const;
@@ -33,6 +33,7 @@ function existingFallback(existing?:string):PrimaryCategory {
 
 export function classifyProduct(title:string,existingCategory?:string):PrimaryCategory{
  const s=clean(title||"");
+ if(existingCategory==="Flowers & Gifts")return "Flowers & Gifts";
  // Explicit nail-category imports are source-linked discovery records, not quality-approved merchandise.
  if(existingCategory==="Nails & Nail Supplies")return "Nails & Nail Supplies";
  // Lace wigs and hair extensions are hair products, not generic accessories or clothing.
@@ -140,7 +141,7 @@ export const CATEGORY_ALIASES:Record<string,PrimaryCategory>={
  "furniture":"Furniture","sofa":"Furniture","sofas":"Furniture","chair":"Furniture","chairs":"Furniture","table":"Furniture","tables":"Furniture","lighting":"Lighting","lamp":"Lighting","lamps":"Lighting","home textiles":"Home Textiles","bedding":"Home Textiles","rug":"Home Textiles","rugs":"Home Textiles","blanket":"Home Textiles","blankets":"Home Textiles","cushion":"Home Textiles","cushions":"Home Textiles",
  "storage":"Storage & Organisation","storage and organisation":"Storage & Organisation",
  "beauty":"Beauty & Personal Care","electronics":"Electronics & Tech","sports":"Sports & Outdoors","kids":"Baby & Kids","baby":"Baby & Kids",
- "toys":"Toys & Games","costumes":"Costumes","packaging":"Packaging & Supplies","luggage":"Bags","underwear":"Underwear & Lingerie","sleepwear":"Sleepwear & Loungewear","home kitchen":"Home & Kitchen","pets":"Pet Supplies","other":"Other"
+ "toys":"Toys & Games","costumes":"Costumes","flowers":"Flowers & Gifts","gifts":"Flowers & Gifts","flowers and gifts":"Flowers & Gifts","packaging":"Packaging & Supplies","luggage":"Bags","underwear":"Underwear & Lingerie","sleepwear":"Sleepwear & Loungewear","home kitchen":"Home & Kitchen","pets":"Pet Supplies","other":"Other"
 };
 export const resolveCategory=(v:string):PrimaryCategory|undefined=>
  PRIMARY_CATEGORIES.find(c=>c.toLowerCase()===v.trim().toLowerCase())||

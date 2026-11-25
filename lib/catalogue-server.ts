@@ -7,6 +7,7 @@ import {getDiscoveredProducts} from "./discovered-products";
 import {normalizeMarketplaceLink} from "./marketplace-links";
 import {marketplaceIdentity} from "./catalogue-identity";
 import {withoutEmoji} from "./emoji-free";
+import {unavailableSourceHashes,isUnavailableSource} from "./catalogue-unavailable";
 
 type Raw = Record<string, unknown>;
 const candidates = ["herocon-current-catalogue.json", "herocon-linked-products-only.json", "herocon-products-import.json", "herocon-products-import.example.json"];
@@ -107,8 +108,9 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
 // the public link search are durably stored in the private Vercel Blob store and
 // appear in product search, category browsing, saved items, and product pages.
 export const getProducts = cache(async ():Promise<Product[]>=>{
- const staticProducts=await getBaseProducts();
- const discovered=(await getDiscoveredProducts()).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
+ const [base,hidden]=await Promise.all([getBaseProducts(),unavailableSourceHashes()]);
+ const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden));
+ const discovered=(await getDiscoveredProducts()).filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
  if(!discovered.length)return staticProducts;
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));

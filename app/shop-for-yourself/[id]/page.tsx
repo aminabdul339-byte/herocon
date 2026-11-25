@@ -16,6 +16,7 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
+import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
 import "../shop-for-yourself.css";
 import "../personal-shop-v2.css";
 
@@ -32,7 +33,8 @@ export async function generateMetadata({params}:Params):Promise<Metadata>{
 export default async function ShopProductPage({params,searchParams}:Params){
  const {id}=await params;
  const item=findPersonalProduct(id);
- if(!item)notFound();
+ const hidden=await unavailableSourceHashes();
+ if(!item||isUnavailableSource(item.originalUrl,hidden))notFound();
  const search=await searchParams;
  const audience=item.gender==="unisex"
   ?(search.audience==="men"?"men":"women")
@@ -69,7 +71,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
  };
  const shownProduct=withMarketplaceSource(product,enrichment);
  const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
- const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category).slice(0,4);
+ const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>

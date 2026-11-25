@@ -90,6 +90,8 @@ function storedRecord(input:unknown):Product|null {
   sourceSpecs,
   originalMarketplaceUrl:link,
   sellerName:safeName(obj.sellerName,130)||undefined,
+  sellerId:safeName(obj.sellerId,200)||undefined,
+  sourceBatch:safeName(obj.sourceBatch,100)||undefined,
   sourceMarketplace:identity?.marketplace,
   sourceProductId:identity?.productId,
   collectedAt:typeof obj.collectedAt==="string"?obj.collectedAt:undefined,
@@ -164,6 +166,17 @@ export async function saveDiscoveredProduct(link:string,source:BuckydropProduct)
  }
 }
 
+/** Verified shop catalogue cards; detailed SKU snapshots stay in their own provider storage. */
+export async function saveSupplierDiscovery(input:{url:string;title:string;images:string[];priceCNY?:number;priceGBP?:number;sellerName?:string;sellerId?:string;category:string;sourceBatch:string}):Promise<DiscoverySaveResult>{
+ const url=normalizeMarketplaceLink(input.url);
+ if(!url||!enabled())return {status:"unavailable",productId:null};
+ const id=productIdForSource(url);
+ const product=storedRecord({doppelProductId:id,originalMarketplaceUrl:url,title:input.title,images:input.images,imageUrl:input.images[0],priceCNY:input.priceCNY,priceGBP:input.priceGBP,sellerName:input.sellerName,sellerId:input.sellerId,category:input.category,sourceBatch:input.sourceBatch,collectedAt:new Date().toISOString()});
+ if(!product)return {status:"unavailable",productId:null};
+ const path=productPath(id);
+ try{await put(path,JSON.stringify(product),{access:ACCESS,addRandomSuffix:false,allowOverwrite:false,contentType:"application/json"});revalidateTag("herocon-discovered-products");return {status:"added",productId:id};}
+ catch(e){try{if(await head(path))return {status:"existing",productId:id};}catch{}throw e;}
+}
 async function readStoredProduct(pathname:string):Promise<Product|null>{
  try{
   const result=await get(pathname,{access:ACCESS});

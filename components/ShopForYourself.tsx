@@ -6,6 +6,7 @@ import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
 import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
 import {enrichPersonalCards} from "@/lib/personal-shop-enrichment";
 import {mixPersonalEdit} from "@/lib/personal-shop-edit";
+import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
 
 type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
@@ -19,7 +20,9 @@ function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.
 
 export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
  const {audience,sort}=filters;
- const everything=audienceProducts(audience);
+ const hidden=await unavailableSourceHashes();
+ const available=(a:Audience)=>audienceProducts(a).filter(p=>!isUnavailableSource(p.originalUrl,hidden));
+ const everything=available(audience);
  const categoryTotals=new Map<string,number>();
  for(const x of everything)categoryTotals.set(x.category,(categoryTotals.get(x.category)||0)+1);
  const availableCategories=ORDER[audience].filter(x=>categoryTotals.has(x));
@@ -54,7 +57,7 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
-        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"Shop women":"Shop men"}</strong></span><small>{audienceProducts(option).length.toLocaleString("en-GB")} finds</small>
+        <span className="hc-personal-audience-title"><ShopAudienceIcon audience={option}/><strong>{option==="women"?"Shop women":"Shop men"}</strong></span><small>{available(option).length.toLocaleString("en-GB")} finds</small>
       </Link>)}
     </nav>
   </div>
