@@ -15,7 +15,7 @@ type ForexRate={rate:number;date:string};
 const formatCNY=(amount:number)=>"¥"+amount.toFixed(2);
 const formatGBP=(amount:number)=>"£"+amount.toFixed(2);
 
-export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false,ownerDirectBuy=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:DisplaySupplierDetails;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean;ownerDirectBuy?:boolean}){
+export default function ProductExperience({product,id,title,images,price,buckydropEnabled=false,initialSource,initialFx,sourceLookupFailed=false,gbpOnly=false,customProductPath,fulfillbotPilotOwner=false,ownerDirectBuy=false,wholesale=false}:{product:Product;id:string;title:string;images:string[];price:string;buckydropEnabled?:boolean;initialSource?:DisplaySupplierDetails;initialFx?:ForexRate;sourceLookupFailed?:boolean;gbpOnly?:boolean;customProductPath?:string;fulfillbotPilotOwner?:boolean;ownerDirectBuy?:boolean;wholesale?:boolean}){
  const router=useRouter();
  const {addItems,account,refreshAccount}=useCart();
  const originalVariants=useMemo(()=>variantsFor(product),[product]);
@@ -26,9 +26,10 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const [image,setImage]=useState(0),[badImages,setBadImages]=useState<string[]>([]);
  const [activeSku,setActiveSku]=useState("");
  const [quantities,setQuantities]=useState<Record<string,number>>({});
- const [visibleSkuCount,setVisibleSkuCount]=useState(24);
+ const [visibleSkuCount,setVisibleSkuCount]=useState(6);
  const [skuSearch,setSkuSearch]=useState("");
  const [showAllPhotos,setShowAllPhotos]=useState(false);
+ const [showAllDetailPhotos,setShowAllDetailPhotos]=useState(false);
  const [singleQuantity,setSingleQuantity]=useState(1);
  const [cartMessage,setCartMessage]=useState("");
  const [showFullDescription,setShowFullDescription]=useState(false);
@@ -43,7 +44,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    .catch(()=>{if(!controller.signal.aborted)setFx(null);});
   return ()=>controller.abort();
  },[buckydropEnabled,initialFx,initialSource,product.priceCNY,originalVariants]);
- const dualPrice=(cny:number)=>gbpOnly?(fx?formatGBP(cny*fx.rate):"GBP price unavailable"):formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
+ const dualPrice=(cny:number)=>(gbpOnly||wholesale)?(fx?formatGBP(cny*fx.rate):formatCNY(cny)):formatCNY(cny)+(fx?" ≈ "+formatGBP(cny*fx.rate):"");
 
  // Partner details are merged server-side from permanent storage. Never call a
  // billable partner endpoint merely because a customer opened the product page.
@@ -62,18 +63,18 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const visibleSkus=matchingSkus.slice(0,visibleSkuCount);
  const originalMatching=originalVariants.find(v=>(!colour||!v.colour||v.colour===colour)&&(!size||!v.size||v.size===size)&&(!style||!v.style||v.style===style)&&v.available!==false);
  const sellerImages=source?.images.length?source.images:images;
- const gallery=[...new Set([source?sourceVariant?.image:originalMatching?.image,...sellerImages,...images].filter((x):x is string=>!!x))].filter(x=>!badImages.includes(x));
+ const gallery=[...new Set([...(activeSku||!source?[source?sourceVariant?.image:originalMatching?.image]:[]),...images,...sellerImages,sourceVariant?.image].filter((x):x is string=>!!x))].filter(x=>!badImages.includes(x));
  const chosenIndex=Math.min(image,Math.max(0,gallery.length-1));
  const priceCNY=sourceVariant?.price??source?.offerPrice??source?.listPrice;
  const variantPrices=(source?.variants||[]).map(v=>v.price).filter((x):x is number=>x!=null&&Number.isFinite(x));
  const minPrice=variantPrices.length?Math.min(...variantPrices):null;
  const maxPrice=variantPrices.length?Math.max(...variantPrices):null;
  const priceRange=minPrice!=null&&maxPrice!=null?(minPrice===maxPrice?dualPrice(minPrice):
-  gbpOnly?(fx?formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"GBP price unavailable"):
+  (gbpOnly||wholesale)?(fx?formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):formatCNY(minPrice)+" – "+formatCNY(maxPrice)):
   formatCNY(minPrice)+" – "+formatCNY(maxPrice)+(fx?" ≈ "+formatGBP(minPrice*fx.rate)+" – "+formatGBP(maxPrice*fx.rate):"")):null;
  const cataloguePrice=price&&price!=="View marketplace price"?price:"Price to be confirmed";
  const recordedVariantPriceCNY=originalMatching?.priceCNY??product.priceCNY;
- const priceLabel=source?(gbpOnly&&!fx?cataloguePrice:source.variants.length>0&&!sourceVariant?"Option unavailable":
+ const priceLabel=source?((gbpOnly||wholesale)&&!fx&&cataloguePrice!=="Price to be confirmed"&&!activeSku?cataloguePrice:source.variants.length>0&&!sourceVariant?"Option unavailable":
   activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
   (priceCNY!=null?dualPrice(priceCNY):cataloguePrice)):
   cataloguePrice;
@@ -182,41 +183,35 @@ export default function ProductExperience({product,id,title,images,price,buckydr
        <button type="button" aria-label="Next product photograph" onClick={()=>setImage((chosenIndex+1)%gallery.length)}><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m9 18 6-6-6-6"/></svg></button>
      </div>}
     </div>
-    {gallery.length>1&&<div className="thumbs">{gallery.slice(0,showAllPhotos?gallery.length:18).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}{gallery.length>18&&<button type="button" onClick={()=>setShowAllPhotos(v=>!v)} style={{padding:9,fontWeight:700}}>{showAllPhotos?"Show fewer photos":"View all "+gallery.length+" photos"}</button>}</div>}
-    {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">See seller's product photos and description <ArrowIcon direction="down"/></a>}
+    {gallery.length>1&&<div className="thumbs">{gallery.slice(0,showAllPhotos?gallery.length:8).map((src,i)=><button type="button" className={i===chosenIndex?"active":""} onClick={()=>setImage(i)} key={src}><img src={src} alt={"Product view "+(i+1)} referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/></button>)}{gallery.length>8&&<button type="button" onClick={()=>setShowAllPhotos(v=>!v)} style={{padding:9,fontWeight:700}}>{showAllPhotos?"Show fewer photos":"View all "+gallery.length+" photos"}</button>}</div>}
+    {detailImages.length>0&&<a className="hc-gallery-details-link" href="#product-details">More product photos <ArrowIcon direction="down"/></a>}
    </div>
    <aside className="buy-panel">
-    <p className="eyebrow">THE HEROCON EDIT <span className="hc-editorial-eyebrow-divider"> / </span>{product.category||"PRODUCT DETAILS"}</p>
+    <p className="eyebrow">{product.category||"Product details"}</p>
     <h1>{title}</h1>
-    <div className="hc-seller-row">
-     <span className="supplier-title">{sellerName?"Marketplace seller: "+sellerName:"Marketplace seller not recorded"}</span>
-     {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Direct product link <ExternalArrowIcon/></a>}
-    </div>
-    {!source&&product.sellerId&&<Link className="seller-link" href={"/seller/"+encodeURIComponent(product.sellerId)}>More from this seller <ArrowIcon/></Link>}
     <div className="product-price">{priceLabel}</div>
-    {source&&cataloguePrice!=="Price to be confirmed"&&<p className="sc-source-subprice">Original catalogue price: {cataloguePrice} · Previously listed, excluding delivery.</p>}
-    {!source&&<p className="sc-source-subprice" role="note">Previously recorded catalogue price. Details and seller availability may have changed. Delivery is not included.</p>}
-     {!source&&recordedVariantPriceCNY!=null&&<p className="sc-source-subprice">Recorded seller option: {dualPrice(recordedVariantPriceCNY)}. Historical reference, not a live quote.</p>}
-    {source&&<p className="sc-source-subprice">{gbpOnly?"Supplier estimates in GBP · Shipping separate":fx?"Supplier prices · Approximate GBP equivalents · Shipping separate":"Supplier prices · CNY · Shipping separate"}</p>}
-    {source?.snapshotSavedAt&&<p className="sc-source-subprice" role="note">Supplier details dated {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability can change.</p>}
-    {descriptionOriginalLanguage
-      ?<p className="hc-editorial-lead">
-        {sellerOverview||"Seller specifications and photographs are available below; an English description has not been provided."}
-        <span style={{display:"block",fontSize:12,marginTop:6}}>Based on seller-listed specifications, not independently verified.</span>
-       </p>
-      :description&&<p className="hc-editorial-lead">{description.length>225?description.slice(0,225).trimEnd()+"...":description}</p>}
-    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">Supplier options are unavailable for this listing. You can still add the item to your cart.</p>}
+    <p className="sc-source-subprice">{wholesale?"Wholesale reference price":"Reference price"} · {priceLabel.includes("¥")?"CNY":"GBP"} · Delivery separate</p>
+    <div className="hc-product-quick-facts">
+     <span className="hc-product-source-status">{source?"Supplier details available":"Marketplace listing available"}</span>
+     {source?.moq!=null&&<span>Minimum order: {source.moq} units</span>}
+     {source?.available===false&&<span>Currently unavailable</span>}
+    </div>
+    <div className="hc-seller-row">
+     <span className="supplier-title">{product.sourceMarketplace||source?.marketplace||"Marketplace"}{sellerName?" · "+sellerName:""}</span>
+     {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Original listing <ExternalArrowIcon/></a>}
+    </div>
+    {source&&source.variants.length===0&&<p className="hc-source-unverified" role="status">No supplier options recorded. You can still plan this item in your cart.</p>}
     {source&&source.variants.length>0?<div className="sc-supplier-variant-area">
-      <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length.toLocaleString()} seller variants · Select quantities</span></div>
+      <div className="sc-sku-heading"><strong>Choose your options</strong><span>{source.variants.length.toLocaleString()} options</span></div>
       {source.source==="hiobuy"&&source.variantCompleteness==="missing_ids"&&
        <p role="status" style={{fontSize:13,color:"#92531e"}}>
         This marketplace did not provide a complete set of purchasable SKU identifiers.
         Only returned options are displayed; availability may need supplier confirmation.
        </p>}
       {source.variants.length>16&&<label style={{display:"block",margin:"10px 0 14px",fontSize:13}}>
-        <span style={{display:"block",fontWeight:700,marginBottom:5}}>Find a colour, size, style or SKU</span>
+        <span style={{display:"block",fontWeight:700,marginBottom:5}}>Find an option</span>
         <input type="search" value={skuSearch} placeholder="Search seller options…" onChange={e=>{
-          setSkuSearch(e.currentTarget.value);setVisibleSkuCount(24);
+          setSkuSearch(e.currentTarget.value);setVisibleSkuCount(6);
         }} style={{width:"100%",padding:"11px 12px",border:"1px solid #c6ccbe",borderRadius:5}}/>
       </label>}
       <div className="sc-sku-list">
@@ -240,8 +235,8 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       </div>
       {matchingSkus.length===0&&<p style={{fontSize:14}}>No seller options match your search.</p>}
       {matchingSkus.length>visibleSkuCount&&<button type="button" className="sc-sku-show-more"
-       onClick={()=>setVisibleSkuCount(n=>n+40)}>
-       Show next {Math.min(40,matchingSkus.length-visibleSkuCount)} of {matchingSkus.length.toLocaleString()} options <ArrowIcon direction="down"/>
+       onClick={()=>setVisibleSkuCount(n=>n+12)}>
+       Show more options ({matchingSkus.length-visibleSkuCount} remaining) <ArrowIcon direction="down"/>
       </button>}
       {selectedRows.length>0&&<div className="sc-sku-summary"><div><strong>{totalUnits} selected</strong><span>{totalUnits<minOrder?"Seller minimum: "+minOrder+" units":"Seller minimum met"}</span></div><div><strong>{hasUnknownPrice?"Price on request":dualPrice(subtotal)}</strong><span>Product subtotal</span></div></div>}
     </div>:<>
@@ -257,34 +252,17 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </div>
     {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active: no £9.99 subscription required. Supplier variants and pricing must be verified before payment.</p>}
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
-    <p className="hc-checkout-note">Adding to cart requires a free account. {ownerDirectBuy?"Your private buy-now pilot opens the BuckyDrop product and SKU check. Live payments remain gated until fulfilment is verified.":"Product checkout is currently restricted to the owner pilot; browsing and the cart remain free."}</p>
-    <div className="hc-editorial-accordions" aria-label="Product information">
-      <details>
-        <summary>{descriptionOriginalLanguage?"Seller's original Chinese description":"Seller description"}</summary>
-        {descriptionOriginalLanguage&&<p style={{fontSize:12,color:"#6c7268"}}>Original supplier text, not an English translation.</p>}
-        <p>{description||"A detailed description has not yet been provided by the marketplace seller. You can consult the original listing for any additional product information."}</p>
-      </details>
-      <details>
-        <summary>Product details</summary>
-        <dl>
-          <dt>Category</dt><dd>{product.category||"Not recorded"}</dd>
-          <dt>Seller</dt><dd>{sellerName||"Not recorded"}</dd>
-          <dt>Recorded options</dt><dd>{source?.variants.length||product.variants?.length||product.variantCount||"Not recorded"}</dd>
-          {detailAttributes.slice(0,9).map(attribute=><div key={attribute.name} className="hc-editorial-attribute"><dt>{attribute.name}</dt><dd>{attribute.value}</dd></div>)}
-        </dl>
-      </details>
-      <details>
-        <summary>Sourcing &amp; delivery</summary>
-        <p>Pricing is a marketplace reference, not a live checkout quote. International shipping, taxes, duties and service fees are separate. Herocon does not independently verify supplier claims or brand authenticity.</p>
+    <p className="hc-checkout-note">{ownerDirectBuy?"Private purchase pilot · final supplier checks required.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
+    <div className="hc-editorial-accordions" aria-label="Sourcing information">
+      <details><summary>Pricing &amp; delivery</summary>
+       <p>Prices are supplier references, not live checkout quotes. Delivery, taxes, duties and service fees are separate. Purchasing and fulfilment are currently limited to the owner pilot.</p>
+       {source?.snapshotSavedAt&&<p>Supplier details recorded {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability may change.</p>}
+       {source?.chinaDomesticFreight!=null&&<p>Recorded shipping within China: {dualPrice(source.chinaDomesticFreight)}</p>}
+       {source&&cataloguePrice!=="Price to be confirmed"&&<p>Original catalogue reference: {cataloguePrice}</p>}
+       {!source&&recordedVariantPriceCNY!=null&&<p>Recorded option price: {dualPrice(recordedVariantPriceCNY)} (historical reference).</p>}
       </details>
     </div>
-    {source&&<div className="sc-supplier-facts">
-      {source.moq!=null&&<p><strong>Minimum order:</strong> {source.moq}</p>}
-      {source.chinaDomesticFreight!=null&&<p><strong>Shipping within China:</strong> {dualPrice(source.chinaDomesticFreight)}</p>}
-      {source.available===false&&<p className="sc-supplier-unavailable">This seller listing is currently unavailable.</p>}
-      <p><strong>International delivery:</strong> Quoted and paid separately after your items reach the warehouse.</p>
-    </div>}
-    <a className="hc-product-details-anchor" href="#product-details">View product details <ArrowIcon direction="down"/></a>
+    <a className="hc-product-details-anchor" href="#product-details">Product information <ArrowIcon direction="down"/></a>
    </aside>
   </section>
   <section id="product-details" className="hc-product-detail-panel">
@@ -301,26 +279,26 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       </details>
      </>:<>
       <h3>Seller description</h3>
-      {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,4200)}</p>{description.length>4200&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
+      {description?<><p className="hc-description-text">{showFullDescription?description:description.slice(0,700)}</p>{description.length>700&&<button type="button" className="hc-show-description" onClick={()=>setShowFullDescription(v=>!v)}>{showFullDescription?"Show less":"Read full description"} <ArrowIcon direction="down"/></button>}</>:
        <p className="hc-description-empty">The seller has not provided additional written details for this listing.{marketplace&&<> <a href={marketplace} target="_blank" rel="noopener noreferrer">See the original listing <ArrowIcon/></a></>}</p>}
      </>}
-     {detailImages.length>0&&<div className="hc-detail-photos"><h3>Seller's detailed photos</h3>{detailImages.map((src,index)=><img key={src} src={src} alt={"Seller product detail "+(index+1)} loading="lazy" referrerPolicy="no-referrer"/>)}</div>}
+     {detailImages.length>0&&<div className="hc-detail-photos"><h3>Seller's detailed photos</h3>{detailImages.slice(0,showAllDetailPhotos?detailImages.length:4).map((src,index)=><img key={src} src={src} alt={"Seller product detail "+(index+1)} loading="lazy" referrerPolicy="no-referrer"/>) }{detailImages.length>4&&<button className="hc-show-description" type="button" onClick={()=>setShowAllDetailPhotos(v=>!v)}>{showAllDetailPhotos?"Show fewer photos":"View all "+detailImages.length+" detail photos"} <ArrowIcon direction="down"/></button>}</div>}
     </div>
     <aside className="hc-product-specs">
-     <h3>Specifications & seller information</h3>
+     <h3>Specifications</h3>
      <dl>
       {sellerName&&<><dt>Seller</dt><dd>{sellerName}</dd></>}
       <dt>Marketplace</dt><dd>{marketplace?new URL(marketplace).hostname.replace(/^www\./,""):"Not provided"}</dd>
-      {source?.spuCode&&<><dt>Product reference</dt><dd>{source.spuCode}</dd></>}
+      
       {source?.moq!=null&&<><dt>Minimum order</dt><dd>{source.moq} units</dd></>}
       {(source?.variants.length||product.variantCount||0)>0&&<><dt>Seller options recorded</dt><dd>{source?.variants.length||product.variantCount} variants</dd></>}
-      {!source&&product.originalTitle&&product.originalTitle!==title&&<><dt>Original listing title</dt><dd>{product.originalTitle}</dd></>}
+      {product.originalTitle&&product.originalTitle!==title&&<><dt>Original listing title</dt><dd>{product.originalTitle}</dd></>}
       {product.weight&&<><dt>Weight</dt><dd>{product.weight}</dd></>}
       {product.dimensions&&<><dt>Dimensions</dt><dd>{product.dimensions}</dd></>}
       {detailAttributes.map(attr=><div className="hc-spec-pair" key={attr.name}><dt>{attr.name}</dt><dd>{attr.value}</dd></div>)}
      </dl>
      {marketplace&&<a className="hc-detail-source-button" href={marketplace} target="_blank" rel="noopener noreferrer">View original product <ExternalArrowIcon/></a>}
-     <small>Details and availability can change at the source marketplace.</small>
+     <small>Supplier-listed information; quality, authenticity and availability are not independently verified.</small>
     </aside>
    </div>
   </section>

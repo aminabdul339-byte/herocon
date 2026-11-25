@@ -26,12 +26,7 @@ export default function ShopPersonalCard({product,rates,audience}:{product:Enric
   sourceMarketplace:marketplace,
   originalMarketplaceUrl:product.originalUrl
  };
- const count=product.savedDetails?.variantCount||0;
- const note=count
-  ?count+" recorded "+(count===1?"option":"options")+" · reference price":
-  product.savedDetails?"Saved supplier details · reference price":
-  priceIsConverted(product)?"Approximate GBP reference · shipping separate":
-  "Reference price · delivery not included";
+ const note=priceIsConverted(product)?"Approximate GBP reference price":"Reference price";
  return <ProductCard
    product={record}
    titleOverride={product.name}

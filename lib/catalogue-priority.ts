@@ -125,10 +125,10 @@ export async function attachSavedPartnerImages(products:Product[]):Promise<Produ
    const details=await cardDetails(product.originalMarketplaceUrl);
    if(!details)return product;
    const original=[product.imageUrl,...(product.images||[])].filter((x):x is string=>!!x);
-   const photos=[...new Set([...details.photos,...original])].slice(0,12);
+   const photos=[...new Set([...original.slice(0,1),...details.photos,...original])].slice(0,12);
    return {
      ...product,
-     imageUrl:details.photos[0]||product.imageUrl,
+     imageUrl:product.imageUrl||details.photos[0],
      images:photos,
      sellerName:product.sellerName||details.sellerName,
      variantCount:product.variantCount??details.variantCount

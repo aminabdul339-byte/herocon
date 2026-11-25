@@ -11,6 +11,7 @@ import "./minimal-home.css";
 import "./atelier-home.css";
 import "./brand-system-2026.css";
 import "./brand-refinement-2026.css";
+import "./product-refinement.css";
 import type {Metadata} from "next";
 import {CartProvider} from "@/components/CartProvider";
 import Footer from "@/components/Footer";

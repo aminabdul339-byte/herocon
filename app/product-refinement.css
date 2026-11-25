@@ -1,0 +1,26 @@
+
+/* Product refinement — preserve the Herocon visual system, reduce competing text. */
+.hc-site .hc-refined-card .hc-card-info{display:flex;flex-direction:column;gap:0;padding:13px 12px 7px}
+.hc-site .hc-refined-card .hc-card-info h3{font-size:15px;line-height:1.4;min-height:42px;height:42px;margin:0 0 8px;font-weight:650;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.hc-site .hc-refined-card .hc-price{margin:0;font-size:21px;letter-spacing:-.45px;font-weight:700;line-height:1.25}
+.hc-site .hc-refined-card .hc-price-note{display:block;margin:3px 0 8px;font-size:11px;line-height:1.4;color:#617364}
+.hc-site .hc-refined-card .hc-card-supplier-status{display:flex;align-items:center;gap:5px;color:#59705e;font-size:11px;line-height:1.4;min-height:18px}
+.hc-site .hc-refined-card .hc-card-supplier-status svg{width:15px;height:15px;flex:none}
+.hc-site .hc-refined-card .hc-card-bottom{display:flex;justify-content:flex-start;margin-top:12px;padding-top:11px;border-top:1px solid #e5e9e1}
+.hc-site .hc-refined-card .hc-card-bottom a{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:12px;font-weight:650;text-decoration:none;gap:8px}
+.hc-site .hc-refined-card .hc-card-bottom .hc-ui-icon{width:14px;height:14px;flex:none}
+.hc-site .hc-editorial-product-layout .hc-product-quick-facts{display:flex;flex-wrap:wrap;gap:8px 15px;margin:14px 0;color:#516b57;font-size:13px;line-height:1.5}
+.hc-site .hc-editorial-product-layout .hc-product-source-status{font-weight:650}
+.hc-site .hc-editorial-product-layout .buy-panel .hc-seller-row{margin:0 0 18px;padding-bottom:16px;border-bottom:1px solid #e3e8df}
+.hc-site .hc-editorial-product-layout .buy-panel .supplier-title{overflow-wrap:anywhere}
+.hc-site .hc-editorial-product-layout .sc-supplier-variant-area{margin-top:18px}
+.hc-site .hc-editorial-product-layout .hc-editorial-accordions{margin:16px 0 0}
+.hc-site .hc-product-detail-panel .hc-show-description{margin-top:12px}
+@media(max-width:600px){
+ .hc-site .hc-refined-card .hc-card-info{padding:9px 6px 5px}
+ .hc-site .hc-refined-card .hc-card-info h3{font-size:13px;min-height:37px;height:37px;margin-bottom:6px}
+ .hc-site .hc-refined-card .hc-price{font-size:18px}
+ .hc-site .hc-refined-card .hc-price-note,.hc-site .hc-refined-card .hc-card-supplier-status{font-size:10px}
+ .hc-site .hc-refined-card .hc-card-bottom{margin-top:9px;padding-top:9px}
+ .hc-site .hc-refined-card .hc-card-bottom a{font-size:11px}
+}

@@ -42,7 +42,7 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
  };
  return <main>
   <Header/>
-  <div className="crumbs"><Link href="/">Home</Link><span>/</span><span>{product.category||"Discovery"}</span></div>
+  <div className="crumbs"><Link href="/search">Source for your business</Link><span>/</span><Link href={"/search?category="+encodeURIComponent(product.category||"")}>{product.category||"Discovery"}</Link></div>
   <Suspense key={id} fallback={<ProductLoadingSkeleton/>}>
    <EnrichedCatalogueProduct {...common}/>
   </Suspense>
@@ -66,10 +66,11 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
   // the catalogue props saved before HioBuy returned the new photographs.
   return <>
     <ProductExperience
+      wholesale
       {...props}
       key={props.id}
       product={product}
-      images={imagesFor(product)}
+      images={[...new Set([...props.images,...imagesFor(product)])]}
       initialSource={toDisplaySupplierDetails(enriched)}
       buckydropEnabled={false}
     />
@@ -78,7 +79,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  }
  if(!LIVE_LOOKUP||!sourceUrl){
   return <>
-    <ProductExperience {...props} buckydropEnabled={false} sourceLookupFailed/>
+    <ProductExperience wholesale {...props} buckydropEnabled={false} sourceLookupFailed/>
     {button}
   </>;
  }
@@ -95,6 +96,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  const fx=seller?await getReferenceCnyGbpRate().catch(()=>undefined):undefined;
  return <>
   <ProductExperience
+   wholesale
    key={props.id}
    {...props}
    buckydropEnabled={Boolean(seller)}

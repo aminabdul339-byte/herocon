@@ -425,8 +425,8 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
   // Grid cards only need a thumbnail and option count. Do not serialize the
   // entire 1000+ SKU matrix on every 24-card catalogue page.
   return {...product,
-   imageUrl:enrichment.images[0]||product.imageUrl,
-   images:[...new Set([...enrichment.images.slice(0,12),...(product.images||[])])].slice(0,12),
+   imageUrl:product.imageUrl||enrichment.images[0],
+   images:[...new Set([product.imageUrl,...enrichment.images.slice(0,12),...(product.images||[])].filter((u):u is string=>!!u))].slice(0,12),
    sellerName:enrichment.sellerName||product.sellerName,
    variantCount:enrichment.variantCount??enrichment.variants.length,
    hasPartnerDetails:true
