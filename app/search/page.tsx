@@ -5,7 +5,7 @@ import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
 import {getProducts} from "@/lib/catalogue-server";
 import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
-import {leadWithBusinessEdit,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
+import {mixBusinessCatalogue,restoreBusinessEditThumbnails} from "@/lib/business-catalogue-edit";
 export const dynamic="force-dynamic";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -38,10 +38,10 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
   return sort==="price-asc"?left-right:right-left;
  });
  if(sort==="newest")products=[...products].sort((a,b)=>(b.collectedAt||"").localeCompare(a.collectedAt||""));
- // Only the unfiltered Relevant view receives a mixed editorial lead.
+ // Only the unfiltered Relevant view receives the curated, mixed pagination.
  // Search terms, category browsing, newest and price ordering stay unchanged.
  const isDefaultEdit=!query&&!cat&&!collection&&sort==="recommended";
- if(isDefaultEdit)products=leadWithBusinessEdit(products);
+ if(isDefaultEdit)products=mixBusinessCatalogue(products,PAGE_SIZE);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
  const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),pages=Math.max(1,Math.ceil(products.length/PAGE_SIZE)),page=Math.min(requestedPage,pages);
