@@ -13,6 +13,33 @@ export const BUSINESS_EDIT_IDS = [
   "R1YB-H17wuYDTDPjRob11Q"
 ] as const;
 export const BUSINESS_PAGE_ONE_REPLACEMENTS = [["SM0_-7P2nD9Jt-lug4mpLQ","link-0079b4276e61ff3cba8d7e33b475"],["uD8YL8OxyHTFYPkg-Yb7TQ","link-04b32bced15766a2451f8e5f9ac1"],["wN-Hv8f9htq2-kBWFmrGXw","YZ83IwkNXmZvD7Vni39yAA"]] as const;
+// The current live first-page selection, arranged as eight editorial rows.
+export const BUSINESS_PAGE_ONE_ORDER = [
+  "link-0079b4276e61ff3cba8d7e33b475",
+  "HEWCWVJ5M7RL3Y-J_uV0bg",
+  "qLiCZEEhOnut6fHdkH-Bow",
+  "YZ83IwkNXmZvD7Vni39yAA",
+  "b5vYFjflQs1zVXJNwb4CbA",
+  "M2Q3F7ZAdZt31tzayH_xEw",
+  "Bxt1jifoJ5oinfAzFTydtw",
+  "link-04b32bced15766a2451f8e5f9ac1",
+  "ArVo65ZGy59J-ylIGRTMbg",
+  "g8ulL_pzvvdAvGHNTXB-xw",
+  "R1YB-H17wuYDTDPjRob11Q",
+  "FeK8OVhxVZnueaPQPHdazA",
+  "DMlpOQTj_SHR6lxFV9FP3Q",
+  "LTVwXkK1eRfAq2FqHsxqLQ",
+  "x_RZRDReTBrS17zV1rPLrg",
+  "knxNpwHBEDCiE1QsgbR8Ag",
+  "-7DbxUEYa2VwMtISuUky_A",
+  "MU00fFdlWTZF7rOyy2CJVw",
+  "Kl2bfeHO1soO6eAunfjsmg",
+  "VeefaenaMOOcUl7gJ_kYhA",
+  "v-HvLr_vqOsKkc2ZoDcvvQ",
+  "GFiXCXAyZNgr8Ruwyk15iQ",
+  "i14ZB754DisoGoZws00riQ",
+  "_HXrbFMHgAnonG7g2x5arg"
+] as const;
 const idOf=(p:Product)=>p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||"";
 const hasPhotoAndSource=(p:Product)=>Boolean(p.originalMarketplaceUrl&&p.imageUrl&&/^https:\/\/\S+$/i.test(p.imageUrl));
 const named=(p:Product)=>[p.title,p.originalTitle,p.displayTitle].filter(Boolean).join(" ");
@@ -90,7 +117,10 @@ export function mixBusinessCatalogue(products:Product[],pageSize=24):Product[]{
   const oldIndex=ranked.findIndex(p=>idOf(p)===oldId),newIndex=ranked.findIndex(p=>idOf(p)===newId&&hasPhotoAndSource(p));
   if(oldIndex>=0&&oldIndex<pageSize&&newIndex>=pageSize){[ranked[oldIndex],ranked[newIndex]]=[ranked[newIndex],ranked[oldIndex]];}
  }
- const lead=ranked.slice(0,pageSize);
+ // Preserve the exact live first-page edit when all its listings remain available.
+ // Otherwise fall back to the normal eligible catalogue selection; never show stale cards.
+ const pinned=BUSINESS_PAGE_ONE_ORDER.map(id=>ranked.find(p=>idOf(p)===id&&hasPhotoAndSource(p)));
+ const lead=pageSize===BUSINESS_PAGE_ONE_ORDER.length&&pinned.every((p):p is Product=>!!p)?pinned:ranked.slice(0,pageSize);
  const selected=new Set(lead);
  const groups=new Map<string,Product[]>();
  for(const p of products){if(selected.has(p))continue;const key=p.category||"Other";const pool=groups.get(key)||[];pool.push(p);groups.set(key,pool);}

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const moduleObj={exports:{}};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('lib/business-catalogue-edit.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:moduleObj,exports:moduleObj.exports});
-const {BUSINESS_EDIT_IDS,BUSINESS_PAGE_ONE_REPLACEMENTS,leadWithBusinessEdit,mixBusinessCatalogue,restoreBusinessEditThumbnails}=moduleObj.exports;
+const {BUSINESS_EDIT_IDS,BUSINESS_PAGE_ONE_REPLACEMENTS,BUSINESS_PAGE_ONE_ORDER,leadWithBusinessEdit,mixBusinessCatalogue,restoreBusinessEditThumbnails}=moduleObj.exports;
 const make=(id,title,category)=>({doppelProductId:id,title,category,imageUrl:'https://example.com/'+id+'.jpg',originalMarketplaceUrl:'https://detail.1688.com/offer/123.html',priceGBP:2.72});
 test('all nine actual catalogue products exist with photographs and source links',()=>{
  const files=['herocon-current-catalogue.json','herocon-verified-marketplace-links.json','herocon-wigs-20261118.json'];
@@ -63,4 +63,14 @@ test('the three requested page-one swaps preserve all other cards and inventory'
  for(let i=0;i<24;i++){const pair=BUSINESS_PAGE_ONE_REPLACEMENTS.find(([id])=>id===baseline[i].doppelProductId);assert.equal(result[i].doppelProductId,pair?pair[1]:baseline[i].doppelProductId);}
  assert.equal(result.length,input.length);assert.equal(new Set(result).size,input.length);
  for(const item of old)assert.ok(result.indexOf(item)>=24);
+});
+
+test('the live first-page edit is the same 24 products in a new stable order',()=>{
+ const pinned=Array.from(BUSINESS_PAGE_ONE_ORDER,id=>make(id,'Curated product','Other'));
+ const input=[...Array.from({length:30},(_,i)=>make('extra-'+i,'Cotton tee','Tops')),...pinned.slice().reverse()];
+ const result=mixBusinessCatalogue(input,24);
+ assert.deepEqual(Array.from(result.slice(0,24),p=>p.doppelProductId),Array.from(BUSINESS_PAGE_ONE_ORDER));
+ assert.equal(result.length,input.length);
+ assert.equal(new Set(result).size,input.length);
+ assert.ok(result.slice(24).every(p=>p.doppelProductId.startsWith('extra-')));
 });
