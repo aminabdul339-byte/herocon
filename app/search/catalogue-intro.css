@@ -130,3 +130,15 @@
 @media(max-width:800px){
  .hc-site .sc-catalogue-page .sc-sort-control{margin-top:12px}
 }
+
+/* Preserve the existing sidebar and grid during client category navigation. */
+.hc-site .sc-catalogue-page .sc-catalogue-sidebar>a{position:relative}
+.hc-site .sc-catalogue-page .sc-catalogue-sidebar>a .sc-category-pending{
+ display:block;position:absolute;right:7px;top:50%;margin-top:-5px;
+ width:10px;height:10px;border:1px solid #b6c5b5;border-top-color:#395941;
+ border-radius:50%;animation:sc-category-turn .75s linear infinite;
+}
+.hc-site .sc-catalogue-page .sc-catalogue-sidebar>a:has(.sc-category-pending)>span:not(.sc-category-pending){opacity:0}
+@keyframes sc-category-turn{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.hc-site .sc-catalogue-page .sc-catalogue-sidebar>a .sc-category-pending{animation:none}}
+.hc-site .sc-catalogue-page .sc-category-mobile button:disabled{cursor:progress;opacity:.75}
