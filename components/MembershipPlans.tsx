@@ -2,8 +2,8 @@ import Link from "next/link";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import "./membership-plans.css";
 const free=["2 catalogue pages and 3 rows per category","Original marketplace links","Shopping account and cart (sign-in required)","One free marketplace link lookup with an account"];
-const premium=["Full Herocon catalogue","Catalogue keyword search","Saved product link lookup"];
-const upcoming=["Live marketplace search by link, keyword or image","Herocon purchasing and warehouse delivery"];
+const premium=["Full Herocon catalogue","Catalogue keyword search","Saved product link lookup","Live 1688 keyword and image search"];
+const upcoming=["Herocon purchasing and warehouse delivery"];
 function Mark(){return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>;}
 export default function MembershipPlans({member=false,owner=false,standalone=false,signedIn=false,trialEndsAt=null}:{member?:boolean;owner?:boolean;standalone?:boolean;signedIn?:boolean;trialEndsAt?:string|null}){
  return <section className={"hc-plan-section"+(standalone?" hc-plan-standalone":"")} aria-labelledby="hc-plan-heading" id="membership-plans">
@@ -15,7 +15,7 @@ export default function MembershipPlans({member=false,owner=false,standalone=fal
  {!member&&<div className="hc-trial-strip"><div><strong>Try Premium free for 3 days</strong><p>Create an account and verify your email. No card or automatic renewal.</p></div><Link href="/membership/trial">Start free trial <ArrowIcon direction="right"/></Link></div>}
  {trialEndsAt&&<p className="hc-plan-owner">Your free trial ends {new Date(trialEndsAt).toLocaleDateString("en-GB",{timeZone:"Europe/London"})}. No automatic renewal.</p>}
  {owner&&<p className="hc-plan-owner">Complimentary owner access. No subscription charge.</p>}
- <p className="hc-plan-note">Premium renews monthly until cancelled. Product and delivery charges are separate. Live marketplace search and purchasing are not yet available to public customers. <Link href="/terms-and-conditions">Terms</Link> · <Link href="/membership/activate">Manage or cancel</Link></p>
+ <p className="hc-plan-note">Premium renews monthly until cancelled. Product and delivery charges are separate. Live 1688 searches are subject to daily usage limits and provider availability. Purchasing is not yet available to public customers. <Link href="/terms-and-conditions">Terms</Link> · <Link href="/membership/activate">Manage or cancel</Link></p>
  </section>;
 }
 export function PremiumNotice({feature="the full catalogue"}:{feature?:string}){return <div className="hc-plan-gate"><div><strong>Unlock {feature} with Premium</strong><p>Full catalogue access and catalogue keyword search for £9.99/month.</p></div><Link href="/membership">View membership <ArrowIcon direction="right"/></Link></div>;}

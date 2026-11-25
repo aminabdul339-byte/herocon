@@ -12,11 +12,11 @@ type Mode="parse"|"search"|"image";
 const names={parse:"Paste a link",search:"Keyword search",image:"Image search"};
 const market=(s:string)=>s==="taobao"?"Taobao":s==="weidian"?"Weidian":"1688";
 const money=(v:number|null,fx:Rate|null)=>v===null?"Price unavailable":"¥"+v.toFixed(2)+(fx?" · ≈ £"+(v*fx.rate).toFixed(2):"");
-export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=""}:{initialUrl:string;initialId?:string;initialChannel?:string}){
+export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel="",owner=true,initialMode="parse"}:{initialUrl:string;initialId?:string;initialChannel?:string;owner?:boolean;initialMode?:Mode}){
  const {items:cartItems,addItems,hydrated,account}=useCart();
  const [quantity,setQuantity]=useState(1),[cartMessage,setCartMessage]=useState(""),[savedSearches,setSavedSearches]=useState<SavedSearch[]>([]),[cacheMessage,setCacheMessage]=useState("");
  async function loadHistory(){try{const r=await fetch("/api/hiobuy/discovery",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"history"}),cache:"no-store"});const data:Result=await r.json();if(r.ok&&data.history)setSavedSearches(data.history);}catch{}}
- const [mode,setMode]=useState<Mode>("parse"),[url,setUrl]=useState(initialUrl),[keyword,setKeyword]=useState(""),[image,setImage]=useState(""),[fileName,setFileName]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[items,setItems]=useState<Item[]|null>(null),[detail,setDetail]=useState<Item|null>(null),[fx,setFx]=useState<Rate|null>(null),[page,setPage]=useState(1),[total,setTotal]=useState<number|null>(null),[activePhoto,setActivePhoto]=useState(0),[variant,setVariant]=useState<Variant|null>(null);
+ const [mode,setMode]=useState<Mode>(initialMode),[url,setUrl]=useState(initialUrl),[keyword,setKeyword]=useState(""),[image,setImage]=useState(""),[fileName,setFileName]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[items,setItems]=useState<Item[]|null>(null),[detail,setDetail]=useState<Item|null>(null),[fx,setFx]=useState<Rate|null>(null),[page,setPage]=useState(1),[total,setTotal]=useState<number|null>(null),[activePhoto,setActivePhoto]=useState(0),[variant,setVariant]=useState<Variant|null>(null);
  const last=useRef<Record<string,unknown>|null>(null),abort=useRef<AbortController|null>(null);
  async function run(body:Record<string,unknown>,isDetail=false){
   abort.current?.abort();const controller=new AbortController();abort.current=controller;
@@ -29,13 +29,13 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
    if(controller.signal.aborted)return;
    setFx(result.fx??null);
    if(result.product){setDetail(result.product);setQuantity(Math.max(1,Math.min(999,Math.ceil(result.product.minimum??1))));}
-   setCacheMessage(result.cacheStatus==="hit"?"Saved reference data · "+(result.savedAt?new Date(result.savedAt).toLocaleString():""):result.cacheStatus==="stored"?"Search saved to Herocon":result.cacheStatus==="unavailable"?"Results retrieved, but storage is temporarily unavailable.":"");
-   if(result.cacheStatus==="stored")void loadHistory();
+   setCacheMessage(!owner?"":result.cacheStatus==="hit"?"Saved reference data · "+(result.savedAt?new Date(result.savedAt).toLocaleString():""):result.cacheStatus==="stored"?"Search saved to Herocon":result.cacheStatus==="unavailable"?"Results retrieved, but storage is temporarily unavailable.":"");
+   if(owner&&result.cacheStatus==="stored")void loadHistory();
    if(result.items){setItems(result.items);setPage(result.page??1);setTotal(result.total??null);}
   }catch(e){if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Something went wrong.");}
   finally{if(!controller.signal.aborted)setBusy(false);}
  }
- useEffect(()=>{void loadHistory();if(initialId&&initialChannel)void run({action:"detail",id:initialId,channel:initialChannel});else if(initialUrl)void run({action:"parse",url:initialUrl});return()=>abort.current?.abort();},[initialUrl,initialId,initialChannel]);
+ useEffect(()=>{if(owner)void loadHistory();if(initialId&&initialChannel)void run({action:"detail",id:initialId,channel:initialChannel});else if(initialUrl)void run({action:"parse",url:initialUrl});return()=>abort.current?.abort();},[initialUrl,initialId,initialChannel,owner]);
  const min=Math.max(1,Math.ceil(detail?.minimum??1));
  const sku=variant?.id||"";
  const cartKey=detail?"hiobuy:"+detail.channel+":"+detail.id+":"+sku:"";
@@ -47,13 +47,13 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  function changeMode(m:Mode){abort.current?.abort();setBusy(false);setMode(m);setError("");setItems(null);setDetail(null);last.current=null;}
  function readImage(file:File|undefined){setImage("");setFileName("");setError("");if(!file)return;if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>2*1024*1024){setError("Choose a JPEG, PNG or WebP image under 2 MB.");return;}const r=new FileReader();r.onload=()=>{if(typeof r.result==="string"){setImage(r.result);setFileName(file.name);}};r.onerror=()=>setError("Could not read that image.");r.readAsDataURL(file);}
  return <>
- <section className="hc-link-intro"><div className="hc-link-intro-inner"><p className="sc-kicker">HEROCON · PRIVATE SOURCING TEST</p><h1>Find your next favourite.<br/><em>Discover the original.</em></h1><p className="hc-link-intro-copy">Find products by link, keyword or photo. Live marketplace data via HIOBuy when your key and channel support it.</p>
+ <section className="hc-link-intro"><div className="hc-link-intro-inner"><p className="sc-kicker">HEROCON DISCOVERY</p><h1>Find products</h1><p className="hc-link-intro-copy">Search the 1688 marketplace by keyword or photo. {owner?"Owner access also includes live product link lookup.":"Find supplier products and save them to your cart."}</p>
  <div className="hc-link-input-panel hio-panel">
- <div className="hio-tabs" role="group" aria-label="Discovery method">{(Object.keys(names) as Mode[]).map(m=><button key={m} type="button" aria-pressed={mode===m} onClick={()=>changeMode(m)}>{names[m]}</button>)}</div>
+ <div className="hio-tabs hc-discovery-nav" role="group" aria-label="Discovery method">{!owner&&<Link href="/find-product">Product link</Link>}{(Object.keys(names) as Mode[]).filter(m=>owner||m!=="parse").map(m=><button key={m} type="button" aria-pressed={mode===m} onClick={()=>changeMode(m)}>{names[m]}</button>)}</div>
  <form onSubmit={submit} className="hio-form">
  {mode==="parse"?<label>Marketplace product link<input required type="url" value={url} maxLength={1000} onChange={e=>setUrl(e.target.value)} placeholder="https://detail.1688.com/offer/…"/></label>:mode==="search"?<label>What are you looking for?<input required value={keyword} maxLength={160} onChange={e=>setKeyword(e.target.value)} placeholder="e.g. ceramic vase, linen dress"/></label>:<label>Upload a product photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>readImage(e.target.files?.[0])}/>{fileName&&<small>{fileName}</small>}{image&&<img className="hio-upload-preview" src={image} alt="Selected product photo"/>}</label>}
  <button className="hio-primary" type="submit" disabled={busy||(mode==="image"&&!image)}>{busy?"Searching…":mode==="parse"?"Find product":mode==="search"?"Search products":"Find similar products"}</button></form>
- <p className="hio-note">{mode==="parse"?"1688 · Weidian":"1688"} · Private owner test. Searches saved; checkout not enabled.</p>{savedSearches.length>0&&<details className="hio-history"><summary>Recent saved searches</summary><div>{savedSearches.map(s=><button type="button" key={s.id} disabled={busy} onClick={()=>void run({action:"saved",id:s.id})}>{s.label}<small>{new Date(s.savedAt).toLocaleDateString()}</small></button>)}</div></details>}</div></div></section>
+ <p className="hio-note">{mode==="parse"?"1688 · Weidian":"1688"} · {owner?"Owner access.":"Live search is subject to daily usage limits."} Purchasing is not yet available.</p>{owner&&savedSearches.length>0&&<details className="hio-history"><summary>Recent saved searches</summary><div>{savedSearches.map(s=><button type="button" key={s.id} disabled={busy} onClick={()=>void run({action:"saved",id:s.id})}>{s.label}<small>{new Date(s.savedAt).toLocaleDateString()}</small></button>)}</div></details>}</div></div></section>
  <section className="hio-results" aria-live="polite">
  {busy&&<p role="status" className="hio-status">Retrieving marketplace data…</p>}
  {cacheMessage&&<p className="hio-note" role="status">{cacheMessage}</p>}
@@ -64,7 +64,7 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  {detail.variants.length>0&&<label className="hio-variant">Available options<select value={variant?.id??""} onChange={e=>{const v=detail.variants.find(v=>v.id===e.target.value)||null;setVariant(v);setCartMessage("");setQuantity(min);if(v?.image){const i=detail.images.indexOf(v.image);if(i>=0)setActivePhoto(i);}}}><option value="">Choose a variant</option>{detail.variants.map((v,i)=><option key={v.id||i} value={v.id} disabled={v.stock===0}>{v.name} — {money(v.price,fx)}{v.stock===0?" (out of stock)":""}</option>)}</select></label>}
  {variant&&<p>{variant.stock===null?"Stock not supplied":"Available stock: "+variant.stock}</p>}
  <div className="hio-cart-controls"><label>Quantity<input type="number" min={min} max={Math.max(min,max)} value={quantity} onChange={e=>{setQuantity(Number(e.target.value));setCartMessage("");}}/></label><button className="hio-primary" disabled={!canAdd} onClick={addToCart}>Add to cart</button></div>
- {detail.variants.length>0&&!variant&&<p className="hio-note">Select an available option to add it to your cart.</p>}{max<min&&<p className="hio-note">Not enough recorded stock for another minimum order.</p>}{cartMessage&&<p role="status" className="hio-note">{cartMessage} <Link href="/cart">View cart</Link> · <Link href="/owner/checkout">Checkout</Link></p>}
+ {detail.variants.length>0&&!variant&&<p className="hio-note">Select an available option to add it to your cart.</p>}{max<min&&<p className="hio-note">Not enough recorded stock for another minimum order.</p>}{cartMessage&&<p role="status" className="hio-note">{cartMessage} <Link href="/cart">View cart</Link>{owner&&<> · <Link href="/owner/checkout">Checkout</Link></>}</p>}
  {detail.attributes.length>0&&<details><summary>Product specifications</summary><dl>{detail.attributes.map((a,i)=><div key={i}><dt>{a.name}</dt><dd>{a.value}</dd></div>)}</dl></details>}
  {detail.url&&<p className="hio-note">Original source: {detail.url}</p>}
  <p className="hio-note">Reference product price. China delivery: {typeof detail.domesticFreightCny==="number"?money(detail.domesticFreightCny,fx)+" (estimate)":"Unconfirmed"}. International shipping is separate.</p>{items&&<button className="hio-secondary" onClick={()=>{setDetail(null);setVariant(null);}}>Back to results</button>}</div>

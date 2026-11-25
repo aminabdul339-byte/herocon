@@ -3,6 +3,9 @@ import {NextResponse} from "next/server";
 import {createHash} from "node:crypto";
 import {get,put,list} from "@vercel/blob";
 import {currentCustomer,accountOriginValid} from "@/lib/customer-auth";
+import {membershipEntitlement} from "@/lib/membership-access";
+import {discoveryAllowed} from "@/lib/discovery-access-model";
+import {reserveDiscovery} from "@/lib/discovery-quota";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
@@ -29,20 +32,21 @@ function normalize(raw:unknown,channel:string){
  variants:array(p.variants).slice(0,300).map(v=>{const x=asRecord(v);return {id:string(x.sku_id,500)||String(numeric(x.sku_id)??""),name:array(x.attributes).map(a=>{const r=asRecord(a);return [string(r.translated_name)||string(r.original_name)||label(r.name),string(r.translated_value)||string(r.original_value)||label(r.value)].filter(Boolean).join(": ");}).filter(Boolean).join(" / ")||"Variant",price:price(x.price),stock:numeric(x.stock),image:httpsImage(x.image)};}),
  attributes:array(p.attributes).slice(0,60).map(a=>{const x=asRecord(a);return {name:string(x.translated_name)||string(x.original_name)||label(x.name),value:string(x.translated_value)||string(x.original_value)||label(x.value)};}).filter(a=>a.name&&a.value)};
 }
-// Owner-only trial: coarse in-memory protection; provider quotas remain authoritative.
+// Per-instance burst protection in addition to durable public daily limits.
 let windowStart=0,used=0;
 function allow(){const now=Date.now();if(now-windowStart>=60_000){windowStart=now;used=0;}return ++used<=10;}
 // Private reference snapshots, never a checkout price/stock authority.
 const PREFIX="hiobuy/discovery/v1/";
+const PUBLIC_PREFIX="hiobuy/customer-discovery/v1/";
 const TTL=24*60*60*1000;
 type Saved={version:1;savedAt:string;label:string;action:string;result:Record<string,unknown>};
 const hash=(s:string)=>createHash("sha256").update(s).digest("hex");
-async function readSaved(id:string):Promise<Saved|null>{
+async function readSaved(id:string,prefix=PREFIX):Promise<Saved|null>{
  if(!/^[a-f0-9]{64}$/.test(id))return null;
- try{const b=await get(PREFIX+id+".json",{access:"private"});if(!b||b.statusCode!==200||!b.stream)return null;const raw=await new Response(b.stream).text();if(raw.length>8_000_000)return null;const x=JSON.parse(raw) as Saved;return x.version===1&&x.result&&Number.isFinite(Date.parse(x.savedAt))?x:null;}catch{return null;}
+ try{const b=await get(prefix+id+".json",{access:"private"});if(!b||b.statusCode!==200||!b.stream)return null;const raw=await new Response(b.stream).text();if(raw.length>8_000_000)return null;const x=JSON.parse(raw) as Saved;return x.version===1&&x.result&&Number.isFinite(Date.parse(x.savedAt))?x:null;}catch{return null;}
 }
-async function store(id:string,action:string,label:string,result:Record<string,unknown>){
- const savedAt=new Date().toISOString();try{await put(PREFIX+id+".json",JSON.stringify({version:1,savedAt,label,action,result} satisfies Saved),{access:"private",addRandomSuffix:false,allowOverwrite:true,contentType:"application/json"});return {cacheStatus:"stored",savedAt};}catch{return {cacheStatus:"unavailable",savedAt:null};}
+async function store(id:string,action:string,label:string,result:Record<string,unknown>,prefix=PREFIX){
+ const savedAt=new Date().toISOString();try{await put(prefix+id+".json",JSON.stringify({version:1,savedAt,label,action,result} satisfies Saved),{access:"private",addRandomSuffix:false,allowOverwrite:true,contentType:"application/json"});return {cacheStatus:"stored",savedAt};}catch{return {cacheStatus:"unavailable",savedAt:null};}
 }
 async function history(){
  const page=await list({prefix:PREFIX,limit:1000});
@@ -52,7 +56,10 @@ async function history(){
 }
 export async function POST(request:Request){
  if(!accountOriginValid(request))return fail("Please use the Herocon website.",403);
- if(!isOwnerPremiumCustomer(await currentCustomer()))return fail("Sign in with your Herocon owner account to test HIOBuy.",403);
+ const customer=await currentCustomer();if(!customer)return fail("Sign in to use marketplace discovery.",401);
+ const owner=isOwnerPremiumCustomer(customer);
+ const premium=owner||(await membershipEntitlement(customer)).premium;
+ if(!premium)return fail("Marketplace keyword and image search require Premium or an active free trial.",403);
  const key=process.env.HIOBUY_API_KEY?.trim();
  if(!key)return fail("HIOBuy is not configured on this deployment.",503);
  if(!(request.headers.get("content-type")||"").startsWith("application/json"))return fail("Invalid request format.",415);
@@ -60,6 +67,7 @@ export async function POST(request:Request){
  let body:Record<string,unknown>;
  try{const raw=await request.text();if(raw.length>3_000_000)return fail("Image is too large.",413);body=asRecord(JSON.parse(raw));}catch{return fail("Invalid request.");}
  const action=body.action,channel=string(body.channel);
+ if(!discoveryAllowed(owner,premium,action))return fail("This discovery action is not available.",403);
  if(action==="history"){try{return reply({history:await history()});}catch{return fail("Saved searches are temporarily unavailable.",503);}}
  if(action==="saved"){const saved=await readSaved(string(body.id,65));if(!saved)return fail("Saved search not found.",404);return reply({...saved.result,cacheStatus:"hit",savedAt:saved.savedAt});}
  const common={language:"en"};
@@ -89,9 +97,11 @@ export async function POST(request:Request){
   endpoint="detail";payload={...common,channel,id};
  }else return fail("Unsupported action.");
  const cacheId=hash(JSON.stringify({endpoint,payload})); // image bytes hashed, not persisted
- const existing=await readSaved(cacheId);
+ const prefix=owner?PREFIX:PUBLIC_PREFIX+(action==="image"?hash(customer.id)+"/":"shared/");
+ const existing=await readSaved(cacheId,prefix);
  if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL)return reply({...existing.result,cacheStatus:"hit",savedAt:existing.savedAt});
- if(!allow())return fail("Please wait a minute before another test.",429);
+ if(!allow())return fail("Please wait a minute before another search.",429);
+ if(!owner){try{const reservation=await reserveDiscovery(customer.id);if(reservation!=="ok")return fail(reservation==="account"?"Your daily live marketplace search allowance has been reached. Try again tomorrow (UTC).":"Herocon’s shared live search allowance has been reached for today. Please try again tomorrow (UTC).",429);}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
  const searchLabel=endpoint==="search"?string(payload.keyword)+" · page "+page:endpoint==="search-by-image"?"Image search · page "+page:endpoint==="parse"?string(payload.url):"Product "+string(payload.id);
  try{
   const response=await fetch("https://api.hiobuy.com/v1/products/"+endpoint,{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store",redirect:"error",signal:AbortSignal.timeout(30_000)});
@@ -109,9 +119,9 @@ export async function POST(request:Request){
    const fallbackChannel=channel||(string(payload.url).includes("1688.com")?"1688":"weidian");
    const product=normalize(raw.product,fallbackChannel);
    if(!["1688","weidian"].includes(product.channel))return fail("This marketplace is not enabled.",400);
-   const result={product,fx};return reply({...result,...await store(cacheId,endpoint,searchLabel,result)});
+   const result={product,fx};return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix)});
   }
   if(!Array.isArray(raw.items))return fail("HIOBuy did not return a product list.",502);
-  const result={items:raw.items.slice(0,20).map(p=>normalize(p,channel)).filter(p=>["1688","weidian"].includes(p.channel)),page:numeric(raw.page)??page,total:numeric(raw.total),fx};return reply({...result,...await store(cacheId,endpoint,searchLabel,result)});
+  const result={items:raw.items.slice(0,20).map(p=>normalize(p,channel)).filter(p=>["1688","weidian"].includes(p.channel)),page:numeric(raw.page)??page,total:numeric(raw.total),fx};return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix)});
  }catch{return fail("HIOBuy is temporarily unreachable. Please try again.",502);}
 }
