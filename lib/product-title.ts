@@ -34,6 +34,7 @@ const features:Rule[]=[
 const noise=/\b(?:cross[- ]border|foreign trade|factory direct(?: sale| supply| delivery)?|factory supply|wholesale|hot[- ]selling|best[- ]selling|in stock|ships instantly|new model|new style|new fashion|high quality|high[- ]end|light luxury|internet celebrity|european and american|american and european|trendy brand|popular|versatile|fashionable|fashion|202[0-9]|spring and summer|autumn and winter|spring and autumn|for men and women|for women|for men|new arrival|amazon|aliexpress|temu|export|dropshipping)\b/gi;
 
 const editorialNames:Record<string,string>={
+ "oVT-dBUgBgimLvgPpib1gA":"Geometric Print Card Holder",
  "EOh7f7a2YmF2MD6mBg5g9w":"Backless Halter-Neck Slit Dress",
  "QdCtw6poCdD0NO2yL9QT-Q":"Square-Neck Slit Dress",
  "YjXAnN1cosMO1iGVWJw5FA":"Ribbed Bodycon Mini Dress",
@@ -66,6 +67,19 @@ export function conciseProductTitle(p:Product):string{
  const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
  const raw=withoutEmoji((p.displayTitle||p.title||p.originalTitle||"").trim()).replace(/&amp;/gi,"&");
  const plain=raw.replace(/【[^】]*】|\[[^\]]*\]/g," ").replace(/\s+/g," ").trim()||raw;
+ // "Dog tooth" is a supplier translation for a pattern, not an animal
+ // or a material. Preserve the type of accessory and avoid leather claims.
+ if(p.category==="Bags"&&/\b(?:dog[ -]?tooth|dog teeth|dogtooth)\b/i.test(plain)){
+  if(/\b(?:card holders?|card cases?|card bags?|card set)\b/i.test(plain)&&!/\b(?:backpack|travel bag|tote bag)\b/i.test(plain))return "Geometric Print Card Holder";
+  if(/\b(?:wallet|coin purse)\b/i.test(plain))return "Geometric Print Wallet";
+  if(/\bbackpack\b/i.test(plain))return "Geometric Print Backpack";
+  if(/\btote bags?\b/i.test(plain))return "Geometric Print Tote Bag";
+  if(/\b(?:wash bag|toiletry bag|cosmetic bag)\b/i.test(plain))return "Geometric Print Toiletry Bag";
+  if(/\b(?:travel bag|fitness bag|luggage bag)\b/i.test(plain))return "Geometric Print Travel Bag";
+  if(/\b(?:saddle bag|messenger bag|crossbody bag)\b/i.test(plain))return "Geometric Print Crossbody Bag";
+  if(/\bclutch\b/i.test(plain))return "Geometric Print Clutch";
+  return "Geometric Print Bag";
+ }
  const rule=(types[p.category||""]||[]).find(([r])=>r.test(plain));
  if(rule){
   const label=rule[1],picked:string[]=[];

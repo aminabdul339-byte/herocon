@@ -9,6 +9,7 @@ import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {useCart,type CartItem,PENDING_CART_KEY} from "@/components/CartProvider";
 import type {Product} from "@/lib/types";
 import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
+import {supplierAvailability} from "@/lib/supplier-availability";
 import {cleanSellerDescription,sellerSpecificationOverview} from "@/lib/supplier-description";
 
 type ForexRate={rate:number;date:string};
@@ -77,7 +78,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
   activeSku&&sourceVariant?.price!=null?dualPrice(sourceVariant.price):priceRange||
   (priceCNY!=null?dualPrice(priceCNY):cataloguePrice)):
   cataloguePrice;
- const outOfStock=Boolean(source&&(source.available===false||(source.variants.length>0&&!source.variants.some(v=>v.stock===null||v.stock>0))));
+ const {conflict:stockConflict,outOfStock}=supplierAvailability(source);
  const detailImages=(source?.detailImages?.length?source.detailImages:product.detailImages||[])
    .filter((url,i,all)=>all.indexOf(url)===i);
  const skuOptions=new Map<string,Set<string>>();
@@ -103,7 +104,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
  const sellerOverview=sellerSpecificationOverview(detailAttributes,product.category);
  const updateQuantity=(skuCode:string,delta:number)=>{
   const variant=source?.variants.find(v=>v.skuCode===skuCode);
-  if(!variant||source?.available===false)return;
+  if(!variant||outOfStock||variant.stock===0)return;
   setActiveSku(skuCode);
   setImage(0);
   setCartMessage("");
@@ -189,7 +190,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <p className="eyebrow">{product.category||"Product details"}</p>
     <h1>{title}</h1>
     <div className="product-price">{priceLabel}</div>
-    {source?.available===false&&<p className="hc-source-unverified" role="status">Currently unavailable</p>}
+    {outOfStock&&<p className="hc-source-unverified" role="status">Supplier reports unavailable</p>}
     <div className="hc-seller-row">
      <span className="supplier-title">{product.sourceMarketplace||source?.marketplace||"Marketplace"}{sellerName?" · "+sellerName:""}</span>
      {marketplace&&<a className="hc-direct-link" href={marketplace} target="_blank" rel="noopener noreferrer">Original listing <ExternalArrowIcon/></a>}
@@ -206,13 +207,13 @@ export default function ProductExperience({product,id,title,images,price,buckydr
        {visibleSkus.map(v=>{
         const quantity=quantities[v.skuCode]||0;
         const optionImage=v.image||source.images[0]||images[0];
-        const unavailable=source.available===false||v.stock===0;
+        const unavailable=outOfStock||v.stock===0;
         return <div key={v.skuCode} className={"sc-sku-row"+(v.skuCode===sourceVariant?.skuCode?" active":"")}>
          <button type="button" className="sc-sku-preview" onClick={()=>{setActiveSku(v.skuCode);setImage(0);}} aria-pressed={v.skuCode===sourceVariant?.skuCode} aria-label={"View "+v.title}>
           {optionImage?<img src={optionImage} alt={v.title} loading="lazy" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.hidden=true;}}/>:<span className="sc-sku-image-fallback">No photo</span>}
           <span className="sc-sku-name">{v.options.map(p=>p.value).join(" / ")||v.title}</span>
          </button>
-         <div className="sc-sku-numbers"><strong>{v.price!=null?dualPrice(v.price):"Price on request"}</strong><span>{v.stock==null?"Stock unknown":v.stock===0?"Out of stock":v.stock+" in stock"}</span></div>
+         <div className="sc-sku-numbers"><strong>{v.price!=null?dualPrice(v.price):"Price on request"}</strong><span>{v.stock==null?"Stock unknown":v.stock===0?"Out of stock":v.stock+" recorded in stock"}</span></div>
          <div className="sc-sku-qty" aria-label={"Quantity of "+v.title}>
           <button type="button" onClick={()=>updateQuantity(v.skuCode,-1)} disabled={quantity===0} aria-label={"Remove one "+v.title}>−</button>
           <output aria-label={"Quantity "+quantity}>{quantity}</output>
@@ -234,7 +235,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </>}
     <div className="hc-buy-actions">
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
-     {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||!marketplace} onClick={()=>router.push("/pilot/buckydrop?productId="+encodeURIComponent(id)+(sourceVariant?.skuCode?"&sku="+encodeURIComponent(sourceVariant.skuCode):"")+"&quantity="+(totalUnits||singleQuantity))}>Buy now · owner access</button>:
+     {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||stockConflict||!marketplace} onClick={()=>router.push("/pilot/buckydrop?productId="+encodeURIComponent(id)+(sourceVariant?.skuCode?"&sku="+encodeURIComponent(sourceVariant.skuCode):"")+"&quantity="+(totalUnits||singleQuantity))}>Buy now · owner access</button>:
       <Link className="hc-buy-now-button" href="/cart" style={{display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}>View cart</Link>}
     </div>
     {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active: no £9.99 subscription required. Supplier variants and pricing must be verified before payment.</p>}
@@ -242,6 +243,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <p className="hc-checkout-note">{ownerDirectBuy?"Private purchase pilot · final supplier checks required.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
     <div className="hc-editorial-accordions" aria-label="Sourcing information">
       <details><summary>Pricing &amp; delivery</summary>
+       {stockConflict&&<p>Saved supplier listing status and variant stock disagree. Availability must be confirmed before purchasing. You can still plan items in your cart.</p>}
        <p>Prices are supplier references, not live checkout quotes. Delivery, taxes, duties and service fees are separate. Purchasing and fulfilment are currently limited to the owner pilot.</p>
        {source?.snapshotSavedAt&&<p>Supplier details recorded {new Date(source.snapshotSavedAt).toLocaleDateString("en-GB")}. Prices and availability may change.</p>}
        {source?.chinaDomesticFreight!=null&&<p>Recorded shipping within China: {dualPrice(source.chinaDomesticFreight)}</p>}
