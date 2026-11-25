@@ -1,0 +1,10 @@
+/* Consistent compact sans typography throughout the customer journey.
+   Scope to display headings; preserve content, product layouts, and forms. */
+.hc-site{--hc-flow-font:"Avenir Next","Segoe UI",Arial,sans-serif}
+.hc-site :is(.sc-page-hero,.hc-center-hero,.hc-account-intro,.hc-contact-intro,.hc-membership-copy,.hc-membership-process,.hc-founder,.hc-self-editorial,.hc-personal-catalogue-intro,.hc-personal-related-heading,.hc-shipping-heading,.section-head,.hc-product-detail-title) :is(h1,h2),.hc-site .hc-self-v2[data-audience] :is(.hc-self-editorial,.hc-personal-catalogue-intro,.hc-personal-related-heading) :is(h1,h2),.hc-site .hc-cart-page .hc-cart-hero h1{font-family:var(--hc-flow-font)!important;font-style:normal!important;font-weight:650!important;letter-spacing:-.045em!important;line-height:1.12!important}
+.hc-site :is(.sc-page-hero,.hc-center-hero,.hc-account-intro,.hc-contact-intro,.hc-membership-copy,.hc-founder,.hc-self-editorial,.hc-personal-catalogue-intro,.hc-shipping-heading) h1{font-size:clamp(30px,3.65vw,49px)!important}
+.hc-site :is(.sc-page-hero,.hc-center-hero,.hc-account-intro,.hc-contact-intro,.hc-membership-copy,.hc-membership-process,.hc-founder,.hc-self-editorial,.hc-personal-catalogue-intro,.hc-personal-related-heading,.hc-shipping-heading,.section-head,.hc-product-detail-title) :is(h1,h2) em,.hc-site .hc-cart-page .hc-cart-hero h1 em{font-family:inherit!important;font-style:normal!important;font-weight:inherit!important;color:inherit!important}
+.hc-site :is(.hc-center-hero,.hc-cart-hero){background:linear-gradient(125deg,#fcfcf6df,#e0ebdfb0)!important;border-color:#d8e3d7!important;box-shadow:0 6px 24px #28463205}
+.hc-site .hc-center-nav{background:#e6ede3d9;backdrop-filter:blur(14px)}
+.hc-site .hc-center-panel{box-shadow:0 5px 22px #28463205}
+.hc-site .hc-center-tab[aria-current=page]{background:#fffefae8;box-shadow:0 2px 7px #28463213}

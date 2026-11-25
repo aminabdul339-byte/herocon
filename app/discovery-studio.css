@@ -1,119 +1,47 @@
-/* Discovery Studio — isolated from the previous atelier and shared catalogue. */
-.hc-site .hm-home .hd-studio{
- box-sizing:border-box;position:relative;isolation:isolate;
- display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);align-items:center;
- width:calc(100% - 40px);max-width:1600px;
- margin:20px auto 0;min-height:610px;border-radius:32px;
- background:#e7ede3;color:#243a2c;
-}
-.hm-home .hd-studio-copy{
- position:relative;z-index:2;min-width:0;
- padding:clamp(36px,4.6vw,74px) 12px clamp(36px,4.6vw,74px) clamp(30px,4.5vw,70px);
- animation:hd-enter .7s cubic-bezier(.2,.75,.25,1) both;
-}
-.hm-home .hd-studio-eyebrow{
- display:flex;align-items:center;gap:10px;margin:0;
- font:750 11px/1.5 Arial,Helvetica,sans-serif;
- letter-spacing:.16em;text-transform:uppercase;color:#5b795f;
-}
-.hd-studio-eyebrow>span{width:8px;height:8px;border-radius:50%;background:#83a17f;flex:none}
-.hc-site .hm-home .hd-studio h1{
- font:400 clamp(43px,5.15vw,78px)/1.02 Georgia,"Times New Roman",serif;
- letter-spacing:-.058em;color:#243a2c;
- margin:25px 0 25px;max-width:650px;overflow-wrap:break-word;
-}
-.hc-site .hm-home .hd-studio h1 em{color:#718d74;font-weight:400;font-style:italic}
-.hm-home .hd-studio-description{
- font:400 clamp(15px,1.38vw,19px)/1.75 Arial,Helvetica,sans-serif;
- max-width:480px;margin:0 0 31px;color:#526a58;
-}
-.hm-home .hd-studio-actions{display:flex;align-items:flex-start;flex-wrap:wrap;gap:9px}
-.hc-site .hm-home .hd-studio-action{
- display:inline-flex;align-items:center;justify-content:space-between;gap:18px;
- border:1px solid transparent;border-radius:999px;
- padding:12px 20px;min-height:46px;
- font:650 13px/1.35 Arial,Helvetica,sans-serif;text-decoration:none;
- transition:transform .2s ease,background .2s ease;
-}
-.hc-site .hm-home .hd-studio-primary{background:#294632;color:white}
-.hc-site .hm-home .hd-studio-secondary{background:transparent;color:#294632;border-color:#b8c9b5}
-.hc-site .hm-home .hd-studio-primary:hover{background:#36563e;transform:translateY(-2px)}
-.hc-site .hm-home .hd-studio-secondary:hover{background:#dce7d8;transform:translateY(-2px)}
-.hd-studio-action svg{width:17px;height:17px;flex:none}
-.hd-studio-action:focus-visible,.hd-float:focus-visible,.hd-source-pill:focus-visible{outline:2px solid #507b55;outline-offset:4px}
-.hd-studio-marketplaces{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:28px;color:#405d46;font:650 12px/1.5 Arial,Helvetica,sans-serif}
-.hd-studio-marketplaces i{width:3px;height:3px;border-radius:50%;background:#738974}
-/* Keep every card and its complete price area inside an in-flow grid.
-   Only the image wrapper has a fixed aspect ratio; the card grows with text. */
-.hc-site .hm-home .hd-scene{
- position:relative;isolation:isolate;box-sizing:border-box;
- display:grid;grid-template-columns:repeat(2,minmax(0,194px));
- align-items:stretch;justify-items:center;justify-content:center;gap:16px 20px;
- width:100%;max-width:462px;min-width:0;min-height:0;
- margin-inline:auto;padding:32px 28px 24px;
- aspect-ratio:auto;max-height:none;
-}
-.hd-orbit{position:absolute;left:12%;top:12%;width:76%;aspect-ratio:1;border:1px solid #bfccbb;border-radius:50%;box-shadow:0 0 0 20px #dce5d933;z-index:-1}
-.hc-site .hm-home .hd-float{
- position:relative;display:flex;flex-direction:column;box-sizing:border-box;
- width:100%;max-width:194px;min-width:0;
- padding:9px;border:1px solid #dfe5d9;border-radius:19px;background:#fffefa;color:#243a2c;
- box-shadow:0 10px 22px #19362414;text-decoration:none;
- transform:rotate(var(--r));animation:hd-float 5.8s ease-in-out infinite;
- scale:1;transition:scale .28s cubic-bezier(.2,.75,.25,1),box-shadow .28s ease;
-}
-.hc-site .hm-home .hd-card-photo{
- position:relative;width:100%;aspect-ratio:1.3;overflow:hidden;border-radius:12px;background:#eee;
-}
-.hc-site .hm-home .hd-card-photo img{
- position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:cover;
-}
-.hc-site .hm-home .hd-card-meta{
- display:flex;flex:1;flex-direction:column;gap:7px;padding:10px 4px 4px;
- font:600 12px/1.4 Arial,Helvetica,sans-serif;text-align:left;
-}
-.hd-card-meta>span{overflow-wrap:break-word;min-height:1.4em;letter-spacing:-.01em}
+/* Herocon's homepage: a quiet, glass catalogue rather than editorial typography. */
+.hc-site .hm-home .hd-studio{--hd-ink:#243e31;--hd-muted:#50695a;--hd-font:"Avenir Next","Segoe UI",Arial,sans-serif;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(20px,3vw,54px);width:min(1360px,calc(100% - 64px));margin:22px auto 0;padding:clamp(32px,4.5vw,70px);min-height:0;border:1px solid #dbe6dc;border-radius:36px;background:radial-gradient(ellipse at 89% 10%,#cbdccce8,transparent 56%),radial-gradient(ellipse at 15% 95%,#f9f6ed,transparent 56%),linear-gradient(115deg,#f2f5ee 0%,#e5eee3 55%,#d5e4d6 100%);color:var(--hd-ink);box-shadow:0 18px 65px #243e3109}
+.hc-site .hm-home .hd-studio-copy{position:relative;z-index:2;padding:0;min-width:0}
+.hc-site .hm-home .hd-studio-eyebrow{font:650 10px/1.4 var(--hd-font);letter-spacing:.14em;color:#4d6c57;display:inline-flex;align-items:center;gap:8px;margin:0;background:#ffffff70;border:1px solid #fff;padding:9px 12px;border-radius:999px}
+.hd-studio-eyebrow>span{width:7px;height:7px;background:#72977c;border-radius:50%;box-shadow:0 0 0 3px #72977c22}
+.hc-site .hm-home .hd-studio h1{font:650 clamp(42px,5.1vw,76px)/1.02 var(--hd-font)!important;letter-spacing:-.065em!important;color:var(--hd-ink)!important;margin:24px 0 20px!important;max-width:610px;overflow-wrap:normal}
+.hd-brand-dot{color:#82a58a}
+.hc-site .hm-home .hd-studio-description{font:400 clamp(14px,1.15vw,17px)/1.75 var(--hd-font);color:var(--hd-muted);max-width:420px;margin:0 0 26px}
+.hc-site .hm-home .hd-studio-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hc-site .hm-home .hd-studio-action{display:inline-flex;align-items:center;justify-content:space-between;gap:12px;min-height:47px;padding:12px 17px;border-radius:15px;border:1px solid transparent;text-decoration:none;font:650 13px/1.4 var(--hd-font);transition:background .2s ease,transform .2s ease,box-shadow .2s ease}
+.hc-site .hm-home .hd-studio-primary{background:#2f503d;color:#fff;box-shadow:0 6px 17px #26483220}
+.hc-site .hm-home .hd-studio-secondary{background:#ffffff86;border-color:#ffffffd9;color:#294936;backdrop-filter:blur(18px)}
+.hc-site .hm-home .hd-studio-primary:hover{background:#24432f;transform:translateY(-2px)}
+.hc-site .hm-home .hd-studio-secondary:hover{background:#fff;transform:translateY(-2px)}
+.hd-studio-action svg{width:16px;height:16px;flex:none}
+.hc-site .hm-home .hd-studio-marketplaces{margin-top:27px;display:grid;gap:8px;color:#55705d;font:500 11px/1.4 var(--hd-font)}
+.hd-studio-marketplaces>div{display:flex;gap:8px;flex-wrap:wrap}
+.hd-studio-marketplaces b{font:650 12px/1.4 var(--hd-font);padding:6px 10px;border-radius:8px;background:#ffffff50;border:1px solid #ffffff9e}
+.hc-site .hm-home .hd-scene{position:relative;isolation:isolate;min-width:0;width:100%;max-width:540px;margin-inline:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;justify-content:center;padding:18px;border:1px solid #ffffffc7;border-radius:28px;background:linear-gradient(140deg,#ffffff8f,#ffffff24);backdrop-filter:blur(22px);box-shadow:0 18px 42px #233e3110,inset 0 1px 0 #fff9;aspect-ratio:auto;min-height:0}
+.hd-orbit{position:absolute;z-index:-1;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(ellipse at 80% 35%,#f5f9ee8c,transparent 70%)}
+.hd-scene-top{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:1px 3px 3px;color:#2b4835}
+.hd-scene-brand{font:800 23px/1 var(--hd-font);letter-spacing:-.09em}.hd-scene-brand span{color:#7b9a80}
+.hd-scene-label{display:flex;align-items:center;gap:6px;font:500 11px/1.3 var(--hd-font);color:#48644f}.hd-scene-label i{width:6px;height:6px;background:#73967a;border-radius:50%}
+.hc-site .hm-home .hd-float{position:relative;display:flex;flex-direction:column;min-width:0;width:100%;max-width:none;box-sizing:border-box;padding:8px;border:1px solid #fff;border-radius:18px;background:#fffefac9;box-shadow:0 5px 17px #1c3c2510;color:var(--hd-ink);text-decoration:none;transform:none;animation:none;scale:1;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,background .25s}
+.hc-site .hm-home .hd-card-photo{width:100%;aspect-ratio:1.5;position:relative;overflow:hidden;border-radius:12px;background:#e8e9e0}
+.hc-site .hm-home .hd-card-photo img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
+.hc-site .hm-home .hd-card-meta{display:flex;flex:1;flex-direction:column;gap:7px;padding:8px 3px 3px;font:600 12px/1.4 var(--hd-font);text-align:left}
+.hd-card-meta>span{overflow-wrap:anywhere;letter-spacing:-.01em}
 .hd-card-price{display:flex;flex-direction:column;gap:3px;margin-top:auto}
-.hd-card-price b{font-size:18px;line-height:1.15;white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.025em;color:#243a2c}
-.hc-site .hm-home .hd-card-price small{display:block;font:400 10px/1.4 Arial,Helvetica,sans-serif;color:#657a69}
-.hd-float-1{--r:-2deg;animation-delay:-1s!important;z-index:1}
-.hd-float-2{--r:2deg;animation-delay:-2.8s!important;z-index:2}
-.hd-float-3{--r:-1.5deg;animation-delay:-3.8s!important;z-index:4}
-.hd-float-4{--r:1.5deg;animation-delay:-.2s!important;z-index:3}
-.hc-site .hm-home .hd-float:focus-visible{animation-play-state:paused;z-index:8;scale:1.065;box-shadow:0 18px 34px #19362426}
-@media(hover:hover) and (pointer:fine){.hc-site .hm-home .hd-float:hover{animation-play-state:paused;z-index:8;scale:1.075;box-shadow:0 18px 34px #19362426}}
-.hc-site .hm-home .hd-source-pill{
- grid-column:1/-1;justify-self:center;position:relative;z-index:7;
- display:inline-flex;align-items:center;gap:8px;max-width:100%;
- padding:9px 14px;border-radius:999px;background:#2e4936;color:#fff;
- font:500 11px/1.3 Arial,Helvetica,sans-serif;
- box-shadow:0 8px 18px #28433122;text-decoration:none;
-}
-.hd-source-pill i{width:6px;height:6px;flex:none;border-radius:50%;background:#accfa7}
-.hd-scene:hover .hd-float,.hd-scene:focus-within .hd-float{animation-play-state:paused}
-@keyframes hd-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes hd-float{0%,100%{transform:translateY(0) rotate(var(--r))}50%{transform:translateY(-5px) rotate(var(--r))}}
-@media(min-width:951px){
- .hc-site .hm-home .hd-scene{grid-template-columns:repeat(2,minmax(0,214px));max-width:514px;padding:36px 30px 28px}
- .hc-site .hm-home .hd-float{max-width:214px;padding:10px}
- .hc-site .hm-home .hd-card-meta{font-size:13px;padding:10px 4px 5px}
- .hc-site .hm-home .hd-card-price small{font-size:10.5px}
-}
-@media(min-width:1250px){.hc-site .hm-home .hd-studio{min-height:610px}.hm-home .hd-studio-actions{flex-direction:column}}
-@media(max-width:950px) and (min-width:701px){.hc-site .hm-home .hd-studio{min-height:490px}.hm-home .hd-studio-copy{padding:38px 5px 38px 26px}.hc-site .hm-home .hd-studio h1{font-size:clamp(34px,4.8vw,52px)}.hm-home .hd-studio-description{font-size:14px}.hm-home .hd-studio-actions{flex-direction:column}}
-@media(max-width:700px){
- .hc-site .hm-home .hd-studio{grid-template-columns:1fr;width:calc(100% - 24px);margin-top:12px;border-radius:24px;min-height:0}
- .hm-home .hd-studio-copy{padding:30px 23px 8px}
- .hc-site .hm-home .hd-studio h1{font-size:clamp(40px,9vw,59px);margin:19px 0}
- .hm-home .hd-studio-description{font-size:14px;margin-bottom:20px}
- .hd-studio-marketplaces{margin-top:20px}
- .hc-site .hm-home .hd-scene{width:min(100%,440px);margin-inline:auto;gap:11px 13px;padding:22px 23px 28px}
- .hd-orbit{box-shadow:none}
- .hc-site .hm-home .hd-card-meta{padding-top:7px}
- .hc-site .hm-home .hd-studio-action{font-size:12px;padding:11px 15px;gap:10px}
-}
-@media(max-width:380px){.hm-home .hd-studio-copy{padding-inline:18px}.hm-home .hd-studio-actions{flex-direction:column}.hc-site .hm-home .hd-card-price small{font-size:9px}}
-@media(prefers-reduced-motion:reduce){.hd-studio-copy,.hd-float,.hd-source-pill{animation:none!important}.hd-studio-action,.hd-float{transition:none!important}.hc-site .hm-home .hd-float:hover,.hc-site .hm-home .hd-float:focus-visible{scale:1}}
-
-@media(max-width:950px) and (min-width:701px){.hc-site .hm-home .hd-scene{gap:12px 14px;padding:24px 19px 26px}.hc-site .hm-home .hd-float{padding:7px}.hd-card-price b{font-size:16px}}
-@media(max-width:380px){.hc-site .hm-home .hd-scene{gap:10px 12px;padding-inline:16px}.hc-site .hm-home .hd-float{padding:6px}.hd-card-price b{font-size:16px}}
+.hd-card-price b{font:700 16px/1.2 var(--hd-font);letter-spacing:-.025em;white-space:normal;overflow-wrap:anywhere}
+.hc-site .hm-home .hd-card-price small{font:400 10px/1.4 var(--hd-font);color:#58705e}
+.hc-site .hm-home .hd-float:focus-visible{outline:2px solid #416a4e;outline-offset:3px;background:#fff}
+@media(hover:hover) and (pointer:fine){.hc-site .hm-home .hd-float:hover{transform:translateY(-4px);background:#fff;box-shadow:0 14px 28px #243e3120}}
+.hc-site .hm-home .hd-source-pill{grid-column:1/-1;justify-self:stretch;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid #ffffffc7;border-radius:13px;background:#ffffff68;color:#365740;text-decoration:none;font:650 12px/1.4 var(--hd-font)}
+.hd-source-pill>i{display:none}
+.hd-source-pill:hover{background:#fff}
+.hc-site .hm-home .hm-featured{width:min(1240px,calc(100% - 64px));padding-top:45px}
+.hc-site .hm-home .hm-featured h2{font:650 clamp(25px,2.6vw,36px)/1.2 "Avenir Next","Segoe UI",Arial,sans-serif!important;letter-spacing:-.045em!important;margin:0 0 7px!important;color:#294735!important}
+.hm-featured-subtitle{font-size:13px;color:#607465;margin:0;line-height:1.5}
+.hc-site .hm-home .hm-featured-view-all{font-size:12px;border:1px solid #d5dfd2;border-radius:999px;padding:10px 14px;background:#fffefa}
+.hc-site .hm-home .hm-featured-grid .hc-product-card{border-radius:20px;padding:8px 8px 13px}
+.hc-site .hm-home .hm-featured-grid .hc-image-wrap{border-radius:14px}
+.hc-site .hm-home .hm-bottom{border-radius:20px}
+.hc-site:has(.hm-home) .sc-header{background:#f8faf5d9;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+@media(max-width:1000px){.hc-site .hm-home .hd-studio{gap:20px;width:calc(100% - 40px);padding:32px}.hc-site .hm-home .hd-studio h1{font-size:clamp(38px,5.8vw,60px)!important}.hc-site .hm-home .hd-studio-actions{align-items:flex-start;flex-direction:column}.hc-site .hm-home .hd-scene{padding:13px;gap:9px}}
+@media(max-width:700px){.hc-site .hm-home .hd-studio{grid-template-columns:1fr;width:calc(100% - 24px);margin:12px auto 0;border-radius:25px;padding:25px 19px 20px;gap:24px}.hc-site .hm-home .hd-studio h1{font-size:clamp(38px,9.5vw,56px)!important;margin:18px 0 14px!important}.hd-desktop-break{display:none}.hc-site .hm-home .hd-studio-description{font-size:14px;margin-bottom:18px}.hc-site .hm-home .hd-studio-actions{flex-direction:row;gap:8px}.hc-site .hm-home .hd-studio-action{font-size:12px;min-height:44px;padding:11px 12px;gap:8px}.hc-site .hm-home .hd-studio-marketplaces{margin-top:18px}.hc-site .hm-home .hd-scene{border-radius:21px;max-width:440px}.hc-site .hm-home .hd-float{border-radius:14px;padding:6px}.hc-site .hm-home .hd-card-photo{border-radius:9px}.hc-site .hm-home .hd-card-meta{font-size:11px}.hd-card-price b{font-size:14px}.hc-site .hm-home .hm-featured{width:calc(100% - 28px);padding-top:32px}.hc-site .hm-home .hm-featured-view-all{padding:8px 11px;font-size:11px}}
+@media(prefers-reduced-motion:reduce){.hd-studio-action,.hd-float{transition:none!important}}

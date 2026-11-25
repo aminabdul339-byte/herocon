@@ -10,8 +10,8 @@ import "./discovery-studio.css";
 export const dynamic="force-dynamic";
 
 export const metadata:Metadata={
-  title:"Herocon — Discover Products. Explore the Source.",
-  description:"Find fashion, accessories and original product listings from 1688, Taobao and Weidian. Discover for yourself or explore sourcing for your business."
+  title:"Herocon — Your link to China",
+  description:"Explore original listings from Chinese marketplaces. Shop for yourself or source for your business with Herocon."
 };
 
 function Arrow({up=false}:{up?:boolean}){
@@ -45,7 +45,7 @@ export default async function Home(){
 
     <section className="hm-featured hm-shell" aria-labelledby="hm-featured-title">
       <div className="hm-featured-heading">
-        <div><span className="hm-featured-eyebrow">THE DISCOVERY EDIT</span><h2 id="hm-featured-title">Currently <em>catching our eye.</em></h2></div>
+        <div><h2 id="hm-featured-title">Explore the catalogue</h2><p className="hm-featured-subtitle">A selection of products from our marketplace directory.</p></div>
         <Link className="hm-featured-view-all" href="/search">Explore all products <Arrow up/></Link>
       </div>
       {featured.length>0
@@ -54,8 +54,8 @@ export default async function Home(){
     </section>
 
     <div className="hm-bottom hm-shell">
-      <p>Real finds. Original marketplace links. <span>One place to discover more.</span></p>
-      <div><Link href="/search">Search all products <Arrow up/></Link></div>
+      <p>Found something elsewhere? <span>Bring the original product link to Herocon.</span></p>
+      <div><Link href="/find-product">Paste a product link <Arrow up/></Link></div>
     </div>
     <p className="hm-disclaimer hm-shell">Herocon helps you discover products and original sources. Purchases are currently handled by external marketplaces or buying agents.</p>
   </main>;
