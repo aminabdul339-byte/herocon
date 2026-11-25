@@ -34,6 +34,9 @@ const features:Rule[]=[
 const noise=/\b(?:cross[- ]border|foreign trade|factory direct(?: sale| supply| delivery)?|factory supply|wholesale|hot[- ]selling|best[- ]selling|in stock|ships instantly|new model|new style|new fashion|high quality|high[- ]end|light luxury|internet celebrity|european and american|american and european|trendy brand|popular|versatile|fashionable|fashion|202[0-9]|spring and summer|autumn and winter|spring and autumn|for men and women|for women|for men|new arrival|amazon|aliexpress|temu|export|dropshipping)\b/gi;
 
 const editorialNames:Record<string,string>={
+ "AT6_zzBm508ztj8-E5rLyw":"Vintage Cross Pendant Necklace",
+ "z-L84zDeWbvLylAM-xudhQ":"Antique-Style Skull Ring",
+ "Oy8LqptROwvpmzKqjxgpsw":"Cushioned Lounge Armchair",
  "oVT-dBUgBgimLvgPpib1gA":"Geometric Print Card Holder",
  "EOh7f7a2YmF2MD6mBg5g9w":"Backless Halter-Neck Slit Dress",
  "QdCtw6poCdD0NO2yL9QT-Q":"Square-Neck Slit Dress",
@@ -65,7 +68,9 @@ const categoryFeatures:Record<string,Rule[]>={
 
 export function conciseProductTitle(p:Product):string{
  const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
- const raw=withoutEmoji((p.displayTitle||p.title||p.originalTitle||"").trim()).replace(/&amp;/gi,"&");
+ const primary=p.displayTitle||p.title||p.originalTitle||"";
+ const richer=[p.supplierTitle,p.originalTitle].filter((v):v is string=>!!v&&v.trim().length>primary.trim().length+12).sort((a,b)=>b.length-a.length)[0];
+ const raw=withoutEmoji((/^(?:ring|necklace|earrings?|bracelet|bag|dress|product|clothing|wig|shoes?|watch|hair clip|other)(?:\s*[-#]?\s*\d+)?$/i.test(primary.trim())&&richer?richer:primary).trim()).replace(/&amp;/gi,"&");
  const plain=raw.replace(/【[^】]*】|\[[^\]]*\]/g," ").replace(/\s+/g," ").trim()||raw;
  // "Dog tooth" is a supplier translation for a pattern, not an animal
  // or a material. Preserve the type of accessory and avoid leather claims.
@@ -80,12 +85,18 @@ export function conciseProductTitle(p:Product):string{
   if(/\bclutch\b/i.test(plain))return "Geometric Print Clutch";
   return "Geometric Print Bag";
  }
+ // Specific objects override ambiguous translations, regardless of category.
+ if(/\b(?:sweater chain|sweater pendant)\b/i.test(plain)&&/\b(?:necklace|pendant|jewell?ery)\b/i.test(plain))return /\bcross\b/i.test(plain)?"Cross Pendant Necklace":"Pendant Necklace";
+ if(/\b(?:sofa chair|lounge chair|armchair|single sofa chair|leisure chair)\b/i.test(plain)&&!/\b(?:three.seater|two.seater|double sofa|sofa set|chair cover|chair cushion)\b/i.test(plain))return /\b(?:solid wood|wooden)\b/i.test(plain)?"Wooden Lounge Chair":"Lounge Armchair";
+ if(/\bskull\b/i.test(plain)&&/\bring\b/i.test(plain)&&!/\b(?:necklace|earrings?|keychain|ring holder)\b/i.test(plain))return "Skull Ring";
+ if(/\b(?:nail grinder|nail trimmer|nail drill)\b/i.test(plain)&&!/\b(?:drill bits?|replacement heads?)\b/i.test(plain))return /\belectric\b/i.test(plain)?"Electric Nail Trimmer":"Nail Trimming Tool";
+ if(/\b(?:card holder|card case)\b/i.test(plain)&&p.category==="Bags"&&!/\b(?:backpack|travel bag|tote bag)\b/i.test(plain))return "Card Holder";
  const rule=(types[p.category||""]||[]).find(([r])=>r.test(plain));
  if(rule){
   const label=rule[1],picked:string[]=[];
   for(const [pattern,feature] of [...features,...(categoryFeatures[p.category||""]||[])]){
    if(picked.length>=2)break;
-   if(pattern.test(plain)&&!label.toLowerCase().includes(feature.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(feature.toLowerCase())))picked.push(feature);
+   if(pattern.test(plain)&&!(feature==="Dog"&&/\b(?:dog[ -]?tooth|dog teeth|dogtooth)\b/i.test(plain))&&!(feature==="Leather"&&/\b(?:faux leather|imitation leather|pu leather|synthetic leather)\b/i.test(plain))&&!label.toLowerCase().includes(feature.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(feature.toLowerCase())))picked.push(feature);
   }
   // Avoid visual descriptions unrelated to the main product; categories already
   // constrain the type, and explicit original titles remain in product details.

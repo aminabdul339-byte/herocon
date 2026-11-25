@@ -324,6 +324,7 @@ export function withMarketplaceSource(product:Product,source:SourceEnrichment|nu
   ...product,
   // Preserve existing editorial names and historical GBP reference prices.
   originalTitle:product.originalTitle||source.title||product.title,
+  supplierTitle:source.title||product.supplierTitle,
   imageUrl:images[0]||product.imageUrl,
   images,
   descriptionText:source.descriptionText||product.descriptionText,
@@ -425,6 +426,7 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
   // Grid cards only need a thumbnail and option count. Do not serialize the
   // entire 1000+ SKU matrix on every 24-card catalogue page.
   return {...product,
+   supplierTitle:enrichment.title||product.supplierTitle,
    imageUrl:product.imageUrl||enrichment.images[0],
    images:[...new Set([product.imageUrl,...enrichment.images.slice(0,12),...(product.images||[])].filter((u):u is string=>!!u))].slice(0,12),
    sellerName:enrichment.sellerName||product.sellerName,

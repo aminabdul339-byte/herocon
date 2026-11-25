@@ -34,6 +34,7 @@ function existingFallback(existing?:string):PrimaryCategory {
 export function classifyProduct(title:string,existingCategory?:string):PrimaryCategory{
  const s=clean(title||"");
  if(existingCategory==="Flowers & Gifts")return "Flowers & Gifts";
+ if(/\b(?:sweater chain|sweater pendant)\b/.test(s)&&/\b(?:necklace|pendant|jewellery|jewelry)\b/.test(s))return "Jewellery";
 
  // Primary-object evidence must outrank materials, styling, packaging and marketing.
  if(/\b(?:mouse\s*pad|keyboard mat|desk mat)\b/.test(s))return "Electronics & Tech";

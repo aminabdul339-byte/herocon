@@ -1,0 +1,969 @@
+{
+  "method": "All committed business titles evaluated, three supplied photos matched by ID. Generic/code-only titles need photo review.",
+  "scanned": 2694,
+  "changed": 21,
+  "unresolved": 116,
+  "rows": [
+    {
+      "id": "AT6_zzBm508ztj8-E5rLyw",
+      "original": "European and American Cross-Border Jewelry, Personalized Creative Vintage Cross Necklace, Niche Versatile Sweater Chain Pendant Wholesale",
+      "display": "Vintage Cross Pendant Necklace",
+      "previous": "Cross Necklace",
+      "category": "Jewellery"
+    },
+    {
+      "id": "1FhcWqGwUuE0d0dAy1dcCQ",
+      "original": "New elegant German men's multi-card holder with leather fold wallet short men's wallet",
+      "display": "Card Holder",
+      "previous": "Leather Wallet",
+      "category": "Bags"
+    },
+    {
+      "id": "RDVuwkh82wf8XWepsgb5DQ",
+      "original": "Goya Wallet Printed Card Holder Genuine Leather Card Holder Business Card Holder Coin Purse Unisex Bag Autumn New Model",
+      "display": "Card Holder",
+      "previous": "Leather Wallet",
+      "category": "Bags"
+    },
+    {
+      "id": "sgzsvz66cZjUC2FQe8NQqg",
+      "original": "Spot Ultra-Thin Multi-Card Slot Simple Pu Cross-Grain Leather Card Holder Id Coin Card Holder All-In-One Unisex",
+      "display": "Card Holder",
+      "previous": "Leather Wallet",
+      "category": "Bags"
+    },
+    {
+      "id": "ZB1H-0glkFv9C8LtmcE9lg",
+      "original": "2025 Autumn New Trendy Mini Coin Purse Multi-Card Slot Design Bank Card Id Card Holder Wholesale",
+      "display": "Card Holder",
+      "previous": "Mini Wallet",
+      "category": "Bags"
+    },
+    {
+      "id": "YXJv1WqiJktykiuc3PszJw",
+      "original": "In-Stock Cross-Border Graffiti Card Holder, Card Case, Id Holder, Credit Card Small Card Slot, Business Card Wallet, Multi-Card Slot Card Holder for Women",
+      "display": "Card Holder",
+      "previous": "In-Stock Graffiti Card Holder Card Case Id",
+      "category": "Bags"
+    },
+    {
+      "id": "9bd-sJ9DVoYz8CAhPQE-KA",
+      "original": "Summer New Product Villain Card Holder Card Holder for Women and Men Id Bag Cartoon Card Holder Light Luxury Style for Men and Women High-End",
+      "display": "Card Holder",
+      "previous": "New Product Villain Card Holder Card Holder and",
+      "category": "Bags"
+    },
+    {
+      "id": "cELsJxT3YA-TgrRZbCYjuw",
+      "original": "A New Card Holder, Card Holder, Trendy Brand, High Quality, Multi-Card Slot Coin Purse, Storage Bag, Bank Card Holder",
+      "display": "Card Holder",
+      "previous": "A New Card Holder Card Holder Multi-Card",
+      "category": "Bags"
+    },
+    {
+      "id": "wC41ujQCmHTGyjRaakNVKw",
+      "original": "Crow Heart's New Litchi Pattern Wallet, Trendy Card Holder, Large Capacity, High-Looking Cash, Ultra-Thin Multi-Card Slot Card Holder",
+      "display": "Card Holder",
+      "previous": "Large-Capacity Wallet",
+      "category": "Bags"
+    },
+    {
+      "id": "bAnnClYl5tGQTdCYq3m9bA",
+      "original": "Cross-Border Card Holder Ski Graffiti European and American Card Holder Id Holder Credit Card Small Card Slot Business Card Wallet Multi-Card Slot Card Holder",
+      "display": "Card Holder",
+      "previous": "Card Holder Ski Graffiti Card Holder",
+      "category": "Bags"
+    },
+    {
+      "id": "jkmg7yNJL6QtDAX68geEwA",
+      "original": "13inch Notebook Liner Bag Plush Lined Embroidered Polo Design Pu Leather Business Style Lightweight and Durable",
+      "display": "13inch Notebook Liner Bag Plush Lined Embroidered",
+      "previous": "Leather Bag",
+      "category": "Bags"
+    },
+    {
+      "id": "z-L84zDeWbvLylAM-xudhQ",
+      "original": "Ring",
+      "display": "Antique-Style Skull Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "M6Yo4xefLUY7yAzfP5RA1A",
+      "original": "P Brand Triangle Logo European and American Style Retro Pu Leather Hairpin Hair Accessory Personality Hair Clip Trendy Hairpin Hair Ornament for Women",
+      "display": "Style Retro Pu Leather Hairpin Hair Accessory Personality",
+      "previous": "Leather Hair Clip",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "yBhII5TzGeZj4OCtZZEVuQ",
+      "original": "Solid Wood Living Room Single Sofa Chair Richard Leisure Retro Balcony Cafe Antique Designer Lazy Guesthouse",
+      "display": "Wooden Lounge Chair",
+      "previous": "Solid Wood Sofa",
+      "category": "Furniture"
+    },
+    {
+      "id": "pvDgl9xNT9EOFvLrkLf2LA",
+      "original": "Modern Minimalist Sofa Chair Footrest Combination Home Living Room Leisure Single Leather Chair Master Design Lazy Chair",
+      "display": "Lounge Armchair",
+      "previous": "Minimalist Leather Sofa",
+      "category": "Furniture"
+    },
+    {
+      "id": "ycyyAJQCBTCpQdiR2WGawg",
+      "original": "Medieval Style Single Leather Sofa Solid Wood Jersey Living Room Home Balcony Modern Simple Retro Leisure Lounge Chair",
+      "display": "Wooden Lounge Chair",
+      "previous": "Leather Solid Wood Sofa",
+      "category": "Furniture"
+    },
+    {
+      "id": "rN-VErxKNX5f24GCmRhj7w",
+      "original": "Rh Mid-Century Style Solid Wood Dining Chair Modern Light Luxury American Country Retro Furniture Adult Office Chair Leisure Chair",
+      "display": "Wooden Lounge Chair",
+      "previous": "Solid Wood Chair",
+      "category": "Furniture"
+    },
+    {
+      "id": "v_fJJtViewun89hvpEUmWA",
+      "original": "Casual Chair Italian Style Minimalist Sofa Lazy New Small Apartment Living Room Small Sofa Chair Modern Simple Balcony",
+      "display": "Lounge Armchair",
+      "previous": "Minimalist Compact Sofa",
+      "category": "Furniture"
+    },
+    {
+      "id": "Oy8LqptROwvpmzKqjxgpsw",
+      "original": "Simple Modern Iron Sofa Chair Leisure Lounge Chair Rental Room Small Apartment Living Room Bedroom Lazy Sofa",
+      "display": "Cushioned Lounge Armchair",
+      "previous": "Compact Sofa",
+      "category": "Furniture"
+    },
+    {
+      "id": "1hdl2hEqjRhMKCB_1eWTuA",
+      "original": "Cross-border nail grinder electric nail trimmer five-in-one nail grinder nail file Flawless polished nail polish",
+      "display": "Electric Nail Trimmer",
+      "previous": "file Flawless polished nail polish",
+      "category": "Nails & Nail Supplies"
+    },
+    {
+      "id": "EkXlJ185rhJeZC_YEOrDAA",
+      "original": "Nail Polish Remover Machine, High-Speed Professional Electric Nail Grinder, Convenient Dead Skin Removal and Polishing Nail Grinder",
+      "display": "Electric Nail Trimmer",
+      "previous": "Nail Polish Remover Machine High-Speed Professional",
+      "category": "Nails & Nail Supplies"
+    }
+  ],
+  "needsReview": [
+    {
+      "id": "11JPENElPWS-nYWN4h5GEA",
+      "original": "Fashion clothing -610",
+      "display": "clothing -610",
+      "previous": "clothing -610",
+      "category": "Other"
+    },
+    {
+      "id": "iYkjz_VnAWnerwt0q7gyvw",
+      "original": "Product",
+      "display": "Product",
+      "previous": "Product",
+      "category": "Other"
+    },
+    {
+      "id": "sdlKuU-D0TZqzdFzF3shqw",
+      "original": "Product",
+      "display": "Product",
+      "previous": "Product",
+      "category": "Other"
+    },
+    {
+      "id": "VxfkOqCkPBAeocjcfjA0jA",
+      "original": "[ZC President Edition] 35-48",
+      "display": "35-48",
+      "previous": "35-48",
+      "category": "Other"
+    },
+    {
+      "id": "2TLd4G4y2vU_twGPPWcH6w",
+      "original": "Bag",
+      "display": "Bag",
+      "previous": "Bag",
+      "category": "Bags"
+    },
+    {
+      "id": "XjvKmvjhUON8b76lqhUBYg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "lMZ__IeHNPD4t_VjBuSCvA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "K_UZPTtxnOW4OQH2Us9ORw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Lr1xTT5o74W2_YxF8yKS2w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "2BAUdTUyLSbbXrWyc0HsNg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "U4P9VMZdKPxbKl_ta-5EZA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "eFfYI6UHFZu0laGS1-2BnQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "RN1ESHWvSTnb3oGmeZN9eQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "7DemdiNDjjDBVUY6wtyqwQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "GSRQpHPK24nTqG6WwfuA-A",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "3aBFpTitMWHo8gffS_4U6g",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "5tU8WRfWKqtjg-g3D_RJ-g",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Bs13OQ4DrCbZUNloDZ5BIQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "i7Yx-XXQVUS21ry856zxJw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "qyg64Z-podVDqsWoJqG9dg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "YToFuM8FSa5K8OSiOjHz7w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "sEi45lMQmpuyA7NU6Ii-Hw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "0AcSVe2fSJ77so2ZCr6M_A",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "xigOHf2yh4pylSMo4nzS4w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "_kfMF6z12kwbb-FAGw1mHA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "pwUqu6HIBJN0-asPGQApVQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "KKuHSbtGsn5rE8m2IXlK_A",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "zuGWFKBbPu8ooNTzqMPouA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "bfPvaKA_3oE3k_AEtcbjZw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "FykUsYA8sNtVJEsHjOlLiQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "3V4IeEB2CXJijBN3t2ddPg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "FXwbYOsadUCGQWorsfzBAg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "W8c1VwpteoVOymWQC4SzWQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "uFhUr-IY1fE1T_loQE0FVA",
+      "original": "Ring-21",
+      "display": "Ring-21",
+      "previous": "Ring-21",
+      "category": "Jewellery"
+    },
+    {
+      "id": "fysrJWcgO5eFpZVMJiG0Bg",
+      "original": "Ring-27",
+      "display": "Ring-27",
+      "previous": "Ring-27",
+      "category": "Jewellery"
+    },
+    {
+      "id": "fsnB8XMxwpBXrBr5yNr3iQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "nrHKUaDPGRYEu6xC_hd-6w",
+      "original": "RING",
+      "display": "RING",
+      "previous": "RING",
+      "category": "Jewellery"
+    },
+    {
+      "id": "FHdkeZDi-tB4JiegxWUmZw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "bIusb2uY5luD8uOMz5ZEJw",
+      "original": "RING",
+      "display": "RING",
+      "previous": "RING",
+      "category": "Jewellery"
+    },
+    {
+      "id": "JYtoiLbHODhNZ2xicJ3gQg",
+      "original": "RING",
+      "display": "RING",
+      "previous": "RING",
+      "category": "Jewellery"
+    },
+    {
+      "id": "3IzZ4_MNgmtjz-PXsy3qIw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "A1BmoSNIUOzos7uC6uMwVQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "90lT3rCFbNysHjk1avPbmw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Jb7H0PX4aPreJTPuVamUaw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "HG8NdR3looWZQ1ZgsdiQxQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "k8Y0CYOBC52RAr5i4-qN2A",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Z9Jso0ATmAl7f1EainK-rw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "p8MyiWz3PhaxLLkymOSt0w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "sLrIldGlF9SNnywvpM4QqQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "uO6QmjsEl6CHPufQAVwckQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "E0hDZ9SlmkzQznIMEvGaRQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "RVUseOwBlcU-OfwFPlXweA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "kn_7OnDXLliQawcQegml6w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "3LC4BULVAqjajfK3tlcswQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "yfNn64JIvwynw1LhH9_PbQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "NMPvEzTvj7LkrrMMkoGC4w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Zy5uJNnV8-7nNeKrKJ2GxQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "ksYALRqRJNIVha8vV7IdPg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Pe1eQmeuCX-JO86C3HuVRQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "RxFHcarfEFkJQJpI7_UL9g",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "jPBTNdoZGzGI9-NYp7RSyA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "nnN2ICOtC2s43EtpvHrnuQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "U6Ip4VY907bgf3GhUe0yvQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "aATpeT4N7Wxzh7rkpYaKIg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "HIG9-VMXDXrG5EXjR9COIA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "WLJtqIrTHWQaHi8YkH7cCw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "hm4a2Lmy9JKjE2U9G99OMw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "ezW4rmcPvSVpmh0o3SUp1w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "c09NBH364HeDWafgG4gyEQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "01WEw7XMmKoTfaYWAbXiuw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "9_eP_ZhQFyDA_bUxyBZMYw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "RjkKOXLI5hwAnq8oQ9DoZg",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "1I4P5iQIcqdoOp4bDKG2xw",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "XkDyyQAf-OAZ6HQRib42Gw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "gD0rci2tM9R1F4dLsmQ8Ww",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "IY4DoFBGOwIJShDPS-LfvQ",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Be3XqN-cW6hxnYUaA0ODtQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "QAvH2ncsHgoxcgnoRMNHVA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Vu0TFtY9GoQN0_r64x03oQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "2tdkSoT_8pBIQrqam6V7dw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "y2ht1yhBpSGXT4144lEWhg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "cxYSwQoOcZ-bfSYsHXzdLg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "FgOLz4ESZX8Td4PyLzEKgw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "kX5_ESGoAxnTYimmvamFdw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "sK0KV5iJAJhKS4TZRbUcxw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "m9QC6LZXT6iRf9Q4t0e5uA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "mXTW9kA5NeyQEBAvuOVXyQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "5eFVDRZO4dQsRQsKBETsyw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "mB-Im4zjlwPYmFFMiiXQbg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "Emz4yjtUq9htuGPgkrVvuA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "njWLV_STD_Keh8YWh8KMUg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "6GJjuTqri_cRkfanchsk6g",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "CF3NQslqbEUt1oc5v_veXg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "8SYDSe9JQ0QpX-yDr8Z0rA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "EDkScTdvAopZZcM7-WBKEw",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "ppsMbr0rs0U_RaLPtTChZQ",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "uzqweA1AjYjvMNl3u-6Dvg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "L8QbUlnsvj8_BuxM7t213A",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "y_IzhzW7TaF1j4j7uYc_Kw",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "NBj5AX7-XtpE4cfUYfOS2g",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "SdlMgU-LzaL2hVC9QvGbyg",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "gmJh7Q0BrJXuOfmdetG07w",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "hxKWxE8U4_Qfs7nwAWyRwg",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "U74E4RWuMwn1_Ubf6ScsAA",
+      "original": "ring",
+      "display": "ring",
+      "previous": "ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "y_cr7QIHvJHz6EKVKDThwA",
+      "original": "Ring",
+      "display": "Ring",
+      "previous": "Ring",
+      "category": "Jewellery"
+    },
+    {
+      "id": "o3s1FphCGyzp5uBzG3Rprg",
+      "original": "N43-33090",
+      "display": "N43-33090",
+      "previous": "N43-33090",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "qe9Pwm8OQP_n3gZm9ma_7w",
+      "original": "N7-0199",
+      "display": "N7-0199",
+      "previous": "N7-0199",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "2EhwEtSqTrwNce4wBTCxQg",
+      "original": "N23-26366",
+      "display": "N23-26366",
+      "previous": "N23-26366",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "iKwmbwC9FOMENySzrKkFiw",
+      "original": "N10-4922",
+      "display": "N10-4922",
+      "previous": "N10-4922",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "8FuXzKe0hxxZSednqqFV6A",
+      "original": "N13-35165",
+      "display": "N13-35165",
+      "previous": "N13-35165",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "NhDuuu5RES6mSs7sHP_9qg",
+      "original": "N72-13503",
+      "display": "N72-13503",
+      "previous": "N72-13503",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "sTlQAUK9msQZkMuvi13Vvg",
+      "original": "N7-12072",
+      "display": "N7-12072",
+      "previous": "N7-12072",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "cPvhjHjzjBcDPBG5eWEHCg",
+      "original": "N88-24586",
+      "display": "N88-24586",
+      "previous": "N88-24586",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "Ns2oI40FOCOuXoRSI1jrhQ",
+      "original": "N88-24586",
+      "display": "N88-24586",
+      "previous": "N88-24586",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "2Ty9jbggGt7oItC3tpVY_A",
+      "original": "SK80-18637",
+      "display": "SK80-18637",
+      "previous": "SK80-18637",
+      "category": "Hair Accessories"
+    },
+    {
+      "id": "f1lRMqve8YMBflLtnWnsKw",
+      "original": "42l-54419",
+      "display": "42l-54419",
+      "previous": "42l-54419",
+      "category": "Hair Accessories"
+    }
+  ]
+}

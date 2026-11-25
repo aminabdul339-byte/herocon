@@ -1,6 +1,9 @@
 import type {PrimaryCategory} from "./product-taxonomy";
 /** Explicit screenshot and title-review corrections; precede automated metadata suggestions. */
 export const CATEGORY_OVERRIDES:Readonly<Record<string,PrimaryCategory>>={
+  "AT6_zzBm508ztj8-E5rLyw": "Jewellery",
+  "z-L84zDeWbvLylAM-xudhQ": "Jewellery",
+  "Oy8LqptROwvpmzKqjxgpsw": "Furniture",
   "Dny_gU5-ew6o63aSudk-ag": "Bottoms",
   "RMC8PdL7clXwajnienGECA": "Electronics & Tech",
   "mIeVMyn5q-mbPEZil9JKuw": "Electronics & Tech",

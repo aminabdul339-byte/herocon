@@ -64,17 +64,18 @@ export async function prioritizeSavedPartnerProducts(products:Product[]):Promise
  * never call the paid supplier API. The results are cached by source URL.
  */
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
-type SavedCardDetails={photos:string[];sellerName:string|null;variantCount:number}|null;
+type SavedCardDetails={title:string;photos:string[];sellerName:string|null;variantCount:number}|null;
 const cardDetails=unstable_cache(async(link:string):Promise<SavedCardDetails>=>{
  const details=await getSavedBuckydropProduct(link);
  if(!details)return null;
  return {
+   title:details.title,
    photos:[...new Set([...(details.images||[]),...details.variants.map(x=>x.image).filter((x):x is string=>!!x)])]
      .filter(url=>/^https:\/\//.test(url)).slice(0,12),
    sellerName:details.sellerName,
    variantCount:details.variants.length
  };
-},["herocon-saved-card-detail-v1"],{revalidate:86400});
+},["herocon-saved-card-detail-v2"],{revalidate:86400});
 
 
 /**
@@ -128,6 +129,7 @@ export async function attachSavedPartnerImages(products:Product[]):Promise<Produ
    const photos=[...new Set([...original.slice(0,1),...details.photos,...original])].slice(0,12);
    return {
      ...product,
+     supplierTitle:details.title||product.supplierTitle,
      imageUrl:product.imageUrl||details.photos[0],
      images:photos,
      sellerName:product.sellerName||details.sellerName,

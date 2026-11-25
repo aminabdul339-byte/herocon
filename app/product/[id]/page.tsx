@@ -70,6 +70,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
       {...props}
       key={props.id}
       product={product}
+      title={cleanTitle(product)}
       images={[...new Set([...props.images,...imagesFor(product)])]}
       initialSource={toDisplaySupplierDetails(enriched)}
       buckydropEnabled={false}
@@ -101,6 +102,7 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
    {...props}
    buckydropEnabled={Boolean(seller)}
    sourceLookupFailed={!seller}
+   title={cleanTitle({...props.product,supplierTitle:seller?.title})}
    initialSource={seller||undefined}
    initialFx={fx}
   />
