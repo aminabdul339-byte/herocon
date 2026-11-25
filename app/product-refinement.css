@@ -24,3 +24,24 @@
  .hc-site .hc-refined-card .hc-card-bottom{margin-top:9px;padding-top:9px}
  .hc-site .hc-refined-card .hc-card-bottom a{font-size:11px}
 }
+
+/* Match the gallery frame to the actual supplier photo, not a fixed crop.
+   Navigation remains an absolute overlay and does not affect image sizing. */
+html body .hc-site .hc-editorial-product-layout .gallery-main.hc-fit-photo{
+ display:block;
+ width:100%;
+ aspect-ratio:auto;
+ min-height:0;
+ max-height:none;
+ padding:0;
+ overflow:hidden;
+ isolation:isolate;
+}
+html body .hc-site .hc-editorial-product-layout .gallery-main.hc-fit-photo>img{
+ display:block;
+ width:100%;
+ height:auto;
+ max-height:none;
+ object-fit:contain;
+ border-radius:inherit;
+}
