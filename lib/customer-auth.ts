@@ -4,7 +4,7 @@ import {NextResponse} from "next/server";
 
 export const AUTH_ACCESS_COOKIE="__Host-hc-access";
 export const AUTH_REFRESH_COOKIE="__Host-hc-refresh";
-export type Customer={id:string;email:string;accessToken:string};
+export type Customer={id:string;email:string;accessToken:string;verifiedAt?:string};
 export type SupabaseSession={access_token?:string;refresh_token?:string;expires_in?:number;user?:{id?:string;email?:string;email_confirmed_at?:string|null}};
 export class CustomerAuthError extends Error{
  constructor(public status:number,message:string,public code?:string){super(message);}
@@ -48,7 +48,7 @@ export async function verifyCustomerAccess(accessToken:string):Promise<Customer|
   const user=await response.json() as {id?:unknown;email?:unknown;email_confirmed_at?:unknown};
   if(typeof user.id!=="string"||!/^[a-f0-9-]{36}$/i.test(user.id)||
    typeof user.email!=="string"||!user.email_confirmed_at)return null;
-  return {id:user.id,email:user.email.toLowerCase(),accessToken};
+  return {id:user.id,email:user.email.toLowerCase(),accessToken,verifiedAt:typeof user.email_confirmed_at==="string"?user.email_confirmed_at:undefined};
  }catch{return null;}
 }
 export async function currentCustomer():Promise<Customer|null>{

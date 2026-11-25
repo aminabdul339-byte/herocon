@@ -16,14 +16,15 @@ export async function GET(request:Request){
  try{
   const session=await authApi("/verify",{token_hash:token,type});
   if(!session.access_token||!session.refresh_token)throw Error("Missing identity session.");
-  const trialRequested=Boolean((await cookies()).get("__Host-hc-trial-verifier")?.value);
+  const u=await verifyCustomerAccess(session.access_token);
+  const trialRequested=!!u&&(await cookies()).get("__Host-hc-trial-signup")?.value===u.email;
   let active=false;
-  if(trialRequested&&type!=="recovery"){try{const u=await verifyCustomerAccess(session.access_token);if(u){const entitlement=await membershipEntitlement(u);if(entitlement.premium)active=true;else{await startPremiumTrial(u);active=trialActive(await readPremiumTrial(u));}}}catch{}}
-  const redirectTo=type==="recovery"?"https://herocon.store/account/new-password":trialRequested?(active?"https://herocon.store/search":"https://herocon.store/membership/trial"):"https://herocon.store/account?confirmed=1";
+  if(trialRequested&&type!=="recovery"){try{if(u){const entitlement=await membershipEntitlement(u);if(entitlement.premium)active=true;else{await startPremiumTrial(u,u.verifiedAt);active=trialActive(await readPremiumTrial(u));}}}catch{}}
+  const redirectTo=type==="recovery"?"https://herocon.store/account/new-password":trialRequested?(active?"https://herocon.store/account":"https://herocon.store/membership/trial"):"https://herocon.store/account?confirmed=1";
   const response=NextResponse.redirect(redirectTo,303);
   response.headers.set("Cache-Control","private, no-store");
   setCustomerCookies(response,session);
-  if(trialRequested&&type!=="recovery")response.cookies.set("__Host-hc-trial-verifier","",{httpOnly:true,secure:true,sameSite:"lax",path:"/",maxAge:0});
+  if(trialRequested&&type!=="recovery")response.cookies.set("__Host-hc-trial-signup","",{httpOnly:true,secure:true,sameSite:"lax",path:"/",maxAge:0});
   return response;
  }catch{
   return NextResponse.redirect("https://herocon.store/account?error=confirmation",303);

@@ -34,18 +34,14 @@ export async function POST(request:Request){
  if((mode==="signup"||mode==="login")&&(password.length<12||password.length>128))return reply({error:"Use a password of at least 12 characters."},400);
  try{
   if(mode==="resend"){await authApi("/resend?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{type:"signup",email});return reply({ok:true,message:"Verification email requested. Check your inbox and spam folder."});}
-  if(mode==="verify"){const code=typeof data.code==="string"?data.code:"";if(!/^\d{6,10}$/.test(code))return reply({error:"Enter a valid verification code."},400);const session=await authApi("/verify",{email,token:code,type:"email"});if(!session.access_token||!session.user?.email_confirmed_at)return reply({error:"Email verification failed."},403);const response=reply({ok:true,authenticated:true});setCustomerCookies(response,session);return response;}
+  if(mode==="verify"){const code=typeof data.code==="string"?data.code:"";if(!/^\d{6,10}$/.test(code))return reply({error:"Enter a valid verification code."},400);const session=await authApi("/verify",{email,token:code,type:"signup"});if(!session.access_token||!session.user?.email_confirmed_at)return reply({error:"Email verification failed."},403);const response=reply({ok:true,authenticated:true});setCustomerCookies(response,session);return response;}
   if(mode==="recover"){
    await authApi("/recover?redirect_to="+encodeURIComponent("https://herocon.store/account/new-password"),{email});
    return reply({ok:true,message:"If an account exists, password-reset instructions will be sent to that email address."});
   }
   if(mode==="signup"){
    const result=await authApi("/signup?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{email,password});
-   if(result.user?.email_confirmed_at&&result.access_token&&result.refresh_token){
-    const response=reply({ok:true,authenticated:true,accountEmail:email,freeAccount:true});
-    setCustomerCookies(response,result);
-    return response;
-   }
+   if(result.access_token)return reply({error:"Email confirmation must be enabled before registration."},503);
    return reply({ok:true,requiresConfirmation:true,message:"Check your inbox for a verification code or confirmation link."});
   }
   const session=await authApi("/token?grant_type=password",{email,password});

@@ -45,14 +45,13 @@ function savePendingSelection(userId:string){
 function AccountContent(){
  const search=useSearchParams();
  const next=safeNext(search.get("next"));
- const [mode,setMode]=useState<Mode>("signup");
+ const [mode,setMode]=useState<Mode>(search.get("mode")==="login"?"login":"signup");
  const [email,setEmail]=useState(""),[password,setPassword]=useState("");
  const [working,setWorking]=useState(false),[notice,setNotice]=useState("");
  const [readyToConfirm,setReadyToConfirm]=useState(false);
  const [verificationCode,setVerificationCode]=useState("");
  const {account}=useCart();
  const pending=useMemo(()=>Boolean(next),[next]);
- useEffect(()=>{const code=search.get("code");if(code&&code.length<=1024)window.location.replace("/membership/trial?code="+encodeURIComponent(code));},[search]);
  useEffect(()=>{
   if(search.get("error")==="confirmation")setNotice("That confirmation link has expired or could not be verified. Please request another email.");
   else if(search.get("confirmed")==="1")setNotice("Your email is confirmed. You can now use your free Herocon account.");
@@ -111,7 +110,7 @@ function AccountContent(){
    <div className="hc-account-intro">
     <h1>{account.status==="authenticated"?"Your account":"Welcome to Herocon"}</h1>
     <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
-    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Try Premium free</strong><span>3 days</span></div><p>Full catalogue and available search tools. No card or automatic renewal.</p><Link href="/membership/trial">Start with email <ArrowIcon direction="right"/></Link></div>:null}
+    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Try Premium free</strong><span>3 days</span></div><p>Full catalogue and available search tools. No card or automatic renewal.</p><Link href="/membership/trial">Start free trial <ArrowIcon direction="right"/></Link></div>:null}
     {account.status!=="authenticated"&&<Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>}
     {pending&&<p className="hc-account-pending">Your selected product will be saved after sign-in.</p>}
    </div>
@@ -124,6 +123,7 @@ function AccountContent(){
       <Link href={account.trialEndsAt?"/membership/trial":account.premium?"/membership/activate":"/membership"}>{account.trialEndsAt?"View trial":account.premium?"Manage membership":"Explore membership"} <ArrowIcon direction="right"/></Link>
       {account.trialEndsAt&&<Link href="/membership/activate">Upgrade to Premium <ArrowIcon direction="right"/></Link>}
       {account.ownerPremium&&<Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link>}
+      <Link href="/account/new-password">Set or change password <ArrowIcon direction="right"/></Link>
       <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">{working?"Signing out…":"Log out"}</button>
      </div>
     </>:account.status==="unavailable"?<>
@@ -150,7 +150,7 @@ function AccountContent(){
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
      {readyToConfirm&&<p className="hc-account-fine">If the email contains a link instead, open it in this browser. Check your spam folder if nothing arrives.</p>}
-     {!readyToConfirm&&<Link href="/membership/trial" className="hc-account-email-link">Continue with email only <ArrowIcon direction="right"/></Link>}
+     {!readyToConfirm&&<Link href="/membership/trial" className="hc-account-email-link">Try Premium for 3 days <ArrowIcon direction="right"/></Link>}
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>

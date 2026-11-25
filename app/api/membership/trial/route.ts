@@ -1,13 +1,13 @@
 import {publicEmailError} from "@/lib/email-auth-error";
 import {NextResponse} from "next/server";
 import {cookies} from "next/headers";
-import {randomBytes,createHash} from "node:crypto";
+
 import {accountOriginValid,authApi,currentCustomer,customerAuthConfigured,setCustomerCookies,verifyCustomerAccess,CustomerAuthError} from "@/lib/customer-auth";
 import {readPremiumTrial,startPremiumTrial} from "@/lib/premium-trial";
 import {trialActive} from "@/lib/premium-trial-model";
 import {membershipEntitlement} from "@/lib/membership-access";
 export const runtime="nodejs";export const dynamic="force-dynamic";
-const COOKIE="__Host-hc-trial-verifier";
+const COOKIE="__Host-hc-trial-signup";
 const opts={httpOnly:true,secure:true,sameSite:"lax" as const,path:"/"};
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{"Cache-Control":"private, no-store","Vary":"Cookie"}});
 const emailValid=(email:string)=>email.length<=150&&email.length>=5&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -22,35 +22,30 @@ export async function POST(req:Request){
  try{
   const raw=await req.text();if(raw.length>2000)return reply({error:"Request too long."},413);
   const d=JSON.parse(raw);if(!d||typeof d!=="object")return reply({error:"Invalid request."},400);
-  flow=typeof d.action==="string"&&["email","verify","exchange","start"].includes(d.action)?d.action:"trial";
-  if(d.action==="email"){
+  flow=typeof d.action==="string"&&["signup","resend","verify","start"].includes(d.action)?d.action:"trial";
+  if(d.action==="signup"||d.action==="resend"){
    const email=typeof d.email==="string"?d.email.trim().toLowerCase():"";
    if(!emailValid(email)||d.acceptedTerms!==true)return reply({error:"Enter your email and accept the terms."},400);
-   const verifier=randomBytes(48).toString("base64url"),challenge=createHash("sha256").update(verifier).digest("base64url");
-   // Existing allowed account redirect is retained; /account forwards the PKCE
-   // authorization code to the trial page without placing session tokens in URLs.
-   await authApi("/otp?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{email,create_user:true,code_challenge:challenge,code_challenge_method:"s256"});
-   const response=reply({ok:true});response.cookies.set(COOKIE,verifier,{...opts,maxAge:3600});return response;
-  }
-  if(d.action==="exchange"||d.action==="verify"){
-   let session;
-   if(d.action==="exchange"){
-    const verifier=(await cookies()).get(COOKIE)?.value;
-    if(!verifier||typeof d.code!=="string"||d.code.length>1024||!d.code)return reply({error:"Open the email in the browser where you requested it, or request a new link."},400);
-    session=await authApi("/token?grant_type=pkce",{auth_code:d.code,code_verifier:verifier});
+   if(d.action==="signup"){
+    if(typeof d.password!=="string"||d.password.length<12||d.password.length>128)return reply({error:"Create a password of at least 12 characters."},400);
+    const session=await authApi("/signup?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{email,password:d.password});
+    if(session.access_token)return reply({error:"Email confirmation must be enabled before trial registration."},503);
    }else{
-    const email=typeof d.email==="string"?d.email.trim().toLowerCase():"";
-    if(!emailValid(email)||typeof d.code!=="string"||!/^\d{6,10}$/.test(d.code))return reply({error:"Enter a valid email and verification code."},400);
-    session=await authApi("/verify",{email,token:d.code,type:"email"});
+    if((await cookies()).get(COOKIE)?.value!==email)return reply({error:"Create your account first, then request another code."},400);
+    await authApi("/resend?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{type:"signup",email});
    }
+   const response=reply({ok:true});response.cookies.set(COOKIE,email,{...opts,maxAge:3600});return response;
+  }
+  if(d.action==="verify"){
+   const email=typeof d.email==="string"?d.email.trim().toLowerCase():"";
+   if(!emailValid(email)||typeof d.code!=="string"||!/^\d{6,10}$/.test(d.code)||d.acceptedTerms!==true)return reply({error:"Enter your email verification code and accept the terms."},400);
+   if((await cookies()).get(COOKIE)?.value!==email)return reply({error:"Please sign up or request a new verification email in this browser."},400);
+   const session=await authApi("/verify",{email,token:d.code,type:"signup"});
    const customer=session.access_token?await verifyCustomerAccess(session.access_token):null;
-   if(!customer)return reply({error:"Email verification failed."},403);
-   // Email verification and explicit trial consent activate the entitlement.
+   if(!customer||customer.email!==email)return reply({error:"Email verification failed."},403);
    let active=false,trialError:string|undefined;
-   if(d.acceptedTerms===true||d.action==="exchange"){
-    try{const existing=await membershipEntitlement(customer);if(existing.premium){active=true;}else{const trial=await startPremiumTrial(customer);const confirmed=await readPremiumTrial(customer);active=trialActive(confirmed)&&confirmed?.endsAt===trial.endsAt;}}
-    catch{trialError="Email verified. Trial activation could not be confirmed; please retry activation.";}
-   }
+   try{const existing=await membershipEntitlement(customer);if(existing.premium)active=true;else active=trialActive(await startPremiumTrial(customer,customer.verifiedAt));}
+   catch{trialError="Email verified. Trial activation could not be confirmed. Sign in and select Start trial to retry.";}
    const response=reply({ok:true,active,trialError});setCustomerCookies(response,session);response.cookies.set(COOKIE,"",{...opts,maxAge:0});return response;
   }
   if(d.action==="start"){
