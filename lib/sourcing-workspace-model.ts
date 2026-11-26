@@ -6,7 +6,7 @@ export function cleanFind(value:unknown):SavedFind|null{
  if(!value||typeof value!=="object"||Array.isArray(value))return null;
  const v=value as Record<string,unknown>,url=normalizeMarketplaceLink(v.url),title=text(v.title,300),path=text(v.path,1000);
  if(!url||!title||!/^\/(product\/|shop-for-yourself\/|find-product\?)/.test(path)||/[\\\r\n]/.test(path))return null;
- let image:string|undefined;try{const i=new URL(text(v.image,2000),"https://herocon.store");if(i.protocol==="https:"&&!i.username&&!i.password)image=i.href;}catch{}
+ let image:string|undefined;try{if(!text(v.image,2000))throw Error("No photo");const i=new URL(text(v.image,2000),"https://herocon.store");if(i.protocol==="https:"&&!i.username&&!i.password)image=i.href;}catch{}
  return {url,title,path,image,seller:text(v.seller,150)||undefined,price:positive(v.price),currency:v.currency==="GBP"||v.currency==="CNY"?v.currency:undefined,minimum:positive(v.minimum),variantCount:positive(v.variantCount),folder:text(v.folder,60)||"My finds"};
 }
 export function profitEstimate(selling:number,product:number,shipping:number,other:number,feePercent:number,quantity:number){

@@ -26,7 +26,7 @@ jobs:
       - name: TypeScript checks
         run: npm run typecheck
       - name: Membership, trial and workspace checks
-        run: node --experimental-strip-types --experimental-specifier-resolution=node --test tests/premium-trial.test.cjs tests/discovery-access.test.cjs tests/catalogue-access.test.cjs
+        run: node --experimental-strip-types --test tests/premium-trial.test.cjs tests/discovery-access.test.cjs tests/catalogue-access.test.cjs tests/sourcing-workspace.test.cjs
       - name: Business catalogue editorial tests
         run: node --test tests/business-catalogue-edit.test.cjs
       - name: Personal shop editorial tests
