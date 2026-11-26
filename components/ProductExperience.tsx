@@ -189,7 +189,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
    </div>
    <aside className="buy-panel">
     <p className="eyebrow">{product.category||"Product details"}</p>
-    <h1>{title}</h1><SaveFind find={{url:marketplace||"",title,path:customProductPath||(id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace):"/product/"+encodeURIComponent(id)),image:gallery[0],seller:sellerName||undefined,price:priceCNY??product.priceGBP??undefined,currency:priceCNY!=null?"CNY":product.priceGBP!=null?"GBP":undefined,minimum:minOrder??undefined,variantCount:source?.variants.length||product.variantCount}}/>
+    <h1>{title}</h1><SaveFind find={{url:marketplace||"",title,path:customProductPath||(id==="linked-product"?"/find-product?url="+encodeURIComponent(marketplace||""):"/product/"+encodeURIComponent(id)),image:gallery[0],seller:sellerName||undefined,price:priceCNY??product.priceGBP??undefined,currency:priceCNY!=null?"CNY":product.priceGBP!=null?"GBP":undefined,minimum:minOrder??undefined,variantCount:source?.variants.length||product.variantCount}}/>
     <div className="product-price">{priceLabel}</div>
     {outOfStock&&<p className="hc-source-unverified" role="status">Supplier reports unavailable</p>}
     <div className="hc-seller-row">
