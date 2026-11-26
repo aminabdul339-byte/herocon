@@ -25,24 +25,14 @@ function Arrow({up=false}:{up?:boolean}){
 export default async function Home(){
   const all=await getProducts();
   const products=[...new Map([...freeBusinessEdit(all),...all.filter(p=>featuredPreviewIds.some(id=>id===productId(p)))].map(p=>[productId(p),p])).values()];
-  // Two deliberately curated swaps for the homepage Discovery Edit.
-  // Select from actual existing catalogue records; never invent listing data.
-  // Keep the wig and nail entries picked by the existing editorial selection.
-  const featuredDefaults=selectDiscoveryEditProducts(products);
-  const featuredIds:Readonly<Record<number,string>>={
-    1:"4QucBqTfsk76WbDuGGzyBA", // Sculpture bookends replace wedding ornaments
-    3:"zmcFLXhlnDI9AyHB3zO8LA", // Summer lace dress replaces winter slippers
-  };
-  const featuredSelection=featuredDefaults.map((product,index)=>{
-    const replacement=featuredIds[index];
-    return replacement
-      ? products.find(candidate=>candidate.doppelProductId===replacement&&candidate.imageUrl&&candidate.originalMarketplaceUrl)||product
-      : product;
-  });
-  const featured=featuredSelection;
+  // Keep the existing first three cards; resolve the founder-selected dress independently of the default shoe slot.
+  const defaults=selectDiscoveryEditProducts(products);
+  const bookends=all.find(p=>productId(p)==="4QucBqTfsk76WbDuGGzyBA"&&p.imageUrl&&p.originalMarketplaceUrl);
+  const dress=all.find(p=>productId(p)==="8t3fo9eRc1lLdPqNSasQ2w"&&p.imageUrl&&p.originalMarketplaceUrl);
+  const featured=[...defaults.slice(0,3).map((p,i)=>i===1&&bookends?bookends:p),...(dress?[dress]:defaults.slice(3,4))];
   const editorialNames:Readonly<Record<string,string>>={
     "4QucBqTfsk76WbDuGGzyBA":"Simple Modern Abstract Sculpture Character Bookends",
-    "zmcFLXhlnDI9AyHB3zO8LA":"INS European and American-style 2023 Summer Lace Dress",
+    "8t3fo9eRc1lLdPqNSasQ2w":"Bodycon Square-Neck Dress",
   };
   return <main className="hm-home">
     <Header/>

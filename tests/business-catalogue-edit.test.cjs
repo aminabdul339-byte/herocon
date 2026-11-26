@@ -75,3 +75,20 @@ test('the live first-page edit is the same 24 products in a new stable order',()
  assert.equal(new Set(result).size,input.length);
  assert.ok(result.slice(24).every(p=>p.doppelProductId.startsWith('extra-')));
 });
+
+test('homepage dress is a real public catalogue listing and is independently selected even when defaults contain only three products',()=>{
+ const data=JSON.parse(fs.readFileSync('public/herocon-verified-marketplace-links.json','utf8'));
+ const products=Array.isArray(data)?data:data.products;
+ const dress=products.find(p=>p.doppelProductId==='8t3fo9eRc1lLdPqNSasQ2w');
+ assert.ok(dress?.imageUrl&&dress?.originalMarketplaceUrl);
+ assert.match(dress.title,/square neck bodycon dress/i);
+ const page=fs.readFileSync('app/page.tsx','utf8');
+ assert.match(page,/const dress=all\.find\(p=>productId\(p\)==="8t3fo9eRc1lLdPqNSasQ2w"/);
+ assert.match(page,/\.\.\.\(dress\?\[dress\]:defaults\.slice\(3,4\)\)/);
+ assert.match(fs.readFileSync('lib/catalogue-access-model.ts','utf8'),/8t3fo9eRc1lLdPqNSasQ2w/);
+});
+test('save product controls and saved navigation are not rendered in catalogue or account views',()=>{
+ for(const path of ['components/ProductCard.tsx','components/ProductExperience.tsx','components/HiobuyDiscovery.tsx','components/Header.tsx','app/account/page.tsx']){
+  const source=fs.readFileSync(path,'utf8');assert.doesNotMatch(source,/<SaveFind|href="\/saved"/,path);
+ }
+});

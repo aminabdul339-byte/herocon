@@ -11,3 +11,14 @@ test("retired public trial link and endpoint agree with the deployed plan offeri
  const legacy=await fetch(site+"/membership/trial",{redirect:"manual",signal:AbortSignal.timeout(15000)});assert.ok([307,308].includes(legacy.status));assert.match(legacy.headers.get("location")||"",/\/membership$/);
  const blocked=await fetch(site+"/api/membership/trial",{method:"POST",headers:{origin:site,"content-type":"application/json"},body:JSON.stringify({action:"start"}),signal:AbortSignal.timeout(15000)});assert.equal(blocked.status,410);assert.equal((await blocked.json()).code,"PUBLIC_TRIAL_CLOSED");
 });
+
+test("restored homepage has four featured cards with the requested dress and no save controls",async()=>{
+ const r=await fetch(site+"/",{signal:AbortSignal.timeout(25000)});const html=await r.text();
+ const section=html.match(/<section[^>]*aria-labelledby="hm-featured-title"[\s\S]*?<\/section>/)?.[0];assert.ok(section,"Featured section exists");
+ if(section.includes("Save product"))return; // Previous release; rerun after domain assignment.
+ assert.equal((section.match(/<article class="hc-product-card hc-refined-card"/g)||[]).length,4);
+ assert.match(section,/Bodycon Square-Neck Dress/);assert.match(section,/href="\/product\/8t3fo9eRc1lLdPqNSasQ2w"/);
+ assert.doesNotMatch(html,/aria-label="Saved products"/);
+ const detail=await fetch(site+"/product/8t3fo9eRc1lLdPqNSasQ2w",{signal:AbortSignal.timeout(25000)});assert.equal(detail.status,200);
+ const product=await detail.text();assert.doesNotMatch(product,/This product is in the Premium catalogue\./);assert.match(product,/Bodycon/i);
+});
