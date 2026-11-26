@@ -331,3 +331,66 @@
  .routeIcon svg{width:41px;height:39px}
  .deliveryStages li:not(:last-child)::after{width:10px;left:calc(100% - 5px);top:24px}
 }
+
+/* Upper sourcing journey: quiet editorial typography and a framed, numbered wheel. */
+.wheelHero{padding:clamp(38px,5vw,76px) 0;background:#faf9f5;border-bottom:0}
+.wheelLayout{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);column-gap:clamp(28px,5vw,82px);align-items:center}
+.wheelIntro{max-width:510px;animation:none}
+.wheelIntro .overline{font-size:10px;letter-spacing:.16em;color:#607e65;margin:0 0 18px}
+.wheelIntro h1{font-size:clamp(46px,5.5vw,79px);line-height:1.02;letter-spacing:-.055em}
+.wheelIntro h1 em{display:block;color:#678269}
+.wheelIntro .intro{font-size:clamp(15px,1.35vw,17px);line-height:1.75;margin:24px 0 27px;max-width:420px}
+.heroActions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.wheelIntro .heroActions .primary,.wheelIntro .heroActions .secondary{min-height:48px;padding:13px 19px!important;border-radius:8px!important;font-size:13px!important;font-weight:600!important}
+.heroAvailability{display:flex;align-items:flex-start;gap:9px;margin-top:27px;padding-top:18px;border-top:1px solid #dbe3d8;max-width:420px}
+.heroAvailability>span{width:7px;height:7px;flex:0 0 7px;margin-top:6px;border-radius:50%;background:#77967a}
+.heroAvailability p{font-size:12px;line-height:1.65;color:#607366;margin:0}
+.wheelArea{max-width:650px;animation:none}
+.wheelPanel{background:linear-gradient(145deg,#f3f5ed,#edf0e6);border:1px solid #dbe3d6;border-radius:24px;padding:clamp(15px,2.3vw,28px);overflow:hidden}
+.wheelPanelHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 3px 12px;border-bottom:1px solid #d5dfd2;font-size:10px;font-weight:600;letter-spacing:.12em;color:#607366}
+.wheelBoard{max-width:560px;aspect-ratio:1/1;margin:4px auto 0}
+.wheelTrack{stroke:#c6d3c2;stroke-width:1.4}
+.wheelInnerTrack{stroke:#d3dfd0;stroke-dasharray:2 8}
+.wheelProgress{stroke:#55765c;stroke-width:3.2}
+.wheelCenter{width:49%;border:1px solid #d3ddd0;background:#fffefa;box-shadow:0 10px 30px #294a350a,inset 0 0 0 5px #f9faf5;padding:clamp(10px,1.8vw,22px)}
+.centerContent{gap:clamp(4px,.6vw,8px)}
+.centerIcon{width:clamp(37px,5.2vw,66px);height:clamp(37px,5.2vw,66px);filter:none}
+.centerTitle{font-size:clamp(17px,2vw,29px);line-height:1.12}
+.centerDescription{font-size:clamp(11px,1.1vw,13px);line-height:1.45;max-width:195px}
+.centerCounter{font-size:9px;color:#678269;letter-spacing:.14em}
+.centerPlanned{font-size:10px;font-weight:600;color:#607d65}
+.wheelNode{width:26%;gap:7px}
+.nodeDisc{position:relative;width:clamp(48px,5.7vw,75px);background:#fafbf6;border:1px solid #bfcfbc;box-shadow:0 3px 9px #294a350b;transition:background .25s,border-color .25s,transform .25s,box-shadow .25s}
+.nodeDisc svg{width:72%;height:72%;filter:none}
+.nodeNumber{position:absolute;right:-4px;top:-4px;display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#e6ede1;color:#48644e;border:1px solid #c7d6c3;font-size:9px;font-weight:700;line-height:1}
+.wheelNode[aria-pressed=true] .nodeDisc{background:#dce9d8;border-color:#6f8d71;box-shadow:0 0 0 4px #d0dfcc,0 5px 13px #294a3512;transform:scale(1.04)}
+.wheelNode[aria-pressed=true] .nodeNumber{background:#294633;color:#fffefa;border-color:#294633}
+.nodeLabel{font-size:clamp(10px,1.05vw,12px);font-weight:600;background:#eff2e9;padding:3px 4px;line-height:1.25;white-space:normal}
+.wheelNode[aria-pressed=true] .nodeLabel{font-weight:700;color:#294633}
+.wheelCaptionRow{margin:0;padding-top:9px;border-top:1px solid #d5dfd2;justify-content:space-between}
+.wheelCaptionRow .wheelCaption{font-size:11px!important;text-align:left}
+.wheelCaptionRow .wheelAutoPause{border:1px solid #cbd9c7;background:#fafbf5;width:30px;height:30px;border-radius:50%}
+@media(max-width:1000px) and (min-width:761px){.wheelLayout{column-gap:26px;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}.wheelPanel{padding:15px}.centerContent{gap:4px}.centerIcon{width:43px;height:43px}.centerTitle{font-size:20px}.centerDescription{font-size:11px}.wheelCenter{padding:10px}}
+@media(max-width:760px){
+ .wheelHero{padding:34px 0 36px}
+ .wheelLayout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "wheel";gap:28px}
+ .wheelIntro h1{font-size:clamp(40px,9vw,60px)}
+ .wheelIntro h1 em{display:inline}
+ .wheelIntro .intro{font-size:15px;margin:17px 0 20px}
+ .heroAvailability{margin-top:19px;padding-top:13px}
+ .wheelArea{max-width:530px;width:100%;justify-self:center}
+ .wheelPanel{border-radius:18px;padding:12px}
+ .wheelPanelHeader{font-size:9px;padding-bottom:10px}
+ .wheelBoard{margin:5px auto 0}
+ .wheelCenter{width:49%;padding:8px}
+ .centerContent{gap:4px}
+ .centerIcon{width:clamp(30px,9vw,53px);height:clamp(30px,9vw,53px)}
+ .centerTitle{font-size:clamp(15px,4vw,23px)}
+ .centerDescription{font-size:clamp(10px,2.6vw,12px);line-height:1.35;max-width:160px}
+ .centerCounter,.centerPlanned{font-size:9px}
+ .nodeDisc{width:clamp(40px,11.5vw,67px)}
+ .nodeLabel{font-size:clamp(9px,2.5vw,12px);padding:2px 3px}
+ .nodeNumber{width:18px;height:18px;font-size:8px}
+}
+@media(max-width:390px){.wheelPanel{padding:9px}.wheelIntro .heroActions .primary,.wheelIntro .heroActions .secondary{padding:11px 12px!important;font-size:12px!important}.centerContent{gap:3px}.centerIcon{width:27px;height:27px}.centerTitle{font-size:15px}.centerDescription{font-size:9.5px}.centerCounter,.centerPlanned{font-size:8px}.nodeDisc{width:39px}.nodeNumber{width:16px;height:16px;font-size:8px}}
+@media(prefers-reduced-motion:reduce){.wheelNode[aria-pressed=true] .nodeDisc,.wheelNode:hover .nodeDisc{transform:none}.nodeDisc,.wheelProgress{transition:none}}
