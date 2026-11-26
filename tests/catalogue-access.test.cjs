@@ -10,3 +10,15 @@ test("public browsing routes have no membership gates or blurred preview compone
  const find=fs.readFileSync("app/find-product/page.tsx","utf8");assert.doesNotMatch(find,/if\(!access.customer\)return/);assert.match(find,/<ProductLinkForm/);assert.match(find,/access.customer&&<ProductLinkResults/);
  const catalogue=fs.readFileSync("lib/catalogue-access.ts","utf8");assert.match(catalogue,/accessibleBusinessProducts=cache\(async\(\)=>getProducts\(\)\)/);
 });
+
+test("public buy now routes guests to signup and every signed-in customer to their existing cart",()=>{
+ const {productBuyNowDestination}=require("../lib/product-buy-now.ts");
+ assert.equal(productBuyNowDestination("guest"),"/account?mode=signup&next=%2Fcart");
+ assert.equal(productBuyNowDestination("checking"),"/account?mode=signup&next=%2Fcart");
+ assert.equal(productBuyNowDestination("authenticated"),"/cart");
+ const fs=require("node:fs"),experience=fs.readFileSync("components/ProductExperience.tsx","utf8");
+ assert.match(experience,/<ProductBuyNowLink className="hc-buy-now-button"/);
+ assert.match(experience,/<div className="mobile-buy"[^\n]*<ProductBuyNowLink arrow/);
+ assert.match(experience,/ownerDirectBuy\?<button/);
+ const live=fs.readFileSync("components/HiobuyDiscovery.tsx","utf8");assert.match(live,/<ProductBuyNowLink className="hio-secondary"/);
+});
