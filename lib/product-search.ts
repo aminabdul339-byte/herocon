@@ -23,7 +23,10 @@ const synonymPhrases:Record<string,string[]>={
  "hairclip":["hair clip","barrette","hairpin"],
  "scrunchie":["hair tie","hair band"],
  "sunglasse":["sun glasses"],
- "jumper":["sweater","pullover"]
+ "jumper":["sweater","pullover"],
+ "thobe":["thawb","thoob","jubba","jubbah","dishdasha","kandura","qamis","long robe"],
+ "thawb":["thobe","thoob","jubba","jubbah","dishdasha","kandura","qamis","long robe"],
+ "abaya":["abayaat","jilbab"]
 };
 
 function normalize(text:string):string {

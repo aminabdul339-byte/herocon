@@ -20,7 +20,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  const query=(s.q||"").trim(),requestedCategory=(s.category||"").trim(),cat=/^(?:sets?\s*&\s*co-ords|co-ords|sets?)$/i.test(requestedCategory)?"":resolveCategory(requestedCategory)||requestedCategory,sort=s.sort||"recommended";
  const collection=s.collection==="clothing"?"clothing":"";
  const budget=["5","10","20"].includes(s.maxPrice||"")?s.maxPrice!:"";
- const clothingCategories=new Set(["Tops","Bottoms","Dresses","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear"]);
+ const clothingCategories=new Set(["Tops","Bottoms","Dresses","Modest Fashion","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear"]);
  const clothingCount=all.filter(p=>clothingCategories.has(p.category||"")).length;
  const scored=all.map(p=>({product:p,score:productSearchScore(p,query)})).filter(x=>x.score>0&&(!cat||x.product.category===cat)&&(!collection||clothingCategories.has(x.product.category||"")));
  scored.sort((a,b)=>b.score-a.score);
@@ -46,7 +46,7 @@ export default async function SearchPage({searchParams}:{searchParams:Promise<Re
  const isDefaultEdit=!query&&!cat&&!collection&&!budget&&sort==="recommended";
  if(isDefaultEdit)products=mixBusinessCatalogue(products,PAGE_SIZE);
  const categoryCounts=new Map<string,number>();for(const p of all){if(p.category)categoryCounts.set(p.category,(categoryCounts.get(p.category)||0)+1)}
- const categories=PRIMARY_CATEGORIES.filter(c=>categoryCounts.has(c)&&(!collection||clothingCategories.has(c)));
+ const categories=PRIMARY_CATEGORIES.filter(c=>(categoryCounts.has(c)||c==="Modest Fashion")&&(!collection||clothingCategories.has(c)));
  const requestedPage=Math.max(1,Number.parseInt(s.page||"1")||1),pages=Math.max(1,Math.ceil(products.length/PAGE_SIZE)),page=Math.min(requestedPage,pages);
  const batches=Math.min(5,Math.max(1,Number.parseInt(s.more||"1")||1),pages-page+1);
  const visible=products.slice((page-1)*PAGE_SIZE,(page-1+batches)*PAGE_SIZE);

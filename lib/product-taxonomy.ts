@@ -6,7 +6,7 @@
  * or "jewellery" in "jewellery storage box".
  */
 export const PRIMARY_CATEGORIES=[
- "Tops","Bottoms","Dresses","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
+ "Tops","Bottoms","Dresses","Modest Fashion","Outerwear","Underwear & Lingerie","Sleepwear & Loungewear","Shoes","Bags",
  "Jewellery","Hair Accessories","Wigs & Hair Extensions","Nails & Nail Supplies","Fashion Accessories","Watches",
  "Furniture","Lighting","Home Textiles","Storage & Organisation","Home & Decor","Home & Kitchen","Flowers & Gifts",
  "Beauty & Personal Care","Electronics & Tech","Sports & Outdoors",
@@ -31,9 +31,21 @@ function existingFallback(existing?:string):PrimaryCategory {
  return map[existing||""]||"Other";
 }
 
+/** Explicit modest-wear evidence; generic maxi dresses and cardigans are not sufficient. */
+export function isModestFashion(title:string,sellerName?:string):boolean {
+ const s=clean(title||"");
+ if(/\b(?:abaya|abayas|abayaat|abaya dress|thobes?|thawbs?|thoobs?|jubbas?|jubbahs?|jilbabs?|khimars?|hijabs?|niqabs?|dishdashas?|kanduras?|qamis|kameez|djellabas?|jalabiyas?|jalabiyyas?|jellabiyas?|kaftans?|caftans?|modest fashion|modest wear|modest clothing|modest dresses?|muslim dresses?|muslim clothing|muslim wear|islamic clothing|islamic wear|prayer dresses?|prayer garments?)\b/.test(s)||/穆斯林.{0,12}(?:长袍|连衣裙|服饰|头巾|罩袍)|阿拉伯.{0,12}(?:长袍|袍子)|阿巴亚|阿拜亚|عباءة|عبايات|ثوب|جلابيب|حجاب/.test(s)) {
+  return !/\b(?:mouse pads?|mousepads?|storage racks?|display stands?|clothing racks?|doll clothes|sewing patterns?|hijab pins?|hijab magnets?|hijab clips?)\b/.test(s);
+ }
+ if(/\b(?:men s|mens|men|male)\b/.test(s)&&/\b(?:long robes?|long gowns?)\b/.test(s)&&!/\b(?:bathrobes?|bath robes?|dressing gowns?|sleepwear|nightwear|pajamas?|pyjamas?|graduation|costume|spa)\b/.test(s))return true;
+ // Supplier-specific identification of the embroidered open abaya shown in the catalogue.
+ return /衣景环/.test(sellerName||"")&&(/\bembroidered cardigan\b/.test(s)||/刺绣.{0,16}开衫|开衫.{0,16}刺绣/.test(s));
+}
+
 export function classifyProduct(title:string,existingCategory?:string):PrimaryCategory{
  const s=clean(title||"");
  if(existingCategory==="Flowers & Gifts")return "Flowers & Gifts";
+ if(existingCategory==="Modest Fashion"||isModestFashion(title))return "Modest Fashion";
  if(/\b(?:sweater chain|sweater pendant)\b/.test(s)&&/\b(?:necklace|pendant|jewellery|jewelry)\b/.test(s))return "Jewellery";
 
  // Primary-object evidence must outrank materials, styling, packaging and marketing.
@@ -174,6 +186,7 @@ export const CATEGORY_ALIASES:Record<string,PrimaryCategory>={
  "top":"Tops","tops":"Tops","shirt":"Tops","shirts":"Tops","tshirt":"Tops","tshirts":"Tops","hoodie":"Tops","hoodies":"Tops","sweater":"Tops","sweaters":"Tops",
  "bottom":"Bottoms","bottoms":"Bottoms","pants":"Bottoms","trousers":"Bottoms","jeans":"Bottoms","skirts":"Bottoms","shorts":"Bottoms",
  "dress":"Dresses","dresses":"Dresses","gown":"Dresses","gowns":"Dresses",
+ "modest fashion":"Modest Fashion","modest clothing":"Modest Fashion","modest wear":"Modest Fashion","modest-fashion":"Modest Fashion",
  "jacket":"Outerwear","jackets":"Outerwear","outerwear":"Outerwear","coats":"Outerwear",
  "shoe":"Shoes","shoes":"Shoes","sneaker":"Shoes","sneakers":"Shoes","trainer":"Shoes","trainers":"Shoes","boots":"Shoes","footwear":"Shoes",
  "bag":"Bags","bags":"Bags","backpacks":"Bags","handbags":"Bags",
