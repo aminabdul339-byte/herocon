@@ -113,6 +113,8 @@ async function persistCatalogue(productValue:unknown,fxValue:unknown,raw?:unknow
 }
 async function cachedResult(saved:Saved){
  const result=saved.result;
+ const p=asRecord(result.product);if(result.product&&excludedCatalogueListing(p.url,string(p.title)))return {error:"This listing is not available on Herocon."};
+ if(Array.isArray(result.items))result.items=result.items.filter(x=>{const p=asRecord(x);return !excludedCatalogueListing(p.url,string(p.title));});
  const catalogueSave=(saved.action==="parse"||saved.action==="detail")&&result.product
   ?await persistCatalogue(result.product,result.fx):undefined;
  return {...result,cacheStatus:"hit",savedAt:saved.savedAt,...(catalogueSave?{catalogueSave}:{})};
@@ -139,7 +141,7 @@ export async function POST(request:Request){
  const action=body.action,channel=string(body.channel);
  if(!discoveryAllowed(owner,premium,action))return fail("This discovery action is not available.",403);
  if(action==="history"){try{return reply({history:await history()});}catch{return fail("Saved searches are temporarily unavailable.",503);}}
- if(action==="saved"){const saved=await readSaved(string(body.id,65));if(!saved)return fail("Saved search not found.",404);return reply(await cachedResult(saved));}
+ if(action==="saved"){const saved=await readSaved(string(body.id,65));if(!saved)return fail("Saved search not found.",404);const result=await cachedResult(saved);return reply(result,"error" in result?404:200);}
  const common={language:"en"};
  const searchChannel=channel==="1688";
  const page=typeof body.page==="number"&&Number.isInteger(body.page)&&body.page>=1&&body.page<=50?body.page:1;
@@ -169,7 +171,7 @@ export async function POST(request:Request){
  const cacheId=hash(JSON.stringify({endpoint,payload})); // image bytes hashed, not persisted
  const prefix=owner?PREFIX:PUBLIC_PREFIX+(action==="image"?hash(customer.id)+"/":"shared/");
  const existing=await readSaved(cacheId,prefix);
- if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL)return reply(await cachedResult(existing));
+ if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL){const result=await cachedResult(existing);return reply(result,"error" in result?404:200);}
  if(!allow())return fail("Please wait a minute before another search.",429);
  let credit:string|undefined;let successful=false;
  if(!owner){try{const reservation=await reserveDiscovery(customer.id,customer.email,tier);if(reservation.status!=="ok")return fail(reservation.status==="account"?"Your live search credits have been used. Cached searches remain available; see Membership for more access.":reservation.status==="daily"?"Your daily safety limit has been reached. Try again tomorrow (UTC).":"Live marketplace capacity is currently full. Cached searches remain available. Try again tomorrow (UTC).",429);credit=reservation.credit;}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
@@ -193,7 +195,7 @@ export async function POST(request:Request){
    const result={product,fx};
    if(excludedCatalogueListing(product.url,product.title))return fail("This listing is not available on Herocon.",404);
    successful=true;
-   const catalogueSave=await persistCatalogue(product,fx,raw.product);
+   const catalogueSave=await persistCatalogue(product,fx,raw);
    return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix),catalogueSave});
   }
   if(!Array.isArray(raw.items))return fail("HIOBuy did not return a product list.",502);
