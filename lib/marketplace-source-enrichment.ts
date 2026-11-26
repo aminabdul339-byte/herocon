@@ -426,8 +426,9 @@ export async function savedMarketplaceCard(url:string){
   const data=await getSavedMarketplaceSource(url);
   if(!data)return null;
   return {title:data.title||null,images:[...new Set([...data.images,...data.variants.map(v=>v.image).filter((u):u is string=>!!u)])].slice(0,12),
-   sellerName:data.sellerName||null,variantCount:data.variantCount??data.variants.length,retrievedAt:data.retrievedAt};
- },["herocon-marketplace-card-v1",hash],{revalidate:300,tags:["herocon-marketplace-card-"+hash]})();}catch{return null;}
+   sellerName:data.sellerName||null,variantCount:data.variantCount??data.variants.length,retrievedAt:data.retrievedAt,
+   titleHints:{colours:[...new Map(data.variants.flatMap(v=>{const value=v.colour||v.attributes?.find(a=>/^colou?r(?: classification)?$/i.test(a.name))?.value;if(!value)return [];return [[(v.image||"")+"|"+value,{image:v.image,value}] as const];})).values()].slice(0,40),variety:data.sourceSpecs.find(s=>/^(?:variety|flower type|flower variety)$/i.test(s.name))?.value}};
+ },["herocon-marketplace-card-v2",hash],{revalidate:300,tags:["herocon-marketplace-card-"+hash]})();}catch{return null;}
 }
 export async function enrichVisibleProductCards(products:Product[]):Promise<Product[]>{
  if(!products.length)return products;
@@ -442,6 +443,7 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
   // entire 1000+ SKU matrix on every 24-card catalogue page.
   return {...product,
    supplierTitle:enrichment.title||product.supplierTitle,
+   titleHints:enrichment.titleHints,
    imageUrl:product.imageUrl||enrichment.images[0],
    images:[...new Set([product.imageUrl,...enrichment.images.slice(0,12),...(product.images||[])].filter((u):u is string=>!!u))].slice(0,12),
    sellerName:enrichment.sellerName||product.sellerName,
