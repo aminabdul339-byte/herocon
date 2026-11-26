@@ -104,3 +104,16 @@ test("founder-selected abstract decor replaces glassware in homepage hero only, 
  assert.match(fs.readFileSync("app/search/page.tsx","utf8"),/category==="Wigs & Hair Extensions"\?"\/editorial-wigs-hair.webp":item.imageUrl/);
  const photo=fs.readFileSync("public/editorial-wigs-hair.webp");assert.equal(photo.toString("ascii",0,4),"RIFF");assert.equal(photo.toString("ascii",8,12),"WEBP");
 });
+
+const titleModule={exports:{}};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync("lib/product-title.ts","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:titleModule,exports:titleModule.exports,require:name=>{if(name==="./emoji-free")return {withoutEmoji:s=>s};throw Error(name);}});
+const conciseTitle=titleModule.exports.conciseProductTitle;
+test("bouquets preserve verified thumbnail colour and flower variety",()=>{
+ const p={title:"Graduation knitted yarn flower bouquet",category:"Flowers & Gifts",imageUrl:"https://example.com/yellow.jpg",titleHints:{variety:"Tulip",colours:[{value:"Yellow",image:"https://example.com/yellow.jpg"},{value:"Red",image:"https://example.com/red.jpg"}]}};
+ assert.equal(conciseTitle(p),"Yellow Crochet Tulip Bouquet");
+ assert.equal(conciseTitle({...p,imageUrl:"https://example.com/red.jpg"}),"Red Crochet Tulip Bouquet");
+ assert.equal(conciseTitle({...p,imageUrl:"https://example.com/unknown.jpg"}),"Crochet Tulip Bouquet");
+ assert.equal(conciseTitle({title:"Handmade crochet sunflower bouquet",category:"Flowers & Gifts"}),"Crochet Sunflower Bouquet");
+ assert.equal(conciseTitle({title:"Pink knitted rose bouquet",category:"Flowers & Gifts"}),"Pink Crochet Rose Bouquet");
+ assert.equal(conciseTitle({title:"Blue cotton shirt",category:"Tops"}),"Blue Cotton Shirt");
+});

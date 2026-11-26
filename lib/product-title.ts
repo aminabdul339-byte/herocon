@@ -34,6 +34,7 @@ const features:Rule[]=[
 const noise=/\b(?:cross[- ]border|foreign trade|factory direct(?: sale| supply| delivery)?|factory supply|wholesale|hot[- ]selling|best[- ]selling|in stock|ships instantly|new model|new style|new fashion|high quality|high[- ]end|light luxury|internet celebrity|european and american|american and european|trendy brand|popular|versatile|fashionable|fashion|202[0-9]|spring and summer|autumn and winter|spring and autumn|for men and women|for women|for men|new arrival|amazon|aliexpress|temu|export|dropshipping)\b/gi;
 
 const editorialNames:Record<string,string>={
+ "link-c98a18758ce75c64bc7154e2a4ba":"Green Crochet Tulip Bouquet",
  "AT6_zzBm508ztj8-E5rLyw":"Vintage Cross Pendant Necklace",
  "z-L84zDeWbvLylAM-xudhQ":"Antique-Style Skull Ring",
  "Oy8LqptROwvpmzKqjxgpsw":"Cushioned Lounge Armchair",
@@ -66,6 +67,39 @@ const categoryFeatures:Record<string,Rule[]>={
  "Packaging & Supplies":[[/\bwaterproof\b/i,"Waterproof"],[/\bdrawer box\b/i,"Drawer-Style"],[/\bextra thick\b/i,"Heavy-Duty"]]
 };
 
+
+const colourPattern=/^(?:light |dark |pastel |dusty |baby |hot |royal |navy |olive |sage |cream |deep )?(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|peach|coral|navy|gold|silver|mint|multicolou?r(?:ed)?)$/i;
+const capitalise=(s:string)=>s.toLowerCase().replace(/\b[a-z]/g,m=>m.toUpperCase()).replace(/\bGray\b/g,"Grey").replace(/\bMulticolor(?:ed)?\b/g,"Multicolour");
+function productColour(p:Product,plain:string):string{
+ const values=[...(p.titleHints?.colours||[]),...(p.variants||[]).flatMap(v=>typeof v==="string"?[]:[{image:v.image,value:v.colour||v.attributes?.find(a=>/^colou?r(?: classification)?$/i.test(a.name))?.value||""}])].filter(x=>colourPattern.test(x.value.trim()));
+ const distinct=(items:string[])=>[...new Set(items.map(x=>capitalise(x.trim())))];
+ const sameImage=distinct(values.filter(v=>!!p.imageUrl&&v.image===p.imageUrl).map(v=>v.value));
+ if(sameImage.length===1)return sameImage[0];
+ const options=distinct(values.map(v=>v.value));
+ if(options.length===1)return options[0];
+ if(options.length>1)return "";
+ // Explicit adjacent colour + product wording only; avoid gift-wrap and incidental colours.
+ const match=plain.match(/\b((?:light |dark |pastel |dusty |baby |hot |royal |navy |olive |sage |deep )?(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|peach|coral|navy|mint))\s+(?:(?:crochet|knitted|yarn|wool|handmade|floral|ribbed|cotton|satin|mini|long|short|lace|leather|quilted)\s+){0,3}(?:flowers?|bouquet|roses?|sunflowers?|tulips?|dais(?:y|ies)|carnations?|dress|shirt|top|bag|shoes?|nails?|wig|necklace|earrings?|bracelet|vase|lamp|curtain|cushion|rug|skirt|trousers)\b/i);
+ return match?capitalise(match[1]):"";
+}
+function flowerType(s:string):string[]{
+ const rules:Rule[]=[[/\bsunflowers?\b/i,"Sunflower"],[/\btulips?\b/i,"Tulip"],[/\broses?\b/i,"Rose"],[/\bcarnations?\b/i,"Carnation"],[/\bdais(?:y|ies)\b/i,"Daisy"],[/\blil(?:y|ies)\b/i,"Lily"],[/\bpeon(?:y|ies)\b/i,"Peony"],[/\bhydrangeas?\b/i,"Hydrangea"],[/\blavender\b/i,"Lavender"],[/\bpuff flowers?\b/i,"Puff Flower"]];
+ return rules.filter(([r])=>r.test(s)).map(([,name])=>name);
+}
+function crochetBouquetTitle(p:Product,plain:string):string{
+ const variety=p.titleHints?.variety||p.sourceSpecs?.find(s=>/^(?:variety|flower type|flower variety)$/i.test(s.name))?.value||"";
+ const source=[plain,p.supplierTitle,p.originalTitle].filter(Boolean).join(" ");
+ const specified=flowerType(variety),named=flowerType(source);
+ const flowers=specified.length===1?specified:named.length===1?named:[];
+ const colour=productColour(p,source);
+ const detail=/\b(?:mini|small bouquet)\b/i.test(source)?"Mini":/\b(?:handmade|hand[- ]knitted|hand[- ]woven)\b/i.test(source)?"Handmade":"";
+ const flower=flowers[0]||"Flower";
+ // When the source mentions several possible flowers but doesn't establish the
+ // composition, do not claim they are physically mixed in the pictured item.
+ const tail=!flowers.length&&named.length>1?" – Assorted Flower Designs":"";
+ return [colour,colour||flowers.length?"":detail,"Crochet",flower,"Bouquet"].filter(Boolean).join(" ")+tail;
+}
+
 export function conciseProductTitle(p:Product):string{
  const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
  const primary=p.displayTitle||p.title||p.originalTitle||"";
@@ -92,6 +126,7 @@ export function conciseProductTitle(p:Product):string{
  if(/\b(?:nail grinder|nail trimmer|nail drill)\b/i.test(plain)&&!/\b(?:drill bits?|replacement heads?)\b/i.test(plain))return /\belectric\b/i.test(plain)?"Electric Nail Trimmer":"Nail Trimming Tool";
  if(/\b(?:card holder|card case)\b/i.test(plain)&&p.category==="Bags"&&!/\b(?:backpack|travel bag|tote bag)\b/i.test(plain))return "Card Holder";
  const rule=(types[p.category||""]||[]).find(([r])=>r.test(plain));
+ if(rule?.[1]==="Crochet Flower Bouquet")return crochetBouquetTitle(p,plain);
  if(rule){
   const label=rule[1],picked:string[]=[];
   for(const [pattern,feature] of [...features,...(categoryFeatures[p.category||""]||[])]){
@@ -104,6 +139,8 @@ export function conciseProductTitle(p:Product):string{
   if(picked.includes("Bodycon")&&picked.includes("Ribbed"))picked.reverse();
   if(picked.includes("Marble")&&picked.includes("Nordic"))picked.reverse();
   if(picked.includes("Zircon")&&picked.includes("Heart-Shaped"))picked.reverse();
+  const colour=productColour(p,plain);
+  if(colour&&!label.toLowerCase().includes(colour.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(colour.toLowerCase())))picked.unshift(colour);
   if(picked.length||label.split(/\s+/).length>=3)return [...picked,label].join(" ");
   // Preserve real distinguishing words instead of reducing every listing to a noun.
   const cleaned=plain.replace(noise," ").replace(/[!,;:]+/g," ").replace(/\s+/g," ").trim();
