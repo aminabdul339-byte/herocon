@@ -285,3 +285,49 @@
  .delivery .node strong{font-size:12px}
  .delivery .flowArrow{width:18px;height:18px}
 }
+
+/* Editorial delivery journey: scoped entirely to the delivery section. */
+.delivery{background:#294633;border-block:1px solid #294633;color:#f8f6ed;padding:clamp(48px,6.5vw,88px) 0}
+.delivery .deliveryHead{align-items:end;gap:clamp(20px,4vw,64px)}
+.delivery .deliveryHead h2{font-size:clamp(40px,5.6vw,76px);color:#faf8ef;letter-spacing:-.045em;line-height:1.04}
+.delivery .deliveryHead h2 em{color:#c6d6be}
+.delivery .deliveryHead .overline{font-size:11px;line-height:1.5;letter-spacing:.14em;color:#c6d6be;margin:0 0 16px}
+.delivery .deliveryHead>p{color:#d7e3d5;font-size:15px;max-width:480px;justify-self:end}
+.flightJourney{position:relative;width:min(100%,850px);margin:clamp(26px,4vw,48px) auto 32px}
+.flightPath{display:block;width:100%;height:auto;color:#b4c8ae;overflow:visible}
+.flightEndpoints{display:flex;justify-content:space-between;gap:12px;margin-top:-1.5%;padding-inline:2%;text-align:center}
+.flightEndpoints>div{display:grid;gap:7px;min-width:90px}
+.flightEndpoints span{font:400 clamp(19px,2.4vw,30px)/1.1 Georgia,serif;color:#faf8ef;letter-spacing:-.025em}
+.flightEndpoints small{font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:.13em;color:#c6d6be}
+.deliveryStages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;padding:26px 0 29px;margin:0 0 5px;border-top:1px solid #ffffff26;gap:18px}
+.deliveryStages li{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:start;text-align:center;gap:8px;min-width:0}
+.deliveryStages li:not(:last-child)::after{content:"";position:absolute;left:calc(100% - 16px);top:40px;width:32px;border-top:1px solid #b4c8ae66}
+.routeIcon{display:grid;place-items:center;width:80px;height:80px;flex:none;border:1px solid #c6d6be38;background:#f3f1e50d;border-radius:16px;color:#eee8d4}
+.routeIcon svg{width:65px;height:60px;display:block}
+.routeStep{font-size:10px;letter-spacing:.13em;color:#c6d6be;font-weight:700;margin-top:4px}
+.deliveryStages strong{font-size:14px;color:#faf8ef;line-height:1.4;font-weight:500;overflow-wrap:break-word}
+.delivery .status{border-color:#ffffff26;padding-top:24px;gap:24px;align-items:center}
+.delivery .status p{color:#d7e3d5;font-size:13px;line-height:1.7}
+.delivery .status strong{color:#faf8ef}
+.delivery .status .textLink{color:#f0e8d5!important;flex:none;border-bottom:1px solid #c6d6be80;font-weight:500;white-space:normal}
+.delivery .status .textLink:hover{color:white!important}
+@media(max-width:760px){
+ .delivery .deliveryHead{grid-template-columns:minmax(0,1fr);gap:18px}
+ .delivery .deliveryHead>p{justify-self:start;font-size:14px}
+ .flightJourney{margin:30px auto 27px}
+ .flightEndpoints{padding-inline:0}
+ .flightEndpoints>div{min-width:70px;gap:4px}
+ .flightEndpoints small{font-size:9px}
+ .deliveryStages{gap:12px;padding:20px 0 24px}
+ .deliveryStages li:not(:last-child)::after{left:calc(100% - 8px);width:16px;top:28px}
+ .routeIcon{width:56px;height:56px;border-radius:12px}
+ .routeIcon svg{width:47px;height:44px}
+ .deliveryStages strong{font-size:11px}
+ .delivery .status{flex-direction:column;align-items:flex-start;gap:12px;padding-top:18px}
+}
+@media(max-width:370px){
+ .deliveryStages{gap:8px}
+ .routeIcon{width:49px;height:49px}
+ .routeIcon svg{width:41px;height:39px}
+ .deliveryStages li:not(:last-child)::after{width:10px;left:calc(100% - 5px);top:24px}
+}
