@@ -35,8 +35,8 @@ function existingFallback(existing?:string):PrimaryCategory {
 export function isModestFashion(title:string,sellerName?:string|null):boolean {
  const s=clean(title||"");
  // Founder-reviewed listings: translated supplier titles can omit the garment name.
- if(/\b(?:half open loose straight long robe|men s long robe with solid color|mens long robe with solid color|new women s cardigan robe with lace|new womens cardigan robe with lace|women s cardigan robe with lace|womens cardigan robe with lace|moon embroidery long robe cardigan style|casual multi color long dress cardigan long dress single piece)\b/.test(s))return true;
- if(/^(?:\s*embroidered cardigan\s*)+$/.test(s))return true;
+ if(/\b(?:half open loose straight long robe|men s long robe with solid color|mens long robe with solid color|new women s cardigan robe with lace|new womens cardigan robe with lace|women s cardigan robe with lace|womens cardigan robe with lace|moon embroidery long robe cardigan style|casual multi colou?r long dress cardigan long dress single piece)\b/.test(s))return true;
+ if(/\bembroidered cardigan with long sleeves and embroidered robes\b/.test(s))return true;
  if(/\b(?:abaya|abayas|abayaat|abaya dress|thobes?|thawbs?|thoobs?|jubbas?|jubbahs?|jilbabs?|khimars?|hijabs?|niqabs?|dishdashas?|kanduras?|qamis|kameez|djellabas?|jalabiyas?|jalabiyyas?|jellabiyas?|kaftans?|caftans?|modest fashion|modest wear|modest clothing|modest dresses?|muslim dresses?|muslim clothing|muslim wear|islamic clothing|islamic wear|prayer dresses?|prayer garments?)\b/.test(s)||/穆斯林.{0,12}(?:长袍|连衣裙|服饰|头巾|罩袍)|阿拉伯.{0,12}(?:长袍|袍子)|阿巴亚|阿拜亚|عباءة|عبايات|ثوب|جلابيب|حجاب/.test(s)) {
   return !/\b(?:mouse pads?|mousepads?|storage racks?|display stands?|clothing racks?|doll clothes|sewing patterns?|hijab pins?|hijab magnets?|hijab clips?)\b/.test(s);
  }
