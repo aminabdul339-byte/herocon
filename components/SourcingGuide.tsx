@@ -183,18 +183,29 @@ export default function SourcingGuide(){
   <section className={styles.delivery} aria-labelledby="delivery-story-heading">
    <div className={styles.wrap}>
     <div className={styles.deliveryHead}>
-     <div><p className={styles.overline}>In development</p><h2 id="delivery-story-heading">From the supplier<br/> <em>to your doorstep.</em></h2></div>
+     <div><p className={styles.overline}>The planned delivery journey</p><h2 id="delivery-story-heading">From China, <em>to you.</em></h2></div>
      <p>We're building integrated Herocon purchasing and delivery. The intended journey is a partner purchasing from the seller, receiving the goods in China and arranging international shipping to you.</p>
     </div>
-    <div className={styles.deliveryFlow} aria-label="Planned delivery journey: marketplace supplier, warehouse in China, international shipping, delivery to your door">
-     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="shop"/></span><strong>Marketplace supplier</strong></div>
-     <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="warehouse"/></span><strong>Warehouse in China</strong></div>
-     <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="truck"/></span><strong>International shipping</strong></div>
-     <ArrowIcon className={styles.flowArrow} direction="right"/>
-     <div className={styles.node}><span className={styles.deliveryDisc}><Outline kind="home"/></span><strong>Your doorstep</strong></div>
+    <div className={styles.flightJourney} aria-hidden="true">
+     <svg className={styles.flightPath} viewBox="0 0 800 185" fill="none" focusable="false">
+      <path d="M54 153 C240 -30 560 -30 746 153" stroke="currentColor" strokeWidth="1.6" strokeDasharray="5 9" strokeLinecap="round"/>
+      <circle cx="54" cy="153" r="12" stroke="#b4c8ae" strokeOpacity=".45"/><circle cx="54" cy="153" r="4.5" fill="#f0e8d5"/>
+      <circle cx="746" cy="153" r="12" stroke="#b4c8ae" strokeOpacity=".45"/><circle cx="746" cy="153" r="4.5" fill="#f0e8d5"/>
+      <g transform="translate(400 16) rotate(0)">
+       <path d="M-32 -4H-6L5 -25H12L7 -4H29Q37 0 29 4H7L12 25H5L-6 4H-25L-32 13H-37L-33 0L-37 -13H-32Z" fill="#f0e8d5" stroke="#294633" strokeWidth="1.4" strokeLinejoin="round"/>
+      </g>
+     </svg>
+     <div className={styles.flightEndpoints}>
+      <div><span>China</span><small>Origin</small></div>
+      <div><span>Your home</span><small>Destination</small></div>
+     </div>
     </div>
+    <ol className={styles.deliveryStages} aria-label="Planned delivery journey">
+     <li><span className={styles.routeIcon}><Outline kind="shop"/></span><span className={styles.routeStep}>01</span><strong>Marketplace supplier</strong></li>
+     <li><span className={styles.routeIcon}><Outline kind="warehouse"/></span><span className={styles.routeStep}>02</span><strong>Warehouse in China</strong></li>
+     <li><span className={styles.routeIcon}><svg viewBox="0 0 96 86" fill="none" aria-hidden="true" focusable="false"><path d="M12 39h25L51 13h10l-8 26h25q8 0 8 5t-8 5H53l8 24H51L37 49H20l-7 11H7l5-16-5-16h6Z" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round"/><path d="M13 18h20M5 26h17M17 67h20" stroke="currentColor" strokeOpacity=".6" strokeWidth="2" strokeLinecap="round"/></svg></span><span className={styles.routeStep}>03</span><strong>International shipping</strong></li>
+     <li><span className={styles.routeIcon}><Outline kind="home"/></span><span className={styles.routeStep}>04</span><strong>Your doorstep</strong></li>
+    </ol>
     <div className={styles.status}><p><strong>Not available yet:</strong> Herocon does not currently accept product or delivery payments. External sellers and buying agents handle their own transactions. Budget for shipping, agent fees, VAT and duties separately from the listed product price.</p><Link href="/landed-cost" className={styles.textLink}>Explore shipping estimates <ArrowIcon direction="right"/></Link></div>
    </div>
   </section>
