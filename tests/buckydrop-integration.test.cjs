@@ -251,19 +251,18 @@ function privateBlobFixture(){
  del:async key=>{records.delete(key);}
  }};
 }
-test("introductory credits cannot be exceeded; refunds restore customer allowance but not spent provider capacity",async()=>{
+test("free method credits are independent and concurrency-safe; refund preserves shared capacity",async()=>{
  const b=privateBlobFixture(),q=load("lib/discovery-quota.ts",{modules:{"@vercel/blob":b.adapter,"@/lib/discovery-access-model":load("lib/discovery-access-model.ts")}}, {BLOB_READ_WRITE_TOKEN:"mock"});
- const r=await Promise.all(Array.from({length:4},()=>q.reserveDiscovery("u1","free@example.invalid","free")));
- assert.equal(r.filter(x=>x.status==="ok").length,3);
- assert.equal((await q.discoveryBalance("free@example.invalid","free")).remaining,0);
- await q.refundDiscovery(r.find(x=>x.status==="ok").credit);
- assert.equal((await q.discoveryBalance("free@example.invalid","free")).remaining,1);
- assert.equal([...b.records.keys()].filter(x=>x.includes("/shared/")).length,3);
- assert.equal((await q.reserveDiscovery("u2","other@example.invalid","trial")).status,"ok");
- assert.equal((await q.reserveDiscovery("u3","third@example.invalid","trial")).status,"ok");
- assert.equal((await q.reserveDiscovery("u4","fourth@example.invalid","trial")).status,"shared");
- assert.equal((await q.reserveDiscovery("paid","paid@example.invalid","premium")).status,"ok");
- assert.equal((await q.discoveryBalance("fourth@example.invalid","trial")).remaining,15);
+ const reserve=method=>q.reserveDiscovery("u1","free@example.invalid","free",method);
+ const links=await Promise.all(Array.from({length:3},()=>reserve("link")));assert.equal(links.filter(x=>x.status==="ok").length,2);
+ const images=await Promise.all(Array.from({length:2},()=>reserve("image")));assert.equal(images.filter(x=>x.status==="ok").length,1);
+ const keywords=await Promise.all(Array.from({length:3},()=>reserve("keyword")));assert.equal(keywords.filter(x=>x.status==="ok").length,2);
+ const empty=await q.discoveryBalance("free@example.invalid","free");assert.equal(empty.remaining,0);for(const m of ["link","image","keyword"])assert.equal(empty.methods[m].remaining,0);
+ await q.refundDiscovery(links.find(x=>x.status==="ok").credit);assert.equal((await q.discoveryBalance("free@example.invalid","free")).methods.link.remaining,1);
+ assert.equal([...b.records.keys()].filter(x=>x.includes("/shared/")).length,5);
+ assert.equal((await q.reserveDiscovery("u2","other@example.invalid","trial","link")).status,"shared");
+ assert.equal((await q.reserveDiscovery("paid","paid@example.invalid","premium","image")).status,"ok");
+ assert.equal((await q.discoveryBalance("paid@example.invalid","premium")).remaining,49);
 });
 test("saved-link allowance deduplicates simultaneous requests and enforces three monthly products",async()=>{
  const b=privateBlobFixture(),q=load("lib/free-link-trial.ts",{modules:{"@vercel/blob":b.adapter}});

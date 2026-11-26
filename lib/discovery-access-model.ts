@@ -1,7 +1,12 @@
 export const CUSTOMER_DAILY_LIVE_SEARCH_LIMIT=10;
 export const SHARED_DAILY_LIVE_SEARCH_LIMIT=20;
 export const INTRO_SHARED_DAILY_LIMIT=5;
-export const LIVE_CREDITS={free:3,trial:15,premium:50} as const;
+export const LIVE_CREDITS={free:5,trial:15,premium:50} as const;
+export const FREE_METHOD_CREDITS={link:2,image:1,keyword:2} as const;
+export type FreeMethod=keyof typeof FREE_METHOD_CREDITS;
+export function methodForAction(action:unknown):FreeMethod|null{
+ return action==="parse"||action==="detail"?"link":action==="search"?"keyword":action==="image"?"image":null;
+}
 export type DiscoveryTier=keyof typeof LIVE_CREDITS;
 export function discoveryAllowed(owner:boolean,premium:boolean,action:unknown){
  if(owner)return ["parse","search","image","detail","history","saved"].includes(String(action));

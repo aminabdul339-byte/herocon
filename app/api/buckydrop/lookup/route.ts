@@ -1,4 +1,3 @@
-import {claimLinkTrial} from "@/lib/free-link-trial";
 import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 import {catalogueAccess} from "@/lib/catalogue-access";
 import {NextResponse} from "next/server";
@@ -64,8 +63,8 @@ export async function POST(request:Request){
   const hio=await getSavedMarketplaceSource(productLink);
   const product=hio?toDisplaySupplierDetails(hio):await getSavedBuckydropProduct(productLink);
   if(product&&excludedCatalogueListing(productLink,product.title))return jsonError("This listing is not available in Herocon.",404);
-  if(!product)return jsonError("This product is not in our saved catalogue yet. New marketplace searches are being migrated to our new sourcing partner.",404);
-  if(!access.premium&&!await claimLinkTrial(access.customer.id,productLink))return jsonError("Your three successful saved link lookups this month have been used. Join Premium or try next month.",403);
+  if(!product)return jsonError("This product is not in our saved catalogue yet. For 1688 or Weidian, try a live lookup.",404);
+  // Previously saved supplier details use no new provider requests and do not consume live credits.
   const cacheStatus="hit";
   // Avoid duplicating a listing already in the original committed catalogue.
   let catalogueSave:DiscoverySaveResult={status:"unavailable",productId:null};
