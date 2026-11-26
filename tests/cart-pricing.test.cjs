@@ -4,3 +4,6 @@ test("product freight is yuan, zero is valid, unknown is not zero",()=>{assert.e
 test("same listing freight only once, selected listings add independently",()=>{assert.deepEqual(freightSummary([line("a",5,3),line("a",5),line("b",7)]),{knownFen:1200,unknown:0,complete:true});});
 test("missing and conflicting freight never becomes a complete total",()=>{assert.equal(freightSummary([line("a",null)]).complete,false);assert.equal(freightSummary([line("a",4),line("a",5)]).complete,false);assert.equal(freightSummary([line("a",0)]).complete,true);});
 test("7 percent applies to goods only, domestic included once",()=>{assert.deepEqual(productPayment(2000,200),{goodsMinor:2000,domesticMinor:200,feeMinor:140,totalMinor:2340});});
+
+const {classifyFreight,LIGHT_FREIGHT_PENCE}=require("../lib/freight-classification.ts");
+test("freight review conservative lightweight and bulky separation",()=>{assert.equal(LIGHT_FREIGHT_PENCE,99);assert.equal(classifyFreight("Cabinet 549 women's shirt","Tops"),"light");assert.equal(classifyFreight("Dining table","Home & Decor"),"bulky");assert.equal(classifyFreight("Solid marble necklace display stand","Jewellery"),"review");assert.equal(classifyFreight("Wristwatch","Watches"),"light");assert.equal(classifyFreight("Unknown","Other"),"review");assert.equal(classifyFreight("Large glass vase","Home & Decor"),"review");});
