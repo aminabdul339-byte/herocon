@@ -52,7 +52,7 @@ const categoryFeatures:Record<string,Rule[]>={
  "Tops":[[/\b(?:graphic|printed|print)\b/i,"Graphic"],[/\b(?:striped|stripes)\b/i,"Striped"],[/\bfur collar\b/i,"Fur-Collar"],[/\b(?:washed|gradient)\b/i,"Washed"],[/\b(?:heavyweight|[23]\d\d\s*g)\b/i,"Heavyweight"],[/\b(?:oversized|loose[ -]fitting)\b/i,"Oversized"],[/\bembroidered\b/i,"Embroidered"],[/\b(?:polo collar|polo shirt)\b/i,"Polo"],[/\b(?:cropped|crop top)\b/i,"Cropped"],[/\b(?:retro|vintage)\b/i,"Vintage"],[/\bshort[ -]sleeve(?:d)?\b/i,"Short-Sleeve"],[/\blong[ -]sleeve(?:d)?\b/i,"Long-Sleeve"]],
  "Bottoms":[[/\bwide[ -]leg\b/i,"Wide-Leg"],[/\b(?:straight[ -]leg|straight pants)\b/i,"Straight-Leg"],[/\b(?:washed|distressed)\b/i,"Washed"],[/\b(?:cargo|multi[ -]pocket)\b/i,"Cargo"],[/\bdrawstring\b/i,"Drawstring"],[/\bhigh[ -]waisted\b/i,"High-Waisted"],[/\b(?:running|training)\b/i,"Running"],[/\bpleated\b/i,"Pleated"],[/\braw denim\b/i,"Raw Denim"]],
  "Bags":[[/\b(?:crocodile pattern|croc pattern)\b/i,"Croc-Pattern"],[/\bwoven\b/i,"Woven"],[/\bquilted\b/i,"Quilted"],[/\bmonogram\b/i,"Monogram"],[/\blarge[ -]capacity\b/i,"Large-Capacity"],[/\btravel\b/i,"Travel"],[/\b(?:sports|gym|fitness)\b/i,"Sports"],[/\bchain strap\b/i,"Chain-Strap"],[/\bcanvas\b/i,"Canvas"],[/\bnylon\b/i,"Nylon"]],
- "Jewellery":[[/\b(?:cuban chain|cuban link)\b/i,"Cuban-Link"],[/\bcross\b/i,"Cross"],[/\b(?:beaded|beads)\b/i,"Beaded"],[/\bhoop\b/i,"Hoop"],[/\b(?:stud earrings|ear studs)\b/i,"Stud"],[/\b(?:teardrop|water drop)\b/i,"Teardrop"],[/\bbutterfly\b/i,"Butterfly"],[/\b(?:tennis bracelet|tennis necklace)\b/i,"Tennis"],[/\badjustable\b/i,"Adjustable"],[/\bwoven\b/i,"Woven"],[/\bstainless steel\b/i,"Stainless Steel"]],
+ "Jewellery":[[/\b(?:cuban chain|cuban link)\b/i,"Cuban-Link"],[/\bcross\b(?![- ]border)/i,"Cross"],[/\b(?:beaded|beads)\b/i,"Beaded"],[/\bhoop\b/i,"Hoop"],[/\b(?:stud earrings|ear studs)\b/i,"Stud"],[/\b(?:teardrop|water drop)\b/i,"Teardrop"],[/\bbutterfly\b/i,"Butterfly"],[/\b(?:tennis bracelet|tennis necklace)\b/i,"Tennis"],[/\badjustable\b/i,"Adjustable"],[/\bwoven\b/i,"Woven"],[/\bstainless steel\b/i,"Stainless Steel"]],
  "Shoes":[[/\b(?:air[ -]cushion|air sole)\b/i,"Air-Cushioned"],[/\b(?:platform|thick[ -]sole)\b/i,"Platform"],[/\bpointed[ -]toe\b/i,"Pointed-Toe"],[/\bhigh[ -]top\b/i,"High-Top"],[/\blow[ -]top\b/i,"Low-Top"],[/\bsnow boots\b/i,"Snow"],[/\brunning\b/i,"Running"],[/\bbasketball\b/i,"Basketball"],[/\bsuede\b/i,"Suede"],[/\bmesh\b/i,"Mesh"],[/\b(?:bridal|wedding shoes)\b/i,"Bridal"]],
  "Outerwear":[[/\bhooded\b/i,"Hooded"],[/\bwaterproof\b/i,"Waterproof"],[/\bwindproof\b/i,"Windproof"],[/\bfleece\b/i,"Fleece"],[/\bbomber\b/i,"Bomber"],[/\breflective\b/i,"Reflective"],[/\bdenim\b/i,"Denim"],[/\bwool\b/i,"Wool"]],
  "Hair Accessories":[[/\bacetate\b/i,"Acetate"],[/\bshark clip\b/i,"Claw"],[/\bduckbill\b/i,"Duckbill"],[/\bpearl\b/i,"Pearl"],[/\brhinestone\b/i,"Rhinestone"],[/\bmonogram\b/i,"Monogram"],[/\bmetal\b/i,"Metal"],[/\bfloral\b/i,"Floral"]],
@@ -108,7 +108,7 @@ export function conciseProductTitle(p:Product):string{
  const primary=p.displayTitle||p.title||p.originalTitle||"";
  const richer=[p.supplierTitle,p.originalTitle].filter((v):v is string=>!!v&&v.trim().length>primary.trim().length+12).sort((a,b)=>b.length-a.length)[0];
  const raw=withoutEmoji((/^(?:ring|necklace|earrings?|bracelet|bag|dress|product|clothing|wig|shoes?|watch|hair clip|other)(?:\s*[-#]?\s*\d+)?$/i.test(primary.trim())&&richer?richer:primary).trim()).replace(/&amp;/gi,"&");
- const plain=raw.replace(/【[^】]*】|\[[^\]]*\]/g," ").replace(/\s+/g," ").trim()||raw;
+ const plain=raw.replace(/【[^】]*】|\[[^\]]*\]/g," ").replace(/\bcross[- ]border\b/gi," ").replace(/\s+/g," ").trim()||raw;
  // "Dog tooth" is a supplier translation for a pattern, not an animal
  // or a material. Preserve the type of accessory and avoid leather claims.
  if(p.category==="Bags"&&/\b(?:dog[ -]?tooth|dog teeth|dogtooth)\b/i.test(plain)){
@@ -128,13 +128,20 @@ export function conciseProductTitle(p:Product):string{
  if(/\bskull\b/i.test(plain)&&/\bring\b/i.test(plain)&&!/\b(?:necklace|earrings?|keychain|ring holder)\b/i.test(plain))return "Skull Ring";
  if(/\b(?:nail grinder|nail trimmer|nail drill)\b/i.test(plain)&&!/\b(?:drill bits?|replacement heads?)\b/i.test(plain))return /\belectric\b/i.test(plain)?"Electric Nail Trimmer":"Nail Trimming Tool";
  if(/\b(?:card holder|card case)\b/i.test(plain)&&p.category==="Bags"&&!/\b(?:backpack|travel bag|tote bag)\b/i.test(plain))return "Card Holder";
+ // Do not turn accessories into the product they are designed to hold.
+ if(p.category==="Jewellery"&&/\bring holder necklace\b/i.test(plain))return "Ring Holder Pendant Necklace";
+ if(/\b(?:ring box|jewell?ery box)\b/i.test(plain)&&p.category!=="Jewellery"&&!/\b(?:earrings?|necklaces?|bracelets?)\s+(?:set|collection)\b/i.test(plain))return /\bring box\b/i.test(plain)?"Ring Presentation Box":"Jewellery Box";
+ if(p.category==="Wigs & Hair Extensions"&&/\bwig (?:cap|net)\b/i.test(plain)&&!/\b(?:human hair wig|synthetic wig|lace front wig)\b/i.test(plain))return "Wig Cap";
+ if(/\b(?:chair|stool|sofa) cover\b/i.test(plain)&&["Home Textiles","Furniture","Home & Decor"].includes(p.category||""))return /\bsofa cover\b/i.test(plain)?"Sofa Cover":/\bstool cover\b/i.test(plain)&&!/\bchair cover\b/i.test(plain)?"Stool Cover":"Chair Cover";
+ if(p.category==="Beauty & Personal Care"&&/\b(?:makeup|cosmetic|foundation|blush|powder|eyeshadow)\s+brush\b/i.test(plain)&&!/\b(?:set|pack|pieces|pcs|brushes)\b/i.test(plain))return /\bdouble[- ]ended\b/i.test(plain)?"Double-Ended Makeup Brush":"Makeup Brush";
+
  const rule=(types[p.category||""]||[]).find(([r])=>r.test(plain));
  if(rule?.[1]==="Crochet Flower Bouquet")return crochetBouquetTitle(p,plain);
  if(rule){
   const label=rule[1],picked:string[]=[];
   for(const [pattern,feature] of [...features,...(categoryFeatures[p.category||""]||[])]){
    if(picked.length>=2)break;
-   if(pattern.test(plain)&&!(feature==="Dog"&&/\b(?:dog[ -]?tooth|dog teeth|dogtooth)\b/i.test(plain))&&!(feature==="Leather"&&/\b(?:faux leather|imitation leather|pu leather|synthetic leather)\b/i.test(plain))&&!label.toLowerCase().includes(feature.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(feature.toLowerCase())))picked.push(feature);
+   if(pattern.test(plain)&&!(feature==="Moissanite"&&/\b(?:simulated|simulation|imitation|fake|faux)\s+(?:\w+\s+){0,2}moissanite\b/i.test(plain))&&!(feature==="Sterling Silver"&&/\b(?:imitation|fake|faux|silver[- ]plated|silver[- ]tone|s925 word printed)\b/i.test(plain))&&!(feature==="Marble"&&/\bmarble[- ](?:design|pattern|effect|look|print)\b/i.test(plain))&&!(feature==="Dog"&&/\b(?:dog[ -]?tooth|dog teeth|dogtooth)\b/i.test(plain))&&!(feature==="Leather"&&/\b(?:faux leather|imitation leather|pu leather|synthetic leather)\b/i.test(plain))&&!label.toLowerCase().includes(feature.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(feature.toLowerCase())))picked.push(feature);
   }
   // Avoid visual descriptions unrelated to the main product; categories already
   // constrain the type, and explicit original titles remain in product details.
@@ -142,6 +149,7 @@ export function conciseProductTitle(p:Product):string{
   if(picked.includes("Bodycon")&&picked.includes("Ribbed"))picked.reverse();
   if(picked.includes("Marble")&&picked.includes("Nordic"))picked.reverse();
   if(picked.includes("Zircon")&&picked.includes("Heart-Shaped"))picked.reverse();
+  if(p.category==="Jewellery"&&label==="Ring"&&/\b(?:simulated|simulation|imitation|fake|faux)\s+(?:\w+\s+){0,2}(?:moissanite|diamonds?|gemstones?)\b/i.test(plain)&&!picked.some(x=>/Simulated|Imitation/.test(x)))picked.unshift("Simulated-Stone");
   const colour=productColour(p,plain);
   if(colour&&!label.toLowerCase().includes(colour.toLowerCase())&&!picked.some(x=>x.toLowerCase().includes(colour.toLowerCase())))picked.unshift(colour);
   if(picked.length||label.split(/\s+/).length>=3)return [...picked,label].join(" ");

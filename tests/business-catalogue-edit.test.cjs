@@ -128,3 +128,13 @@ test("duplicate card grouping preserves source links and separates title-only ma
  assert.notEqual(dups.photoIdentity("https://drive.google.com/thumbnail?id=one"),dups.photoIdentity("https://drive.google.com/thumbnail?id=two"));
  const ring=dups.auditDuplicateCards([{...a,id:"DgoQWJ3vpr7IwjtVXqAyKA",priceGBP:.34},{...b,id:"OpohXCbwOZlcaz5oQkeBCQ",priceGBP:.23},{...c,id:"yXvk725eTqDy7uIaBMAuUQ",priceGBP:.23}]);assert.equal(ring.suppressed.size,2);assert.equal(ring.duplicateGroups[0].keep.priceGBP,.23);
 });
+
+test("product titles retain object type without promotional cross or misleading material claims",()=>{
+ assert.doesNotMatch(conciseTitle({title:"Cross-border alloy engagement ring factory direct sale",category:"Jewellery"}),/\bCross\b/i);
+ assert.match(conciseTitle({title:"Vintage cross pendant necklace",category:"Jewellery"}),/Cross/i);
+ const simulated=conciseTitle({title:"Simulated moissanite engagement diamond ring",category:"Jewellery"});assert.doesNotMatch(simulated,/\bMoissanite\b/i);assert.match(simulated,/Simulated-Stone/);
+ assert.equal(conciseTitle({title:"Double-ended foundation brush",category:"Beauty & Personal Care"}),"Double-Ended Makeup Brush");
+ assert.equal(conciseTitle({title:"Non-slip elastic chair cover",category:"Furniture"}),"Chair Cover");
+ assert.equal(conciseTitle({title:"Cross-border lace wig cap elastic hair net",category:"Wigs & Hair Extensions"}),"Wig Cap");
+ assert.equal(conciseTitle({title:"Geometric ring holder necklace",category:"Jewellery"}),"Ring Holder Pendant Necklace");
+});
