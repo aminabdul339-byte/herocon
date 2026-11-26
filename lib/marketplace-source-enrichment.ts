@@ -2,7 +2,7 @@ import "server-only";
 import {domesticFromProduct,validFreight} from "@/lib/cart-pricing";
 import {createHash} from "node:crypto";
 import {get,put,list as listBlobs} from "@vercel/blob";
-import {unstable_cache} from "next/cache";
+import {unstable_cache,revalidateTag} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
@@ -318,6 +318,8 @@ export async function saveMarketplaceSource(source:SourceEnrichment):Promise<voi
    contentType:"application/json"
   });
  }catch{throw new SourceEnrichmentError("enrichment_storage_failed",503);}
+ revalidateTag("herocon-marketplace-card-"+createHash("sha256").update(url).digest("hex"));
+ revalidateTag("herocon-marketplace-source-index");
 }
 export function withMarketplaceSource(product:Product,source:SourceEnrichment|null):Product{
  if(!source)return product;
@@ -413,9 +415,19 @@ const savedIndex=unstable_cache(async():Promise<string[]>=>{
   }while(cursor);
  }
  return [...hashes];
-},["herocon-marketplace-source-index-v2"],{revalidate:60});
+},["herocon-marketplace-source-index-v2"],{revalidate:60,tags:["herocon-marketplace-source-index"]});
 export async function savedMarketplaceSourceHashes():Promise<ReadonlySet<string>>{
  try{return new Set(await savedIndex());}catch{return new Set();}
+}
+/** Cache only the small display summary, not the full supplier SKU matrix. */
+export async function savedMarketplaceCard(url:string){
+ const hash=createHash("sha256").update(url).digest("hex");
+ try{return await unstable_cache(async()=>{
+  const data=await getSavedMarketplaceSource(url);
+  if(!data)return null;
+  return {title:data.title||null,images:[...new Set([...data.images,...data.variants.map(v=>v.image).filter((u):u is string=>!!u)])].slice(0,12),
+   sellerName:data.sellerName||null,variantCount:data.variantCount??data.variants.length,retrievedAt:data.retrievedAt};
+ },["herocon-marketplace-card-v1",hash],{revalidate:300,tags:["herocon-marketplace-card-"+hash]})();}catch{return null;}
 }
 export async function enrichVisibleProductCards(products:Product[]):Promise<Product[]>{
  if(!products.length)return products;
@@ -424,7 +436,7 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
  return Promise.all(products.map(async product=>{
   const url=normalizeMarketplaceLink(product.originalMarketplaceUrl);
   if(!url||!saved.has(createHash("sha256").update(url).digest("hex")))return product;
-  const enrichment=await getSavedMarketplaceSource(url);
+  const enrichment=await savedMarketplaceCard(url);
   if(!enrichment)return product;
   // Grid cards only need a thumbnail and option count. Do not serialize the
   // entire 1000+ SKU matrix on every 24-card catalogue page.
@@ -433,7 +445,7 @@ export async function enrichVisibleProductCards(products:Product[]):Promise<Prod
    imageUrl:product.imageUrl||enrichment.images[0],
    images:[...new Set([product.imageUrl,...enrichment.images.slice(0,12),...(product.images||[])].filter((u):u is string=>!!u))].slice(0,12),
    sellerName:enrichment.sellerName||product.sellerName,
-   variantCount:enrichment.variantCount??enrichment.variants.length,
+   variantCount:enrichment.variantCount,
    hasPartnerDetails:true
   };
  }));

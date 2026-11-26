@@ -1,6 +1,8 @@
 import {personalAll} from "@/lib/catalogue-access";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
+import {Suspense} from "react";
+import {CatalogueGridSkeleton} from "@/components/CatalogueLoading";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {ShopAudienceIcon} from "@/components/ShopIcons";
 import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
@@ -18,7 +20,7 @@ const ORDER:Record<Audience,string[]>={
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
-export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
+export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:Promise<ShopFxRates>}){
  const {audience}=filters;const sort=filters.sort;
  const [women,men]=await Promise.all([personalAll("women"),personalAll("men")]);
  const available=(a:Audience)=>a==="women"?women:men;
@@ -40,7 +42,7 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
  const pageCount=Math.max(1,Math.ceil(matching.length/PER_PAGE));
  const page=Math.min(pageCount,Math.max(1,filters.page));
  const visible=matching.slice((page-1)*PER_PAGE,page*PER_PAGE);
- const shown=await enrichPersonalCards(visible);
+
  function href(changes:Partial<Filters>){
   const p:Filters={...filters,...changes};
   const q=new URLSearchParams();
@@ -86,14 +88,22 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
     <span><strong>{matching.length.toLocaleString("en-GB")} products</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
     {visible.length>0&&<span>{"Showing "+((page-1)*PER_PAGE+1).toLocaleString("en-GB")+"–"+Math.min((page-1)*PER_PAGE+visible.length,matching.length).toLocaleString("en-GB")}</span>}
   </div>
-  {shown.length?
-    <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
+  {visible.length?
+    <Suspense key={JSON.stringify([audience,category,query,sort,page])} fallback={<CatalogueGridSkeleton personal/>}><PersonalGrid visible={visible} rates={rates} audience={audience}/></Suspense>:
     <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
     {page>1?<Link href={href({page:page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
     <span>Page {page} of {pageCount}</span>
     {page<pageCount?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
   </nav>}
-  <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
+  <Suspense fallback={<p className="hc-self-table-note">* All prices shown are indicative GBP estimates.</p>}><RateNote rates={rates}/></Suspense>
  </section>;
+}
+
+async function PersonalGrid({visible,rates,audience}:{visible:PersonalShopProduct[];rates:Promise<ShopFxRates>;audience:Audience}){
+ const [shown,fx]=await Promise.all([enrichPersonalCards(visible),rates]);
+ return <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={fx} audience={audience}/>)}</div>;
+}
+async function RateNote({rates}:{rates:Promise<ShopFxRates>}){
+ return <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(await rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>;
 }

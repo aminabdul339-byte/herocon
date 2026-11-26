@@ -25,7 +25,7 @@ export default function Header(){
       <div className="sc-nav-inner">
         <Link href="/" prefetch={true} className="sc-wordmark" aria-label="Herocon homepage">hero<span>con.</span></Link>
         <nav className="sc-desktop-links" aria-label="Main navigation">
-          {links.map(([label,url])=><Link key={url} href={url} prefetch={false} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined}>{label}</Link>)}
+          {links.map(([label,url])=><Link key={url} href={url} prefetch={url==="/search"||url==="/shop-for-yourself"?undefined:false} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined}>{label}</Link>)}
         </nav>
         <div className="sc-nav-actions">
           <Link className="hc-cart-nav-link hc-mobile-account-link" href="/account" aria-label={account.status==="authenticated"?"My account":"Sign in or create an account"}>

@@ -13,7 +13,7 @@ const REFERENCE_DATE="2026-11-20";
 async function reference(base:"CNY"|"USD") {
  const res=await fetch("https://api.frankfurter.dev/v2/rate/"+base+"/GBP",{
   next:{revalidate:21600},
-  signal:AbortSignal.timeout(5000)
+  signal:AbortSignal.timeout(2200)
  });
  if(!res.ok)throw new Error("Reference rate unavailable: "+res.status);
  const data:unknown=await res.json();

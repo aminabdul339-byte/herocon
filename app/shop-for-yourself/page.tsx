@@ -19,7 +19,7 @@ export default async function ShopForYourselfPage({searchParams}:{searchParams:P
  const sort=params.sort==="name"?"name":"featured";
  const requestedPage=Number.parseInt(params.page||"1",10);
  const page=Number.isFinite(requestedPage)?Math.max(1,requestedPage):1;
- const rates=await getPersonalShopRates();
+ const rates=getPersonalShopRates();
  return <main className="hc-self hc-self-v2" data-audience={audience}>
   <Header/>
   <ShopForYourself filters={{audience,category,q,sort,page}} rates={rates}/>

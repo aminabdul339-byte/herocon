@@ -23,8 +23,8 @@ export default function AtelierHero({products}:{products:Product[]}){
    <h1 id="hd-studio-title">Your link<br className="hd-desktop-break"/> to China<span className="hd-brand-dot">.</span></h1>
    <p className="hd-studio-description">Shop for yourself or source for your business. Explore original listings from Chinese marketplaces, all through Herocon.</p>
    <div className="hd-studio-actions">
-    <Link href="/search" className="hd-studio-action hd-studio-primary">Source for your business <ArrowIcon direction="right"/></Link>
-    <Link href="/shop-for-yourself" className="hd-studio-action hd-studio-secondary">Shop for yourself <ArrowIcon direction="right"/></Link>
+    <Link href="/search" prefetch={true} className="hd-studio-action hd-studio-primary">Source for your business <ArrowIcon direction="right"/></Link>
+    <Link href="/shop-for-yourself" prefetch={true} className="hd-studio-action hd-studio-secondary">Shop for yourself <ArrowIcon direction="right"/></Link>
    </div>
    <div className="hd-studio-marketplaces" aria-label="Marketplace sources"><span>Explore listings from</span><div><b>1688</b><b>Taobao</b><b>Weidian</b><b>Tmall</b></div></div>
   </div>

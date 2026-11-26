@@ -2,6 +2,7 @@ import "server-only";
 import {createHash} from "node:crypto";
 import {list} from "@vercel/blob";
 import {unstable_cache} from "next/cache";
+import {cache} from "react";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 const REJECTED="catalogue/buckydrop-bulk/v1/unavailable/";
 const SOURCES=["catalogue/buckydrop-snapshots/v1/","catalogue/buckydrop-snapshots/v2/","catalogue/source-enrichment/v1/","catalogue/source-enrichment/v2/"];
@@ -16,5 +17,5 @@ const cached=unstable_cache(async()=>{
  return [...new Set(rejected.map(extract).filter(h=>/^[a-f0-9]{64}$/.test(h)&&!saved.has(h)))];
 
 },["herocon-permanent-exclusions-v2"],{revalidate:300});
-export async function unavailableSourceHashes():Promise<Set<string>>{try{return new Set(await cached());}catch{return new Set();}}
+export const unavailableSourceHashes=cache(async():Promise<Set<string>>=>{try{return new Set(await cached());}catch{return new Set();}});
 export function isUnavailableSource(url:unknown,hashes:ReadonlySet<string>){const link=normalizeMarketplaceLink(url);return !!link&&hashes.has(createHash("sha256").update(link).digest("hex"));}

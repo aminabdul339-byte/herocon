@@ -57,7 +57,9 @@ function normalise(raw: Raw): Product | null {
     agentLinks: raw.agentLinks && typeof raw.agentLinks === "object" && !Array.isArray(raw.agentLinks) ? raw.agentLinks as Record<string,string> : undefined,
   };
 }
-export const getBaseProducts = cache(async (): Promise<Product[]> => {
+// Committed catalogue files are immutable for the life of a deployment.
+let basePromise:Promise<Product[]>|undefined;
+async function loadBaseProducts():Promise<Product[]> {
   const byId = new Map<string, Product>();
   async function addFile(name: string): Promise<boolean> {
     try {
@@ -105,16 +107,17 @@ export const getBaseProducts = cache(async (): Promise<Product[]> => {
   }
   for (const name of additions) await addFile(name);
   return [...byId.values()].filter(product => Boolean(product.originalMarketplaceUrl)&&!excludedCatalogueListing(product.originalMarketplaceUrl,product.title,product.originalTitle)).map(product => ({...product,category:isModestFashion([product.title,product.originalTitle].filter(Boolean).join(" "),product.sellerName)?"Modest Fashion":CATEGORY_OVERRIDES[product.doppelProductId||""]||classifyProduct(product.title,product.category)}));
-});
+}
+export const getBaseProducts=cache(()=>basePromise??=(loadBaseProducts().catch(error=>{basePromise=undefined;throw error;})));
 
 // The original catalogue remains in committed JSON files. Products found through
 // the public link search are durably stored in the private Vercel Blob store and
 // appear in product search, category browsing, saved items, and product pages.
 export const getProducts = cache(async ():Promise<Product[]>=>{
- const [base,hidden,audit]=await Promise.all([getBaseProducts(),unavailableSourceHashes(),categoryAuditOverrides()]);
+ const [base,hidden,audit,discoveredRows]=await Promise.all([getBaseProducts(),unavailableSourceHashes(),categoryAuditOverrides(),getDiscoveredProducts()]);
  const corrected=(p:Product):Product=>({...p,category:isModestFashion([p.title,p.originalTitle,p.displayTitle].filter(Boolean).join(" "),p.sellerName)?"Modest Fashion":CATEGORY_OVERRIDES[p.doppelProductId||""]||audit[p.doppelProductId||""]||classifyProduct(p.title,p.category)});
  const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(corrected);
- const discovered=(await getDiscoveredProducts()).filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)&&!excludedCatalogueListing(p.originalMarketplaceUrl,p.title,p.originalTitle,p.displayTitle)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
+ const discovered=discoveredRows.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)&&!excludedCatalogueListing(p.originalMarketplaceUrl,p.title,p.originalTitle,p.displayTitle)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
  if(!discovered.length)return staticProducts;
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));

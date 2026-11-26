@@ -2,7 +2,7 @@ import "server-only";
 import {createHash} from "node:crypto";
 import {savedPartnerSnapshotHashes} from "@/lib/catalogue-priority";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
-import {getSavedMarketplaceSource,savedMarketplaceSourceHashes} from "@/lib/marketplace-source-enrichment";
+import {savedMarketplaceCard,savedMarketplaceSourceHashes} from "@/lib/marketplace-source-enrichment";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {BuckydropProduct} from "@/lib/buckydrop";
 import type {PersonalShopProduct} from "@/lib/personal-shop";
@@ -40,19 +40,19 @@ export async function enrichPersonalCards(products:ReadonlyArray<PersonalShopPro
  }catch{return [...products];}
  if(!legacyKeys.size&&!newKeys.size)return [...products];
  const result:EnrichedPersonalProduct[]=[];
- for(let i=0;i<products.length;i+=6){
-  const batch=await Promise.all(products.slice(i,i+6).map(async product=>{
+ for(let i=0;i<products.length;i+=12){
+  const batch=await Promise.all(products.slice(i,i+12).map(async product=>{
    const link=canonical(product.originalUrl);
    if(!link)return product;
    const sourceHash=hash(link);
    if(newKeys.has(sourceHash)){
-    const enriched=await getSavedMarketplaceSource(link);
+    const enriched=await savedMarketplaceCard(link);
     if(enriched){
      const photos=[...new Set([
-       ...enriched.images,...enriched.variants.map(v=>v.image).filter((u):u is string=>Boolean(u))
+       ...enriched.images
      ])].filter(u=>/^https:\/\//.test(u)).slice(0,12);
      return {...product,savedDetails:{
-      photos,sellerName:enriched.sellerName||null,variantCount:enriched.variants.length,
+      photos,sellerName:enriched.sellerName||null,variantCount:enriched.variantCount,
       savedAt:enriched.retrievedAt
      }};
     }
