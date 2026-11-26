@@ -3,7 +3,7 @@ export const FREE_PAGE_LIMIT=2;
 export const FREE_COLLECTION_LIMIT=CATALOGUE_PAGE_SIZE*FREE_PAGE_LIMIT;
 export const BUSINESS_CATEGORY_LIMIT=9;
 export const PERSONAL_CATEGORY_LIMIT=12;
-export const featuredPreviewIds=["YjXAnN1cosMO1iGVWJw5FA","HEWCWVJ5M7RL3Y-J_uV0bg","qLiCZEEhOnut6fHdkH-Bow","g8ulL_pzvvdAvGHNTXB-xw","4QucBqTfsk76WbDuGGzyBA","zmcFLXhlnDI9AyHB3zO8LA","8t3fo9eRc1lLdPqNSasQ2w"] as const;
+export const featuredPreviewIds=["YjXAnN1cosMO1iGVWJw5FA","HEWCWVJ5M7RL3Y-J_uV0bg","qLiCZEEhOnut6fHdkH-Bow","g8ulL_pzvvdAvGHNTXB-xw","4QucBqTfsk76WbDuGGzyBA","zmcFLXhlnDI9AyHB3zO8LA","8t3fo9eRc1lLdPqNSasQ2w","j2R9wzAx7bv39GGzSRkj3Q"] as const;
 /** Fixed collection sample before search/filter/sort: changing filters cannot unlock products. */
 export function previewCollection<T>(all:readonly T[],id:(p:T)=>string,category:(p:T)=>string,featured:readonly string[]=[]):T[]{
  const output:T[]=[],seen=new Set<string>(),groups=new Map<string,T[]>();
