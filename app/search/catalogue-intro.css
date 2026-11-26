@@ -212,3 +212,30 @@
 .hc-site .sc-catalogue-page .hc-sourcing-compact-link:hover{text-decoration:underline;text-underline-offset:3px}
 .hc-site .sc-catalogue-page .hc-sourcing-method:focus-visible,.hc-site .sc-catalogue-page .hc-sourcing-compact-link:focus-visible{outline:2px solid #4c7652;outline-offset:3px}
 @media(max-width:800px){.hc-site .sc-catalogue-page .hc-sourcing-hub{grid-template-columns:1fr;gap:12px;margin-top:18px}.hc-site .sc-catalogue-page .hc-sourcing-mode{padding:20px;border-radius:16px}.hc-site .sc-catalogue-page .hc-sourcing-mode h2{font-size:29px}.hc-site .sc-catalogue-page .hc-sourcing-description{font-size:13px;margin-bottom:15px}}
+
+/* Compact sourcing hub: keep all actions visible and retain original featured cards. */
+.hc-site .sc-catalogue-page .hc-sourcing-intro-expanded{padding:clamp(18px,2vw,28px);margin-block:18px 24px;border-radius:22px}
+html body .hc-site .sc-catalogue-page .hc-sourcing-intro-expanded h1{font-size:clamp(28px,3vw,39px)!important;line-height:1.15!important;margin:6px 0 8px}
+.hc-site .sc-catalogue-page .hc-sourcing-intro-expanded>p:not(.sc-kicker){font-size:13px;line-height:1.5;margin:0 0 14px}
+.hc-site .sc-catalogue-page .hc-sourcing-hub{gap:12px;margin:14px 0 0}
+.hc-site .sc-catalogue-page .hc-sourcing-mode{padding:clamp(14px,1.5vw,20px);border-radius:15px}
+.hc-site .sc-catalogue-page .hc-sourcing-mode-label{gap:8px;font-size:9px;letter-spacing:.12em}
+.hc-site .sc-catalogue-page .hc-sourcing-mode-icon{width:30px;height:30px;border-radius:8px}
+.hc-site .sc-catalogue-page .hc-sourcing-mode-icon svg{width:17px;height:17px}
+html body .hc-site .sc-catalogue-page .hc-sourcing-mode h2{font-size:clamp(21px,2vw,27px)!important;line-height:1.16!important;letter-spacing:-.035em!important;margin:10px 0 5px}
+.hc-site .sc-catalogue-page .hc-sourcing-description{font-size:13px;line-height:1.45;margin:0 0 11px;max-width:none}
+.hc-site .sc-catalogue-page .hc-sourcing-search{margin:3px 0 8px}
+.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page{padding:3px 3px 3px 11px;gap:7px}
+.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page input:not([type=hidden]){font-size:13px;padding:8px 0}
+.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page button{min-height:36px;padding:8px 18px;font-size:12px}
+.hc-site .sc-catalogue-page .hc-sourcing-methods{gap:5px}
+.hc-site .sc-catalogue-page .hc-sourcing-method{gap:8px;padding:6px 9px;border-radius:8px;min-height:40px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-icon{width:24px;height:24px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-icon svg{width:17px;height:17px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy{gap:2px;flex-direction:row;align-items:baseline;flex-wrap:wrap;column-gap:10px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy strong{font-size:13px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy small{font-size:11px}
+.hc-site .sc-catalogue-page .hc-sourcing-foot{font-size:11px;line-height:1.45;padding-top:10px;margin:0}
+.hc-site .sc-catalogue-page .hc-sourcing-intro-expanded .hc-discovery-edits{margin-top:14px}
+@media(min-width:1150px){.hc-site .sc-catalogue-page .hc-sourcing-hub{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
+@media(max-width:800px){.hc-site .sc-catalogue-page .hc-sourcing-hub{gap:10px;margin-top:12px}.hc-site .sc-catalogue-page .hc-sourcing-mode{padding:14px}.hc-site .sc-catalogue-page .hc-sourcing-method{min-height:44px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page{flex-wrap:nowrap;border-radius:999px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page input:not([type=hidden]){flex:1 1 0%;font-size:16px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page button{width:auto;min-height:44px}}

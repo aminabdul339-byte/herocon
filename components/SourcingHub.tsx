@@ -20,16 +20,16 @@ export default function SourcingHub({children,expanded}:{children:ReactNode;expa
   <section className="hc-sourcing-mode hc-sourcing-catalogue" aria-labelledby="hc-source-catalogue">
    <div className="hc-sourcing-mode-label"><span className="hc-sourcing-mode-icon"><Glyph name="catalogue"/></span><span>EXPLORE HEROCON</span></div>
    <h2 id="hc-source-catalogue">Explore the catalogue.</h2>
-   <p className="hc-sourcing-description">Browse our existing collection of sourced products and discover your next business idea.</p>
+   <p className="hc-sourcing-description">Explore our curated collection of sourced products.</p>
    <div className="hc-sourcing-search">{children}</div>
-   <p className="hc-sourcing-foot">Browse the catalogue below — no account needed.</p>
+   <p className="hc-sourcing-foot">No account needed.</p>
   </section>
   <section className="hc-sourcing-mode hc-sourcing-finder" aria-labelledby="hc-source-finder">
    <div className="hc-sourcing-mode-label"><span className="hc-sourcing-mode-icon"><Glyph name="discover"/></span><span>THE HEROCON PRODUCT FINDER</span></div>
    <h2 id="hc-source-finder">Find your own products.</h2>
-   <p className="hc-sourcing-description">Go beyond our catalogue and discover new products from Chinese marketplaces.</p>
+   <p className="hc-sourcing-description">Discover new products directly from Chinese marketplaces.</p>
    <div className="hc-sourcing-methods">{methods.map(method=><Link key={method.name} className="hc-sourcing-method" href={method.href} prefetch={false}><span className="hc-sourcing-method-icon"><Glyph name={method.name}/></span><span className="hc-sourcing-method-copy"><strong>{method.title}</strong><small>{method.subtitle}</small></span><ArrowIcon direction="right"/></Link>)}</div>
-   <p className="hc-sourcing-foot">Try live discovery with a free account. Search availability varies by marketplace.</p>
+   <p className="hc-sourcing-foot">Try live discovery with a free account. Availability varies by marketplace.</p>
   </section>
  </div>;
 }
