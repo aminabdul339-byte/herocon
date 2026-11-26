@@ -27,7 +27,8 @@ export async function POST(req:Request){
    const email=typeof d.email==="string"?d.email.trim().toLowerCase():"";
    if(!emailValid(email)||d.acceptedTerms!==true)return reply({error:"Enter your email and accept the terms."},400);
    if(d.action==="signup"){
-    if(typeof d.password!=="string"||d.password.length<12||d.password.length>128)return reply({error:"Create a password of at least 12 characters."},400);
+    if(typeof d.password!=="string"||d.password.length<8||d.password.length>128)return reply({error:"Create a password of at least 8 characters."},400);
+    if(d.password!==d.confirmPassword)return reply({error:"Passwords do not match."},400);
     const session=await authApi("/signup?redirect_to="+encodeURIComponent("https://herocon.store/account?confirmed=1"),{email,password:d.password});
     if(session.access_token)return reply({error:"Email confirmation must be enabled before trial registration."},503);
    }else{

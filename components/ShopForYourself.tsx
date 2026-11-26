@@ -1,4 +1,4 @@
-import {personalAll,personalCollectionPreview,personalCategoryPreview} from "@/lib/catalogue-access";
+import {personalAll,personalCollectionPreview,personalCategoryPreview,personalPreview} from "@/lib/catalogue-access";
 import CatalogueLockedPreview from "@/components/CatalogueLockedPreview";
 import {FREE_PAGE_LIMIT,PERSONAL_CATEGORY_LIMIT,freePageWindow} from "@/lib/catalogue-access-model";
 import {PremiumNotice} from "@/components/MembershipPlans";
@@ -34,8 +34,8 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
  const category=availableCategories.includes(filters.category)?filters.category:"All";
  const query=filters.q.trim().toLowerCase();
  const limitedCategory=category!=="All";
- const totalMatches=everything.filter(x=>!limitedCategory||x.category===category).length;
- const source=premium?everything:limitedCategory?await personalCategoryPreview(audience,category):await personalCollectionPreview(audience);
+ const source=premium?everything:limitedCategory?await personalCategoryPreview(audience,category):query?await personalPreview(audience):await personalCollectionPreview(audience);
+ const totalMatches=(query?source:everything).filter(x=>(!limitedCategory||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query))).length;
  let matching=source.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
  if(premium)matching.sort((a,b)=>{
   if(sort==="name")return nameCompare(a,b);
@@ -74,15 +74,15 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
       </Link>)}
     </nav>
   </div>
-  {premium?<form className="hc-personal-catalogue-search" role="search" action="/shop-for-yourself#browse-finds" method="get">
+  {<form className="hc-personal-catalogue-search" role="search" action="/shop-for-yourself#browse-finds" method="get">
     <input name="audience" type="hidden" value={audience}/>
     {category!=="All"&&<input name="category" type="hidden" value={category}/>}
     {sort==="name"&&<input name="sort" type="hidden" value="name"/>}
     <label htmlFor="hc-personal-catalogue-query" className="hc-self-sr-only">Search products</label>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
-    <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
+    <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder={premium?"Search products…":"Search free preview…"} />
     <button type="submit">Search <span aria-hidden="true"><ArrowIcon direction="right"/></span></button>
-  </form>:<PremiumNotice feature="keyword search and the full collection"/>}
+  </form>}{!premium&&query&&<PremiumNotice feature="the full collection"/>}
   <div className="hc-personal-category-heading"><span>SHOP BY CATEGORY</span><span>{everything.length.toLocaleString("en-GB")} {audience==="women"?"women’s":"men’s"} finds</span></div>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
