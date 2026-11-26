@@ -1,6 +1,6 @@
 export type FreightClass="light"|"bulky"|"review";
 export const LIGHT_FREIGHT_PENCE=99;
-export function classifyFreight(title:string,category:string):FreightClass{
+function originalFreightClass(title:string,category:string):FreightClass{
  const t=title.toLowerCase().replace(/\b(?:cabinet|counter)\s+\d+\b/g," ").replace(/[^a-z0-9]+/g," ");
  // Packaging, wholesale packs, ambiguous sizes and dense materials need review.
  if(/\b(?:sofa|couch|armchair|ottoman|bed frame|mattress|wardrobe|cabinet|dresser|bookshelf|bookcase|dining table|coffee table|desk|chair|stool|bench|sideboard|console table|tv stand|shelving unit|room divider|floor mirror|floor lamp|chandelier|large rug|carpet|treadmill|dumbbell|barbell|weight plate|exercise bike|washing machine|refrigerator|suitcase|luggage|stroller|pushchair|pram|cot bed|baby cot|car seat|large planter|full length mirror)\b/.test(t)||category==="Furniture")return "bulky";
@@ -8,4 +8,15 @@ export function classifyFreight(title:string,category:string):FreightClass{
  if(/\b(?:jewell?ery|necklace|earrings?|bracelet|anklet|pendant|brooch|hair clip|hairpin|scrunchie|headband|hair tie|false nails|press on nails|nail stickers?|nail tips|nail art|makeup brush|false eyelashes|eyelash|socks?|stockings?|scarf|hijab|niqab|tie|bow tie|belt|wallet|card holder|sunglasses|eyeglasses|watch strap|watch band|wristwatch|phone case|screen protector|keychain|keyring|stickers?|t shirt|blouse|shirt|tank top|crop top|leggings|shorts|underwear|bra|panties|swimwear|bikini|abaya|thobe|dress|skirt|trousers|jeans|pajamas|pyjamas|wig|hair extensions)\b/.test(t))return "light";
  if(["Jewellery","Hair Accessories","Nails & Nail Supplies","Sunglasses","Underwear & Lingerie"].includes(category)&&t.length>8&&!/^(product|unknown|untitled)\s*$/.test(t))return "light";
  return "review";
+}
+
+/** Owner-approved GBP estimate expansion. Existing clearly bulky items and
+ * home-related uncertain goods stay excluded. No supplier amounts are changed. */
+const homeReviewCategories=new Set(["furniture","home & decor","home decor","home & kitchen","home textiles","storage & organisation","storage & organization","lighting","home goods","home & living"]);
+const homeReviewTerms=/\b(?:furniture|home decor|home decoration|decorative ornament|vase|vases|candle holder|candle holders|table lamp|wall lamp|ceiling lamp|mirror|mirrors|shelving|storage rack|shoe rack|curtain|curtains|bedding|duvet|blanket|cushion|rug|rugs|tableware|cookware|dinnerware|kitchenware|planter|planters|sculpture|sculptures|bookend|bookends|marble|cast iron)\b/i;
+export function classifyFreight(title:string,category:string):FreightClass{
+ const original=originalFreightClass(title,category);
+ if(original!=="review")return original;
+ if(homeReviewCategories.has(category.trim().toLowerCase())||homeReviewTerms.test(title.replace(/[^a-z0-9]+/gi," ")))return "review";
+ return "light";
 }
