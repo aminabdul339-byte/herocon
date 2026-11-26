@@ -5,7 +5,7 @@ import {CatalogueGridSkeleton} from "@/components/CatalogueLoading";
 import type {Product} from "@/lib/types";
 import {productSearchScore} from "@/lib/product-search";
 import {PRIMARY_CATEGORIES,resolveCategory} from "@/lib/product-taxonomy";
-import {getProducts} from "@/lib/catalogue-server";
+import {getBrowseProducts as getProducts} from "@/lib/catalogue-server";
 import {enrichVisibleProductCards} from "@/lib/marketplace-source-enrichment";
 import {prioritizeSavedPartnerProducts,attachSavedPartnerImages} from "@/lib/catalogue-priority";
 import {prioritizeJewelleryDiscovery} from "@/lib/jewellery-discovery-order";

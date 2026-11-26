@@ -152,3 +152,6 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
  }
  return [...additions,...enriched].map(corrected);
 });
+// Display deduplication does not change source records or direct product routes.
+import {dedupeBusinessCards} from "./catalogue-duplicates";
+export const getBrowseProducts=cache(async()=>dedupeBusinessCards(await getProducts()));
