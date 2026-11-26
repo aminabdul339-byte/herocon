@@ -92,3 +92,15 @@ test('save product controls and saved navigation are not rendered in catalogue o
   const source=fs.readFileSync(path,'utf8');assert.doesNotMatch(source,/<SaveFind|href="\/saved"/,path);
  }
 });
+
+test("founder-selected abstract decor replaces glassware in homepage hero only, and hair category uses the selected image",()=>{
+ const hero=fs.readFileSync("components/AtelierHero.tsx","utf8");
+ assert.match(hero,/id:"j2R9wzAx7bv39GGzSRkj3Q",title:"Silent Wind Abstract Art",marketplace:"1688"/);
+ assert.doesNotMatch(hero,/Gold-accent glassware/);
+ for(const id of ["YjXAnN1cosMO1iGVWJw5FA","HEWCWVJ5M7RL3Y-J_uV0bg","qLiCZEEhOnut6fHdkH-Bow"])assert.ok(hero.includes(id));
+ const raw=JSON.parse(fs.readFileSync("public/herocon-verified-marketplace-links.json","utf8"));const item=(Array.isArray(raw)?raw:raw.products).find(p=>p.doppelProductId==="j2R9wzAx7bv39GGzSRkj3Q");
+ assert.ok(item?.imageUrl&&item.originalMarketplaceUrl);
+ assert.match(fs.readFileSync("lib/catalogue-access-model.ts","utf8"),/j2R9wzAx7bv39GGzSRkj3Q/);
+ assert.match(fs.readFileSync("app/search/page.tsx","utf8"),/category==="Wigs & Hair Extensions"\?"\/editorial-wigs-hair.webp":item.imageUrl/);
+ const photo=fs.readFileSync("public/editorial-wigs-hair.webp");assert.equal(photo.toString("ascii",0,4),"RIFF");assert.equal(photo.toString("ascii",8,12),"WEBP");
+});
