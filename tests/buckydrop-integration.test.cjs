@@ -241,3 +241,57 @@ test('signup email template contains numeric OTP and confirmation link fallback'
  assert.ok(template.includes('{{ .Token }}'));
  assert.ok(template.includes('{{ .TokenHash }}'));
 });
+
+function privateBlobFixture(){
+ const records=new Map();
+ return {records,adapter:{
+ list:async({prefix,limit})=>({blobs:[...records.keys()].filter(k=>k.startsWith(prefix)).slice(0,limit).map(pathname=>({pathname,uploadedAt:new Date()}))}),
+ get:async key=>records.has(key)?{statusCode:200,stream:new Response(records.get(key)).body}:null,
+ put:async(key,value,options)=>{assert.equal(options.access,"private");if(records.has(key)&&options.allowOverwrite===false)throw Error("Exists");records.set(key,value);return {pathname:key};},
+ del:async key=>{records.delete(key);}
+ }};
+}
+test("introductory credits cannot be exceeded; refunds restore customer allowance but not spent provider capacity",async()=>{
+ const b=privateBlobFixture(),q=load("lib/discovery-quota.ts",{modules:{"@vercel/blob":b.adapter,"@/lib/discovery-access-model":load("lib/discovery-access-model.ts")}}, {BLOB_READ_WRITE_TOKEN:"mock"});
+ const r=await Promise.all(Array.from({length:4},()=>q.reserveDiscovery("u1","free@example.invalid","free")));
+ assert.equal(r.filter(x=>x.status==="ok").length,3);
+ assert.equal((await q.discoveryBalance("free@example.invalid","free")).remaining,0);
+ await q.refundDiscovery(r.find(x=>x.status==="ok").credit);
+ assert.equal((await q.discoveryBalance("free@example.invalid","free")).remaining,1);
+ assert.equal([...b.records.keys()].filter(x=>x.includes("/shared/")).length,3);
+ assert.equal((await q.reserveDiscovery("u2","other@example.invalid","trial")).status,"ok");
+ assert.equal((await q.reserveDiscovery("u3","third@example.invalid","trial")).status,"ok");
+ assert.equal((await q.reserveDiscovery("u4","fourth@example.invalid","trial")).status,"shared");
+ assert.equal((await q.reserveDiscovery("paid","paid@example.invalid","premium")).status,"ok");
+ assert.equal((await q.discoveryBalance("fourth@example.invalid","trial")).remaining,15);
+});
+test("saved-link allowance deduplicates simultaneous requests and enforces three monthly products",async()=>{
+ const b=privateBlobFixture(),q=load("lib/free-link-trial.ts",{modules:{"@vercel/blob":b.adapter}});
+ const results=await Promise.all(Array.from({length:4},()=>q.claimLinkTrial("u1","https://detail.1688.com/offer/12345.html")));
+ assert.ok(results.every(Boolean));assert.equal(b.records.size,1);
+ assert.equal(await q.claimLinkTrial("u1","https://detail.1688.com/offer/12346.html"),true);
+ assert.equal(await q.claimLinkTrial("u1","https://detail.1688.com/offer/12347.html"),true);
+ assert.equal(await q.claimLinkTrial("u1","https://detail.1688.com/offer/12348.html"),false);
+ assert.equal(await q.claimLinkTrial("u2","https://detail.1688.com/offer/12348.html"),true);
+});
+test("saved sourcing products are account scoped and remain accessible without premium",async()=>{
+ const b=privateBlobFixture(),links=load("lib/marketplace-links.ts"),model=load("lib/sourcing-workspace-model.ts",{modules:{"./marketplace-links":links}});
+ let customer={id:"first"};const a=adapters({"@vercel/blob":b.adapter,"@/lib/customer-auth":{accountOriginValid:()=>true,currentCustomer:async()=>customer},"@/lib/marketplace-links":links,"@/lib/sourcing-workspace-model":model});
+ const route=load("app/api/account/saved/route.ts",{modules:a.modules});
+ const call=(body)=>route.POST(new Request("https://herocon.store/api/account/saved",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}));
+ const data={action:"save",url:"https://detail.1688.com/offer/12345.html",title:"Vase",path:"/product/a",price:4,currency:"GBP"};
+ assert.equal((await call(data)).status,200);assert.equal((await call({...data,action:"folder",folder:"Home decor"})).status,200);
+ assert.equal((await (await route.GET()).json()).items[0].folder,"Home decor");
+ customer={id:"second"};assert.equal((await (await route.GET()).json()).items.length,0);
+ assert.equal((await call({...data,action:"folder",folder:"Unauthorised"})).status,404);
+ customer=null;assert.equal((await route.GET()).status,401);
+});
+test("live supplier detail is persisted and cache hit avoids another paid request",async()=>{
+ const b=privateBlobFixture(),links=load("lib/marketplace-links.ts");let calls=0,saves=0,source=null,claims=0,refunds=0;
+ const url="https://detail.1688.com/offer/12345.html",image="https://example.test/vase.jpg";
+ const a=adapters({"@vercel/blob":b.adapter,"@/lib/customer-auth":{accountOriginValid:()=>true,currentCustomer:async()=>({id:"customer",email:"customer@example.invalid"})},"@/lib/membership-access":{membershipEntitlement:async()=>({premium:false,trialEndsAt:null})},"@/lib/owner-premium":{isOwnerPremiumCustomer:()=>false},"@/lib/discovery-access-model":load("lib/discovery-access-model.ts"),"@/lib/discovery-quota":{reserveDiscovery:async()=>{claims++;return {status:"ok",credit:"slot"}},refundDiscovery:async()=>{refunds++}},"@/lib/marketplace-links":links,"@/lib/cart-pricing":{domesticFromProduct:()=>null},"@/lib/discovered-products":{saveSupplierDiscovery:async()=>{saves++;return {status:"added",productId:"link-123"}}},"@/lib/catalogue-server":{getBaseProducts:async()=>[]},"@/lib/catalogue":{productId:x=>x.id},"@/lib/product-taxonomy":{classifyProduct:()=>"Home & Decor"},"@/lib/catalogue-editorial-exclusions":{excludedCatalogueListing:()=>false},"@/lib/marketplace-source-enrichment":{fromHiobuy:(raw,link)=>{assert.equal(raw.product.id,"12345");return {sourceUrl:link,title:"Vase",images:[image],variants:[],priceCNY:10,variantCompleteness:"complete"}},getSavedMarketplaceSource:async()=>source,saveMarketplaceSource:async value=>{source=value;}}});
+ const route=load("app/api/hiobuy/discovery/route.ts",{modules:a.modules,fetch:async()=>{calls++;return Response.json({product:{id:"12345",channel:"1688",source_url:url,title:{translated:"Vase"},image,price:{display_amount:10},variants:[]}})}},{HIOBUY_API_KEY:"mock"});
+ const request=()=>route.POST(new Request("https://herocon.store/api/hiobuy/discovery",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"detail",channel:"1688",id:"12345"})}));
+ const first=await request();assert.equal(first.status,200);assert.equal((await first.json()).catalogueSave.status,"added");assert.equal(source.title,"Vase");
+ const second=await request();assert.equal(second.status,200);assert.equal((await second.json()).cacheStatus,"hit");assert.equal(calls,1);assert.equal(claims,1);assert.equal(refunds,0);assert.equal(saves,2);
+});

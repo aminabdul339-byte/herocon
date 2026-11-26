@@ -35,3 +35,6 @@ jobs:
         run: node --test tests/buckydrop-integration.test.cjs
       - name: Production BuckyDrop route smoke tests (no orders or paid lookups)
         run: node --test tests/buckydrop-live-smoke.test.cjs
+
+      - name: Public site route audit (read-only)
+        run: node --test --test-concurrency=4 tests/site-audit.test.cjs
