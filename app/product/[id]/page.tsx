@@ -15,6 +15,7 @@ import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import {savedDomesticFreight} from "@/lib/saved-domestic-freight";
+import {englishSupplierCopy} from "@/lib/supplier-english";
 import type {Product} from "@/lib/types";
 
 const LIVE_LOOKUP=process.env.BUCKYDROP_ENABLE_PRODUCT_LOOKUP==="true"
@@ -58,11 +59,11 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  // Fresh marketplace enrichment is a separate, provider-independent saved
  // snapshot, shared with the Personal Edit and never fetched on page render.
  const sourceUrl=props.product.originalMarketplaceUrl;
- const enriched=sourceUrl?await getSavedMarketplaceSource(sourceUrl):null;
+ const enriched=sourceUrl?await englishSupplierCopy(await getSavedMarketplaceSource(sourceUrl)):null;
  const button=props.fulfillbotPilotOwner?
   <SourceEnrichmentButton productId={props.id} collection="business" providerConnected={Boolean(process.env.HIOBUY_API_KEY?.trim())}/>:null;
  if(enriched){
-  const product=withMarketplaceSource(props.product,enriched);
+  const product=await englishSupplierCopy(withMarketplaceSource(props.product,enriched));
   // Pass the enriched gallery and SKU-identified supplier model, rather than
   // the catalogue props saved before HioBuy returned the new photographs.
   return <>
@@ -81,14 +82,14 @@ async function EnrichedCatalogueProduct(props:CatalogueProps){
  }
  if(!LIVE_LOOKUP||!sourceUrl){
   return <>
-    <ProductExperience wholesale {...props} buckydropEnabled={false} sourceLookupFailed/>
+    <ProductExperience wholesale {...props} product={await englishSupplierCopy(props.product)} title={cleanTitle(await englishSupplierCopy(props.product))} buckydropEnabled={false} sourceLookupFailed/>
     {button}
   </>;
  }
  // Previously saved partner data is an optional legacy fallback only. No
  // billable supplier calls are made in product-page rendering.
  let seller:Awaited<ReturnType<typeof getSavedBuckydropProduct>>=null;
- try{seller=await getSavedBuckydropProduct(sourceUrl);}
+ try{seller=await englishSupplierCopy(await getSavedBuckydropProduct(sourceUrl));}
  catch(err){
   console.warn("[herocon] Saved supplier details unavailable",{
    productId:props.id,

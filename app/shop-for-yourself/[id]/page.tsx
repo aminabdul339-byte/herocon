@@ -16,6 +16,7 @@ import {getBaseProducts} from "@/lib/catalogue-server";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import SourceEnrichmentButton from "@/components/SourceEnrichmentButton";
 import {getSavedMarketplaceSource,withMarketplaceSource,toDisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
+import {englishSupplierCopy} from "@/lib/supplier-english";
 import type {Product} from "@/lib/types";
 import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
 import "../shop-for-yourself.css";
@@ -41,8 +42,8 @@ export default async function ShopProductPage({params,searchParams}:Params){
   ?(search.audience==="men"?"men":"women")
   :item.gender;
  const [rates,source,enrichment,customer,baseProducts]=await Promise.all([
-  getPersonalShopRates(),getSavedPersonalSource(item.originalUrl),
-  getSavedMarketplaceSource(item.originalUrl),currentCustomer(),getBaseProducts()
+  getPersonalShopRates(),getSavedPersonalSource(item.originalUrl).then(englishSupplierCopy),
+  getSavedMarketplaceSource(item.originalUrl).then(englishSupplierCopy),currentCustomer(),getBaseProducts()
  ]);
  // Reuse previously imported catalogue metadata for the exact same supplier
  // URL instead of making an unnecessary marketplace request.
@@ -70,7 +71,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
   ...(amount!==null?{priceGBP:amount}:{}),
   price
  };
- const shownProduct=withMarketplaceSource(product,enrichment);
+ const shownProduct=await englishSupplierCopy(withMarketplaceSource(product,enrichment));
  const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
  const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;

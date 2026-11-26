@@ -6,6 +6,7 @@ import {unstable_cache} from "next/cache";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import type {Product,Variant} from "@/lib/types";
 import type {BuckydropProduct} from "@/lib/buckydrop";
+import {englishSupplierCopy} from "@/lib/supplier-english";
 import {cleanSellerDescription} from "@/lib/supplier-description";
 
 export const ENRICHMENT_PREFIX_V1="catalogue/source-enrichment/v1/";
@@ -174,7 +175,7 @@ async function hiobuy(url:string):Promise<SourceEnrichment>{
   );
  }
  const data=await response.json().catch(()=>null);
- return fromHiobuy(data,url);
+ return englishSupplierCopy(fromHiobuy(data,url));
 }
 const attributeFromTag=(tag:string,name:string)=>{
  const re=new RegExp("(?:^|\\s)"+name+"\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))","i");
