@@ -16,7 +16,7 @@ export default async function ShopForYourselfPage({searchParams}:{searchParams:P
  const [params,access]=await Promise.all([searchParams,catalogueAccess()]);
  const audience=params.audience==="men"?"men":"women";
  const category=(params.category||"All").slice(0,40);
- const q=access.premium&&typeof params.q==="string"?params.q.slice(0,120):"";
+ const q=typeof params.q==="string"?params.q.slice(0,120):"";
  const sort=params.sort==="name"?"name":"featured";
  const requestedPage=Number.parseInt(params.page||"1",10);
  const page=Number.isFinite(requestedPage)?Math.max(1,requestedPage):1;

@@ -32,6 +32,7 @@ export default function Header(){
             <svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5.3 20c.3-4 2.7-6.1 6.7-6.1s6.4 2.1 6.7 6.1"/></svg>
             <span className="hc-nav-account-label">{account.status==="authenticated"?"My account":"Sign in / Join free"}</span>
           </Link>
+          <Link className="hc-cart-nav-link" href="/saved" aria-label="Saved products"><svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M6 4h12v16l-6-4-6 4z"/></svg><span className="hc-nav-account-label">Saved</span></Link>
           <Link className="hc-cart-nav-link hc-mobile-cart-link" href="/cart" aria-label={"Cart with "+count+" items"}>
             <svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 5.5h2l2 10.5h11.4l2-8H6.2"/><circle cx="9" cy="19.5" r="1"/><circle cx="18" cy="19.5" r="1"/></svg>
             <span className="hc-nav-cart-label">Cart</span><span className="hc-nav-cart-count">{count}</span>
@@ -42,7 +43,7 @@ export default function Header(){
           </button>
         </div>
       </div>
-      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/saved" onClick={()=>setOpen(false)}>Saved products <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
     </header>
   </>;
 }

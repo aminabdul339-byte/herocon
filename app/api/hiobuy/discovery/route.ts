@@ -4,11 +4,17 @@ import {createHash} from "node:crypto";
 import {get,put,list} from "@vercel/blob";
 import {currentCustomer,accountOriginValid} from "@/lib/customer-auth";
 import {membershipEntitlement} from "@/lib/membership-access";
-import {discoveryAllowed} from "@/lib/discovery-access-model";
-import {reserveDiscovery} from "@/lib/discovery-quota";
+import {discoveryAllowed,type DiscoveryTier} from "@/lib/discovery-access-model";
+import {reserveDiscovery,refundDiscovery,discoveryBalance} from "@/lib/discovery-quota";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
+import {saveSupplierDiscovery,type DiscoverySaveResult} from "@/lib/discovered-products";
+import {getBaseProducts} from "@/lib/catalogue-server";
+import {productId} from "@/lib/catalogue";
+import {classifyProduct} from "@/lib/product-taxonomy";
+import {fromHiobuy,getSavedMarketplaceSource,saveMarketplaceSource,type SourceEnrichment} from "@/lib/marketplace-source-enrichment";
+import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -54,12 +60,78 @@ async function history(){
  const entries=await Promise.all(rows.map(async b=>{const id=b.pathname.slice(PREFIX.length,-5),s=await readSaved(id);return s&&s.action!=="detail"?{id,label:s.label,savedAt:s.savedAt,action:s.action}:null;}));
  return entries.filter(Boolean).slice(0,20);
 }
+// Only a successful full product view (parse/detail), never a search-result
+// list, may publish a business catalogue entry. Use provider data, not the
+// customer's search text, uploaded image, or client-supplied product fields.
+async function persistCatalogue(productValue:unknown,fxValue:unknown,raw?:unknown):Promise<DiscoverySaveResult>{
+ const unavailable:DiscoverySaveResult={status:"unavailable",productId:null};
+ try{
+  const p=asRecord(productValue),link=normalizeMarketplaceLink(p.url);
+  const title=string(p.title,320).trim(),channel=string(p.channel);
+  if(!link||!title||title==="Untitled product"||excludedCatalogueListing(link,title))return unavailable;
+  const host=new URL(link).hostname;
+  if(!((channel==="1688"&&host==="detail.1688.com")||(channel==="weidian"&&host==="weidian.com")))return unavailable;
+  const gallery=array(p.images).map(httpsImage).filter(Boolean);
+  const previous=await getSavedMarketplaceSource(link);
+  let source:SourceEnrichment;
+  if(raw){
+   const full=fromHiobuy(raw,link);
+   source={...full,title:full.title||title,images:[...new Set([...full.images,...gallery])],
+    priceCNY:full.priceCNY??numeric(p.price)??undefined,sellerName:full.sellerName||string(p.seller)||undefined};
+  }else{
+   // Legacy cached details lack the raw SKU matrix and descriptions. Preserve
+   // known fields without falsely claiming complete SKU coverage.
+   source={version:2,provider:"hiobuy",sourceUrl:link,retrievedAt:new Date().toISOString(),
+    title,images:gallery,detailImages:[],sellerName:string(p.seller)||undefined,
+    priceCNY:numeric(p.price)??undefined,minOrderQuantity:numeric(p.minimum)??undefined,
+    variantCompleteness:"unavailable",
+    variants:array(p.variants).map(v=>{const x=asRecord(v);return {
+     id:string(x.id,200),label:string(x.name,300),priceCNY:numeric(x.price)??undefined,
+     stock:numeric(x.stock),image:httpsImage(x.image)||undefined
+    };}).filter(v=>v.id),
+    sourceSpecs:array(p.attributes).map(v=>{const x=asRecord(v);return {name:string(x.name,120),value:string(x.value,240)};}).filter(v=>v.name&&v.value)};
+  }
+  // Never let a partial or cached response overwrite a richer saved snapshot.
+  const upgrade=!!raw&&source.variantCompleteness==="complete"&&previous?.variantCompleteness!=="complete"&&source.variants.length>=(previous?.variants.length??0);
+  const selected=previous&&!upgrade?previous:source;
+  const images=[...new Set([...selected.images,...gallery])];
+  if(!images.length||excludedCatalogueListing(link,title,selected.title))return unavailable;
+  if(!previous||upgrade)await saveMarketplaceSource(selected);
+  const existing=(await getBaseProducts()).find(item=>normalizeMarketplaceLink(item.originalMarketplaceUrl)===link);
+  if(existing)return {status:"existing",productId:productId(existing)};
+  const variantPrices=selected.variants.map(v=>v.priceCNY).filter((v):v is number=>typeof v==="number"&&Number.isFinite(v)&&v>=0);
+  const priceCNY=variantPrices.length?Math.min(...variantPrices):selected.priceCNY??numeric(p.price)??undefined;
+  const rate=numeric(asRecord(fxValue).rate);
+  const priceGBP=priceCNY!==undefined&&rate!==null&&rate>0?Math.round(priceCNY*rate*100)/100:undefined;
+  return await saveSupplierDiscovery({url:link,title:selected.title||title,images,priceCNY,priceGBP,
+   sellerName:selected.sellerName||string(p.seller)||undefined,
+   category:classifyProduct(selected.title||title),sourceBatch:"hiobuy-customer-discovery"});
+ }catch(e){
+  console.error("[hiobuy] Catalogue persistence failed:",e instanceof Error?e.message:"unknown");
+  return unavailable;
+ }
+}
+async function cachedResult(saved:Saved){
+ const result=saved.result;
+ const p=asRecord(result.product);if(result.product&&excludedCatalogueListing(p.url,string(p.title)))return {error:"This listing is not available on Herocon."};
+ if(Array.isArray(result.items))result.items=result.items.filter(x=>{const p=asRecord(x);return !excludedCatalogueListing(p.url,string(p.title));});
+ const catalogueSave=(saved.action==="parse"||saved.action==="detail")&&result.product
+  ?await persistCatalogue(result.product,result.fx):undefined;
+ return {...result,cacheStatus:"hit",savedAt:saved.savedAt,...(catalogueSave?{catalogueSave}:{})};
+}
+
+export async function GET(){
+ const customer=await currentCustomer();if(!customer)return fail("Sign in to check search credits.",401);
+ if(isOwnerPremiumCustomer(customer))return reply({owner:true});
+ const ent=await membershipEntitlement(customer);const tier:DiscoveryTier=ent.trialEndsAt?"trial":ent.premium?"premium":"free";
+ try{return reply(await discoveryBalance(customer.email,tier));}catch{return fail("Credit balance unavailable.",503);}
+}
 export async function POST(request:Request){
  if(!accountOriginValid(request))return fail("Please use the Herocon website.",403);
  const customer=await currentCustomer();if(!customer)return fail("Sign in to use marketplace discovery.",401);
  const owner=isOwnerPremiumCustomer(customer);
- const premium=owner||(await membershipEntitlement(customer)).premium;
- if(!premium)return fail("Marketplace keyword and image search require Premium or an active free trial.",403);
+ const ent=owner?{premium:true,trialEndsAt:null}:await membershipEntitlement(customer);
+ const premium=ent.premium;const tier:DiscoveryTier=ent.trialEndsAt?"trial":premium?"premium":"free";
  const key=process.env.HIOBUY_API_KEY?.trim();
  if(!key)return fail("HIOBuy is not configured on this deployment.",503);
  if(!(request.headers.get("content-type")||"").startsWith("application/json"))return fail("Invalid request format.",415);
@@ -69,7 +141,7 @@ export async function POST(request:Request){
  const action=body.action,channel=string(body.channel);
  if(!discoveryAllowed(owner,premium,action))return fail("This discovery action is not available.",403);
  if(action==="history"){try{return reply({history:await history()});}catch{return fail("Saved searches are temporarily unavailable.",503);}}
- if(action==="saved"){const saved=await readSaved(string(body.id,65));if(!saved)return fail("Saved search not found.",404);return reply({...saved.result,cacheStatus:"hit",savedAt:saved.savedAt});}
+ if(action==="saved"){const saved=await readSaved(string(body.id,65));if(!saved)return fail("Saved search not found.",404);const result=await cachedResult(saved);return reply(result,"error" in result?404:200);}
  const common={language:"en"};
  const searchChannel=channel==="1688";
  const page=typeof body.page==="number"&&Number.isInteger(body.page)&&body.page>=1&&body.page<=50?body.page:1;
@@ -99,9 +171,10 @@ export async function POST(request:Request){
  const cacheId=hash(JSON.stringify({endpoint,payload})); // image bytes hashed, not persisted
  const prefix=owner?PREFIX:PUBLIC_PREFIX+(action==="image"?hash(customer.id)+"/":"shared/");
  const existing=await readSaved(cacheId,prefix);
- if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL)return reply({...existing.result,cacheStatus:"hit",savedAt:existing.savedAt});
+ if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL){const result=await cachedResult(existing);return reply(result,"error" in result?404:200);}
  if(!allow())return fail("Please wait a minute before another search.",429);
- if(!owner){try{const reservation=await reserveDiscovery(customer.id);if(reservation!=="ok")return fail(reservation==="account"?"Your daily live marketplace search allowance has been reached. Try again tomorrow (UTC).":"Herocon’s shared live search allowance has been reached for today. Please try again tomorrow (UTC).",429);}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
+ let credit:string|undefined;let successful=false;
+ if(!owner){try{const reservation=await reserveDiscovery(customer.id,customer.email,tier);if(reservation.status!=="ok")return fail(reservation.status==="account"?"Your live search credits have been used. Cached searches remain available; see Membership for more access.":reservation.status==="daily"?"Your daily safety limit has been reached. Try again tomorrow (UTC).":"Live marketplace capacity is currently full. Cached searches remain available. Try again tomorrow (UTC).",429);credit=reservation.credit;}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
  const searchLabel=endpoint==="search"?string(payload.keyword)+" · page "+page:endpoint==="search-by-image"?"Image search · page "+page:endpoint==="parse"?string(payload.url):"Product "+string(payload.id);
  try{
   const response=await fetch("https://api.hiobuy.com/v1/products/"+endpoint,{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store",redirect:"error",signal:AbortSignal.timeout(30_000)});
@@ -119,9 +192,13 @@ export async function POST(request:Request){
    const fallbackChannel=channel||(string(payload.url).includes("1688.com")?"1688":"weidian");
    const product=normalize(raw.product,fallbackChannel);
    if(!["1688","weidian"].includes(product.channel))return fail("This marketplace is not enabled.",400);
-   const result={product,fx};return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix)});
+   const result={product,fx};
+   if(excludedCatalogueListing(product.url,product.title))return fail("This listing is not available on Herocon.",404);
+   successful=true;
+   const catalogueSave=await persistCatalogue(product,fx,raw);
+   return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix),catalogueSave});
   }
   if(!Array.isArray(raw.items))return fail("HIOBuy did not return a product list.",502);
-  const result={items:raw.items.slice(0,20).map(p=>normalize(p,channel)).filter(p=>["1688","weidian"].includes(p.channel)),page:numeric(raw.page)??page,total:numeric(raw.total),fx};return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix)});
- }catch{return fail("HIOBuy is temporarily unreachable. Please try again.",502);}
+  const result={items:raw.items.slice(0,20).map(p=>normalize(p,channel)).filter(p=>["1688","weidian"].includes(p.channel)&&!excludedCatalogueListing(p.url,p.title)),page:numeric(raw.page)??page,total:numeric(raw.total),fx};successful=result.items.length>0;return reply({...result,...await store(cacheId,endpoint,owner?searchLabel:"Marketplace reference",result,prefix)});
+ }catch{return fail("HIOBuy is temporarily unreachable. Please try again.",502);}finally{if(!successful)await refundDiscovery(credit);}
 }

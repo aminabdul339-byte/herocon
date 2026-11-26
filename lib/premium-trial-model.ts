@@ -1,7 +1,10 @@
-export const TRIAL_MS=72*60*60*1000;
+export const TRIAL_MS=7*24*60*60*1000;
+export const LEGACY_TRIAL_MS=72*60*60*1000;
+const ROLLOUT=Date.parse('2026-11-26T00:00:00Z');
+export function trialDuration(start:number){return start<ROLLOUT?LEGACY_TRIAL_MS:TRIAL_MS;}
 export type TrialRecord={version:1;startedAt:string;endsAt:string};
-export function createTrial(now:number):TrialRecord{return {version:1,startedAt:new Date(now).toISOString(),endsAt:new Date(now+TRIAL_MS).toISOString()};}
-export function validTrial(value:unknown):value is TrialRecord{if(!value||typeof value!=="object")return false;const t=value as TrialRecord;return t.version===1&&typeof t.startedAt==="string"&&typeof t.endsAt==="string"&&Number.isFinite(Date.parse(t.startedAt))&&Date.parse(t.endsAt)-Date.parse(t.startedAt)===TRIAL_MS;}
+export function createTrial(now:number):TrialRecord{return {version:1,startedAt:new Date(now).toISOString(),endsAt:new Date(now+trialDuration(now)).toISOString()};}
+export function validTrial(value:unknown):value is TrialRecord{if(!value||typeof value!=="object")return false;const t=value as TrialRecord;return t.version===1&&typeof t.startedAt==="string"&&typeof t.endsAt==="string"&&Number.isFinite(Date.parse(t.startedAt))&&Date.parse(t.endsAt)-Date.parse(t.startedAt)===trialDuration(Date.parse(t.startedAt));}
 export function trialActive(t:TrialRecord|null,now=Date.now()){return !!t&&validTrial(t)&&Date.parse(t.startedAt)<=now&&now<Date.parse(t.endsAt);}
 
 export function resolvePremiumEntitlement(owner:boolean,paid:boolean,trial:TrialRecord|null,now=Date.now()){if(owner||paid)return {premium:true,trialEndsAt:null};if(trial&&trialActive(trial,now))return {premium:true,trialEndsAt:trial.endsAt};return {premium:false,trialEndsAt:null};}

@@ -7,8 +7,8 @@ import {activePremiumTrial} from "@/lib/premium-trial";
 import {resolvePremiumEntitlement} from "@/lib/premium-trial-model";
 export const membershipEntitlement=cache(async(customer:Customer):Promise<{premium:boolean;trialEndsAt:string|null}>=>{
  if(isOwnerPremiumCustomer(customer))return resolvePremiumEntitlement(true,false,null);
+ try{if(await hasLiveMembership(customer))return resolvePremiumEntitlement(false,true,null);}catch{}
  const trial=await activePremiumTrial(customer);
- if(trial)return resolvePremiumEntitlement(false,false,trial);
- try{return resolvePremiumEntitlement(false,await hasLiveMembership(customer),null);}catch{return resolvePremiumEntitlement(false,false,null);}
+ return resolvePremiumEntitlement(false,false,trial);
 });
 export async function checkActiveMembership(customer:Customer):Promise<boolean>{return (await membershipEntitlement(customer)).premium;}
