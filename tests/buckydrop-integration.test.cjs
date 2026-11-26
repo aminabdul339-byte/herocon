@@ -295,3 +295,19 @@ test("live supplier detail is persisted and cache hit avoids another paid reques
  const first=await request();assert.equal(first.status,200);assert.equal((await first.json()).catalogueSave.status,"added");assert.equal(source.title,"Vase");
  const second=await request();assert.equal(second.status,200);assert.equal((await second.json()).cacheStatus,"hit");assert.equal(calls,1);assert.equal(claims,1);assert.equal(refunds,0);assert.equal(saves,2);
 });
+
+test("retired public trial endpoint blocks signup and start without sending emails or granting access",async()=>{
+ let calls=0;const a=adapters({"next/headers":{cookies:async()=>({get:()=>undefined})},"@/lib/customer-auth":{accountOriginValid:()=>true,customerAuthConfigured:()=>true,currentCustomer:async()=>null,authApi:async()=>{calls++;throw Error("Unexpected email request");},setCustomerCookies:()=>{},verifyCustomerAccess:async()=>null},"@/lib/premium-trial":{readPremiumTrial:async()=>null},"@/lib/premium-trial-model":load("lib/premium-trial-model.ts"),"@/lib/membership-access":{membershipEntitlement:async()=>({premium:false,trialEndsAt:null})},"@/lib/email-auth-error":{publicEmailError:()=>({error:"Failed",status:503})}});
+ const route=load("app/api/membership/trial/route.ts",{modules:a.modules});
+ for(const action of ["signup","start"]){const r=await route.POST(new Request("https://herocon.store/api/membership/trial",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action,email:"test@example.invalid",acceptedTerms:true,password:"Example8",confirmPassword:"Example8"})}));assert.equal(r.status,410);assert.equal((await r.json()).code,"PUBLIC_TRIAL_CLOSED");}
+ assert.equal(calls,0);
+});
+test("existing promotional records remain readable and cannot create a fresh self-activated trial",async()=>{
+ let method=[];const now=Date.now();let startedAt=new Date(now-60000).toISOString();const model=load("lib/premium-trial-model.ts");
+ const trial=load("lib/premium-trial.ts",{modules:{"@vercel/blob":{},"@/lib/premium-trial-model":model},fetch:async(_url,options)=>{method.push(options.method);return Response.json(startedAt?[{started_at:startedAt}]:[]);}}, {HEROCON_SUPABASE_URL:"https://example.invalid",HEROCON_SUPABASE_PUBLISHABLE_KEY:"mock"});
+ const customer={email:"customer@example.invalid",accessToken:"mock"};
+ assert.ok(await trial.activePremiumTrial(customer));assert.ok(await trial.startPremiumTrial(customer));startedAt=null;await assert.rejects(()=>trial.startPremiumTrial(customer),/no longer offered/);assert.ok(method.every(m=>m==="GET"));
+});
+test("standard membership and signup screens no longer advertise a public trial",()=>{
+ for(const path of ["components/MembershipPlans.tsx","app/account/page.tsx","app/membership/activate/page.tsx"]){const c=fs.readFileSync(path,"utf8");assert.doesNotMatch(c,/Try Premium free|Start free trial|Try 7 days free|Try Premium for 7 days/i);}
+});

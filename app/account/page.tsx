@@ -113,7 +113,7 @@ function AccountContent(){
     <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
     {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Free membership</strong><span>£0</span></div><p>Explore the catalogue, save products and use introductory live search credits. No card required.</p></div>:null}
     {account.status!=="authenticated"&&<Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>}
-    {pending&&<p className="hc-account-pending">Your selected product will be saved after sign-in.</p>}
+    {pending&&<p className="hc-account-pending">You will return to your requested page after sign-in.</p>}
    </div>
    <div className="hc-account-card">
     {account.status==="authenticated"&&!next?<>
