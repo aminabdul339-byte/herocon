@@ -34,6 +34,9 @@ const features:Rule[]=[
 const noise=/\b(?:cross[- ]border|foreign trade|factory direct(?: sale| supply| delivery)?|factory supply|wholesale|hot[- ]selling|best[- ]selling|in stock|ships instantly|new model|new style|new fashion|high quality|high[- ]end|light luxury|internet celebrity|european and american|american and european|trendy brand|popular|versatile|fashionable|fashion|202[0-9]|spring and summer|autumn and winter|spring and autumn|for men and women|for women|for men|new arrival|amazon|aliexpress|temu|export|dropshipping)\b/gi;
 
 const editorialNames:Record<string,string>={
+ "DgoQWJ3vpr7IwjtVXqAyKA":"Gold-Tone Crown Signet Ring",
+ "OpohXCbwOZlcaz5oQkeBCQ":"Gold-Tone Crown Signet Ring",
+ "yXvk725eTqDy7uIaBMAuUQ":"Gold-Tone Crown Signet Ring",
  "link-c98a18758ce75c64bc7154e2a4ba":"Green Crochet Tulip Bouquet",
  "AT6_zzBm508ztj8-E5rLyw":"Vintage Cross Pendant Necklace",
  "z-L84zDeWbvLylAM-xudhQ":"Antique-Style Skull Ring",

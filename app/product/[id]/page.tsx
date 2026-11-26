@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductExperience from "@/components/ProductExperience";
 import {cleanTitle,imagesFor,productId,productPrice,related} from "@/lib/catalogue";
 import {getProducts} from "@/lib/catalogue-server";
+import {dedupeBusinessCards,auditDuplicateCards,businessCardRow} from "@/lib/catalogue-duplicates";
 import {getSavedBuckydropProduct} from "@/lib/buckydrop-cache";
 import {BuckydropError} from "@/lib/buckydrop";
 import {getReferenceCnyGbpRate} from "@/lib/fx-reference";
@@ -27,8 +28,11 @@ export default async function ProductPage({params}:{params:Promise<{id:string}>}
  const found=products.find(x=>productId(x)===id||x.canonicalId===id);
  if(!found)notFound();
  const product={...found,originalTitle:found.originalTitle||found.title};
- const more=products.filter(x=>product.sellerId&&x.sellerId===product.sellerId&&productId(x)!==id).slice(0,8);
- const similar=related(products,product,8);
+ const duplicateGroup=auditDuplicateCards(products.map(businessCardRow)).duplicateGroups.find(g=>g.rows.some(r=>r.id===productId(product)));
+ const same=new Set(duplicateGroup?.rows.map(r=>r.id)||[productId(product)]);
+ const browse=dedupeBusinessCards(products).filter(p=>!same.has(productId(p)));
+ const more=browse.filter(x=>product.sellerId&&x.sellerId===product.sellerId).slice(0,8);
+ const similar=related(browse,product,8);
  const customer=await currentCustomer();
  const trialOwnerId=process.env.HEROCON_TRIAL_OWNER_USER_ID?.trim()
   ||process.env.HEROCON_MEMBERSHIP_OWNER_TEST_USER_ID?.trim();

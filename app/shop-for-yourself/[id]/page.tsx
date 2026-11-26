@@ -7,6 +7,7 @@ import {savedDomesticFreight} from "@/lib/saved-domestic-freight";
 import ProductExperience from "@/components/ProductExperience";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {findPersonalProduct,audienceProducts} from "@/lib/personal-shop";
+import {dedupePersonalCards,photoIdentity} from "@/lib/catalogue-duplicates";
 import {getPersonalShopRates} from "@/lib/personal-shop-fx";
 import {priceAmountGbp,priceIsConverted,ratesDisclosure,shopPrice} from "@/lib/shop-price";
 import {getSavedPersonalSource} from "@/lib/personal-shop-enrichment";
@@ -73,7 +74,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
  };
  const shownProduct=await englishSupplierCopy(withMarketplaceSource(product,enrichment));
  const gallery=[...new Set([item.imageUrl,...(enrichment?.images||[]),...(saved?.images||[]),...(source?.images||[])])].slice(0,36);
- const related=audienceProducts(audience).filter(p=>p.id!==item.id&&p.category===item.category&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
+ const related=dedupePersonalCards(audienceProducts(audience)).filter(p=>p.id!==item.id&&p.category===item.category&&!(photoIdentity(item.imageUrl)&&photoIdentity(p.imageUrl)===photoIdentity(item.imageUrl)&&p.name.toLowerCase()===item.name.toLowerCase())&&!isUnavailableSource(p.originalUrl,hidden)).slice(0,4);
  const audienceUrl="/shop-for-yourself?audience="+audience;
  return <main className="hc-self hc-self-v2 hc-personal-product-page" data-audience={audience}>
    <Header/>

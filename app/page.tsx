@@ -6,7 +6,7 @@ import {featuredPreviewIds} from "@/lib/catalogue-access-model";
 import {productId} from "@/lib/catalogue";
 import AtelierHero from "@/components/AtelierHero";
 import ProductCard from "@/components/ProductCard";
-import {getProducts} from "@/lib/catalogue-server";
+import {getBrowseProducts as getProducts} from "@/lib/catalogue-server";
 import {selectDiscoveryEditProducts} from "@/lib/catalogue-priority";
 import type {Metadata} from "next";
 import "./discovery-studio.css";

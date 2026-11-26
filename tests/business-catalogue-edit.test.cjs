@@ -117,3 +117,14 @@ test("bouquets preserve verified thumbnail colour and flower variety",()=>{
  assert.equal(conciseTitle({title:"Pink knitted rose bouquet",category:"Flowers & Gifts"}),"Pink Crochet Rose Bouquet");
  assert.equal(conciseTitle({title:"Blue cotton shirt",category:"Tops"}),"Blue Cotton Shirt");
 });
+
+test("duplicate card grouping preserves source links and separates title-only matches",()=>{
+ const load=(file,modules)=>{const mod={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:mod,exports:mod.exports,URL,require:n=>{if(n in modules)return modules[n];throw Error(n)}});return mod.exports;};
+ const links=load("lib/marketplace-links.ts",{}),dups=load("lib/catalogue-duplicates.ts",{"./marketplace-links":links,"./business-catalogue-edit":{BUSINESS_PAGE_ONE_ORDER:[]},"./catalogue-access-model":{featuredPreviewIds:[]}});
+ const a={id:"a",title:"Handmade Crochet Bouquet",category:"Flowers & Gifts",url:"https://detail.1688.com/offer/12345.html",image:"https://img.alicdn.com/img/O1CN123!!1.jpg_720x720q70.jpg_.webp",priceGBP:2};
+ const b={...a,id:"b",url:"https://detail.1688.com/offer/12346.html",image:"https://cbu01.alicdn.com/img/O1CN123!!1.jpg",priceGBP:1};
+ const c={...a,id:"c",url:"https://detail.1688.com/offer/12347.html",image:"https://cbu01.alicdn.com/img/O1CN456!!1.jpg"};
+ const result=dups.auditDuplicateCards([a,b,c]);assert.equal(result.total,3);assert.equal(result.suppressed.size,1);assert.ok(result.suppressed.has("a"));assert.equal(result.duplicateGroups[0].keep.id,"b");assert.equal(result.titleReview.length,1);
+ assert.notEqual(dups.photoIdentity("https://drive.google.com/thumbnail?id=one"),dups.photoIdentity("https://drive.google.com/thumbnail?id=two"));
+ const ring=dups.auditDuplicateCards([{...a,id:"DgoQWJ3vpr7IwjtVXqAyKA",priceGBP:.34},{...b,id:"OpohXCbwOZlcaz5oQkeBCQ",priceGBP:.23},{...c,id:"yXvk725eTqDy7uIaBMAuUQ",priceGBP:.23}]);assert.equal(ring.suppressed.size,2);assert.equal(ring.duplicateGroups[0].keep.priceGBP,.23);
+});
