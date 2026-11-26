@@ -35,7 +35,7 @@ test('sandbox/unconfigured environment refuses live gateway requests',async()=>{
 });
 test('an accepted Shop Order may omit optional response data without a retryable failure',async()=>{
  for(const data of [null,undefined]){
-  const {callBucky}=load('lib/buckydrop-gateway.ts',{fetch:async()=>success(data)});
+  const {callBucky}=load('lib/buckydrop-gateway.ts',{fetch:async()=>success(data)},{HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED:'true'});
   assert.deepEqual({...await callBucky('create-shop-order',{partnerOrderNo:'HC-TEST'})},{});
  }
 });
@@ -111,7 +111,10 @@ test('one-payment checkout stays off until every independent merchant and suppli
   ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',
   HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true'
  });
- assert.equal(b.checkoutLaunchReadiness('all_in').enabled,true);
+ assert.equal(b.checkoutLaunchReadiness('all_in').enabled,false);
+ assert.ok(b.checkoutLaunchReadiness('all_in').missing.some(x=>x.includes('Legacy BuckyDrop purchasing')));
+ const approved=load('lib/live-checkout.ts',{},{...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true',HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED:'true'});
+ assert.equal(approved.checkoutLaunchReadiness('all_in').enabled,true);
  // An all-in pilot must not accidentally unlock legacy two-stage purchases.
  assert.equal(b.checkoutLaunchReadiness('products').enabled,false);
 });
@@ -133,6 +136,9 @@ test('complimentary owner membership does not require a live Stripe subscription
  const owner={id:'123e4567-e89b-42d3-a456-426614174000',email:'owner@example.test'};
  let membershipCalls=0;
  const {checkActiveMembership}=load('lib/membership-access.ts',{modules:{
+  'react':{cache:fn=>fn},
+  '@/lib/premium-trial':{activePremiumTrial:async()=>null},
+  '@/lib/premium-trial-model':load('lib/premium-trial-model.ts'),
   '@/lib/membership-billing':{hasLiveMembership:async()=>{membershipCalls++;return false;}},
   '@/lib/owner-premium':{isOwnerPremiumCustomer:c=>c.id===owner.id}
  }});
