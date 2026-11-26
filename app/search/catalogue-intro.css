@@ -178,13 +178,16 @@
  .hc-site .sc-catalogue-page .hc-discovery-edit small{font-size:10px}
 }
 
-/* Four balanced collection cards, retaining square photographs. */
-.hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(4,minmax(0,270px));max-width:1122px;gap:14px}
+/* Four balanced collection cards, spanning the same width as the sourcing panels. */
+.hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:none;gap:14px;justify-content:stretch}
+.hc-site .sc-catalogue-page .hc-discovery-edit{min-width:0;width:100%}
+.hc-site .sc-catalogue-page .hc-discovery-edit-photo{width:clamp(68px,7vw,100px);height:auto;aspect-ratio:1}
 @media(min-width:801px) and (max-width:1100px){
- .hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(2,minmax(0,270px));max-width:554px}
+ .hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 }
 @media(max-width:800px){
- .hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(2,minmax(0,1fr));max-width:620px;gap:9px}
+ .hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .hc-site .sc-catalogue-page .hc-discovery-edit-photo{width:100%;height:auto;aspect-ratio:1}
 }
 
 /* Two complementary sourcing modes, with a quiet editorial design. */
