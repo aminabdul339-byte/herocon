@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from "react";
 import type {FormEvent} from "react";
 import Link from "next/link";
+import ProductBuyNowLink from "@/components/ProductBuyNowLink";
 import {useCart} from "@/components/CartProvider";
 type Variant={id:string;name:string;price:number|null;stock:number|null;image:string};
 type Item={id:string;channel:string;domesticFreightCny?:number|null;title:string;url:string;images:string[];price:number|null;seller:string;minimum:number|null;variants:Variant[];attributes:{name:string;value:string}[]};
@@ -66,7 +67,7 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  <div className="hio-detail-info"><p className="sc-kicker">{market(detail.channel)} · Product details</p><h2>{detail.title}</h2><p className="hio-price">{money(variant?variant.price??detail.price:detail.price,fx)}</p>{detail.seller&&<p>Seller: {detail.seller}</p>}{detail.minimum!==null&&<p>Minimum order: {detail.minimum}</p>}
  {detail.variants.length>0&&<label className="hio-variant">Available options<select value={variant?.id??""} onChange={e=>{const v=detail.variants.find(v=>v.id===e.target.value)||null;setVariant(v);setCartMessage("");setQuantity(min);if(v?.image){const i=detail.images.indexOf(v.image);if(i>=0)setActivePhoto(i);}}}><option value="">Choose a variant</option>{detail.variants.map((v,i)=><option key={v.id||i} value={v.id} disabled={v.stock===0}>{v.name} — {money(v.price,fx)}{v.stock===0?" (out of stock)":""}</option>)}</select></label>}
  {variant&&<p>{variant.stock===null?"Stock not supplied":"Available stock: "+variant.stock}</p>}
- <div className="hio-cart-controls"><label>Quantity<input type="number" min={min} max={Math.max(min,max)} value={quantity} onChange={e=>{setQuantity(Number(e.target.value));setCartMessage("");}}/></label><button className="hio-primary" disabled={!canAdd} onClick={addToCart}>Add to cart</button></div>
+ <div className="hio-cart-controls"><label>Quantity<input type="number" min={min} max={Math.max(min,max)} value={quantity} onChange={e=>{setQuantity(Number(e.target.value));setCartMessage("");}}/></label><button className="hio-primary" disabled={!canAdd} onClick={addToCart}>Add to cart</button>{!owner&&<ProductBuyNowLink className="hio-secondary" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}/>}</div>
  {detail.variants.length>0&&!variant&&<p className="hio-note">Select an available option to add it to your cart.</p>}{max<min&&<p className="hio-note">Not enough recorded stock for another minimum order.</p>}{cartMessage&&<p role="status" className="hio-note">{cartMessage} <Link href="/cart">View cart</Link>{owner&&<> · <Link href="/owner/checkout">Checkout</Link></>}</p>}
  {detail.attributes.length>0&&<details><summary>Product specifications</summary><dl>{detail.attributes.map((a,i)=><div key={i}><dt>{a.name}</dt><dd>{a.value}</dd></div>)}</dl></details>}
  {detail.url&&<p className="hio-note"><a href={detail.url} target="_blank" rel="noopener noreferrer">Open original supplier listing</a></p>}

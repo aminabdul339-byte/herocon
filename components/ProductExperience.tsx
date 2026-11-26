@@ -3,6 +3,7 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 import {useEffect,useMemo,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
+import ProductBuyNowLink from "@/components/ProductBuyNowLink";
 import {ExternalArrowIcon} from "@/components/ShopIcons";
 import {variantsFor} from "@/lib/catalogue";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
@@ -236,11 +237,11 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     <div className="hc-buy-actions">
      <button type="button" className="hc-add-cart-button" onClick={()=>handleCart(false)} disabled={outOfStock}>Add to cart</button>
      {ownerDirectBuy?<button type="button" className="hc-buy-now-button" disabled={outOfStock||stockConflict||!marketplace} onClick={()=>void handleCart(true)}>Buy now</button>:
-      <Link className="hc-buy-now-button" href="/cart" style={{display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}>View cart</Link>}
+      <ProductBuyNowLink className="hc-buy-now-button" style={{display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}/>}
     </div>
     {ownerDirectBuy&&marketplace&&<p className="hc-checkout-note" style={{fontWeight:700,color:"#31633e"}}>Owner Premium active. Test checkout only; no real charge.</p>}
     {cartMessage&&<p className="hc-cart-feedback" role="status">{cartMessage} {cartMessage.includes("Added")&&<Link href="/cart">View cart <ArrowIcon direction="right"/></Link>}</p>}
-    <p className="hc-checkout-note">{ownerDirectBuy?"Owner test checkout · real purchases are disabled.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
+    <p className="hc-checkout-note">{ownerDirectBuy?"Owner test checkout · real purchases are disabled.":account.status==="authenticated"?"Add products to your cart to plan your order. Checkout is not yet available to the public.":"Create a free account to plan your order. Checkout is not yet available to the public."}</p>
     <div className="hc-editorial-accordions" aria-label="Sourcing information">
       <details><summary>Pricing &amp; delivery</summary>
        {stockConflict&&<p>Saved supplier listing status and variant stock disagree. Availability must be confirmed before purchasing. You can still plan items in your cart.</p>}
@@ -291,7 +292,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
     </aside>
    </div>
   </section>
-  <div className="mobile-buy"><span><b>{priceLabel}</b><small>Delivery calculated separately</small></span><Link href="/cart">View cart <ArrowIcon direction="right"/></Link></div>
+  <div className="mobile-buy"><span><b>{priceLabel}</b><small>Delivery calculated separately</small></span><ProductBuyNowLink arrow/></div>
  </>;
 }
 function Selector({label,value,items,set}:{label:string;value?:string;items:string[];set:(v:string)=>void}){

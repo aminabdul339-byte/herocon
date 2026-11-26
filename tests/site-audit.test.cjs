@@ -27,11 +27,20 @@ test("public catalogue browsing is unblurred past the former free limit, with fi
  const get=async path=>{const r=await fetch(site+path,{signal:AbortSignal.timeout(25000)});assert.equal(r.status,200,path);return r.text();};
  const member=await get("/membership");if(!member.includes("Full catalogue browsing, search and filters"))return; // existing release baseline
  const paths=["/search?page=3","/search?category=Dresses&page=2","/search?q=dress&sort=price-asc","/shop-for-yourself?audience=women&page=3","/shop-for-yourself?audience=men&page=3","/shop-for-yourself?audience=women&category=Bags&page=2"];
- for(const path of paths){const html=await get(path);assert.doesNotMatch(html,/class="hc-locked-preview|class="hc-plan-locked|hc-free-category|Unlock more products with Premium/);assert.match(html,/href="\/(product|shop-for-yourself)\/[A-Za-z0-9_-]+/);assert.match(html,/Page (?:2|3) of|matching/);}
+ for(const path of paths){const html=await get(path);assert.doesNotMatch(html,/class="hc-locked-preview|class="hc-plan-locked|hc-free-category|Unlock more products with Premium/);assert.match(html,/href="\/(product|shop-for-yourself)\/[A-Za-z0-9_-]+/);assert.match(html.replace(/<!--[\s\S]*?-->/g,""),/Page (?:2|3) of|matching/,path);}
  const product=await get("/product/8t3fo9eRc1lLdPqNSasQ2w");assert.match(product,/You may also like/);assert.doesNotMatch(product,/This product is in the Premium catalogue/);
  const personal=await get("/shop-for-yourself?audience=women&page=3");const link=personal.match(/href="(\/shop-for-yourself\/[A-Za-z0-9_-]+[^"]*)"/)?.[1];assert.ok(link);const detail=await get(link.replace(/&amp;/g,"&"));assert.match(detail,/You might also/);assert.doesNotMatch(detail,/This product is in the Premium catalogue/);
  const find=await get("/find-product");assert.match(find,/hc-link-input-panel/);assert.match(find,/name="url"/);assert.match(find,/Keyword search/);assert.match(find,/Image search/);assert.doesNotMatch(find,/class="hc-plan-locked"/);
  const known=await fetch(site+"/find-product?url="+encodeURIComponent("https://detail.1688.com/offer/1006700876793.html"),{redirect:"manual",signal:AbortSignal.timeout(25000)});assert.ok([307,308].includes(known.status));assert.match(known.headers.get("location")||"",/\/product\/8t3fo9eRc1lLdPqNSasQ2w$/);
  for(const method of ["keyword","image"]){const html=await get("/find-product?method="+method);assert.match(html,/hc-link-input-panel/);assert.match(html,/Sign in or join free/);}
  assert.doesNotMatch(member,/Full catalogue requires Premium|Curated catalogue preview/);if(member.includes("2 live keyword searches")){assert.match(member,/2 live product link or detail lookups/);assert.match(member,/1 live image search/);}
+});
+
+test("public product buy now uses signup for guests on desktop and mobile",async()=>{
+ const r=await fetch(site+"/product/8t3fo9eRc1lLdPqNSasQ2w",{signal:AbortSignal.timeout(25000)});assert.equal(r.status,200);
+ const html=await r.text();
+ if(!html.includes("mode=signup&amp;next=%2Fcart"))return; // previous deployment baseline
+ const target=/<a[^>]*class="hc-buy-now-button"[^>]*href="\/account\?mode=signup&amp;next=%2Fcart"[^>]*>Buy now/;
+ assert.match(html,target);
+ const mobile=html.match(/<div class="mobile-buy"[\s\S]*?<\/div>/)?.[0];assert.ok(mobile);assert.match(mobile,/href="\/account\?mode=signup&amp;next=%2Fcart"[^>]*>Buy now/);
 });
