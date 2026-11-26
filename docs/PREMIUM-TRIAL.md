@@ -1,2 +1,8 @@
+# Retired public Premium trial
+
+New public trial self-activation is closed. Free and Premium are the only standard plans. Existing active trial records remain readable and expire normally. The legacy page redirects to membership except for existing active access or pending email verification. The legacy API refuses signup/start and permits only cookie-bound completion of an existing email registration, without granting a new trial. The database was verified to allow authenticated SELECT but not INSERT; future promotions must use explicit privileged grants, not a public self-activation endpoint.
+
+Historical implementation:
+
 # Premium trial
 New trial registration uses password-based Supabase signup with email confirmation code. The trial starts at the verified email timestamp for new trial signups, and existing verified users can opt in from the trial page. No card, no automatic subscription. Existing passwordless users can set a password from account settings or use password recovery. A Supabase RLS-protected trial ledger uses the normalized verified email as its primary key, permitting only own-row select and insert (no updates/deletes), with a fixed 72-hour lifetime. Legacy Blob records remain readable and the earlier start is respected. Production migration herocon_verified_premium_trial_ledger applied. The reported test account was granted its original email confirmation time rather than resetting its clock. All premium catalogue gates and the account countdown use membershipEntitlement. No live provider ordering is enabled.

@@ -111,9 +111,9 @@ function AccountContent(){
    <div className="hc-account-intro">
     <h1>{account.status==="authenticated"?"Your account":"Welcome to Herocon"}</h1>
     <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
-    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Try Premium free</strong><span>7 days</span></div><p>Full catalogue and available search tools. No card or automatic renewal.</p><Link href="/membership/trial">Start free trial <ArrowIcon direction="right"/></Link></div>:null}
+    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Free membership</strong><span>£0</span></div><p>Explore the catalogue, save products and use introductory live search credits. No card required.</p></div>:null}
     {account.status!=="authenticated"&&<Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>}
-    {pending&&<p className="hc-account-pending">Your selected product will be saved after sign-in.</p>}
+    {pending&&<p className="hc-account-pending">You will return to your requested page after sign-in.</p>}
    </div>
    <div className="hc-account-card">
     {account.status==="authenticated"&&!next?<>
@@ -121,7 +121,7 @@ function AccountContent(){
      <p className="hc-account-email-address">{account.email}</p>
      {account.ownerPremium?<div className="hc-account-membership-state"><strong>Owner Premium</strong><p>Complimentary access. No recurring charge.</p></div>:account.trialEndsAt?<AccountTrialCountdown key={account.trialEndsAt} endsAt={account.trialEndsAt} clockOffsetMs={account.clockOffsetMs??0}/>:account.premium?<div className="hc-account-membership-state"><strong>Premium</strong><p>Full catalogue and available sourcing tools.</p></div>:<div className="hc-account-membership-state"><strong>Free membership</strong><p>Explore Premium for more access.</p></div>}
      <div className="hc-account-member-actions">
-      <Link href={account.trialEndsAt?"/membership/trial":account.premium?"/membership/activate":"/membership"}>{account.trialEndsAt?"View trial":account.premium?"Manage membership":"Explore membership"} <ArrowIcon direction="right"/></Link>
+      <Link href={account.trialEndsAt?"/membership/trial":account.premium?"/membership/activate":"/membership"}>{account.trialEndsAt?"View existing access":account.premium?"Manage membership":"Explore membership"} <ArrowIcon direction="right"/></Link>
       {account.trialEndsAt&&<Link href="/membership/activate">Upgrade to Premium <ArrowIcon direction="right"/></Link>}
       {account.ownerPremium&&<Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link>}
       <Link href="/saved">Saved products and sourcing workspace <ArrowIcon direction="right"/></Link>
@@ -153,7 +153,7 @@ function AccountContent(){
      {mode==="login"?<button type="button" className="hc-account-text-button" onClick={()=>{setMode("recover");setNotice("");}}>Forgot your password?</button>:mode==="recover"?<button type="button" className="hc-account-text-button" onClick={()=>setMode("login")}>Back to sign in</button>:null}
      {notice&&<p role="status" className="hc-account-notice">{notice}</p>}
      {readyToConfirm&&<p className="hc-account-fine">If the email contains a link instead, open it in this browser. Check your spam folder if nothing arrives.</p>}
-     {!readyToConfirm&&<Link href="/membership/trial" className="hc-account-email-link">Try Premium for 7 days <ArrowIcon direction="right"/></Link>}
+     {!readyToConfirm&&<Link href="/membership" className="hc-account-email-link">Compare Free and Premium <ArrowIcon direction="right"/></Link>}
      <p className="hc-account-fine">By creating an account you agree to our <Link href="/terms-and-conditions">Terms</Link> and <Link href="/privacy-policy">Privacy Policy</Link>.</p>
     </>}
    </div>

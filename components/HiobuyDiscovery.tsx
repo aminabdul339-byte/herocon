@@ -61,7 +61,7 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  <section className="hio-results" aria-live="polite">
  {busy&&<p role="status" className="hio-status">Retrieving marketplace data…</p>}
  {cacheMessage&&<p className="hio-note" role="status">{cacheMessage}</p>}
- {error&&<p role="alert" className="hio-status hio-error">{error}</p>}
+ {error&&<p role="alert" className="hio-status hio-error">{error}{balance?.tier==="free"&&/credits have been used/i.test(error)&&<> <Link href="/membership">Explore Premium</Link>.</>}</p>}
  {detail&&<article className="hio-detail">
  <div><div className="hio-photo">{(detail.images[activePhoto]||variant?.image)?<img src={detail.images[activePhoto]||variant?.image} alt={detail.title} referrerPolicy="no-referrer"/>:<span>No product photo supplied</span>}</div><div className="hio-thumbs">{detail.images.map((src,i)=><button key={src} onClick={()=>{setActivePhoto(i);}} aria-label={"View photo "+(i+1)} aria-pressed={!variant&&activePhoto===i}><img src={src} alt="" referrerPolicy="no-referrer" loading="lazy"/></button>)}</div></div>
  <div className="hio-detail-info"><p className="sc-kicker">{market(detail.channel)} · Product details</p><h2>{detail.title}</h2><SaveFind find={{url:detail.url,title:detail.title,path:"/find-product?hioId="+encodeURIComponent(detail.id)+"&hioChannel="+encodeURIComponent(detail.channel),image:detail.images[0],seller:detail.seller,price:detail.price??undefined,currency:"CNY",minimum:detail.minimum??undefined,variantCount:detail.variants.length}}/><p className="hio-price">{money(variant?variant.price??detail.price:detail.price,fx)}</p>{detail.seller&&<p>Seller: {detail.seller}</p>}{detail.minimum!==null&&<p>Minimum order: {detail.minimum}</p>}
