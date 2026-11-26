@@ -1,8 +1,8 @@
 import Link from "next/link";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import "./membership-plans.css";
-const free=["Curated catalogue preview and keyword search","Original marketplace links","Saved products, collections and cart","3 successful saved link lookups per calendar month","3 introductory live requests with a verified account"];
-const premium=["Full Herocon catalogue and keyword search","Unlimited saved link lookups","Up to 50 new live marketplace requests per month","Live 1688 keyword and image search","Supplier comparisons and profit calculator"];
+const free=["Curated catalogue preview and keyword search","Original marketplace links","Free account and shopping cart","3 successful saved link lookups per calendar month","3 introductory live requests with a verified account"];
+const premium=["Full Herocon catalogue and keyword search","Unlimited saved link lookups","Up to 50 new live marketplace requests per month","Live 1688 keyword and image search","Full supplier and product details"];
 const upcoming=["Herocon purchasing and warehouse delivery"];
 function Mark(){return <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>;}
 export default function MembershipPlans({member=false,owner=false,standalone=false,signedIn=false,trialEndsAt=null}:{member?:boolean;owner?:boolean;standalone?:boolean;signedIn?:boolean;trialEndsAt?:string|null}){

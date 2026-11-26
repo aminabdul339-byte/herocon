@@ -110,8 +110,8 @@ function AccountContent(){
   <section className="hc-account-shell">
    <div className="hc-account-intro">
     <h1>{account.status==="authenticated"?"Your account":"Welcome to Herocon"}</h1>
-    <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and keep your finds together."}</p>
-    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Free membership</strong><span>£0</span></div><p>Explore the catalogue, save products and use introductory live search credits. No card required.</p></div>:null}
+    <p>{account.ownerPremium?"Your complimentary Premium access is active.":"Explore Chinese marketplaces, discover new products and plan your purchases."}</p>
+    {account.ownerPremium?<div className="hc-account-offer"><strong>Owner Premium</strong><span>Full catalogue and private testing workspace.</span></div>:account.status!=="authenticated"?<div className="hc-account-offer"><div className="hc-account-offer-top"><strong>Free membership</strong><span>£0</span></div><p>Explore the catalogue and use introductory live search credits. No card required.</p></div>:null}
     {account.status!=="authenticated"&&<Link className="hc-account-plan-link" href="/membership">Compare membership plans <ArrowIcon direction="right"/></Link>}
     {pending&&<p className="hc-account-pending">You will return to your requested page after sign-in.</p>}
    </div>
@@ -124,7 +124,7 @@ function AccountContent(){
       <Link href={account.trialEndsAt?"/membership/trial":account.premium?"/membership/activate":"/membership"}>{account.trialEndsAt?"View existing access":account.premium?"Manage membership":"Explore membership"} <ArrowIcon direction="right"/></Link>
       {account.trialEndsAt&&<Link href="/membership/activate">Upgrade to Premium <ArrowIcon direction="right"/></Link>}
       {account.ownerPremium&&<Link href="/owner/hiobuy">HioBuy fulfilment setup <ArrowIcon direction="right"/></Link>}
-      <Link href="/saved">Saved products and sourcing workspace <ArrowIcon direction="right"/></Link>
+
       <Link href="/account/new-password">Set or change password <ArrowIcon direction="right"/></Link>
       <button type="button" onClick={logout} disabled={working} className="hc-account-secondary">{working?"Signing out…":"Log out"}</button>
      </div>
