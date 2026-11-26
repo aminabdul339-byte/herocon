@@ -19,8 +19,8 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
  const access=await catalogueAccess();
  if(!access.customer)return <main className="hc-link-page hc-link-minimal"><Header/><section className="hc-plan-locked"><h1>Try a product link.</h1><p>Create a free account for saved link lookups and introductory marketplace searches.</p><Link href={"/account?next="+encodeURIComponent("/find-product"+(initialUrl?"?url="+encodeURIComponent(initialUrl):params.method==="image"?"?method=image":params.method==="keyword"?"?method=keyword":""))}>Sign in or join free</Link></section></main>;
  const owner=isOwnerPremiumCustomer(access.customer);
- const liveMethod=params.method==="image"?"image":params.method==="keyword"?"search":null;
- if(owner||liveMethod||params.hioId)return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery owner={owner} initialMode={liveMethod??(owner?"parse":"search")} initialUrl={owner?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
+ const liveMethod=params.method==="image"?"image":params.method==="keyword"?"search":params.method==="live-link"?"parse":null;
+ if(owner||liveMethod||params.hioId)return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery owner={owner} initialMode={liveMethod??(owner?"parse":"search")} initialUrl={owner||liveMethod==="parse"?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
  return <main className="hc-link-page hc-link-minimal" data-has-url={Boolean(initialUrl)}><Header/>
   <section className="hc-link-intro" aria-labelledby="hc-link-title">
    <div className="hc-link-intro-inner">

@@ -1,5 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
+import Link from "next/link";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import ProductExperience from "@/components/ProductExperience";
 import type {DisplaySupplierDetails} from "@/lib/marketplace-source-enrichment";
 import type {Product} from "@/lib/types";
@@ -42,7 +44,7 @@ export default function ProductLinkResults({initialUrl}:{initialUrl:string}){
  if(status.phase==="error")return <div className="hc-link-error sc-container" role="alert">
   <strong>We couldn't load that product</strong>
   <p>{status.message}</p>
-  <p>Check that the URL is a full 1688, Taobao, Tmall or Weidian product link, rather than a shortened sharing link.</p>
+  <p>Check that the URL is a full 1688, Taobao, Tmall or Weidian product link, rather than a shortened sharing link.</p>{/^(https:\/\/detail\.1688\.com\/|https:\/\/weidian\.com\/)/.test(normalizeMarketplaceLink(initialUrl)||"")&&<Link className="sc-button sc-button-dark" href={"/find-product?method=live-link&url="+encodeURIComponent(initialUrl)}>Try a live lookup</Link>}
  </div>;
 
  const source=status.product;
