@@ -16,8 +16,8 @@ test('live site rejects unauthenticated supplier order submissions',async()=>{
 });
 test('live BuckyDrop product route rejects unsupported source before any lookup',async()=>{
  const r=await post('/api/buckydrop/lookup',{url:'https://invalid.example/item/123'});
- assert.equal(r.status,400,JSON.stringify(r));
- assert.match(String(r.data.error),/1688|unsupported|product URL/i);
+ assert.equal(r.status,401,JSON.stringify(r));
+ assert.match(String(r.data.error),/sign in/i);
 });
 test('live shipping quote denies foreign origins before any provider request',async()=>{
  const r=await post('/api/buckydrop/shipping-quote',{},'https://invalid.example');

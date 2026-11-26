@@ -35,7 +35,7 @@ test('sandbox/unconfigured environment refuses live gateway requests',async()=>{
 });
 test('an accepted Shop Order may omit optional response data without a retryable failure',async()=>{
  for(const data of [null,undefined]){
-  const {callBucky}=load('lib/buckydrop-gateway.ts',{fetch:async()=>success(data)});
+  const {callBucky}=load('lib/buckydrop-gateway.ts',{fetch:async()=>success(data)},{HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED:'true'});
   assert.deepEqual({...await callBucky('create-shop-order',{partnerOrderNo:'HC-TEST'})},{});
  }
 });
@@ -111,7 +111,10 @@ test('one-payment checkout stays off until every independent merchant and suppli
   ...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',
   HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true'
  });
- assert.equal(b.checkoutLaunchReadiness('all_in').enabled,true);
+ assert.equal(b.checkoutLaunchReadiness('all_in').enabled,false);
+ assert.ok(b.checkoutLaunchReadiness('all_in').missing.some(x=>x.includes('Legacy BuckyDrop purchasing')));
+ const approved=load('lib/live-checkout.ts',{},{...common,HEROCON_BUCKYDROP_AUTO_FULFILMENT_CONFIRMED:'true',HEROCON_WALLET_TOPUP_RELEASE_WORKFLOW_APPROVED:'true',HEROCON_LEGACY_BUCKYDROP_WRITES_ENABLED:'true'});
+ assert.equal(approved.checkoutLaunchReadiness('all_in').enabled,true);
  // An all-in pilot must not accidentally unlock legacy two-stage purchases.
  assert.equal(b.checkoutLaunchReadiness('products').enabled,false);
 });
@@ -133,6 +136,9 @@ test('complimentary owner membership does not require a live Stripe subscription
  const owner={id:'123e4567-e89b-42d3-a456-426614174000',email:'owner@example.test'};
  let membershipCalls=0;
  const {checkActiveMembership}=load('lib/membership-access.ts',{modules:{
+  'react':{cache:fn=>fn},
+  '@/lib/premium-trial':{activePremiumTrial:async()=>null},
+  '@/lib/premium-trial-model':load('lib/premium-trial-model.ts'),
   '@/lib/membership-billing':{hasLiveMembership:async()=>{membershipCalls++;return false;}},
   '@/lib/owner-premium':{isOwnerPremiumCustomer:c=>c.id===owner.id}
  }});
@@ -205,4 +211,33 @@ test('merchant pricing rejects missing or negative costs, rather than treating t
  assert.throws(()=>assessMerchantCheckout(1500,{...c,buckydropFeesPence:undefined}),/Invalid/);
  assert.throws(()=>assessMerchantCheckout(1500,{...c,walletAndFxFeesPence:-1}),/Invalid/);
  assert.throws(()=>assessMerchantCheckout(1499.5,c),/Invalid/);
+});
+
+
+function mockSignup(){
+ const calls=[];const a=adapters({
+  '@/lib/email-auth-error':{publicEmailError:()=>({status:503,error:'Delivery unavailable'})},
+  '@/lib/customer-auth':{accountOriginValid:()=>true,customerAuthConfigured:()=>true,CustomerAuthError:class extends Error{},setCustomerCookies:()=>{},authApi:async(path,body)=>{calls.push({path,body});return {};}}
+ });
+ const {POST}=load('app/api/account/auth/route.ts',{modules:a.modules});
+ const submit=async(body)=>{const r=await POST(new Request('https://herocon.store/api/account/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:'test@example.invalid',...body})}));return {status:r.status,data:await r.json()};};
+ return {submit,calls};
+}
+test('signup requires eight characters and matching password before requesting confirmation',async()=>{
+ const f=mockSignup();
+ for(const [password,confirmPassword] of [['Example','Example'],['Example8','Different'],['Example8',undefined]]){
+  const result=await f.submit({mode:'signup',password,confirmPassword});
+  assert.equal(result.status,400);
+ }
+ assert.equal(f.calls.length,0);
+ const result=await f.submit({mode:'signup',password:'Example8',confirmPassword:'Example8'});
+ assert.equal(result.status,200);assert.equal(result.data.requiresConfirmation,true);
+ assert.equal(f.calls.length,1);assert.match(f.calls[0].path,/^\/signup\?/);
+ assert.equal(f.calls[0].body.password,'Example8');
+ assert.equal(f.calls[0].body.confirmPassword,undefined);
+});
+test('signup email template contains numeric OTP and confirmation link fallback',()=>{
+ const template=fs.readFileSync('supabase/email-templates/confirm-signup.html','utf8');
+ assert.ok(template.includes('{{ .Token }}'));
+ assert.ok(template.includes('{{ .TokenHash }}'));
 });
