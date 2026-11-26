@@ -10,6 +10,7 @@ import ProductLinkForm from "@/components/ProductLinkForm";
 import ProductLinkResults from "@/components/ProductLinkResults";
 import "./find-product.css";
 import HiobuyDiscovery from "@/components/HiobuyDiscovery";
+import ProductFinderPanel from "@/components/ProductFinderPanel";
 
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 export const dynamic="force-dynamic";
@@ -26,21 +27,16 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
  const target=new URLSearchParams();if(initialUrl)target.set("url",initialUrl);if(params.method)target.set("method",params.method);if(params.hioId)target.set("hioId",params.hioId);if(params.hioChannel)target.set("hioChannel",params.hioChannel);
  const login="/account?next="+encodeURIComponent("/find-product"+(target.size?"?"+target.toString():""));
  if(initialUrl&&!liveMethod&&!owner){const link=normalizeMarketplaceLink(initialUrl);if(link){const found=(await getProducts()).find(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)===link);if(found)redirect("/product/"+encodeURIComponent(productId(found)));}}
- if(access.customer&&(owner||liveMethod||params.hioId))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery owner={owner} initialMode={liveMethod??(owner?"parse":"search")} initialUrl={owner||liveMethod==="parse"?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
+ if(access.customer&&(owner||liveMethod||params.hioId))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery key={JSON.stringify([liveMethod,initialUrl,params.hioId,params.hioChannel])} owner={owner} initialMode={liveMethod??(owner?"parse":"search")} unified initialUrl={owner||liveMethod==="parse"?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
  return <main className="hc-link-page hc-link-minimal" data-has-url={Boolean(initialUrl)}><Header/>
-  <section className="hc-link-intro" aria-labelledby="hc-link-title">
-   <div className="hc-link-intro-inner">
-    <div className="hc-link-intro-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a4.5 4.5 0 0 0 6.4 0l3-3A4.5 4.5 0 0 0 13 3.6l-1.7 1.7"/><path d="M14 11a4.5 4.5 0 0 0-6.4 0l-3 3A4.5 4.5 0 0 0 11 20.4l1.7-1.7"/></svg></div>
-    <p className="sc-kicker">FIND YOUR OWN PRODUCTS</p>
-    <h1 id="hc-link-title">{liveMethod==="search"?"Search by keyword.":liveMethod==="image"?"Find products by image.":liveMethod==="parse"?"Find a product by link.":"Find your own products."}</h1>
-    <p className="hc-link-intro-copy">Find saved supplier photos, options and reference prices, or try live marketplace search with your account.</p>
-    <div className="hc-link-input-panel">
-     <nav className="hio-tabs hc-discovery-nav" aria-label="Discovery method"><Link aria-current={!liveMethod?"page":undefined} href="/find-product">Product link</Link><Link aria-current={liveMethod==="search"?"page":undefined} href="/find-product?method=keyword">Keyword search</Link><Link aria-current={liveMethod==="image"?"page":undefined} href="/find-product?method=image">Image search</Link></nav>
-     {!liveMethod&&<ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>} {!access.customer?<div className="hc-link-guest"><p>{liveMethod==="search"?"Create a free account to search 1688 by keyword.":liveMethod==="image"?"Create a free account to search 1688 using a product photo.":initialUrl?"If your product is not already in the public catalogue, sign in to look up its supplier details.":"Browse products already in our catalogue without signing in. Join free for 2 live link or detail lookups, 1 image search and 2 keyword searches."}</p><Link className="hc-link-guest-cta" href={login}>Sign in or join free</Link></div>:!access.premium&&<p className="hio-note">Free members receive 2 live product link or detail lookups, 1 image search and 2 keyword searches as a one-time allowance. Saved catalogue results do not use credits.</p>}
-     <div className="hc-link-platforms"><span>Supported marketplaces</span><ul aria-label="Supported marketplaces"><li>1688</li><li>Taobao</li><li>Tmall</li><li>Weidian</li></ul></div>
-    </div>
-   </div>
-  </section>
+  <ProductFinderPanel method={liveMethod==="search"?"search":liveMethod==="image"?"image":"link"}>
+   {!liveMethod&&<ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>}
+   {!access.customer?<div className="hc-link-guest"><p>{liveMethod==="search"?"Create a free account to search 1688 by keyword.":liveMethod==="image"?"Create a free account to search 1688 using a product photo.":liveMethod==="parse"?"Sign in to look up a live 1688 or Weidian product link.":initialUrl?"If your product is not already in the public catalogue, sign in to look up its supplier details.":"Browse saved products without signing in. Join free to try live product discovery."}</p><Link className="hc-link-guest-cta" href={login}>Sign in or join free</Link></div>:<>
+    <p className="hio-note">Saved catalogue results do not use credits. For a new 1688 or Weidian listing, <Link className="hc-finder-switch" href={"/find-product?method=live-link"+(initialUrl?"&url="+encodeURIComponent(initialUrl):"")}>try a live lookup</Link>.</p>
+    {!access.premium&&<p className="hio-note">Free members receive 2 live link or detail lookups, 1 image search and 2 keyword searches as a one-time allowance.</p>}
+   </>}
+   <div className="hc-link-platforms"><span>{liveMethod==="search"||liveMethod==="image"?"Live search":liveMethod==="parse"?"Live product links":"Saved product links"}</span><ul aria-label="Supported marketplaces">{(liveMethod==="search"||liveMethod==="image"?["1688"]:liveMethod==="parse"?["1688","Weidian"]:["1688","Taobao","Tmall","Weidian"]).map(m=><li key={m}>{m}</li>)}</ul></div>
+  </ProductFinderPanel>
   {access.customer&&<ProductLinkResults initialUrl={initialUrl}/>}
  </main>;
 }

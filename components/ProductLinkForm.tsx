@@ -2,7 +2,7 @@ import {ArrowIcon} from "@/components/ArrowIcon";
 export default function ProductLinkForm({defaultValue="",compact=false}:{defaultValue?:string;compact?:boolean}){
  return <div className={"hc-link-search"+(compact?" hc-link-search-compact":"")}>
    <form action="/find-product" method="get" className="hc-link-search-form">
-    <label htmlFor={compact?"hc-link-compact":"hc-link-full"}>Have a product link? Search it on Herocon</label>
+    <label htmlFor={compact?"hc-link-compact":"hc-link-full"}>Marketplace product link</label>
     <div className="hc-link-search-bar">
      <span aria-hidden="true"><ArrowIcon/></span>
      <input
@@ -17,7 +17,7 @@ export default function ProductLinkForm({defaultValue="",compact=false}:{default
       aria-label="Paste a Chinese marketplace product link"
       required
      />
-     <button type="submit">Find product <span aria-hidden="true"><ArrowIcon/></span></button>
+     <button type="submit">Find product</button>
     </div>
    </form>
  </div>;

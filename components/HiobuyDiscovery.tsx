@@ -4,6 +4,7 @@ import type {FormEvent} from "react";
 import Link from "next/link";
 import ProductBuyNowLink from "@/components/ProductBuyNowLink";
 import {useCart} from "@/components/CartProvider";
+import ProductFinderPanel from "@/components/ProductFinderPanel";
 type Variant={id:string;name:string;price:number|null;stock:number|null;image:string};
 type Item={id:string;channel:string;domesticFreightCny?:number|null;title:string;url:string;images:string[];price:number|null;seller:string;minimum:number|null;variants:Variant[];attributes:{name:string;value:string}[]};
 type Rate={rate:number;date:string};
@@ -13,7 +14,7 @@ type Mode="parse"|"search"|"image";
 const names={parse:"Paste a link",search:"Keyword search",image:"Image search"};
 const market=(s:string)=>s==="taobao"?"Taobao":s==="weidian"?"Weidian":"1688";
 const money=(v:number|null,fx:Rate|null)=>v===null?"Price unavailable":"¥"+v.toFixed(2)+(fx?" · ≈ £"+(v*fx.rate).toFixed(2):"");
-export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel="",owner=true,initialMode="parse"}:{initialUrl:string;initialId?:string;initialChannel?:string;owner?:boolean;initialMode?:Mode}){
+export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel="",owner=true,initialMode="parse",unified=false}:{initialUrl:string;initialId?:string;initialChannel?:string;owner?:boolean;initialMode?:Mode;unified?:boolean}){
  const {items:cartItems,addItems,hydrated,account}=useCart();
  const [quantity,setQuantity]=useState(1),[cartMessage,setCartMessage]=useState(""),[savedSearches,setSavedSearches]=useState<SavedSearch[]>([]),[cacheMessage,setCacheMessage]=useState("");
  async function loadHistory(){try{const r=await fetch("/api/hiobuy/discovery",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"history"}),cache:"no-store"});const data:Result=await r.json();if(r.ok&&data.history)setSavedSearches(data.history);}catch{}}
@@ -49,15 +50,19 @@ export default function HiobuyDiscovery({initialUrl,initialId="",initialChannel=
  function submit(e:FormEvent){e.preventDefault();void run(mode==="parse"?{action:"parse",url}:mode==="search"?{action:"search",channel:"1688",keyword,page:1}:{action:"image",channel:"1688",image,page:1});}
  function changeMode(m:Mode){abort.current?.abort();setBusy(false);setMode(m);setError("");setItems(null);setDetail(null);last.current=null;}
  function readImage(file:File|undefined){setImage("");setFileName("");setError("");if(!file)return;if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>2*1024*1024){setError("Choose a JPEG, PNG or WebP image under 2 MB.");return;}const r=new FileReader();r.onload=()=>{if(typeof r.result==="string"){setImage(r.result);setFileName(file.name);}};r.onerror=()=>setError("Could not read that image.");r.readAsDataURL(file);}
- return <>
- <section className="hc-link-intro"><div className="hc-link-intro-inner"><p className="sc-kicker">HEROCON DISCOVERY</p><h1>Find products</h1><p className="hc-link-intro-copy">Search the 1688 marketplace by keyword or photo. {owner?"Live links support 1688 and Weidian.":"Find supplier products and save them to your cart."}</p>
- <div className="hc-link-input-panel hio-panel">
- <div className="hio-tabs hc-discovery-nav" role="group" aria-label="Discovery method">{!owner&&<Link href="/find-product">Saved link</Link>}{(Object.keys(names) as Mode[]).map(m=><button key={m} type="button" aria-pressed={mode===m} onClick={()=>changeMode(m)}>{names[m]}</button>)}</div>
+ const fields=<>
  <form onSubmit={submit} className="hio-form">
  {mode==="parse"?<label>Marketplace product link<input required type="url" value={url} maxLength={1000} onChange={e=>setUrl(e.target.value)} placeholder="https://detail.1688.com/offer/…"/></label>:mode==="search"?<label>What are you looking for?<input required value={keyword} maxLength={160} onChange={e=>setKeyword(e.target.value)} placeholder="e.g. ceramic vase, linen dress"/></label>:<label>Upload a product photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>readImage(e.target.files?.[0])}/>{fileName&&<small>{fileName}</small>}{image&&<img className="hio-upload-preview" src={image} alt="Selected product photo"/>}</label>}
  <button className="hio-primary" type="submit" disabled={busy||(mode==="image"&&!image)}>{busy?"Searching…":mode==="parse"?"Find product":mode==="search"?"Search products":"Find similar products"}</button></form>
  {mode==="image"&&<p className="hio-note">Upload a product photo only, without personal or sensitive information. Your image is sent to our sourcing partner Hiobuy to find matches. <Link href="/privacy-policy">Privacy policy</Link>.</p>}
- <p className="hio-note">{mode==="parse"?"1688 · Weidian":"1688"} · {owner?"Owner access.":"Cached results use no credits. New result pages use the corresponding search credit; uncached product details use a link credit on Free. Daily and shared capacity limits apply."} Purchasing is not yet available.</p>{!owner&&balance&&<p className="hio-note" role="status">{balance.tier==="free"&&balance.methods?<strong>Product links / details: {balance.methods.link.remaining}/2 · Image: {balance.methods.image.remaining}/1 · Keyword: {balance.methods.keyword.remaining}/2</strong>:<strong>{balance.remaining} of {balance.limit} live credits remaining</strong>} · {balance.tier==="premium"?"This UTC calendar month":balance.tier==="trial"?"Across your trial":"Introductory credits"}. Failed requests do not use customer credits.</p>}{owner&&savedSearches.length>0&&<details className="hio-history"><summary>Recent saved searches</summary><div>{savedSearches.map(s=><button type="button" key={s.id} disabled={busy} onClick={()=>void run({action:"saved",id:s.id})}>{s.label}<small>{new Date(s.savedAt).toLocaleDateString()}</small></button>)}</div></details>}</div></div></section>
+ <p className="hio-note">{mode==="parse"?"1688 · Weidian":"1688"} · {owner?"Owner access.":"Cached results use no credits. New result pages use the corresponding search credit; uncached product details use a link credit on Free. Daily and shared capacity limits apply."} Purchasing is not yet available.</p>{!owner&&balance&&<p className="hio-note" role="status">{balance.tier==="free"&&balance.methods?<strong>Product links / details: {balance.methods.link.remaining}/2 · Image: {balance.methods.image.remaining}/1 · Keyword: {balance.methods.keyword.remaining}/2</strong>:<strong>{balance.remaining} of {balance.limit} live credits remaining</strong>} · {balance.tier==="premium"?"This UTC calendar month":balance.tier==="trial"?"Across your trial":"Introductory credits"}. Failed requests do not use customer credits.</p>}{owner&&savedSearches.length>0&&<details className="hio-history"><summary>Recent saved searches</summary><div>{savedSearches.map(s=><button type="button" key={s.id} disabled={busy} onClick={()=>void run({action:"saved",id:s.id})}>{s.label}<small>{new Date(s.savedAt).toLocaleDateString()}</small></button>)}</div></details>}
+ {unified&&mode==="parse"&&!owner&&<p className="hio-note">Looking for a product already in Herocon? <Link className="hc-finder-switch" href="/find-product">Search saved product links</Link>.</p>}
+ </>;
+ return <>
+ {unified?<ProductFinderPanel method={mode==="parse"?"link":mode}>{fields}</ProductFinderPanel>:<section className="hc-link-intro"><div className="hc-link-intro-inner"><p className="sc-kicker">HEROCON DISCOVERY</p><h1>Find products</h1><p className="hc-link-intro-copy">Search the 1688 marketplace by keyword or photo.</p><div className="hc-link-input-panel hio-panel">
+ <div className="hio-tabs hc-discovery-nav" role="group" aria-label="Discovery method">{!owner&&<Link href="/find-product">Saved link</Link>}{(Object.keys(names) as Mode[]).map(m=><button key={m} type="button" aria-pressed={mode===m} onClick={()=>changeMode(m)}>{names[m]}</button>)}</div>
+
+ {fields}</div></div></section>}
  <section className="hio-results" aria-live="polite">
  {busy&&<p role="status" className="hio-status">Retrieving marketplace data…</p>}
  {cacheMessage&&<p className="hio-note" role="status">{cacheMessage}</p>}
