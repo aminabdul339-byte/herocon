@@ -186,3 +186,29 @@
 @media(max-width:800px){
  .hc-site .sc-catalogue-page .hc-discovery-edits{grid-template-columns:repeat(2,minmax(0,1fr));max-width:620px;gap:9px}
 }
+
+/* Option 3 — keep the original featured collections and product grid below. */
+.hc-site .sc-catalogue-page .hc-sourcing-hub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:24px 0 4px;align-items:stretch}
+.hc-site .sc-catalogue-page .hc-sourcing-mode{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;min-width:0;border:1px solid #d7e1d3;border-radius:20px;padding:clamp(20px,2.5vw,32px);background:#fffefa;color:#294735;text-align:left}
+.hc-site .sc-catalogue-page .hc-sourcing-finder{background:#e7ede2;border-color:#d0dccb}
+.hc-site .sc-catalogue-page .hc-sourcing-mode-label{display:flex;align-items:center;gap:10px;color:#62775f;font-size:10px;letter-spacing:.13em;font-weight:700;line-height:1.5}
+.hc-site .sc-catalogue-page .hc-sourcing-mode-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;background:#edf2e9;color:#36583e}
+.hc-site .sc-catalogue-page .hc-sourcing-finder .hc-sourcing-mode-icon{background:#f8faf5}
+.hc-site .sc-catalogue-page .hc-sourcing-mode h2{font:400 clamp(25px,2.6vw,38px)/1.15 Georgia,"Times New Roman",serif;letter-spacing:-.035em;margin:18px 0 8px;color:#294735}
+.hc-site .sc-catalogue-page .hc-sourcing-description{font-size:14px;line-height:1.65;color:#5b705b;margin:0 0 20px;max-width:440px}
+.hc-site .sc-catalogue-page .hc-sourcing-search{margin:4px 0 12px;width:100%;min-width:0}
+.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page{margin:0}
+.hc-site .sc-catalogue-page .hc-sourcing-methods{display:grid;gap:8px}
+.hc-site .sc-catalogue-page .hc-sourcing-method{box-sizing:border-box;display:flex;align-items:center;gap:11px;padding:10px 13px;border:1px solid #dce4d7;border-radius:11px;background:#fffefa;color:#294735;text-decoration:none;min-width:0;transition:border-color .16s,background .16s}
+.hc-site .sc-catalogue-page .hc-sourcing-method:hover{border-color:#88a085;background:#f9fbf6}
+.hc-site .sc-catalogue-page .hc-sourcing-method-icon{display:grid;place-items:center;width:29px;height:29px;color:#49684a;flex:none}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy strong{font-size:14px;font-weight:650;line-height:1.35}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy small{font-size:12px;line-height:1.35;color:#647568}
+.hc-site .sc-catalogue-page .hc-sourcing-method>.hc-ui-icon,.hc-site .sc-catalogue-page .hc-sourcing-compact-link>.hc-ui-icon{width:17px;height:17px;flex:none;color:#69876e}
+.hc-site .sc-catalogue-page .hc-sourcing-foot{font-size:12px;line-height:1.6;color:#60745e;margin:auto 0 0;padding-top:16px}
+.hc-site .sc-catalogue-page .hc-sourcing-compact-link{display:inline-flex;align-items:center;gap:8px;margin-top:12px;color:#385a3f;font-size:13px;text-decoration:none}
+.hc-site .sc-catalogue-page .hc-sourcing-compact-link svg{width:18px;height:18px}
+.hc-site .sc-catalogue-page .hc-sourcing-compact-link:hover{text-decoration:underline;text-underline-offset:3px}
+.hc-site .sc-catalogue-page .hc-sourcing-method:focus-visible,.hc-site .sc-catalogue-page .hc-sourcing-compact-link:focus-visible{outline:2px solid #4c7652;outline-offset:3px}
+@media(max-width:800px){.hc-site .sc-catalogue-page .hc-sourcing-hub{grid-template-columns:1fr;gap:12px;margin-top:18px}.hc-site .sc-catalogue-page .hc-sourcing-mode{padding:20px;border-radius:16px}.hc-site .sc-catalogue-page .hc-sourcing-mode h2{font-size:29px}.hc-site .sc-catalogue-page .hc-sourcing-description{font-size:13px;margin-bottom:15px}}

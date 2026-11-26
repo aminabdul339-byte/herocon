@@ -56,5 +56,10 @@
       "path": "/api/cron/full-catalogue-audit/3",
       "schedule": "6 16 25,26 11 *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "draft-sourcing-hub-option-3": false
+    }
+  }
 }

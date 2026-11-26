@@ -36,13 +36,13 @@ export default function Header(){
             <svg className="hc-mobile-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 5.5h2l2 10.5h11.4l2-8H6.2"/><circle cx="9" cy="19.5" r="1"/><circle cx="18" cy="19.5" r="1"/></svg>
             <span className="hc-nav-cart-label">Cart</span><span className="hc-nav-cart-count">{count}</span>
           </Link>
-          <Link className="sc-nav-cta" href="/find-product">Paste a product link <NavArrow/></Link>
+          <Link className="sc-nav-cta" href="/find-product">Product Finder <NavArrow/></Link>
           <button type="button" className="sc-mobile-toggle" aria-label={open?"Close menu":"Open menu"} aria-expanded={open} aria-controls="sc-mobile-menu" onClick={()=>setOpen(!open)}>
             <span></span><span></span><span></span>
           </button>
         </div>
       </div>
-      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Paste a product link <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
+      {open&&<nav id="sc-mobile-menu" className="sc-mobile-menu" aria-label="Mobile navigation">{links.map(([label,url])=><Link key={url} href={url} aria-current={(pathname===url||(url==="/search"&&(pathname.startsWith("/category/")||pathname.startsWith("/product/")||pathname==="/start-a-business")))?"page":undefined} onClick={()=>setOpen(false)}>{label}<NavArrow/></Link>)}<Link href="/find-product" onClick={()=>setOpen(false)}>Product Finder <NavArrow/></Link><Link href="/cart" onClick={()=>setOpen(false)}>Cart ({count}) <NavArrow/></Link><Link href="/account" onClick={()=>setOpen(false)}>{account.status==="authenticated"?"My account":"Sign in / Join free"} <NavArrow/></Link></nav>}
     </header>
   </>;
 }
