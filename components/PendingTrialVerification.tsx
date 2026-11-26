@@ -1,0 +1,8 @@
+"use client";
+import {useState} from "react";
+import Link from "next/link";
+export default function PendingTrialVerification({email}:{email:string}){
+ const [code,setCode]=useState(""),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
+ async function submit(action:"verify"|"resend"){if(busy)return;setBusy(true);setMessage("");try{const r=await fetch("/api/membership/trial",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,email,code,acceptedTerms:true}),cache:"no-store"});const d=await r.json();if(!r.ok)throw Error(d.error);if(action==="verify")window.location.replace("/account?confirmed=1");else setMessage("Verification email requested. Check your inbox and spam folder.");}catch(e){setMessage(e instanceof Error?e.message:"Verification unavailable.");}finally{setBusy(false);}}
+ return <><p>New public Premium trials are no longer offered. You can still verify your existing email registration and use Free membership.</p><form onSubmit={e=>{e.preventDefault();void submit("verify");}}><label className="hc-trial-field">Email address<input type="email" readOnly value={email}/></label><label className="hc-trial-field">Verification code<input inputMode="numeric" autoComplete="one-time-code" required maxLength={10} value={code} onChange={e=>setCode(e.target.value.replace(/[^0-9]/g,""))}/></label><button className="hc-billing-action hc-billing-primary" disabled={busy||!/^\d{6,10}$/.test(code)}>Verify email</button><button type="button" className="hc-billing-action" disabled={busy} onClick={()=>void submit("resend")}>Resend verification code</button></form>{message&&<p role="status">{message}</p>}<Link href="/account">Use the regular account page</Link></>;
+}
