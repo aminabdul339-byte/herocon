@@ -1,5 +1,9 @@
 import type {Metadata} from "next";
 import Link from "next/link";
+import {redirect} from "next/navigation";
+import {getProducts} from "@/lib/catalogue-server";
+import {productId} from "@/lib/catalogue";
+import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {catalogueAccess} from "@/lib/catalogue-access";
 import Header from "@/components/Header";
 import ProductLinkForm from "@/components/ProductLinkForm";
@@ -17,10 +21,12 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
  const params=await searchParams;
  const initialUrl=typeof params.url==="string"?params.url.slice(0,1000):"";
  const access=await catalogueAccess();
- if(!access.customer)return <main className="hc-link-page hc-link-minimal"><Header/><section className="hc-plan-locked"><h1>Try a product link.</h1><p>Create a free account for saved link lookups and introductory marketplace searches.</p><Link href={"/account?next="+encodeURIComponent("/find-product"+(initialUrl?"?url="+encodeURIComponent(initialUrl):params.method==="image"?"?method=image":params.method==="keyword"?"?method=keyword":""))}>Sign in or join free</Link></section></main>;
  const owner=isOwnerPremiumCustomer(access.customer);
  const liveMethod=params.method==="image"?"image":params.method==="keyword"?"search":params.method==="live-link"?"parse":null;
- if(owner||liveMethod||params.hioId)return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery owner={owner} initialMode={liveMethod??(owner?"parse":"search")} initialUrl={owner||liveMethod==="parse"?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
+ const target=new URLSearchParams();if(initialUrl)target.set("url",initialUrl);if(params.method)target.set("method",params.method);if(params.hioId)target.set("hioId",params.hioId);if(params.hioChannel)target.set("hioChannel",params.hioChannel);
+ const login="/account?next="+encodeURIComponent("/find-product"+(target.size?"?"+target.toString():""));
+ if(initialUrl&&!liveMethod&&!owner){const link=normalizeMarketplaceLink(initialUrl);if(link){const found=(await getProducts()).find(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)===link);if(found)redirect("/product/"+encodeURIComponent(productId(found)));}}
+ if(access.customer&&(owner||liveMethod||params.hioId))return <main className="hc-link-page hc-link-minimal"><Header/><HiobuyDiscovery owner={owner} initialMode={liveMethod??(owner?"parse":"search")} initialUrl={owner||liveMethod==="parse"?initialUrl:""} initialId={typeof params.hioId==="string"?params.hioId.slice(0,500):""} initialChannel={typeof params.hioChannel==="string"?params.hioChannel:""}/></main>;
  return <main className="hc-link-page hc-link-minimal" data-has-url={Boolean(initialUrl)}><Header/>
   <section className="hc-link-intro" aria-labelledby="hc-link-title">
    <div className="hc-link-intro-inner">
@@ -29,12 +35,12 @@ export default async function FindProductPage({searchParams}:{searchParams:Promi
     <h1 id="hc-link-title">Find a product by link.</h1>
     <p className="hc-link-intro-copy">Find saved supplier photos, options and reference prices, or try live marketplace search with your account.</p>
     <div className="hc-link-input-panel">
-     <nav className="hio-tabs hc-discovery-nav" aria-label="Discovery method"><Link aria-current="page" href="/find-product">Product link</Link><Link href="/find-product?method=keyword">Keyword search</Link><Link href="/find-product?method=image">Image search</Link></nav>
-     <ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>{!access.premium&&<p>Three successful saved link lookups per calendar month. Missing products do not use an allowance.</p>}
+     <nav className="hio-tabs hc-discovery-nav" aria-label="Discovery method"><Link aria-current={!liveMethod?"page":undefined} href="/find-product">Product link</Link><Link aria-current={liveMethod==="search"?"page":undefined} href="/find-product?method=keyword">Keyword search</Link><Link aria-current={liveMethod==="image"?"page":undefined} href="/find-product?method=image">Image search</Link></nav>
+     {!liveMethod&&<ProductLinkForm key={initialUrl} defaultValue={initialUrl}/>} {!access.customer?<div className="hc-link-guest"><p>{liveMethod==="search"?"Create a free account to search 1688 by keyword.":liveMethod==="image"?"Create a free account to search 1688 using a product photo.":initialUrl?"If your product is not already in the public catalogue, sign in to look up its supplier details.":"Browse products already in our catalogue without signing in. Join free for 2 live link or detail lookups, 1 image search and 2 keyword searches."}</p><Link className="hc-link-guest-cta" href={login}>Sign in or join free</Link></div>:!access.premium&&<p className="hio-note">Free members receive 2 live product link or detail lookups, 1 image search and 2 keyword searches as a one-time allowance. Saved catalogue results do not use credits.</p>}
      <div className="hc-link-platforms"><span>Supported marketplaces</span><ul aria-label="Supported marketplaces"><li>1688</li><li>Taobao</li><li>Tmall</li><li>Weidian</li></ul></div>
     </div>
    </div>
   </section>
-  <ProductLinkResults initialUrl={initialUrl}/>
+  {access.customer&&<ProductLinkResults initialUrl={initialUrl}/>}
  </main>;
 }

@@ -4,7 +4,7 @@ import {createHash} from "node:crypto";
 import {get,put,list} from "@vercel/blob";
 import {currentCustomer,accountOriginValid} from "@/lib/customer-auth";
 import {membershipEntitlement} from "@/lib/membership-access";
-import {discoveryAllowed,type DiscoveryTier} from "@/lib/discovery-access-model";
+import {discoveryAllowed,methodForAction,type DiscoveryTier} from "@/lib/discovery-access-model";
 import {reserveDiscovery,refundDiscovery,discoveryBalance} from "@/lib/discovery-quota";
 import {isOwnerPremiumCustomer} from "@/lib/owner-premium";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
@@ -168,13 +168,14 @@ export async function POST(request:Request){
   if(!["1688","weidian"].includes(channel)||!id||id.length>500)return fail("Invalid product reference.");
   endpoint="detail";payload={...common,channel,id};
  }else return fail("Unsupported action.");
+ const method=methodForAction(action);if(!method)return fail("Unsupported action.");
  const cacheId=hash(JSON.stringify({endpoint,payload})); // image bytes hashed, not persisted
  const prefix=owner?PREFIX:PUBLIC_PREFIX+(action==="image"?hash(customer.id)+"/":"shared/");
  const existing=await readSaved(cacheId,prefix);
  if(existing&&Date.now()-Date.parse(existing.savedAt)<TTL){const result=await cachedResult(existing);return reply(result,"error" in result?404:200);}
  if(!allow())return fail("Please wait a minute before another search.",429);
  let credit:string|undefined;let successful=false;
- if(!owner){try{const reservation=await reserveDiscovery(customer.id,customer.email,tier);if(reservation.status!=="ok")return fail(reservation.status==="account"?"Your live search credits have been used. Cached searches remain available; see Membership for more access.":reservation.status==="daily"?"Your daily safety limit has been reached. Try again tomorrow (UTC).":"Live marketplace capacity is currently full. Cached searches remain available. Try again tomorrow (UTC).",429);credit=reservation.credit;}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
+ if(!owner){try{const reservation=await reserveDiscovery(customer.id,customer.email,tier,method);if(reservation.status!=="ok")return fail(reservation.status==="account"?(tier==="free"?"Your "+(method==="link"?"product link and detail":method==="image"?"image search":"keyword search")+" credits have been used. Cached searches remain available; explore Premium for more.":"Your live search credits have been used. Cached searches remain available; see Membership for more access."):reservation.status==="daily"?"Your daily safety limit has been reached. Try again tomorrow (UTC).":"Live marketplace capacity is currently full. Cached searches remain available. Try again tomorrow (UTC).",429);credit=reservation.credit;}catch{return fail("Live search is temporarily unavailable. Please try again later.",503);}}
  const searchLabel=endpoint==="search"?string(payload.keyword)+" · page "+page:endpoint==="search-by-image"?"Image search · page "+page:endpoint==="parse"?string(payload.url):"Product "+string(payload.id);
  try{
   const response=await fetch("https://api.hiobuy.com/v1/products/"+endpoint,{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify(payload),cache:"no-store",redirect:"error",signal:AbortSignal.timeout(30_000)});

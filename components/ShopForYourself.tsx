@@ -1,16 +1,12 @@
-import {personalAll,personalCollectionPreview,personalCategoryPreview,personalPreview} from "@/lib/catalogue-access";
-import CatalogueLockedPreview from "@/components/CatalogueLockedPreview";
-import {FREE_PAGE_LIMIT,PERSONAL_CATEGORY_LIMIT,freePageWindow} from "@/lib/catalogue-access-model";
-import {PremiumNotice} from "@/components/MembershipPlans";
+import {personalAll} from "@/lib/catalogue-access";
 import {ArrowIcon} from "@/components/ArrowIcon";
 import Link from "next/link";
 import ShopPersonalCard from "@/components/ShopPersonalCard";
 import {ShopAudienceIcon} from "@/components/ShopIcons";
 import {ratesDisclosure,type ShopFxRates} from "@/lib/shop-price";
-import {audienceProducts,type PersonalShopProduct} from "@/lib/personal-shop";
+import {type PersonalShopProduct} from "@/lib/personal-shop";
 import {enrichPersonalCards} from "@/lib/personal-shop-enrichment";
 import {mixPersonalEdit} from "@/lib/personal-shop-edit";
-import {unavailableSourceHashes,isUnavailableSource} from "@/lib/catalogue-unavailable";
 
 type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
@@ -22,9 +18,8 @@ const ORDER:Record<Audience,string[]>={
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
 function nameCompare(a:PersonalShopProduct,b:PersonalShopProduct){return a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});}
 
-export default async function ShopForYourself({filters,rates,premium}:{filters:Filters;rates:ShopFxRates;premium:boolean}){
- const {audience}=filters;const sort=premium?filters.sort:"featured";
- const hidden=await unavailableSourceHashes();
+export default async function ShopForYourself({filters,rates}:{filters:Filters;rates:ShopFxRates}){
+ const {audience}=filters;const sort=filters.sort;
  const [women,men]=await Promise.all([personalAll("women"),personalAll("men")]);
  const available=(a:Audience)=>a==="women"?women:men;
  const everything=available(audience);
@@ -34,30 +29,25 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
  const category=availableCategories.includes(filters.category)?filters.category:"All";
  const query=filters.q.trim().toLowerCase();
  const limitedCategory=category!=="All";
- const source=premium?everything:limitedCategory?await personalCategoryPreview(audience,category):query?await personalPreview(audience):await personalCollectionPreview(audience);
- const totalMatches=(query?source:everything).filter(x=>(!limitedCategory||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query))).length;
+ const source=everything;
  let matching=source.filter(x=>(category==="All"||x.category===category)&&(!query||(x.name+" "+x.category).toLowerCase().includes(query)));
- if(premium)matching.sort((a,b)=>{
+ matching.sort((a,b)=>{
   if(sort==="name")return nameCompare(a,b);
   const ca=ORDER[audience].indexOf(a.category),cb=ORDER[audience].indexOf(b.category);
   return ca-cb || a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
  });
- if(premium&&category==="All"&&!query&&sort==="featured"){const opening=mixPersonalEdit(matching,audience).slice(0,PER_PAGE);const selected=new Set(opening.map(p=>p.id));matching=[...opening,...source.filter(p=>!selected.has(p.id))];}
- const window=freePageWindow(filters.page,totalMatches,limitedCategory,PERSONAL_CATEGORY_LIMIT);
- const pageCount=premium?Math.max(1,Math.ceil(matching.length/PER_PAGE)):window.pages;
- const page=premium?Math.min(pageCount,Math.max(1,filters.page)):window.page;
- const locked=!premium&&window.locked;
- const visible=locked?[]:premium?matching.slice((page-1)*PER_PAGE,page*PER_PAGE):matching.slice(window.start,window.end);
+ if(category==="All"&&!query&&sort==="featured")matching=mixPersonalEdit(matching,audience);
+ const pageCount=Math.max(1,Math.ceil(matching.length/PER_PAGE));
+ const page=Math.min(pageCount,Math.max(1,filters.page));
+ const visible=matching.slice((page-1)*PER_PAGE,page*PER_PAGE);
  const shown=await enrichPersonalCards(visible);
- const showLock=!premium&&(locked||limitedCategory&&totalMatches>visible.length||!limitedCategory&&page===FREE_PAGE_LIMIT&&window.hasLocked);
- const remaining=limitedCategory?Math.max(0,totalMatches-visible.length):Math.max(0,totalMatches-Math.min(totalMatches,FREE_PAGE_LIMIT*PER_PAGE));
  function href(changes:Partial<Filters>){
   const p:Filters={...filters,...changes};
   const q=new URLSearchParams();
   q.set("audience",p.audience);
   if(p.category&&p.category!=="All")q.set("category",p.category);
   if(p.q)q.set("q",p.q);
-  if(premium&&p.sort!=="featured")q.set("sort",p.sort);
+  if(p.sort!=="featured")q.set("sort",p.sort);
   if(p.page>1)q.set("page",String(p.page));
   return "/shop-for-yourself?"+q.toString()+"#browse-finds";
  }
@@ -80,9 +70,9 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
     {sort==="name"&&<input name="sort" type="hidden" value="name"/>}
     <label htmlFor="hc-personal-catalogue-query" className="hc-self-sr-only">Search products</label>
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5.5 5.5"/></svg>
-    <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder={premium?"Search products…":"Search free preview…"} />
+    <input id="hc-personal-catalogue-query" type="search" name="q" defaultValue={filters.q} placeholder="Search products…" />
     <button type="submit">Search <span aria-hidden="true"><ArrowIcon direction="right"/></span></button>
-  </form>}{!premium&&query&&<PremiumNotice feature="the full collection"/>}
+  </form>}
   <div className="hc-personal-category-heading"><span>SHOP BY CATEGORY</span><span>{everything.length.toLocaleString("en-GB")} {audience==="women"?"women’s":"men’s"} finds</span></div>
   <nav className="hc-self-categories hc-personal-categories" aria-label={"Browse "+genderName[audience]+" categories"}>
     <Link className={"hc-self-category"+(category==="All"?" hc-self-category-active":"")} href={href({category:"All",page:1})} aria-current={category==="All"?"page":undefined}>
@@ -93,18 +83,16 @@ export default async function ShopForYourself({filters,rates,premium}:{filters:F
     </Link>)}
   </nav>
   <div className="hc-self-results-caption hc-personal-catalogue-meta">
-    <span><strong>{(premium?matching.length:totalMatches).toLocaleString("en-GB")} products</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
-    {visible.length>0&&<span>{!premium&&limitedCategory?"Free category preview":"Showing "+((page-1)*PER_PAGE+1).toLocaleString("en-GB")+"–"+Math.min((page-1)*PER_PAGE+visible.length,premium?matching.length:totalMatches).toLocaleString("en-GB")}</span>}
+    <span><strong>{matching.length.toLocaleString("en-GB")} products</strong>{category!=="All"?" · "+category:""}{query?' · Search: "'+filters.q.trim()+'"':""}</span>
+    {visible.length>0&&<span>{"Showing "+((page-1)*PER_PAGE+1).toLocaleString("en-GB")+"–"+Math.min((page-1)*PER_PAGE+visible.length,matching.length).toLocaleString("en-GB")}</span>}
   </div>
   {shown.length?
-    <div className={"hc-self-grid hc-personal-grid"+(!premium&&limitedCategory?" hc-free-category":"")}>{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
-    locked?null:<div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
-  {showLock&&<CatalogueLockedPreview personal category={limitedCategory} fullPage={locked&&!limitedCategory} remaining={locked?Math.max(1,remaining):remaining}/>}
-  {!premium&&limitedCategory&&!showLock&&totalMatches>6&&<CatalogueLockedPreview personal category compactOnly remaining={totalMatches-6}/>}
+    <div className="hc-self-grid hc-personal-grid">{shown.map(p=><ShopPersonalCard key={p.id} product={p} rates={rates} audience={audience}/>)}</div>:
+    <div className="hc-self-empty"><strong>No matching finds.</strong><p>Try another search or explore the full collection.</p><Link href={href({category:"All",q:"",sort:"featured",page:1})}>View all products</Link></div>}
   {pageCount>1&&<nav className="hc-self-pagination hc-personal-pagination" aria-label="Personal shop pages">
-    {page>1?<Link href={href({page:locked?(limitedCategory?1:Math.min(FREE_PAGE_LIMIT,pageCount)):page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
+    {page>1?<Link href={href({page:page-1})}><ArrowIcon direction="left"/> Previous</Link>:<span className="is-disabled"><ArrowIcon direction="left"/> Previous</span>}
     <span>Page {page} of {pageCount}</span>
-    {page<pageCount?(premium||!limitedCategory&&page<FREE_PAGE_LIMIT?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<Link href={!limitedCategory&&page===FREE_PAGE_LIMIT?href({page:page+1}):"/membership"}>Unlock more <ArrowIcon direction="right"/></Link>):<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
+    {page<pageCount?<Link href={href({page:page+1})}>Next <ArrowIcon direction="right"/></Link>:<span className="is-disabled">Next <ArrowIcon direction="right"/></span>}
   </nav>}
   <p className="hc-self-table-note">* All prices shown are GBP estimates. {ratesDisclosure(rates)} Original listings are independently hosted. Availability, authenticity, brand permissions, delivery and fees are not guaranteed; Herocon checkout is not live.</p>
  </section>;

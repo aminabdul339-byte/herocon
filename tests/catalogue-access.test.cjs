@@ -3,3 +3,10 @@ const {freeBusinessEdit,preserveBusinessOrder,BUSINESS_PAGE_ONE_ORDER}=require("
 
 test("three category rows desktop; two page cap remains",()=>{const {BUSINESS_CATEGORY_LIMIT,PERSONAL_CATEGORY_LIMIT}=require("../lib/catalogue-access-model.ts");assert.equal(BUSINESS_CATEGORY_LIMIT,9);assert.equal(PERSONAL_CATEGORY_LIMIT,12);assert.equal(freePageWindow(3,1000,false,9).locked,true);});
 test("curated early pages exclude novelty and preserve remaining stock",()=>{const pins=BUSINESS_PAGE_ONE_ORDER.map(id=>item(id));const novelty={...item("novelty","Costumes"),title:"3D headgear cosplay spoof mask"};const choices=Array.from({length:60},(_,i)=>item("decor-"+i,["Lighting","Home & Decor","Nails & Nail Supplies","Dresses"][i%4]));const source=[novelty,...choices,...pins];const result=preserveBusinessOrder(source);assert.deepEqual(result.slice(0,24),pins);assert.ok(result.slice(24,72).every(p=>p!==novelty));assert.equal(result.length,source.length);assert.equal(new Set(result).size,source.length);assert.equal(result[72],novelty);});
+
+test("public browsing routes have no membership gates or blurred preview components",()=>{
+ const fs=require("node:fs");
+ for(const path of ["app/search/page.tsx","components/ShopForYourself.tsx","app/shop-for-yourself/[id]/page.tsx","app/product/[id]/page.tsx","app/seller/[id]/page.tsx"]){const source=fs.readFileSync(path,"utf8");assert.doesNotMatch(source,/CatalogueLockedPreview|PremiumNotice|access\.premium|hc-free-category|freePageWindow|hc-plan-locked/,path);}
+ const find=fs.readFileSync("app/find-product/page.tsx","utf8");assert.doesNotMatch(find,/if\(!access.customer\)return/);assert.match(find,/<ProductLinkForm/);assert.match(find,/access.customer&&<ProductLinkResults/);
+ const catalogue=fs.readFileSync("lib/catalogue-access.ts","utf8");assert.match(catalogue,/accessibleBusinessProducts=cache\(async\(\)=>getProducts\(\)\)/);
+});

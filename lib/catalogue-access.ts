@@ -17,12 +17,8 @@ export const businessCategoryPreview=cache(async(name:string)=>{
  const full=await getProducts();const all=full.filter(p=>p.category===name);const preferred=earlyBusinessEdit(full).filter(p=>p.category===name);const ranked=[...new Map([...preferred,...rankBusinessCategory(all)].map(p=>[productId(p),p])).values()];
  return (name==="Jewellery"?prioritizeJewelleryDiscovery(ranked):name==="Wigs & Hair Extensions"?prioritizeHairDiscovery(ranked):ranked).slice(0,BUSINESS_CATEGORY_LIMIT);
 });
-export const accessibleBusinessProducts=cache(async()=>{const all=await getProducts();if((await catalogueAccess()).premium)return all;
- const categories=await Promise.all([...new Set(all.map(p=>p.category||""))].map(businessCategoryPreview));const preview=await businessPreview();
- // Keep explicitly selected homepage products available without changing the free catalogue edit.
- const featured=all.filter(p=>featuredPreviewIds.some(id=>id===productId(p)));
- return [...new Map([...preview,...categories.flat(),...featured].map(p=>[productId(p),p])).values()];
-});
+// All eligible catalogue products are public; paid discovery remains separately gated.
+export const accessibleBusinessProducts=cache(async()=>getProducts());
 export const personalAll=cache(async(audience:"women"|"men")=>{const hidden=await unavailableSourceHashes();return audienceProducts(audience).filter(p=>!isUnavailableSource(p.originalUrl,hidden));});
 const personalOrder={women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]};
 const nameCompare=(a:PersonalShopProduct,b:PersonalShopProduct)=>a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
@@ -32,4 +28,4 @@ export const personalCategoryPreview=cache(async(audience:"women"|"men",name:str
  const rest=(await personalAll(audience)).filter(p=>p.category===name).sort(nameCompare);
  return [...new Map([...preferred,...rest].map(p=>[p.id,p])).values()].slice(0,PERSONAL_CATEGORY_LIMIT);
 });
-export const personalPreview=cache(async(audience:"women"|"men")=>{const all=await personalAll(audience);return [...new Map([...(await personalCollectionPreview(audience)),...(await Promise.all([...new Set(all.map(p=>p.category))].map(c=>personalCategoryPreview(audience,c)))).flat()].map(p=>[p.id,p])).values()];});
+export const personalPreview=cache(async(audience:"women"|"men")=>personalAll(audience));
