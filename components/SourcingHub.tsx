@@ -9,27 +9,27 @@ function Glyph({name}:{name:GlyphName}){
  </svg>;
 }
 const methods=[
- {name:"keyword",title:"Keyword search",subtitle:"Describe a product",href:"/find-product?method=keyword"},
- {name:"image",title:"Image search",subtitle:"Find matches by photo",href:"/find-product?method=image"},
- {name:"link",title:"Paste a product link",subtitle:"Look up a marketplace listing",href:"/find-product"}
+ {name:"keyword",title:"Keyword search",subtitle:"Describe an item",href:"/find-product?method=keyword"},
+ {name:"image",title:"Image search",subtitle:"Upload a photo",href:"/find-product?method=image"},
+ {name:"link",title:"Product link",subtitle:"Paste a URL",href:"/find-product"}
 ] as const;
 
 export default function SourcingHub({children,expanded}:{children:ReactNode;expanded:boolean}){
  if(!expanded)return <div className="hc-sourcing-compact">{children}<Link href="/find-product?method=keyword" prefetch={false} className="hc-sourcing-compact-link"><Glyph name="discover"/> Can't find it? Try the Product Finder <ArrowIcon direction="right"/></Link></div>;
  return <div className="hc-sourcing-hub" aria-label="Choose how to source products">
   <section className="hc-sourcing-mode hc-sourcing-catalogue" aria-labelledby="hc-source-catalogue">
-   <div className="hc-sourcing-mode-label"><span className="hc-sourcing-mode-icon"><Glyph name="catalogue"/></span><span>EXPLORE HEROCON</span></div>
+   <div className="hc-sourcing-mode-label">THE CATALOGUE</div>
    <h2 id="hc-source-catalogue">Explore the catalogue.</h2>
-   <p className="hc-sourcing-description">Explore our curated collection of sourced products.</p>
+   <p className="hc-sourcing-description">Browse our curated collection of sourced products.</p>
    <div className="hc-sourcing-search">{children}</div>
    <p className="hc-sourcing-foot">No account needed.</p>
   </section>
   <section className="hc-sourcing-mode hc-sourcing-finder" aria-labelledby="hc-source-finder">
-   <div className="hc-sourcing-mode-label"><span className="hc-sourcing-mode-icon"><Glyph name="discover"/></span><span>THE HEROCON PRODUCT FINDER</span></div>
+   <div className="hc-sourcing-mode-label">PRODUCT FINDER</div>
    <h2 id="hc-source-finder">Find your own products.</h2>
-   <p className="hc-sourcing-description">Discover new products directly from Chinese marketplaces.</p>
+   <p className="hc-sourcing-description">Search beyond the catalogue, directly from Chinese marketplaces.</p>
    <div className="hc-sourcing-methods">{methods.map(method=><Link key={method.name} className="hc-sourcing-method" href={method.href} prefetch={false}><span className="hc-sourcing-method-icon"><Glyph name={method.name}/></span><span className="hc-sourcing-method-copy"><strong>{method.title}</strong><small>{method.subtitle}</small></span></Link>)}</div>
-   <p className="hc-sourcing-foot">Try live discovery with a free account. Availability varies by marketplace.</p>
+   <p className="hc-sourcing-foot">Try with a free account. Availability varies by marketplace.</p>
   </section>
  </div>;
 }
