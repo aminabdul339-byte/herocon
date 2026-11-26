@@ -22,3 +22,16 @@ test("restored homepage has four featured cards with the requested dress and no 
  const detail=await fetch(site+"/product/8t3fo9eRc1lLdPqNSasQ2w",{signal:AbortSignal.timeout(25000)});assert.equal(detail.status,200);
  const product=await detail.text();assert.doesNotMatch(product,/This product is in the Premium catalogue\./);assert.match(product,/Bodycon/i);
 });
+
+test("public catalogue browsing is unblurred past the former free limit, with filters, product detail and related products",async()=>{
+ const get=async path=>{const r=await fetch(site+path,{signal:AbortSignal.timeout(25000)});assert.equal(r.status,200,path);return r.text();};
+ const member=await get("/membership");if(!member.includes("Full catalogue browsing, search and filters"))return; // existing release baseline
+ const paths=["/search?page=3","/search?category=Dresses&page=2","/search?q=dress&sort=price-asc","/shop-for-yourself?audience=women&page=3","/shop-for-yourself?audience=men&page=3","/shop-for-yourself?audience=women&category=Bags&page=2"];
+ for(const path of paths){const html=await get(path);assert.doesNotMatch(html,/class="hc-locked-preview|class="hc-plan-locked|hc-free-category|Unlock more products with Premium/);assert.match(html,/href="\/(product|shop-for-yourself)\/[A-Za-z0-9_-]+/);assert.match(html,/Page (?:2|3) of|matching/);}
+ const product=await get("/product/8t3fo9eRc1lLdPqNSasQ2w");assert.match(product,/You may also like/);assert.doesNotMatch(product,/This product is in the Premium catalogue/);
+ const personal=await get("/shop-for-yourself?audience=women&page=3");const link=personal.match(/href="(\/shop-for-yourself\/[A-Za-z0-9_-]+[^"]*)"/)?.[1];assert.ok(link);const detail=await get(link.replace(/&amp;/g,"&"));assert.match(detail,/You might also/);assert.doesNotMatch(detail,/This product is in the Premium catalogue/);
+ const find=await get("/find-product");assert.match(find,/hc-link-input-panel/);assert.match(find,/name="url"/);assert.match(find,/Keyword search/);assert.match(find,/Image search/);assert.doesNotMatch(find,/class="hc-plan-locked"/);
+ const known=await fetch(site+"/find-product?url="+encodeURIComponent("https://detail.1688.com/offer/1006700876793.html"),{redirect:"manual",signal:AbortSignal.timeout(25000)});assert.ok([307,308].includes(known.status));assert.match(known.headers.get("location")||"",/\/product\/8t3fo9eRc1lLdPqNSasQ2w$/);
+ for(const method of ["keyword","image"]){const html=await get("/find-product?method="+method);assert.match(html,/hc-link-input-panel/);assert.match(html,/Sign in or join free/);}
+ assert.doesNotMatch(member,/Full catalogue requires Premium|Curated catalogue preview/);
+});
