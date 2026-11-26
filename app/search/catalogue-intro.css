@@ -239,3 +239,9 @@ html body .hc-site .sc-catalogue-page .hc-sourcing-mode h2{font-size:clamp(21px,
 .hc-site .sc-catalogue-page .hc-sourcing-intro-expanded .hc-discovery-edits{margin-top:14px}
 @media(min-width:1150px){.hc-site .sc-catalogue-page .hc-sourcing-hub{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
 @media(max-width:800px){.hc-site .sc-catalogue-page .hc-sourcing-hub{gap:10px;margin-top:12px}.hc-site .sc-catalogue-page .hc-sourcing-mode{padding:14px}.hc-site .sc-catalogue-page .hc-sourcing-method{min-height:44px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page{flex-wrap:nowrap;border-radius:999px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page input:not([type=hidden]){flex:1 1 0%;font-size:16px}.hc-site .sc-catalogue-page .hc-sourcing-search .sc-searchbar-page button{width:auto;min-height:44px}}
+
+/* Short, arrow-free discovery actions, aligned to the left of the finder. */
+.hc-site .sc-catalogue-page .hc-sourcing-methods{width:100%;max-width:390px;justify-items:stretch;align-self:flex-start}
+.hc-site .sc-catalogue-page .hc-sourcing-method{width:100%;padding:6px 11px;gap:8px;min-height:39px}
+.hc-site .sc-catalogue-page .hc-sourcing-method-copy{flex:1 1 auto;column-gap:8px}
+@media(max-width:800px){.hc-site .sc-catalogue-page .hc-sourcing-methods{max-width:360px}.hc-site .sc-catalogue-page .hc-sourcing-method{min-height:44px}}
