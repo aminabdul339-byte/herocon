@@ -11,7 +11,7 @@ function audience(gender){
  return products.filter(p=>{
   if(!accepted.has(p.category)||!p.originalUrl||!p.imageUrl||seenLinks.has(p.originalUrl)||seenImages.has(p.imageUrl))return false;
   seenLinks.add(p.originalUrl);seenImages.add(p.imageUrl);
-  return (p.gender===gender||p.gender==='unisex')&&(gender!=='women'||p.category!=='Clothing');
+  return (p.gender===gender||p.gender==='unisex')&&(gender!=='women'||p.category!=='Clothing'||p.source==='zaba-women-20261127');
  });
 }
 test('women feature Coach handbag second without removing or shifting other listings',()=>{
@@ -52,3 +52,5 @@ test('small or missing categories do not drop products',()=>{
 });
 
 test("personal display names preserve the previous release instead of the business naming index",()=>{const m={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync("lib/previous-personal-names.ts","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,{module:m,exports:m.exports,require:n=>{if(n==="@/data/previous-personal-names.json")return {abc:{url:"https://weidian.com/item.html?itemID=12345",image:"https://example.com/image.jpg",title:"Classic Shoulder Bag",status:"saved"}};throw Error(n)}});assert.equal(m.exports.previousPersonalName("abc","https://weidian.com/item.html?itemID=12345","https://example.com/image.jpg"),"Classic Shoulder Bag");assert.equal(m.exports.previousPersonalName("abc","https://weidian.com/item.html?itemID=12346","https://example.com/image.jpg"),undefined);assert.equal(m.exports.previousPersonalName("abc","https://weidian.com/item.html?itemID=12345","https://example.com/other.jpg"),undefined);assert.match(fs.readFileSync("lib/personal-shop.ts","utf8"),/name:previousPersonalName\(p.id,originalUrl,p.imageUrl\)\|\|withoutEmoji\(p.name\)/);});
+
+test("ZABA import belongs only to women's edit and has direct links and reference prices",()=>{const rows=products.filter(p=>p.source==="zaba-women-20261127");assert.equal(rows.length,43);assert.equal(new Set(rows.map(p=>p.originalUrl)).size,rows.length);assert.ok(rows.every(p=>p.gender==="women"&&/^https:\/\/item\.taobao\.com\/item\.htm\?id=\d+$/.test(p.originalUrl)&&p.priceGBP>0&&p.imageUrl.startsWith("https://img.alicdn.com/")));assert.ok(rows.every(p=>audience("women").some(x=>x.id===p.id)));assert.ok(rows.every(p=>!audience("men").some(x=>x.id===p.id)));});
