@@ -28,13 +28,10 @@ for(const p of parsed){
 export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);
 
-/** The Women’s Edit is accessories-led; clothing is a Men’s Edit-only category.
- * Sportswear is omitted from the personal catalogue completely.
- * Keep original data untouched so nothing is destructively deleted.
- */
+/** The new ZABA women’s clothing collection is explicitly included; preserve the previous editorial exclusions for legacy clothing. */
 export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>
  (p.gender===audience||p.gender==="unisex") &&
- (audience!=="women"||p.category!=="Clothing")
+ (audience!=="women"||p.category!=="Clothing"||p.source==="zaba-women-20261127")
 );
 
 export const productPrice=(p:PersonalShopProduct):string=>{

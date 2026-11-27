@@ -7,7 +7,7 @@ import "./personal-shop-v2.css";
 
 export const metadata:Metadata={
  title:"Shop for Yourself — Women’s & Men’s Collections | Herocon",
- description:"Discover women's handbags, men's fashion, and shared unisex shoes and sunglasses. Browse real item photographs and original Weidian, Taobao and 1688 listings."
+ description:"Discover women's clothing and handbags, men's fashion, and shared unisex shoes and sunglasses. Browse real item photographs and original Weidian, Taobao and 1688 listings."
 };
 export const dynamic="force-dynamic";
 

@@ -14,7 +14,7 @@ type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
 const PER_PAGE=24;
 const ORDER:Record<Audience,string[]>={
- women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],
+ women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches","Clothing"],
  men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]
 };
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
@@ -58,7 +58,7 @@ export default async function ShopForYourself({filters,rates}:{filters:Filters;r
     <div>
       <p className="hc-self-eyebrow">THE PERSONAL EDIT <span className="hc-personal-kicker-mark">/</span> {audience==="women"?"WOMEN":"MEN"}</p>
       <h1 id="hc-self-listing-title">Shop for <em>{audience==="women"?"women.":"men."}</em></h1>
-      <p>{audience==="women"?"Handbags, jewellery, shoes and accessories — all with original marketplace links.":"Clothing, footwear and accessories — curated from original marketplace sources."}</p>
+      <p>{audience==="women"?"Clothing, handbags, jewellery, shoes and accessories — all with original marketplace links.":"Clothing, footwear and accessories — curated from original marketplace sources."}</p>
     </div>
     <nav className="hc-personal-audience" aria-label="Choose who to shop for">
       {(["women","men"] as const).map(option=><Link key={option} href={href({audience:option,category:"All",q:"",page:1,sort:"featured"})} className={audience===option?"is-active":""} aria-current={audience===option?"page":undefined}>
