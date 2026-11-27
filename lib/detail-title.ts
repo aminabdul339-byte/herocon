@@ -70,3 +70,38 @@ export function titleFromDetails(p:Product,e:NameEvidence,personal=false):string
  if(colour&&!name.toLowerCase().includes(colour.toLowerCase())&&!/\b(?:gold-plated|sterling silver)\b/i.test(name)&&!/\b(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|navy|mint)\b/i.test(name))name=add(name,colour);
  return norm(name).slice(0,150)||original;
 }
+
+/** Preserve the original listing wording rather than running the title through
+ * generic category labels again. Only unmistakable sales boilerplate is removed.
+ * Source claims remain supplier claims; never infer a brand or material. */
+export function cleanOriginalListingTitle(value:string):string{
+ return norm(value).replace(/&amp;/gi,"&")
+  .replace(/\b(?:cross[- ]border|factory direct sale|factory direct sales|manufacturer direct sales|foreign trade|hot selling|hot sale|new arrival|new arrivals|in stock|ready stock|wholesale price)\b/gi," ")
+  .replace(/\s+([,;:])/g,"$1").replace(/(?:\s*[,;|]\s*){2,}/g,", ").replace(/^[\s,;|–—-]+|[\s,;|–—-]+$/g,"")
+  .replace(/\s+/g," ").trim();
+}
+const weak=(s:string)=>generic(s)||/^(?:ring|necklace|earrings?|bracelet|bag|dress|clothing|wig|shoes?|watch|hair clip|crochet flower bouquet|flower bouquet|makeup brush set|fashion accessories|jewellery|home decor)(?:\s*[-#]?\s*\d+)?$/i.test(s.trim());
+export function originalListingEvidence(p:Product,e:NameEvidence,personal=false):{original:string;name:string;fallback:string}{
+ const imported=norm(p.originalTitle||p.title),supplier=norm(e.title);
+ const english=(s:string)=>!!s&&!/[\u3400-\u9fff]/.test(s);
+ // Business details show the imported Original listing title; personal
+ // imported labels are often editorial, so use the saved supplier title.
+ const original=personal&&supplier?supplier:imported||supplier;
+ const source=personal&&english(supplier)&&!weak(supplier)?supplier:
+  english(imported)&&!weak(imported)?imported:
+  english(supplier)&&!weak(supplier)?supplier:original;
+ const fallback=cleanOriginalListingTitle(source)||source;
+ const enriched=titleFromDetails(p,e,personal);
+ const id=p.doppelProductId||"";
+ // These explicit image-reviewed corrections avoid restoring known misleading
+ // supplier descriptions. Other generic/editorial aliases no longer win.
+ if(["DgoQWJ3vpr7IwjtVXqAyKA","OpohXCbwOZlcaz5oQkeBCQ","yXvk725eTqDy7uIaBMAuUQ"].includes(id))return {original,name:"Gold-Tone Crown Signet Ring",fallback:"Gold-Tone Crown Signet Ring"};
+ if(id==="link-c98a18758ce75c64bc7154e2a4ba")return {original,name:"Green Crochet Tulip Bouquet",fallback};
+ if(/Moissanite or Zircon/i.test(enriched))return {original,name:enriched,fallback:enriched};
+ if(weak(fallback)&&enriched&&!weak(enriched))return {original,name:enriched,fallback};
+ // Use the original descriptive wording even if a concise label is available.
+ // Add a verified extra colour only when the listing itself does not name one.
+ const colour=enriched.match(/^(?:(?:Light|Dark|Dusty|Pastel|Baby|Royal|Sage|Olive|Deep|Hot) )?(?:Red|Pink|Yellow|Green|Blue|Purple|Orange|White|Black|Brown|Beige|Grey|Cream|Ivory|Burgundy|Lilac|Lavender|Peach|Coral|Navy|Mint|Champagne)\b/)?.[0];
+ const name=colour&&!/\b(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|peach|coral|navy|mint|champagne)\b/i.test(fallback)?colour+" "+fallback:fallback;
+ return {original,name:name||enriched||imported,fallback:fallback||enriched||imported};
+}

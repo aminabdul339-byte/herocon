@@ -57,7 +57,7 @@ export default async function ShopProductPage({params,searchParams}:Params){
  const amount=priceAmountGbp(item,rates);
  const product:Product={
   canonicalId:"personal:"+item.id,doppelProductId:item.id,
-  title:item.name,displayTitle:item.name,originalTitle:item.name,
+  title:item.name,displayTitle:item.name,originalTitle:item.originalTitle||item.name,
   category:item.category,
   imageUrl:item.imageUrl,
   images:[...new Set([item.imageUrl,...(saved?.images||[]),...(source?.images||[])])].slice(0,36),

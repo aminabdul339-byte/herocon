@@ -282,7 +282,7 @@ export default function ProductExperience({product,id,title,images,price,buckydr
       
       {source?.moq!=null&&<><dt>Minimum order</dt><dd>{source.moq} units</dd></>}
       {(source?.variants.length||product.variantCount||0)>0&&<><dt>Seller options recorded</dt><dd>{source?.variants.length||product.variantCount} variants</dd></>}
-      {product.originalTitle&&product.originalTitle!==title&&<><dt>Original listing title</dt><dd>{product.originalTitle}</dd></>}
+      {product.originalTitle&&<><dt>Original listing title</dt><dd>{product.originalTitle}</dd></>}
       {product.weight&&<><dt>Weight</dt><dd>{product.weight}</dd></>}
       {product.dimensions&&<><dt>Dimensions</dt><dd>{product.dimensions}</dd></>}
       {detailAttributes.map(attr=><div className="hc-spec-pair" key={attr.name}><dt>{attr.name}</dt><dd>{attr.value}</dd></div>)}

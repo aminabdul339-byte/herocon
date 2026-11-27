@@ -104,8 +104,8 @@ function crochetBouquetTitle(p:Product,plain:string):string{
 }
 
 export function conciseProductTitle(p:Product):string{
- const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
  if(p.auditedTitle?.trim())return p.auditedTitle;
+ const chosen=editorialNames[p.doppelProductId||p.canonicalId?.replace(/^doppel:/,"")||""];if(chosen)return chosen;
  const primary=p.displayTitle||p.title||p.originalTitle||"";
  const richer=[p.supplierTitle,p.originalTitle].filter((v):v is string=>!!v&&v.trim().length>primary.trim().length+12).sort((a,b)=>b.length-a.length)[0];
  const raw=withoutEmoji((/^(?:ring|necklace|earrings?|bracelet|bag|dress|product|clothing|wig|shoes?|watch|hair clip|other)(?:\s*[-#]?\s*\d+)?$/i.test(primary.trim())&&richer?richer:primary).trim()).replace(/&amp;/gi,"&");
