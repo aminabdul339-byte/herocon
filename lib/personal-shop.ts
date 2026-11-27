@@ -1,5 +1,6 @@
 import source from "@/data/shop-personal-merged.json";
-import {savedAuditedTitle,savedOriginalListingTitle} from "@/lib/detail-name-index";
+import {savedOriginalListingTitle} from "@/lib/detail-name-index";
+import {previousPersonalName} from "@/lib/previous-personal-names";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 import {withoutEmoji} from "@/lib/emoji-free";
@@ -22,7 +23,7 @@ for(const p of parsed){
     seenLinks.has(originalUrl)||seenImages.has(p.imageUrl))continue;
  seenLinks.add(originalUrl);
  seenImages.add(p.imageUrl);
- filtered.push({...p,originalTitle:savedOriginalListingTitle("personal",p.id,originalUrl)||p.name,name:savedAuditedTitle("personal",p.id,originalUrl,p.imageUrl)||withoutEmoji(p.name).replace(/\s+/g," ").trim(),originalUrl});
+ filtered.push({...p,originalTitle:savedOriginalListingTitle("personal",p.id,originalUrl)||p.name,name:previousPersonalName(p.id,originalUrl,p.imageUrl)||withoutEmoji(p.name).replace(/\s+/g," ").trim(),originalUrl});
 }
 export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);
