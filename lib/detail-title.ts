@@ -20,7 +20,14 @@ function add(name:string,part:string){return !part||name.toLowerCase().includes(
  * A colour describes the displayed photo only if its asset matches a unique variant.
  * If the whole listing has one colour, that colour can describe the listing. */
 export function titleFromDetails(p:Product,e:NameEvidence,personal=false):string{
- const original=norm(p.title),supplier=norm(e.title),specs=e.sourceSpecs||[],variants=e.variants||[];
+ const original=norm(p.title),supplier=norm(e.title),variants=e.variants||[];
+ const specs=[...(e.sourceSpecs||[])];
+ // Only explicit, labelled description fields are used as naming evidence.
+ // Marketing paragraphs may describe accessories, other products or shipping.
+ const description=e.descriptionText||"";
+ for(const m of description.matchAll(/(?:^|[\n;|])\s*(product name|product type|flower type|flower variety|pattern|shape|hair texture|nail shape|style|material|colou?r)\s*[:：]\s*([^;\n|]{1,70})(?=$|[;\n|])/gi)){
+  if(!specs.some(s=>s.name.toLowerCase()===m[1].toLowerCase()))specs.push({name:m[1],value:m[2].trim()});
+ }
  const primary=photo(p.imageUrl),matched=variants.filter(v=>primary&&photo(v.image)===primary);
  const variantColours=unique(variants.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>a.value)));
  const matchingColours=unique(matched.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>a.value)));
@@ -31,12 +38,21 @@ export function titleFromDetails(p:Product,e:NameEvidence,personal=false):string
  const matchedDesign=unique(matched.flatMap(v=>attrs(v).filter(a=>designKey.test(a.name.trim())).map(a=>a.value)));
  const allDesign=unique(variants.flatMap(v=>attrs(v).filter(a=>designKey.test(a.name.trim())).map(a=>a.value)));
  const designText=[...designValues.filter(v=>v.length<=55),...(matchedDesign.length===1?matchedDesign:allDesign.length===1?allDesign:[])].join(" ");
- const sourceName=supplier&&!generic(supplier)&&!(/[\u3400-\u9fff]/.test(supplier))?supplier:original;
+ const typeHint=specs.find(s=>/^(?:product name|product type|item type)$/i.test(s.name.trim())&&s.value.length<=70)?.value||"";
+ const sourceName=supplier&&!generic(supplier)&&!(/[\u3400-\u9fff]/.test(supplier))?supplier:generic(original)&&typeHint&&!generic(typeHint)?typeHint:original;
  // Keep personal model/collection names when source title does not supply a
  // reliable alternative. Use normal business title rules for supplier evidence.
  let name=personal?original:conciseProductTitle({...p,title:sourceName,displayTitle:undefined,originalTitle:sourceName,supplierTitle:supplier,sourceSpecs:specs,variants, titleHints:{colours:variants.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>({image:photo(v.image),value:a.value}))),variety:specs.find(s=>/^(?:variety|flower type|flower variety)$/i.test(s.name))?.value},imageUrl:primary});
  if(personal&&generic(name)&&sourceName!==original)name=conciseProductTitle({...p,title:sourceName,displayTitle:undefined,originalTitle:sourceName,sourceSpecs:specs,variants});
  const context=[sourceName,designText].join(" ");
+ if(p.category==="Flowers & Gifts"&&/\b(?:crochet|knitted|yarn|wool)\b/i.test(sourceName)&&/\bbouquet\b/i.test(sourceName)){
+  const flowers=[[/\bsunflowers?\b/i,"Sunflower"],[/\btulips?\b/i,"Tulip"],[/\broses?\b/i,"Rose"],[/\bcarnations?\b/i,"Carnation"],[/\bdais(?:y|ies)\b/i,"Daisy"],[/\blil(?:y|ies)\b/i,"Lily"],[/\bpeon(?:y|ies)\b/i,"Peony"],[/\bhydrangeas?\b/i,"Hydrangea"]] as const;
+  const local=unique(matched.flatMap(v=>[v.label||"",...attrs(v).filter(a=>colourKey.test(a.name.trim())||designKey.test(a.name.trim())).map(a=>a.value)]));
+  const localFlowers=flowers.filter(([r])=>local.some(x=>r.test(x)));
+  const specified=flowers.filter(([r])=>designValues.some(x=>r.test(x)));
+  const chosen=localFlowers.length===1?localFlowers[0][1]:specified.length===1?specified[0][1]:"";
+  if(chosen&&/\bCrochet Flower Bouquet\b/i.test(name))name=name.replace(/\bCrochet Flower Bouquet\b/i,"Crochet "+chosen+" Bouquet").replace(/ – Assorted Flower Designs$/,"");
+ }
  const isRing=/\bring\b/i.test(name)&&p.category==="Jewellery";
  const evidenceText=[...specs.map(s=>s.value),...variants.flatMap(v=>[v.label||"",...attrs(v).map(a=>a.value)])].join(" ");
  // The source can offer different gemstone materials even though the headline
