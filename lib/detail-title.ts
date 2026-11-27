@@ -1,0 +1,56 @@
+import type {Product,Variant} from "./types";
+import {conciseProductTitle} from "./product-title";
+import {withoutEmoji} from "./emoji-free";
+type Spec={name:string;value:string};
+export type NameEvidence={title?:string;descriptionText?:string;sourceSpecs?:Spec[];variants?:Variant[];images?:string[]};
+const norm=(s?:string)=>withoutEmoji(s||"").replace(/\s+/g," ").trim();
+const generic=(s:string)=>/^(?:product(?: details)?|marketplace product|other|unknown|untitled|[.\d#\s-]+)$/i.test(s.trim());
+const photo=(s?:string)=>{if(!s)return "";try{const u=new URL(s);if(/(?:^|\.)alicdn\.com$/.test(u.hostname))return (u.pathname.split("/").pop()||"").replace(/(\.(?:jpg|jpeg|png|webp))(?:_.*|\.webp)$/i,"$1");if(/(?:^|\.)geilicdn\.com$/.test(u.hostname))return u.origin+u.pathname;return u.href}catch{return s;}};
+const cap=(s:string)=>s.toLowerCase().replace(/\b[a-z]/g,x=>x.toUpperCase()).replace(/\bGray\b/g,"Grey");
+const unique=(a:string[])=>[...new Set(a.map(x=>norm(x).toLowerCase()).filter(Boolean))];
+const colours=/^(?:(?:light|dark|dusty|pastel|baby|royal|sage|olive|deep|hot)\s+)?(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|peach|coral|navy|mint|champagne|silver|gold)$/i;
+const colourKey=/^(?:product\s+)?(?:colou?r|colou?r classification|colourway|颜色|颜色分类)$/i;
+const designKey=/^(?:style|design|pattern|shape|flower type|flower variety|variety|hair texture|texture|nail shape|款式|图案|形状)$/i;
+const attrs=(v:Variant):Spec[]=>[...(v.attributes||[]),...(v.colour?[{name:"Colour",value:v.colour}]:[]),...(v.style?[{name:"Style",value:v.style}]:[]),...(v.material?[{name:"Material",value:v.material}]:[])];
+const specificDesign: [RegExp,string][]=[
+ [/\b(?:six[ -]claw|six[ -]prong|6[ -]claw|6[ -]prong)\b/i,"Six-Prong"],[/\b(?:four[ -]claw|four[ -]prong|4[ -]claw|4[ -]prong)\b/i,"Four-Prong"],[/\b(?:signet)\b/i,"Signet"],[/\b(?:halo setting|halo ring)\b/i,"Halo"],[/\b(?:oval cut|oval shaped|oval shape)\b/i,"Oval-Cut"],[/\b(?:emerald cut|emerald-cut)\b/i,"Emerald-Cut"],[/\b(?:pear cut|pear-shaped)\b/i,"Pear-Shaped"],[/\b(?:square cut|square-shaped)\b/i,"Square-Cut"],[/\b(?:heart shaped|heart-shaped)\b/i,"Heart-Shaped"],[/\b(?:round brilliant|round cut)\b/i,"Round-Cut"],[/\b(?:french tip|french-tip)\b/i,"French-Tip"],[/\balmond\b/i,"Almond"],[/\bcoffin\b/i,"Coffin"],[/\b(?:wide leg|wide-leg)\b/i,"Wide-Leg"],[/\b(?:square neck|square-neck)\b/i,"Square-Neck"],[/\b(?:halter neck|halter-neck)\b/i,"Halter-Neck"],[/\b(?:floral print|flower print)\b/i,"Floral"],[/\b(?:striped|stripes)\b/i,"Striped"],[/\b(?:polka dot|polka-dot)\b/i,"Polka-Dot"],[/\b(?:houndstooth|houndstooth pattern)\b/i,"Houndstooth"],[/\b(?:deep wave|deep-wave)\b/i,"Deep-Wave"],[/\b(?:body wave|body-wave)\b/i,"Body-Wave"]
+];
+function add(name:string,part:string){return !part||name.toLowerCase().includes(part.toLowerCase())?name:part+" "+name;}
+/** Use source-linked evidence, not arbitrary adjectives from a long seller description.
+ * A colour describes the displayed photo only if its asset matches a unique variant.
+ * If the whole listing has one colour, that colour can describe the listing. */
+export function titleFromDetails(p:Product,e:NameEvidence,personal=false):string{
+ const original=norm(p.title),supplier=norm(e.title),specs=e.sourceSpecs||[],variants=e.variants||[];
+ const primary=photo(p.imageUrl),matched=variants.filter(v=>primary&&photo(v.image)===primary);
+ const variantColours=unique(variants.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>a.value)));
+ const matchingColours=unique(matched.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>a.value)));
+ const specColours=unique(specs.filter(s=>colourKey.test(s.name.trim())).map(s=>s.value));
+ const selected=matchingColours.length===1?matchingColours[0]:variantColours.length===1?variantColours[0]:variantColours.length===0&&specColours.length===1?specColours[0]:"";
+ const colour=colours.test(selected)?cap(selected):"";
+ const designValues=unique(specs.filter(s=>designKey.test(s.name.trim())).map(s=>s.value));
+ const matchedDesign=unique(matched.flatMap(v=>attrs(v).filter(a=>designKey.test(a.name.trim())).map(a=>a.value)));
+ const allDesign=unique(variants.flatMap(v=>attrs(v).filter(a=>designKey.test(a.name.trim())).map(a=>a.value)));
+ const designText=[...designValues.filter(v=>v.length<=55),...(matchedDesign.length===1?matchedDesign:allDesign.length===1?allDesign:[])].join(" ");
+ const sourceName=supplier&&!generic(supplier)&&!(/[\u3400-\u9fff]/.test(supplier))?supplier:original;
+ // Keep personal model/collection names when source title does not supply a
+ // reliable alternative. Use normal business title rules for supplier evidence.
+ let name=personal?original:conciseProductTitle({...p,title:sourceName,displayTitle:undefined,originalTitle:sourceName,supplierTitle:supplier,sourceSpecs:specs,variants, titleHints:{colours:variants.flatMap(v=>attrs(v).filter(a=>colourKey.test(a.name.trim())).map(a=>({image:photo(v.image),value:a.value}))),variety:specs.find(s=>/^(?:variety|flower type|flower variety)$/i.test(s.name))?.value},imageUrl:primary});
+ if(personal&&generic(name)&&sourceName!==original)name=conciseProductTitle({...p,title:sourceName,displayTitle:undefined,originalTitle:sourceName,sourceSpecs:specs,variants});
+ const context=[sourceName,designText].join(" ");
+ const isRing=/\bring\b/i.test(name)&&p.category==="Jewellery";
+ const evidenceText=[...specs.map(s=>s.value),...variants.flatMap(v=>[v.label||"",...attrs(v).map(a=>a.value)])].join(" ");
+ // The source can offer different gemstone materials even though the headline
+ // advertises only one. Never label the entire listing as one gemstone.
+ if(isRing){
+  const multi=/\bmoissanite\b/i.test(evidenceText)&&/\b(?:zircon|zirconia)\b/i.test(evidenceText);
+  const motif=specificDesign.slice(0,9).find(([r])=>r.test(context))?.[1];
+  if(multi){name=[motif,/\bsterling silver\b/i.test(sourceName)&&!/\b(?:imitation|plated|silver tone)\b/i.test(sourceName)?"Sterling Silver":"","Ring – Moissanite or Zircon"].filter(Boolean).join(" ");return name;}
+  if(/\b(?:simulated|simulation|imitation|fake|faux)\b/i.test(sourceName))name=name.replace(/\bMoissanite\b/gi,"").replace(/\s+/g," ").trim();
+  if(motif)name=add(name,motif);
+ }
+ const design=specificDesign.find(([r,label])=>r.test(context)&&!name.toLowerCase().includes(label.toLowerCase()))?.[1];
+ if(design&&designText&&specificDesign.some(([r,label])=>label===design&&r.test(designText)))name=add(name,design);
+ // Use the matched/sole option rather than a colour listed only as gift wrapping.
+ if(colour&&!name.toLowerCase().includes(colour.toLowerCase())&&!/\b(?:gold-plated|sterling silver)\b/i.test(name)&&!/\b(?:red|pink|yellow|green|blue|purple|orange|white|black|brown|beige|grey|gray|cream|ivory|burgundy|lilac|lavender|navy|mint)\b/i.test(name))name=add(name,colour);
+ return norm(name).slice(0,150)||original;
+}
