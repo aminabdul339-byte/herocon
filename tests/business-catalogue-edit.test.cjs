@@ -138,3 +138,15 @@ test("product titles retain object type without promotional cross or misleading 
  assert.equal(conciseTitle({title:"Cross-border lace wig cap elastic hair net",category:"Wigs & Hair Extensions"}),"Wig Cap");
  assert.equal(conciseTitle({title:"Geometric ring holder necklace",category:"Jewellery"}),"Ring Holder Pendant Necklace");
 });
+
+test("saved product details determine title with mixed stones and photo-specific colour",()=>{
+ const mod={exports:{}};
+ vm.runInNewContext(ts.transpileModule(fs.readFileSync("lib/detail-title.ts","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:mod,exports:mod.exports,URL,require:n=>n==="./product-title"?titleModule.exports:n==="./emoji-free"?{withoutEmoji:s=>s}:undefined});
+ const {titleFromDetails}=mod.exports;
+ assert.equal(titleFromDetails({title:"Moissanite ring",category:"Jewellery"},{title:"D Color Moissanite Sterling Silver Six-Claw Wedding Ring",variants:[{id:"1",label:"1 carat moissanite"},{id:"2",label:"1 carat zircon"}]}),"Six-Prong Sterling Silver Ring – Moissanite or Zircon");
+ const p={title:"Crochet Flower Bouquet",category:"Flowers & Gifts",imageUrl:"https://img.alicdn.com/O1CN1!!1.jpg_720x720q70.jpg_.webp"};
+ const e={title:"Crochet flower bouquet",variants:[{id:"1",image:"https://img.alicdn.com/O1CN1!!1.jpg",colour:"Yellow",style:"Sunflower"},{id:"2",image:"https://img.alicdn.com/O1CN2!!1.jpg",colour:"Red",style:"Rose"}]};
+ assert.equal(titleFromDetails(p,e),"Yellow Crochet Sunflower Bouquet");
+ assert.doesNotMatch(titleFromDetails({...p,imageUrl:"https://img.alicdn.com/O1CN3!!1.jpg"},e),/\b(?:Yellow|Red)\b/);
+ assert.match(titleFromDetails({title:"Product",category:"Flowers & Gifts"},{descriptionText:"Product name: Crochet Rose Bouquet; Flower type: Rose"}),/Crochet Rose Bouquet/);
+});

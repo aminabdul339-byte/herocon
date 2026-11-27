@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "prebuild": "node scripts/check-no-emojis.mjs && npm run test:account",
+    "prebuild": "node scripts/check-no-emojis.mjs && npm run test:account && node scripts/audit-detail-names.cjs",
     "test:account": "node --experimental-strip-types --test tests/shopping-account.test.cjs tests/cart-pricing.test.cjs tests/catalogue-access.test.cjs tests/premium-trial.test.cjs tests/discovery-access.test.cjs"
   },
   "dependencies": {

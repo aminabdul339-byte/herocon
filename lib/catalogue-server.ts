@@ -1,4 +1,5 @@
 import { cache } from "react";
+import {withAuditedBusinessName} from "./detail-name-index";
 import { promises as fs } from "fs";
 import path from "path";
 import type { Product } from "./types";
@@ -118,7 +119,7 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
  const corrected=(p:Product):Product=>({...p,category:isModestFashion([p.title,p.originalTitle,p.displayTitle].filter(Boolean).join(" "),p.sellerName)?"Modest Fashion":CATEGORY_OVERRIDES[p.doppelProductId||""]||audit[p.doppelProductId||""]||classifyProduct(p.title,p.category)});
  const staticProducts=base.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)).map(corrected);
  const discovered=discoveredRows.filter(p=>!isUnavailableSource(p.originalMarketplaceUrl,hidden)&&!excludedCatalogueListing(p.originalMarketplaceUrl,p.title,p.originalTitle,p.displayTitle)).map(p=>({...p,title:withoutEmoji(p.title),displayTitle:p.displayTitle?withoutEmoji(p.displayTitle):undefined,sellerName:p.sellerName?withoutEmoji(p.sellerName):p.sellerName}));
- if(!discovered.length)return staticProducts;
+ if(!discovered.length)return staticProducts.map(withAuditedBusinessName);
  const links=new Set(staticProducts.map(p=>normalizeMarketplaceLink(p.originalMarketplaceUrl)||p.originalMarketplaceUrl).filter(Boolean));
  const ids=new Set(staticProducts.map(p=>p.doppelProductId));
  // Join by canonical original marketplace link, never by CDN image or title.
@@ -150,7 +151,7 @@ export const getProducts = cache(async ():Promise<Product[]>=>{
   links.add(key);ids.add(p.doppelProductId);
   additions.push(p);
  }
- return [...additions,...enriched].map(corrected);
+ return [...additions,...enriched].map(corrected).map(withAuditedBusinessName);
 });
 // Display deduplication does not change source records or direct product routes.
 import {dedupeBusinessCards} from "./catalogue-duplicates";
