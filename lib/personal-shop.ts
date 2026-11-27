@@ -1,11 +1,11 @@
 import source from "@/data/shop-personal-merged.json";
-import {savedAuditedTitle} from "@/lib/detail-name-index";
+import {savedAuditedTitle,savedOriginalListingTitle} from "@/lib/detail-name-index";
 import {normalizeMarketplaceLink} from "@/lib/marketplace-links";
 import {excludedCatalogueListing} from "@/lib/catalogue-editorial-exclusions";
 import {withoutEmoji} from "@/lib/emoji-free";
 
 export type PersonalShopProduct={
- id:string;name:string;category:string;gender:"women"|"men"|"unisex";imageUrl:string;
+ id:string;name:string;originalTitle?:string;category:string;gender:"women"|"men"|"unisex";imageUrl:string;
  originalUrl:string;priceGBP:number|null;priceUSD:number|null;priceCNY:number|null;
  source:string;
 };
@@ -22,7 +22,7 @@ for(const p of parsed){
     seenLinks.has(originalUrl)||seenImages.has(p.imageUrl))continue;
  seenLinks.add(originalUrl);
  seenImages.add(p.imageUrl);
- filtered.push({...p,name:savedAuditedTitle("personal",p.id,originalUrl,p.imageUrl)||withoutEmoji(p.name).replace(/\s+/g," ").trim(),originalUrl});
+ filtered.push({...p,originalTitle:savedOriginalListingTitle("personal",p.id,originalUrl)||p.name,name:savedAuditedTitle("personal",p.id,originalUrl,p.imageUrl)||withoutEmoji(p.name).replace(/\s+/g," ").trim(),originalUrl});
 }
 export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);

@@ -5,14 +5,14 @@ if(process.env.VERCEL_ENV!=="production"){console.log("[name-audit] production-o
 if(!process.env.BLOB_READ_WRITE_TOKEN){console.log("[name-audit] storage unavailable; no full audit claimed");process.exit(0);}
 const modCache=new Map();
 function load(file){const p=path.resolve(file);if(modCache.has(p))return modCache.get(p).exports;const m={exports:{}};modCache.set(p,m);const js=ts.transpileModule(fs.readFileSync(p,"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function("module","exports","require",js)(m,m.exports,n=>n.startsWith(".")?load(path.resolve(path.dirname(p),n+".ts")):require(n));return m.exports;}
-const {conciseProductTitle}=load("lib/product-title.ts"),{titleFromDetails}=load("lib/detail-title.ts"),{normalizeMarketplaceLink}=load("lib/marketplace-links.ts"),{classifyProduct,isModestFashion}=load("lib/product-taxonomy.ts"),{CATEGORY_OVERRIDES}=load("lib/category-overrides.ts"),{excludedCatalogueListing}=load("lib/catalogue-editorial-exclusions.ts");
+const {conciseProductTitle}=load("lib/product-title.ts"),{originalListingEvidence}=load("lib/detail-title.ts"),{normalizeMarketplaceLink}=load("lib/marketplace-links.ts"),{classifyProduct,isModestFashion}=load("lib/product-taxonomy.ts"),{CATEGORY_OVERRIDES}=load("lib/category-overrides.ts"),{excludedCatalogueListing}=load("lib/catalogue-editorial-exclusions.ts");
 const hash=s=>crypto.createHash("sha256").update(s).digest("hex");
 const rows=filename=>{const x=JSON.parse(fs.readFileSync(filename,"utf8"));return Array.isArray(x)?x:x.products||[]};
 const {get,list,put}=require("@vercel/blob");
 const read=async pathname=>{const r=await get(pathname,{access:"private"});if(!r||r.statusCode!==200||!r.stream)return null;const raw=await new Response(r.stream).text();if(Buffer.byteLength(raw)>16*1024*1024)throw Error("snapshot too large");return JSON.parse(raw);};
 async function index(prefix){const map=new Map();let cursor;do{const r=await list({prefix,limit:1000,cursor});for(const b of r.blobs)map.set(b.pathname.slice(prefix.length).replace(/\.json$/,""),b);cursor=r.hasMore?r.cursor:undefined;}while(cursor);return map;}
 const prefixes=["catalogue/source-enrichment/v2/","catalogue/source-enrichment/v1/","catalogue/buckydrop-snapshots/v2/","catalogue/buckydrop-snapshots/v1/"];
-const cachePath="catalogue/detail-name-index/v2/names.json";
+const cachePath="catalogue/detail-name-index/v3/names.json";
 async function main(){
  const [maps,discovered,prior]=await Promise.all([Promise.all(prefixes.map(index)),index("catalogue/discovered/v1/"),read(cachePath).catch(()=>null)]);
  const business=new Map(),personal=new Map();
@@ -30,7 +30,7 @@ async function main(){
   if(Date.now()-started>260000){console.log("[name-audit] scan time budget reached");break;}
   await Promise.all(groups.slice(i,i+16).map(async ([key,items])=>{
    const sources=maps.map(m=>m.get(key)).filter(Boolean),sig=sources.map(x=>x.pathname+":"+x.uploadedAt).join("|");
-   const input=items.map(r=>hash(JSON.stringify([r.url,r.p.title,r.p.category,r.p.imageUrl,r.p.variants,r.p.sourceSpecs])));const old=items.map((r,j)=>prior?.version===1?prior[r.collection]?.[r.id]:null);
+   const input=items.map(r=>hash(JSON.stringify([r.url,r.p.title,r.p.originalTitle,r.p.category,r.p.imageUrl,r.p.variants,r.p.sourceSpecs,r.p.descriptionText])));const old=items.map((r,j)=>prior?.version===1?prior[r.collection]?.[r.id]:null);
    const allCached=old.every((v,j)=>v&&v.sig===sig&&v.input===input[j]&&v.status!=="failed");
    let e=null,failed=false;
    if(!allCached&&sources.length){
@@ -42,7 +42,7 @@ async function main(){
     const r=items[j];let record;
     if(allCached){record=old[j];result.summary.reused++;}
     else if(failed){record={url:r.url,image:r.p.imageUrl||"",input:input[j],sig,status:"failed",title:"",variants:0,description:false,specs:0,photos:0};}
-    else {const evidence=e||{title:r.p.originalTitle||r.p.title,descriptionText:r.p.descriptionText,sourceSpecs:r.p.sourceSpecs||[],variants:(r.p.variants||[]).filter(v=>typeof v==="object"),images:r.p.images||[]};const title=titleFromDetails(r.p,evidence,r.collection==="personal");record={url:r.url,image:r.p.imageUrl||"",input:input[j],sig,status:e?"saved":"imported-only",title,variants:evidence.variants?.length||0,description:!!evidence.descriptionText,specs:evidence.sourceSpecs?.length||0,photos:evidence.images?.length||0};}
+    else {const evidence=e||{title:r.p.originalTitle||r.p.title,descriptionText:r.p.descriptionText,sourceSpecs:r.p.sourceSpecs||[],variants:(r.p.variants||[]).filter(v=>typeof v==="object"),images:r.p.images||[]};const naming=originalListingEvidence(r.p,evidence,r.collection==="personal");record={url:r.url,image:r.p.imageUrl||"",input:input[j],sig,status:e?"saved":"imported-only",title:naming.name,original:naming.original,fallback:naming.fallback,variants:evidence.variants?.length||0,description:!!evidence.descriptionText,specs:evidence.sourceSpecs?.length||0,photos:evidence.images?.length||0};}
     result[r.collection][r.id]=record;result.summary.scanned++;if(record.status==="saved")result.summary.savedDetails++;else if(record.status==="failed")result.summary.failed++;else result.summary.noSavedDetails++;if(record.variants)result.summary.variantEvidence++;if(record.description)result.summary.descriptionEvidence++;if(record.specs)result.summary.specEvidence++;if(record.photos)result.summary.photoEvidence++;
     if(record.title&&record.title!==(r.collection==="personal"?r.p.title:conciseProductTitle(r.p))){result.summary.changed++;if(result.summary.examples.length<5&&record.status==="saved")result.summary.examples.push({id:r.id,title:record.title,variants:record.variants});}
    }

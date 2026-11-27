@@ -150,3 +150,16 @@ test("saved product details determine title with mixed stones and photo-specific
  assert.doesNotMatch(titleFromDetails({...p,imageUrl:"https://img.alicdn.com/O1CN3!!1.jpg"},e),/\b(?:Yellow|Red)\b/);
  assert.match(titleFromDetails({title:"Product",category:"Flowers & Gifts"},{descriptionText:"Product name: Crochet Rose Bouquet; Flower type: Rose"}),/Crochet Rose Bouquet/);
 });
+
+test("original listing wording wins over generic naming without dropping product attributes",()=>{
+ const mod={exports:{}};
+ vm.runInNewContext(ts.transpileModule(fs.readFileSync("lib/detail-title.ts","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:mod,exports:mod.exports,URL,require:n=>n==="./product-title"?titleModule.exports:n==="./emoji-free"?{withoutEmoji:s=>s}:undefined});
+ const {originalListingEvidence}=mod.exports;
+ const p={title:"Ring",originalTitle:"Cross-Border Vintage Square Crown Gold-Tone Signet Ring Factory Direct Sale",category:"Jewellery"};
+ const r=originalListingEvidence(p,{title:"Fashion jewellery ring"});
+ assert.equal(r.name,"Vintage Square Crown Gold-Tone Signet Ring");
+ assert.equal(r.original,p.originalTitle);
+ assert.equal(originalListingEvidence({title:"Crochet Flower Bouquet",category:"Flowers & Gifts"},{title:"Handmade Yellow Sunflower Crochet Bouquet"}).name,"Handmade Yellow Sunflower Crochet Bouquet");
+ assert.equal(originalListingEvidence({title:"Handbag",category:"Bags"},{title:"Brown Woven Shoulder Bag with Zip Closure"},true).name,"Brown Woven Shoulder Bag with Zip Closure");
+ assert.equal(conciseTitle({title:"Generic",doppelProductId:"link-c98a18758ce75c64bc7154e2a4ba",auditedTitle:"Verified original title"}),"Verified original title");
+});
