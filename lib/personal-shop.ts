@@ -25,13 +25,12 @@ for(const p of parsed){
 export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);
 
-/** The Women’s Edit is accessories-led; clothing is a Men’s Edit-only category.
- * Sportswear is omitted from the personal catalogue completely.
- * Keep original data untouched so nothing is destructively deleted.
+/** Keep the earlier curated Women's Edit exclusions for legacy clothing,
+ * while allowing the newly approved Taobao fashion batch in both edits.
  */
 export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>
  (p.gender===audience||p.gender==="unisex") &&
- (audience!=="women"||p.category!=="Clothing")
+ (audience!=="women"||p.category!=="Clothing"||p.source==="taobao-fashion-20261128")
 );
 
 export const productPrice=(p:PersonalShopProduct):string=>{
