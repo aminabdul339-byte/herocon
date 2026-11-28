@@ -31,7 +31,7 @@ export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id=
 /** The new ZABA women’s clothing collection is explicitly included; preserve the previous editorial exclusions for legacy clothing. */
 export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>
  (p.gender===audience||p.gender==="unisex") &&
- (audience!=="women"||p.category!=="Clothing"||p.source==="zaba-women-20261127")
+ (audience!=="women"||p.category!=="Clothing"||p.source==="zaba-women-20261127"||p.source.startsWith("taobao-fashion-"))
 );
 
 export const productPrice=(p:PersonalShopProduct):string=>{

@@ -43,12 +43,37 @@ export function mixPersonalEdit(products:PersonalShopProduct[],audience:Audience
   for(const pool of primary)take(pool,i+6);
   for(const pool of secondary)take(pool,i);
  }
- // Women's featured edit: keep the existing first card and promote the
- // requested Coach handbag to card two. Swap the displaced listing rather
- // than remove it, so the rest of the editorial ordering stays intact.
- if(audience==="women"&&ordered.length>1){
-  const coachIndex=ordered.findIndex(p=>p.id==="579377089-13"&&p.category==="Bags");
-  if(coachIndex>1)[ordered[1],ordered[coachIndex]]=[ordered[coachIndex],ordered[1]];
+ // Women's edit: keep every existing listing, pin the three chosen garments,
+ // and mix two clothing items with each accessory while stock permits.
+ if(audience==="women"){
+  const pins=["zaba-780728891105","zaba-780777838096","zaba-780846885149"];
+  const featured=pins.map(id=>ordered.find(p=>p.id===id)).filter((p):p is PersonalShopProduct=>Boolean(p));
+  const pinned=new Set(featured.map(p=>p.id));
+  const clothing=varied(ordered.filter(p=>p.category==="Clothing"&&!pinned.has(p.id)));
+  const accessories=ordered.filter(p=>p.category!=="Clothing");
+  const coach=accessories.findIndex(p=>p.id==="579377089-13"&&p.category==="Bags");
+  if(coach>0)accessories.unshift(...accessories.splice(coach,1));
+  const groups:PersonalShopProduct[][]=[[],[],[],[]];
+  for(const p of clothing){
+   const group=bottom(p)?0:/\b(?:jackets?|coats?|parkas?|windbreakers?|gilets?)\b/i.test(p.name)?1:top(p)?2:3;
+   groups[group].push(p);
+  }
+  const garments:PersonalShopProduct[]=[];
+  for(let i=0;i<Math.max(0,...groups.map(g=>g.length));i++)for(const g of groups)if(g[i])garments.push(g[i]);
+  const mixed:PersonalShopProduct[]=[...featured];
+  let c=0,a=0;
+  if(featured.length===3&&garments.length>=13&&accessories.length>=8){
+   for(let i=0;i<8;i++){
+    mixed.push(accessories[a++],garments[c++]);
+    if(i<5)mixed.push(garments[c++]);
+   }
+  }
+  while(c<garments.length||a<accessories.length){
+   if(c<garments.length)mixed.push(garments[c++]);
+   if(a<accessories.length)mixed.push(accessories[a++]);
+   if(c<garments.length)mixed.push(garments[c++]);
+  }
+  return mixed;
  }
  return ordered;
 }
