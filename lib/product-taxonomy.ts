@@ -32,7 +32,7 @@ function existingFallback(existing?:string):PrimaryCategory {
 }
 
 /** Explicit modest-wear evidence; generic maxi dresses and cardigans are not sufficient. */
-export function isModestFashion(title:string,sellerName?:string):boolean {
+export function isModestFashion(title:string,sellerName?:string|null):boolean {
  const s=clean(title||"");
  if(/\b(?:abaya|abayas|abayaat|abaya dress|thobes?|thawbs?|thoobs?|jubbas?|jubbahs?|jilbabs?|khimars?|hijabs?|niqabs?|dishdashas?|kanduras?|qamis|kameez|djellabas?|jalabiyas?|jalabiyyas?|jellabiyas?|kaftans?|caftans?|modest fashion|modest wear|modest clothing|modest dresses?|muslim dresses?|muslim clothing|muslim wear|islamic clothing|islamic wear|prayer dresses?|prayer garments?)\b/.test(s)||/穆斯林.{0,12}(?:长袍|连衣裙|服饰|头巾|罩袍)|阿拉伯.{0,12}(?:长袍|袍子)|阿巴亚|阿拜亚|عباءة|عبايات|ثوب|جلابيب|حجاب/.test(s)) {
   return !/\b(?:mouse pads?|mousepads?|storage racks?|display stands?|clothing racks?|doll clothes|sewing patterns?|hijab pins?|hijab magnets?|hijab clips?)\b/.test(s);
