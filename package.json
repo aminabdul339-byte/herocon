@@ -12,6 +12,7 @@
     "test:account": "node --experimental-strip-types --test tests/shopping-account.test.cjs tests/cart-pricing.test.cjs tests/catalogue-access.test.cjs tests/premium-trial.test.cjs tests/discovery-access.test.cjs"
   },
   "dependencies": {
+    "@vercel/analytics": "1.5.0",
     "@vercel/blob": "^2.9.0",
     "next": "^15.5.0",
     "react": "^19.1.0",

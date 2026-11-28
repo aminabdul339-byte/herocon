@@ -14,6 +14,7 @@ import "./brand-refinement-2026.css";
 import "./product-refinement.css";
 import "./herocon-flow.css";
 import type {Metadata} from "next";
+import {Analytics} from "@vercel/analytics/next";
 import {CartProvider} from "@/components/CartProvider";
 import Footer from "@/components/Footer";
 export const metadata:Metadata={
@@ -22,5 +23,5 @@ export const metadata:Metadata={
   metadataBase:new URL("https://herocon.store")
 };
 export default function RootLayout({children}:{children:React.ReactNode}){
- return <html lang="en"><body><CartProvider><div className="hc-site">{children}<Footer/></div></CartProvider></body></html>;
+ return <html lang="en"><body><CartProvider><div className="hc-site">{children}<Footer/></div></CartProvider><Analytics /></body></html>;
 }
