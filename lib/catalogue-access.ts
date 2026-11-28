@@ -21,7 +21,7 @@ export const businessCategoryPreview=cache(async(name:string)=>{
 // All eligible catalogue products are public; paid discovery remains separately gated.
 export const accessibleBusinessProducts=cache(async()=>getProducts());
 export const personalAll=cache(async(audience:"women"|"men")=>{const hidden=await unavailableSourceHashes();return dedupePersonalCards(audienceProducts(audience).filter(p=>!isUnavailableSource(p.originalUrl,hidden)));});
-const personalOrder={women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]};
+const personalOrder={women:["Clothing","Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]};
 const nameCompare=(a:PersonalShopProduct,b:PersonalShopProduct)=>a.name.localeCompare(b.name,"en",{sensitivity:"base",numeric:true});
 export const personalCollectionPreview=cache(async(audience:"women"|"men")=>mixPersonalEdit([...await personalAll(audience)].sort((a,b)=>personalOrder[audience].indexOf(a.category)-personalOrder[audience].indexOf(b.category)||nameCompare(a,b)),audience).slice(0,FREE_COLLECTION_LIMIT));
 export const personalCategoryPreview=cache(async(audience:"women"|"men",name:string)=>{
