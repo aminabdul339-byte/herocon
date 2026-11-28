@@ -45,7 +45,7 @@ export function mixPersonalEdit(products:PersonalShopProduct[],audience:Audience
  }
  // Lead the Women's All products edit with clothing, while keeping a
  // mix of bags, footwear, jewellery and accessories throughout. Preserve
- // every listing, including the previously featured Coach bag at card two.
+ // every listing, including the previously featured Coach bag.
  if(audience==="women"){
   const clothing=varied(ordered.filter(p=>p.category==="Clothing"));
   const accessories=ordered.filter(p=>p.category!=="Clothing");
@@ -64,14 +64,27 @@ export function mixPersonalEdit(products:PersonalShopProduct[],audience:Audience
   for(let i=0;i<Math.max(0,...garmentGroups.map(g=>g.length));i++){
    for(const group of garmentGroups)if(group[i])garments.push(group[i]);
   }
-  const mixed:PersonalShopProduct[]=[];
+  // Explicit Women's featured order, using stable marketplace-based IDs.
+  const featuredIds=["personal-taobao-780728891105","personal-taobao-780777838096","personal-taobao-780846885149"];
+  const featured=featuredIds.map(id=>garments.find(p=>p.id===id)).filter((p):p is PersonalShopProduct=>!!p);
+  const pinned=new Set(featured.map(p=>p.id));
+  const remaining=garments.filter(p=>!pinned.has(p.id));
+  const mixed:PersonalShopProduct[]=[...featured];
   let c=0,a=0;
+  // Keep the featured trio first and the Coach bag immediately after it.
+  // Fill the opening page with 16 garments and 8 other items when available.
+  if(featured.length===3&&remaining.length>=13&&accessories.length>=8){
+   for(let i=0;i<8;i++){
+    mixed.push(accessories[a++],remaining[c++]);
+    if(i<5)mixed.push(remaining[c++]);
+   }
+  }
   // Two garments for each accessory: 16 clothing cards per 24-card
   // page while inventory permits. Exhaust each pool without duplication.
-  while(c<garments.length||a<accessories.length){
-   if(c<garments.length)mixed.push(garments[c++]);
+  while(c<remaining.length||a<accessories.length){
+   if(c<remaining.length)mixed.push(remaining[c++]);
    if(a<accessories.length)mixed.push(accessories[a++]);
-   if(c<garments.length)mixed.push(garments[c++]);
+   if(c<remaining.length)mixed.push(remaining[c++]);
   }
   return mixed;
  }
