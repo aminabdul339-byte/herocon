@@ -26,11 +26,11 @@ export const personalShopProducts:ReadonlyArray<PersonalShopProduct>=filtered;
 export const findPersonalProduct=(id:string)=>personalShopProducts.find(p=>p.id===id);
 
 /** Keep the earlier curated Women's Edit exclusions for legacy clothing,
- * while allowing the newly approved Taobao fashion batch in both edits.
+ * while allowing the approved Taobao fashion imports in both edits.
  */
 export const audienceProducts=(audience:"men"|"women")=>personalShopProducts.filter(p=>
  (p.gender===audience||p.gender==="unisex") &&
- (audience!=="women"||p.category!=="Clothing"||p.source==="taobao-fashion-20261128")
+ (audience!=="women"||p.category!=="Clothing"||p.source.startsWith("taobao-fashion-"))
 );
 
 export const productPrice=(p:PersonalShopProduct):string=>{
