@@ -14,7 +14,7 @@ type Audience="women"|"men";
 type Filters={audience:Audience;category:string;q:string;sort:string;page:number};
 const PER_PAGE=24;
 const ORDER:Record<Audience,string[]>={
- women:["Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches","Clothing"],
+ women:["Clothing","Bags","Sunglasses","Jewellery","Shoes","Accessories","Watches"],
  men:["Clothing","Shoes","Sunglasses","Accessories","Bags","Watches","Jewellery"]
 };
 const genderName:Record<Audience,string>={women:"women's",men:"men's"};
